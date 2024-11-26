@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Diseños - Menú</title>
+    <style>
+        /* ------------------------------------
+           Estilos Globales
+        ------------------------------------ */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace;
+            background: #000; /* Fondo negro puro */
+            color: #00ff00; /* Texto verde estilo Matrix */
+            overflow: hidden; /* Evitar scroll innecesario */
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+        }
+
+        /* ------------------------------------
+           Fondo animado Matrix (Canvas)
+        ------------------------------------ */
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Detrás del contenido */
+        }
+
+        /* ------------------------------------
+           Título Principal
+        ------------------------------------ */
+        .title {
+            font-size: 3.5rem;
+            color: #00ff00; /* Verde Matrix */
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.8), 0 0 20px rgba(0, 255, 0, 0.6);
+            margin-bottom: 30px;
+            animation: glow 2s infinite alternate; /* Efecto de brillo intermitente */
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px rgba(0, 255, 0, 0.6);
+            }
+            to {
+                text-shadow: 0 0 20px rgba(0, 255, 0, 1);
+            }
+        }
+
+        /* ------------------------------------
+           Contenedor del Menú
+        ------------------------------------ */
+        .menu-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 600px;
+            align-items: center;
+        }
+
+        /* Botones del Menú */
+        .menu-button {
+            background: rgba(0, 255, 0, 0.2); /* Fondo translúcido */
+            border: 2px solid #00ff00;
+            border-radius: 12px;
+            padding: 15px 25px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00ff00;
+            text-decoration: none;
+            text-transform: uppercase;
+            transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.4);
+            display: inline-block;
+            width: 80%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .menu-button:hover {
+            background: rgba(0, 255, 0, 0.5);
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.7);
+        }
+
+        .menu-button:active {
+            transform: translateY(2px);
+        }
+
+        /* Animación de Botones */
+        .menu-button:nth-child(1) {
+            animation: bounce 2s infinite ease-in-out;
+        }
+
+        .menu-button:nth-child(2) {
+            animation: bounce 2s infinite ease-in-out 0.2s;
+        }
+
+        .menu-button:nth-child(3) {
+            animation: bounce 2s infinite ease-in-out 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* ------------------------------------
+           Pie de Página
+        ------------------------------------ */
+        .footer {
+            position: absolute;
+            bottom: 20px;
+            font-size: 1rem;
+            color: rgba(0, 255, 0, 0.7);
+        }
+
+        .footer a {
+            color: #00ff00;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Fondo Animado (Canvas) -->
+    <canvas id="matrix"></canvas>
+
+    <!-- Contenedor Principal -->
+    <div class="main-container">
+        <h1 class="title">Diseños</h1>
+
+        <!-- Menú de Opciones -->
+        <div class="menu-container">
+            <a href="codepen/index.html" class="menu-button">Codepen</a>
+            <a href="mp3-carrusel/index.html" class="menu-button">MP3 Carrusel</a>
+            <a href="Texto IA/index.html" class="menu-button">Texto IA</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        Creado por <a href="#">Tu Nombre</a>. Todos los derechos reservados.
+    </div>
+
+    <script>
+        // -----------------------------------
+        // Fondo Matrix Animado
+        // -----------------------------------
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+
+        // Ajustar el tamaño del canvas al de la ventana
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const matrixCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%".split("");
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(0);
+
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = "#00ff00";
+            ctx.font = `${fontSize}px monospace`;
+
+            drops.forEach((y, x) => {
+                const text = matrixCharacters[Math.floor(Math.random() * matrixCharacters.length)];
+                ctx.fillText(text, x * fontSize, y * fontSize);
+
+                if (y * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[x] = 0;
+                }
+
+                drops[x]++;
+            });
+        }
+
+        setInterval(drawMatrix, 50);
+
+        // Ajustar el canvas al redimensionar la ventana
+        window.addEventListener("resize", () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // -----------------------------------
+        // Animación de Clic en los Botones
+        // -----------------------------------
+        const buttons = document.querySelectorAll('.menu-button');
+
+        buttons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                const href = button.getAttribute('href');
+                button.style.transform = "scale(0.9)";
+                setTimeout(() => {
+                    button.style.transform = "scale(1)";
+                    window.location.href = href;
+                }, 200);
+            });
+        });
+    </script>
+</body>
+</html>
