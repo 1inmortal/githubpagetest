@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Menú Vertical Optimizado - Efecto Matrix</title>
+    <style>
+        /* Estilos Globales */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #000; /* Fondo negro */
+            color: #fff;
+            overflow-y: auto; /* Permitir desplazamiento vertical */
+            -webkit-overflow-scrolling: touch; /* Suavidad en iOS */
+        }
+
+        /* Animación de entrada */
+        body.fade-in {
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Contenedor Principal */
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+            z-index: 10; /* Para mantener el contenido encima del canvas */
+        }
+
+        /* Título */
+        .title {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            color: #00ff00; /* Verde brillante */
+            text-align: center;
+            text-shadow: 0px 0px 10px rgba(0, 255, 0, 0.8);
+        }
+
+        /* Botones Verticales */
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px; /* Espaciado entre los botones */
+            width: 100%;
+            max-width: 400px; /* Ancho máximo de los botones */
+        }
+
+        .button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            background-color: #00ff00;
+            color: #000;
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 15px 20px;
+            border-radius: 10px;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+            text-align: center;
+            box-shadow: 0px 4px 10px rgba(0, 255, 0, 0.4);
+        }
+
+        .button:hover {
+            background-color: #008f00;
+            color: #fff;
+            transform: scale(1.05);
+        }
+
+        .button:active {
+            transform: scale(0.95);
+        }
+
+        /* Botones Responsivos */
+        @media (max-width: 400px) {
+            .button {
+                font-size: 1rem;
+                padding: 10px 15px;
+            }
+        }
+
+        /* Contenedor de Resultados (si es necesario) */
+        .results-container {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 255, 0, 0.4);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .results-container p {
+            margin: 0;
+            font-size: 1rem;
+            color: #fff;
+        }
+
+        /* Fondo de Matrix */
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0; /* Detrás del contenido principal */
+        }
+    </style>
+</head>
+<body>
+    <!-- Efecto Matrix -->
+    <canvas id="matrix"></canvas>
+
+    <!-- Audio de fondo -->
+    <audio id="background-audio" autoplay loop>
+        <!-- Cambia la ruta si es necesario -->
+        <source src="Audio/leap.mp3" type="audio/mpeg">
+        Tu navegador no soporta el elemento de audio.
+    </audio>
+
+    <!-- Contenedor Principal -->
+    <div class="main-container">
+        <h1 class="title">Proyectos</h1>
+
+        <!-- Botones Verticales -->
+        <div class="button-container">
+            <a href="diseños/Menu.html" class="button">Diseños</a>
+            <a href="google-maps/index.html" class="button">Google Maps</a>
+            <a href="presentacion/index.html" class="button">Presentación</a>
+            <a href="otros/index.html" class="button">Otros</a>
+        </div>
+
+        <!-- Contenedor de Resultados (opcional) -->
+        <div class="results-container" id="results-container">
+            <p>Selecciona un proyecto para navegar.</p>
+        </div>
+    </div>
+
+    <script>
+        // Efecto Matrix
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const matrixChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%".split("");
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(0);
+
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = "#00ff00";
+            ctx.font = `${fontSize}px monospace`;
+
+            drops.forEach((y, x) => {
+                const text = matrixChars[Math.floor(Math.random() * matrixChars.length)];
+                ctx.fillText(text, x * fontSize, y * fontSize);
+
+                if (y * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[x] = 0;
+                }
+
+                drops[x]++;
+            });
+        }
+
+        setInterval(drawMatrix, 50);
+
+        // Ajustar canvas al redimensionar
+        window.addEventListener("resize", () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Audio de fondo
+        const audio = document.getElementById('background-audio');
+
+        // Añadir clase de animación al cuerpo
+        document.body.classList.add('fade-in');
+
+        // Evento para pausar/reproducir el audio
+        document.body.addEventListener('click', () => {
+            if (audio.paused) {
+                audio.play();
+            } else {
+                audio.pause();
+            }
+        });
+
+        // Evento para mostrar mensajes dinámicos al hacer clic en botones
+        const buttons = document.querySelectorAll('.button');
+        const resultsContainer = document.getElementById('results-container');
+
+        buttons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                const href = button.getAttribute('href');
+                resultsContainer.innerHTML = `<p>Redirigiendo a: <strong>${href}</strong></p>`;
+                setTimeout(() => {
+                    window.location.href = href;
+                }, 1500); // Redirigir después de 1.5 segundos
+            });
+        });
+    </script>
+</body>
+</html>
