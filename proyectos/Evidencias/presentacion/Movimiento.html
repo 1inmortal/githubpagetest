@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rastreo de Cámara - Motion Tracker</title>
+    <style>
+        /* Estilo General */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #000;
+            color: #00ff00;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.7);
+        }
+
+        /* Contenedor de Cámara */
+        .camera-container {
+            position: relative;
+            width: 80%;
+            max-width: 800px;
+            aspect-ratio: 16 / 9;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        /* Estilo del Video */
+        #camera {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Estilo del Canvas */
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Permitir clics en el video */
+        }
+
+        /* Controles */
+        .controls {
+            margin-top: 20px;
+        }
+
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 10px;
+        }
+
+        button:hover {
+            background: #fff;
+            color: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <h1>Rastreo de Cámara - Motion Tracker</h1>
+    <div class="camera-container">
+        <video id="camera" autoplay playsinline></video>
+        <canvas id="overlay"></canvas>
+    </div>
+    <div class="controls">
+        <button id="startButton">Iniciar Cámara</button>
+        <button id="stopButton">Detener Cámara</button>
+    </div>
+
+    <script>
+        let cameraStream = null; // Variable para almacenar el flujo de la cámara
+
+        async function initializeCamera() {
+            const video = document.getElementById('camera');
+
+            try {
+                // Solicitar acceso a la cámara
+                cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = cameraStream;
+                console.log("Cámara iniciada.");
+            } catch (err) {
+                console.error("Error al iniciar la cámara:", err);
+                alert("No se pudo acceder a la cámara. Revisa los permisos.");
+            }
+        }
+
+        function stopCamera() {
+            const video = document.getElementById('camera');
+            if (cameraStream) {
+                // Detener el flujo de la cámara
+                const tracks = cameraStream.getTracks();
+                tracks.forEach(track => track.stop());
+                video.srcObject = null;
+                console.log("Cámara detenida.");
+            }
+        }
+
+        function drawOverlay() {
+            const video = document.getElementById('camera');
+            const canvas = document.getElementById('overlay');
+            const ctx = canvas.getContext('2d');
+
+            // Configurar el tamaño del canvas
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            function draw() {
+                if (!cameraStream) return; // Salir si la cámara está detenida
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
+                ctx.font = '20px Arial';
+
+                // Dibujar texto en movimiento como ejemplo
+                const time = new Date().toLocaleTimeString();
+                ctx.fillText(`Hora: ${time}`, 10, 30);
+
+                requestAnimationFrame(draw); // Dibujar en cada frame
+            }
+
+            draw();
+        }
+
+        // Manejo de los botones
+        document.getElementById('startButton').addEventListener('click', () => {
+            initializeCamera().then(drawOverlay);
+        });
+
+        document.getElementById('stopButton').addEventListener('click', () => {
+            stopCamera();
+        });
+    </script>
+</body>
+</html>
