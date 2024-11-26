@@ -15,10 +15,11 @@
         /* Estilo global */
         body {
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(120deg, #000, #1a1a1a);
             color: #fff;
             overflow-x: hidden;
-            height: 100%;
+            height: 100vh;
+            position: relative;
+            background-color: #000; /* Fondo negro */
         }
 
         h1, h2, h3 {
@@ -39,6 +40,8 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 30px 20px;
+            position: relative;
+            z-index: 2; /* Para asegurar que el contenido quede sobre el fondo */
         }
 
         /* Sección de contacto */
@@ -49,6 +52,7 @@
             border-radius: 15px;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
             margin-top: 50px;
+            z-index: 2;
         }
 
         #contacto h1 {
@@ -66,14 +70,15 @@
         .formulario {
             max-width: 800px;
             margin: 0 auto;
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 20px;
             justify-content: center;
         }
 
         .form-group {
-            flex: 1 1 300px;
+            display: flex;
+            flex-direction: column;
             position: relative;
         }
 
@@ -125,6 +130,7 @@
         .boton {
             text-align: center;
             margin-top: 20px;
+            grid-column: span 2;
         }
 
         .boton button {
@@ -145,6 +151,30 @@
             box-shadow: 0 8px 15px rgba(0, 255, 0, 0.3);
         }
 
+        /* QR y mensaje de apoyo */
+        .qr-container {
+            margin-top: 30px;
+            text-align: center;
+            grid-column: span 2;
+        }
+
+        .qr-container img {
+            width: 100px;
+            height: 100px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        .qr-message {
+            margin-top: 15px;
+            font-size: 1rem;
+            color: #ccc;
+        }
+
+        .qr-message a {
+            color: #00ff00;
+        }
+
         /* Responsivo */
         @media (max-width: 768px) {
             #contacto h1 {
@@ -156,22 +186,38 @@
             }
 
             .formulario {
-                flex-direction: column;
-                gap: 15px;
+                grid-template-columns: 1fr;
             }
 
             .form-group {
-                flex: 1 1 100%;
+                flex-direction: row;
+            }
+
+            .form-group input,
+            .form-group textarea {
+                width: 100%;
             }
 
             .boton button {
                 width: 100%;
                 font-size: 1rem;
             }
+
+            .qr-container img {
+                width: 80px;
+                height: 80px;
+            }
+
+            .qr-message {
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Particles.js background -->
+    <div id="particles-js"></div>
+
     <div class="container">
         <!-- Sección de Contacto -->
         <section id="contacto">
@@ -209,39 +255,137 @@
                     <button type="submit">Enviar</button>
                 </div>
             </form>
+
+            <!-- Imagen QR y mensaje de apoyo -->
+            <div class="qr-container">
+                <a href="https://www.qr-code-generator.com/" target="_blank">
+                    <img src="IMG/COFFE.jpeg" alt="QR Code">
+                </a>
+                <div class="qr-message">
+                    <p>Si te gustaría apoyarme en mis proyectos futuros, escanea este código QR.</p>
+                </div>
+            </div>
         </section>
     </div>
 
-<script src="https://cdn.jsdelivr.net/npm/emailjs-com@2/dist/email.min.js"></script>
-<script>
-    // Inicializar EmailJS con tu Public Key
-    emailjs.init("tu key");
+    <!-- Audio de fondo -->
+    <audio id="background-audio" loop>
+        <source src="Audio/atmosphere-sound.mp3" type="audio/mpeg">
+        Tu navegador no soporta el elemento de audio.
+    </audio>
 
-    // Obtener el formulario del DOM
-    const form = document.getElementById('contactForm');
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script>
+        // Inicializar Particles.js para el fondo
+        particlesJS("particles-js", {
+            particles: {
+                number: {
+                    value: 80,
+                    density: {
+                        enable: true,
+                        value_area: 800
+                    }
+                },
+                color: {
+                    value: "#00ff00"
+                },
+                shape: {
+                    type: "circle",
+                    stroke: {
+                        width: 0,
+                        color: "#fff"
+                    }
+                },
+                opacity: {
+                    value: 0.5,
+                    random: true,
+                    anim: {
+                        enable: true,
+                        speed: 1,
+                        opacity_min: 0.1,
+                        sync: false
+                    }
+                },
+                size: {
+                    value: 3,
+                    random: true,
+                    anim: {
+                        enable: false,
+                        speed: 4,
+                        size_min: 0.1,
+                        sync: false
+                    }
+                },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: "#00ff00",
+                    opacity: 0.4,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 2,
+                    direction: "none",
+                    random: false,
+                    straight: false,
+                    out_mode: "out",
+                    bounce: false
+                }
+            },
+            interactivity: {
+                detect_on: "canvas",
+                events: {
+                    onhover: {
+                        enable: true,
+                        mode: "repulse"
+                    },
+                    onclick: {
+                        enable: true,
+                        mode: "push"
+                    }
+                }
+            },
+            retina_detect: true
+        });
 
-    // Agregar el evento 'submit' al formulario
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
+        // Reproducir el audio solo después de interactuar con la página
+        document.body.addEventListener('click', () => {
+            const audio = document.getElementById('background-audio');
+            if (audio.paused) {
+                audio.play();
+            }
+        });
 
-        const formData = {
-            to_name: "Armando Espinosa",
-            from_name: document.getElementById('nombre').value,
-            message: document.getElementById('mensaje').value,
-            reply_to: document.getElementById('correo').value,
-        };
+        // Inicializar EmailJS con tu Public Key
+        emailjs.init("tu key");
 
-        emailjs.send("service_lumkeaj", "template_p1ayfz6", formData)
-            .then(() => {
-                alert('¡Mensaje enviado exitosamente!');
-                form.reset();
-            })
-            .catch((error) => {
-                alert('Hubo un error al enviar el mensaje. Intenta nuevamente.');
-                console.error(error);
-            });
-    });
-</script>
+        // Obtener el formulario del DOM
+        const form = document.getElementById('contactForm');
 
+        // Agregar el evento 'submit' al formulario
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const formData = {
+                to_name: "Armando Espinosa",
+                from_name: document.getElementById('nombre').value,
+                message: document.getElementById('mensaje').value,
+                reply_to: document.getElementById('correo').value,
+            };
+
+            emailjs.send("service_lumkeaj", "template_p1ayfz6", formData)
+                .then(() => {
+                    alert('¡Mensaje enviado exitosamente!');
+                    form.reset();
+                })
+                .catch((error) => {
+                    alert('Hubo un error al enviar el mensaje. Intenta nuevamente.');
+                    console.error(error);
+                });
+        });
+    </script>
 </body>
 </html>
+

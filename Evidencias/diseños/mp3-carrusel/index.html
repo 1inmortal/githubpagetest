@@ -1,65 +1,313 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Carrusel Musical - Ambientes Dinámicos</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Carrusel Musical - Ambientes Dinámicos</title>
+    <style>
+        /* Variables para personalizar colores */
+        :root {
+            --bg-color: #000000;
+            --text-color: #ffffff;
+            --active-color: #007BFF;
+            --button-bg: rgba(0, 0, 0, 0.5);
+            --button-hover: rgba(255, 255, 255, 0.2);
+            --player-bg: #1a1a1a;
+        }
+
+        /* General Styles */
+        body {
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            color: var(--text-color);
+            overflow: hidden;
+            transition: background-color 0.5s ease-in-out;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--bg-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Video de fondo */
+        video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+        }
+
+        /* Animación de entrada */
+        body.fade-in {
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Contenedor Principal */
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+            z-index: 1;
+            width: 100%;
+            max-width: 1000px;
+            text-align: center;
+        }
+
+        /* Título */
+        .title {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            color: #00ff00;
+            text-shadow: 0px 0px 10px rgba(0, 255, 0, 0.8);
+        }
+
+        /* Carrusel */
+        .carousel-container {
+            position: relative;
+            max-width: 90%;
+            overflow: hidden;
+            margin: 20px auto;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .carousel {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .slide {
+            min-width: 100%;
+            height: 300px; /* Tamaño reducido para las imágenes */
+            position: relative;
+            margin: 0 auto;
+            border-radius: 20px;
+        }
+
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 20px;
+            filter: brightness(0.8);
+        }
+
+        /* Botones de navegación */
+        button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--button-bg);
+            color: var(--text-color);
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 50%;
+            z-index: 1000;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background: var(--button-hover);
+        }
+
+        .prev {
+            left: 20px;
+        }
+
+        .next {
+            right: 20px;
+        }
+
+        /* Music Player */
+        .music-player {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--player-bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+
+        #audioPlayer {
+            flex-grow: 1;
+        }
+
+        .track-info {
+            margin-left: 15px;
+        }
+
+        /* Partículas */
+        .particles {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            background: radial-gradient(circle, rgba(0,0,0,1) 0%, rgba(38,38,38,1) 100%);
+            pointer-events: none;
+            animation: particles 30s infinite;
+        }
+
+        @keyframes particles {
+            0%, 100% {
+                background-position: 0 0;
+            }
+            50% {
+                background-position: 100px 100px;
+            }
+        }
+
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .carousel-container {
+                max-width: 95%;
+            }
+
+            .slide {
+                min-width: 90%; /* Asegura que las imágenes se adapten al tamaño de pantalla */
+            }
+
+            .title {
+                font-size: 2rem;
+            }
+
+            .music-player {
+                flex-direction: column;
+                padding: 20px;
+            }
+
+            #audioPlayer {
+                width: 100%;
+            }
+
+            .track-info {
+                margin-left: 0;
+                text-align: center;
+                margin-top: 10px;
+            }
+
+            button {
+                padding: 15px 25px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="particles"></div>
-  <header class="header">
-    <h1>Carrusel Musical - Slowed & Reverb</h1>
-  </header>
-  <main>
-    <div class="carousel-container">
-      <div class="carousel">
-        <!-- Carrusel dinámico -->
-        <div class="slide" data-color="#1a1a2e" data-audio="mp3/KORDHELL.mp3">
-          <img src="images/slide1.jpg" alt="Imagen 1">
+    <!-- Video de fondo (agrega el link de tu video aquí) -->
+    <video autoplay muted loop>
+        <source src="mp4/mp4-falla.mp4" type="video/mp4"> <!-- Reemplaza con el link de tu video -->
+        Tu navegador no soporta el elemento de video.
+    </video>
+
+    <!-- Contenedor Principal -->
+    <div class="main-container">
+        <h1 class="title">Carrusel Musical - Slowed & Reverb</h1>
+
+        <!-- Carrusel -->
+        <div class="carousel-container">
+            <div class="carousel">
+                <div class="slide" data-color="#1a1a2e" data-audio="mp3/KORDHELL.mp3">
+                    <img src="img/DEMBO.jpeg" alt="Imagen 1">
+                </div>
+                <div class="slide" data-color="#16213e" data-audio="mp3/MAQUINA DE GUERRA.mp3">
+                    <img src="img/LOCURA.jpeg" alt="Imagen 2">
+                </div>
+                <div class="slide" data-color="#0f3460" data-audio="mp3/PROTECTION.mp3">
+                    <img src="img/GALACTICO.jpeg" alt="Imagen 3">
+                </div>
+                <div class="slide" data-color="#533483" data-audio="mp3/Return to Zero Beztebya.mp3">
+                    <img src="img/RETURN TO ZERO.jpeg" alt="Imagen 4">
+                </div>
+                <div class="slide" data-color="#4a4e69" data-audio="mp3/RUSE SLOWED.mp3">
+                    <img src="img/IMPERIUM.jpeg" alt="Imagen 5">
+                </div>
+                <div class="slide" data-color="#22223b" data-audio="mp3/ZUMA JUMP.mp3">
+                    <img src="img/UNIVERSO.jpg" alt="Imagen 6">
+                </div>
+            </div>
+            <button class="prev">❮</button>
+            <button class="next">❯</button>
         </div>
-        <div class="slide" data-color="#16213e" data-audio="mp3/MAQUINA DE GUERRA.mp3">
-          <img src="images/slide2.jpg" alt="Imagen 2">
+
+        <!-- Reproductor de música -->
+        <div class="music-player">
+            <audio id="audioPlayer" controls>
+                <source src="" type="audio/mpeg">
+                Tu navegador no soporta el formato de audio.
+            </audio>
+            <div class="track-info">
+                <span id="track-title">Selecciona una pista</span>
+            </div>
         </div>
-        <div class="slide" data-color="#0f3460" data-audio="mp3/PROTECTION.mp3">
-          <img src="images/slide3.jpg" alt="Imagen 3">
-        </div>
-        <div class="slide" data-color="#533483" data-audio="mp3/Return to Zero Beztebya.mp3">
-          <img src="img/RETURN TO ZERO.jpg" alt="Imagen 4">
-        </div>
-        <div class="slide" data-color="#4a4e69" data-audio="mp3/RUSE SLOWED.mp3">
-          <img src="images/slide5.jpg" alt="Imagen 5">
-        </div>
-        <div class="slide" data-color="#22223b" data-audio="mp3/ZUMA JUMP.mp3">
-          <img src="images/slide6.jpg" alt="Imagen 6">
-        </div>
-        <div class="slide" data-color="#8e9aaf" data-audio="music/track7.wap">
-          <img src="images/slide7.jpg" alt="Imagen 7">
-        </div>
-        <div class="slide" data-color="#505050" data-audio="music/track8.wap">
-          <img src="images/slide8.jpg" alt="Imagen 8">
-        </div>
-        <div class="slide" data-color="#3b3b3b" data-audio="music/track9.wap">
-          <img src="images/slide9.jpg" alt="Imagen 9">
-        </div>
-        <div class="slide" data-color="#101010" data-audio="music/track10.wap">
-          <img src="images/slide10.jpg" alt="Imagen 10">
-        </div>
-      </div>
-      <button class="prev">❮</button>
-      <button class="next">❯</button>
     </div>
 
-    <div class="music-player">
-      <audio id="audioPlayer" controls>
-        <source src="" type="audio/wap">
-        Tu navegador no soporta el formato de audio.
-      </audio>
-      <div class="track-info">
-        <span id="track-title">Selecciona una pista</span>
-      </div>
-    </div>
-  </main>
-  <script src="script.js"></script>
+    <script>
+        // Variables para el carrusel
+        const carousel = document.querySelector('.carousel');
+        const slides = document.querySelectorAll('.slide');
+        const prevButton = document.querySelector('.prev');
+        const nextButton = document.querySelector('.next');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const trackTitle = document.getElementById('track-title');
+        let currentIndex = 0;
+
+        // Cambiar a la diapositiva actual
+        function updateCarousel() {
+            const currentSlide = slides[currentIndex];
+            const color = currentSlide.getAttribute('data-color');
+            const audioSrc = currentSlide.getAttribute('data-audio');
+            
+            // Actualizar estilos
+            document.body.style.backgroundColor = color;
+            
+            // Actualizar el audio
+            audioPlayer.src = audioSrc;
+            audioPlayer.play();
+            
+            // Actualizar la posición del carrusel
+            carousel.style.transform = `translateX(-${currentIndex * 100}%)`;
+            
+            // Cambiar título
+            trackTitle.textContent = `Reproduciendo: Pista ${currentIndex + 1}`;
+        }
+
+        // Botones para moverse
+        prevButton.addEventListener('click', () => {
+            currentIndex = (currentIndex - 1 + slides.length) % slides.length;
+            updateCarousel();
+        });
+
+        nextButton.addEventListener('click', () => {
+            currentIndex = (currentIndex + 1) % slides.length;
+            updateCarousel();
+        });
+
+        // Reproducir la primera canción al cargar
+        document.addEventListener('DOMContentLoaded', updateCarousel);
+    </script>
 </body>
 </html>
