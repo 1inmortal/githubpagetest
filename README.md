@@ -40,7 +40,8 @@ Paso 3: Abrir el Proyecto
 Para abrir el proyecto en tu navegador, simplemente abre el archivo index.html. Puedes hacerlo de dos maneras:
 
 Manualmente: Haz doble clic en index.html para abrirlo en tu navegador.
-Desde la terminal: Si usas una terminal, puedes usar un servidor local. Por ejemplo, si tienes instalado Live Server en Visual Studio Code, puedes iniciar el servidor y ver tu proyecto en vivo.
+Desde la terminal: Si usas una terminal, puedes usar un servidor local.
+Por ejemplo, si tienes instalado Live Server en Visual Studio Code, puedes iniciar el servidor y ver tu proyecto en vivo.
 Uso
 Este sitio web está diseñado para [describe las funciones del sitio, lo que hace la página, cómo se interactúa con ella, etc.].
 
