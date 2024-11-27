@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Menú Web</title>
+    <style>
+        /* Reseteo básico */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Configuración global del body */
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #000;
+            color: #ffffff;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Fondo del efecto Matrix */
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+
+        /* Estilo del menú */
+        .menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column; /* Mantener diseño vertical */
+            gap: 25px; /* Incrementar espacio entre los botones */
+            text-align: center;
+        }
+
+        /* Botones del menú */
+        .menu li a {
+            text-decoration: none;
+            font-size: 18px;
+            color: #00ff00;
+            font-weight: bold;
+            padding: 15px 30px;
+            background: rgba(0, 255, 0, 0.1);
+            border: 2px solid #00ff00;
+            border-radius: 25px;
+            transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Efecto hover en los botones */
+        .menu li a:hover {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 6px 12px rgba(0, 255, 0, 0.5);
+        }
+
+        /* Estilo para la lista filtrada */
+        .filter-list {
+            display: none;
+            list-style: none;
+            margin-top: 20px;
+            padding: 10px;
+            background: rgba(0, 255, 0, 0.1);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+        }
+
+        /* Estilo del botón de filtro */
+        .filter-button {
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+            padding: 12px 25px;
+            font-size: 18px;
+            font-weight: bold;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s ease, color 0.3s ease;
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+        }
+
+        .filter-button:hover {
+            background: rgba(0, 255, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Menú -->
+    <div>
+        <button class="filter-button" onclick="toggleMenu()">Mostrar Páginas</button>
+        <ul class="filter-list" id="pageList">
+            <li><a href="webs/">Archivo 1</a></li>
+            <li><a href="archivo2.html">Archivo 2</a></li>
+            <li><a href="archivo3.html">Archivo 3</a></li>
+            <li><a href="archivo4.html">Archivo 4</a></li>
+            <li><a href="archivo5.html">Archivo 5</a></li>
+            <li><a href="archivo6.html">Archivo 6</a></li>
+            <li><a href="archivo7.html">Archivo 7</a></li>
+            <li><a href="archivo8.html">Archivo 8</a></li>
+            <li><a href="archivo9.html">Archivo 9</a></li>
+            <li><a href="archivo10.html">Archivo 10</a></li>
+        </ul>
+    </div>
+
+    <!-- Efecto Matrix -->
+    <canvas id="matrix"></canvas>
+
+    <!-- Audio de fondo -->
+    <audio id="background-audio" autoplay loop>
+        <source src="Audio/bit2-bass-beat-slow.mp3" type="audio/mpeg">
+        Tu navegador no soporta el elemento de audio.
+    </audio>
+
+    <script>
+        // Configuración del efecto Matrix
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            // Ajustar el canvas al tamaño de la pantalla
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        resizeCanvas();
+
+        // Caracteres para el efecto Matrix
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%';
+        const matrixChars = characters.split('');
+
+        // Configuración de columnas
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        // Dibujar el efecto Matrix
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#00ff00';
+            ctx.font = `${fontSize}px monospace`;
+
+            drops.forEach((y, index) => {
+                const text = matrixChars[Math.floor(Math.random() * matrixChars.length)];
+                const x = index * fontSize;
+
+                ctx.fillText(text, x, y * fontSize);
+
+                if (y * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[index] = 0;
+                }
+
+                drops[index]++;
+            });
+        }
+
+        // Ejecutar el efecto
+        setInterval(drawMatrix, 50);
+
+        // Ajustar el canvas al redimensionar la ventana
+        window.addEventListener('resize', resizeCanvas);
+
+        // Opcional: Reproducir el audio solo después de interactuar con la página
+        // Esto es útil para navegadores que bloquean reproducción automática
+        document.body.addEventListener('click', () => {
+            const audio = document.getElementById('background-audio');
+            if (audio.paused) {
+                audio.play();
+            }
+        });
+
+        // Función para mostrar u ocultar la lista de páginas
+        function toggleMenu() {
+            const pageList = document.getElementById('pageList');
+            if (pageList.style.display === 'block') {
+                pageList.style.display = 'none';
+            } else {
+                pageList.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
