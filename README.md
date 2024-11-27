@@ -1,6 +1,5 @@
 # ¡Hola, soy Inmortal! 👋
 
-![Unicorn](https://c.tenor.com/GN73MKBawZYAAAAi/busy-cute.gif)
 
 Soy estudiante de Ingeniería en Computación, actualmente en la mitad de mi formación académica, con un interés particular en el desarrollo front-end y back-end. Actualmente, desempeño funciones como Desarrollador de Software en una empresa que se dedica a crear soluciones tecnológicas para la industria de la carpintería.
 
