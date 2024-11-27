@@ -2,7 +2,7 @@
 
 Una breve descripción de tu proyecto, su propósito y lo que hace.
 
-Este proyecto es un sitio web creado con **HTML**, **CSS** y **JavaScript**.
+Este proyecto es un sitio web creado con **HTML**, **CSS** y **JavaScript**. El objetivo es [describir el propósito de tu proyecto aquí].
 
 Puedes ver la página web en vivo aquí: [https://1inmortal.github.io/githubpagetest/](https://1inmortal.github.io/githubpagetest/)
 
