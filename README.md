@@ -11,7 +11,7 @@ Genera métricas que se pueden incrustar en todas partes, ¡incluido tu perfil d
 ¡Descubre cómo va tu actividad en GitHub! Aquí puedes ver las métricas de tus contribuciones, commits, repositorios y más.
 
 ### Visualización de Métricas
-![Métricas del usuario](https://github.com/lowlighter/metrics/blob/examples/metrics.classic.svg)
+![Métricas del usuario]([https://github.com/1inmortal/githubpagetest/edit/main/README.md])
 
 ---
 
