@@ -1,32 +1,229 @@
-# 💫 sobre mi:
-Mi pasión por el desarrollo de software me ha llevado a especializarme tanto en front-end como en back-end, con el objetivo de crear soluciones integrales y escalables. Como estudiante de Ingeniería en Computación, tengo un profundo interés en la resolución de problemas y en la construcción de sistemas funcionales y eficientes. Actualmente, trabajo en una empresa dedicada al diseño y desarrollo de sistemas para la industria de la carpintería, donde contribuyo a la creación de herramientas tecnológicas innovadoras.
+# 📊 Metrics de 1inmortal
 
-Más allá de mi trabajo, me esfuerzo constantemente por aprender nuevas tecnologías y mejorar mis habilidades. Me interesa particularmente el desarrollo con Nest.js, Angular y otras tecnologías que abarcan el desarrollo full-stack. Además, disfruto compartiendo mis conocimientos a través de contenido educativo sobre programación y tecnología en mis redes sociales.
+[![Continuous integration](https://github.com/lowlighter/metrics/actions/workflows/ci.yml/badge.svg)](https://github.com/lowlighter/metrics/actions/workflows/ci.yml)
 
-Estoy comprometido con la colaboración en proyectos de código abierto, buscando siempre contribuir al crecimiento de la comunidad tecnológica y enfrentar nuevos desafíos que me permitan seguir aprendiendo y evolucionando como profesional.
-
-
-## 🌐 Socials:
-[![Codepen](https://img.shields.io/badge/Codepen-000000?style=for-the-badge&logo=codepen&logoColor=white)](https://codepen.io/INM0RTAl) 
-
-# 💻 Tech Stack:
-![C++](https://img.shields.io/badge/c++-%2300599C.svg?style=for-the-badge&logo=c%2B%2B&logoColor=white) ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E) ![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white) ![PHP](https://img.shields.io/badge/php-%23777BB4.svg?style=for-the-badge&logo=php&logoColor=white) ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54) ![PowerShell](https://img.shields.io/badge/PowerShell-%235391FE.svg?style=for-the-badge&logo=powershell&logoColor=white) ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white) ![CSS3](https://img.shields.io/badge/css3-%231572B6.svg?style=for-the-badge&logo=css3&logoColor=white) ![Bootstrap](https://img.shields.io/badge/bootstrap-%238511FA.svg?style=for-the-badge&logo=bootstrap&logoColor=white) ![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=for-the-badge&logo=Flutter&logoColor=white) ![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white) ![MySQL](https://img.shields.io/badge/mysql-4479A1.svg?style=for-the-badge&logo=mysql&logoColor=white) ![Adobe Premiere Pro](https://img.shields.io/badge/Adobe%20Premiere%20Pro-9999FF.svg?style=for-the-badge&logo=Adobe%20Premiere%20Pro&logoColor=white) ![Adobe Photoshop](https://img.shields.io/badge/adobe%20photoshop-%2331A8FF.svg?style=for-the-badge&logo=adobe%20photoshop&logoColor=white) ![Adobe XD](https://img.shields.io/badge/Adobe%20XD-470137?style=for-the-badge&logo=Adobe%20XD&logoColor=#FF61F6) ![Blender](https://img.shields.io/badge/blender-%23F5792A.svg?style=for-the-badge&logo=blender&logoColor=white) ![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)
-# 📊 GitHub Stats:
-![](https://github-readme-stats.vercel.app/api?username=1inmortal&theme=tokyonight&hide_border=false&include_all_commits=false&count_private=false)<br/>
-![](https://github-readme-streak-stats.herokuapp.com/?user=1inmortal&theme=tokyonight&hide_border=false)<br/>
-![](https://github-readme-stats.vercel.app/api/top-langs/?username=1inmortal&theme=tokyonight&hide_border=false&include_all_commits=false&count_private=false&layout=compact)
-
-### 🔝 Top Contributed Repo
-![](https://github-contributor-stats.vercel.app/api?username=1inmortal&limit=5&theme=dark&combine_all_yearly_contributions=true)
+Genera métricas que se pueden incrustar en todas partes, ¡incluido tu perfil de GitHub! ¡Soporta usuarios, organizaciones e incluso repositorios!
 
 ---
-[![](https://visitcount.itsvg.in/api?id=1inmortal&icon=0&color=0)](https://visitcount.itsvg.in)
 
-  ## 💰 You can help me by Donating
-  [![BuyMeACoffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/inmortal) 
+## 📅 Actividad del Usuario
 
-  
-<!-- Proudly created with GPRM ( https://gprm.itsvg.in ) -->
+¡Descubre cómo va tu actividad en GitHub! Aquí puedes ver las métricas de tus contribuciones, commits, repositorios y más.
+
+### Visualización de Métricas
+![Métricas del usuario](https://github.com/lowlighter/metrics/blob/examples/metrics.classic.svg)
+
+---
+
+## 🧩 Plugins Disponibles
+
+Hay una variedad de **47 plugins** y **335 opciones** que puedes usar para personalizar tu perfil. Aquí hay algunos ejemplos de lo que puedes agregar:
+
+### 📅 Isometric Commit Calendar
+Agrega un calendario que muestra tus commits a lo largo del año.  
+[Ver más detalles](source/plugins/isocalendar/README.md)
+
+![Calendario de commits](https://github.com/lowlighter/metrics/blob/examples/metrics.plugin.isocalendar.svg)
+
+### 🈷️ Actividad por Lenguajes
+Con este plugin, puedes ver qué lenguajes de programación has utilizado más en tus repositorios.  
+[Ver más detalles](source/plugins/languages/README.md)
+
+![Lenguajes](https://github.com/lowlighter/metrics/blob/examples/metrics.plugin.languages.svg)
+
+### ✨ Stargazers (Estrellas en tu repositorio)
+Muestra las estrellas que han dado los usuarios a tus repositorios.  
+[Ver más detalles](source/plugins/stargazers/README.md)
+
+![Estrellas](https://github.com/lowlighter/metrics/blob/examples/metrics.plugin.stargazers.svg)
+
+---
+
+## 🖼️ Plantillas para tu Perfil
+
+Puedes cambiar la apariencia de las métricas con plantillas personalizadas. Algunas opciones son:
+
+- 📗 **Plantilla Clásica**: Ideal para mantener el diseño simple y efectivo.  
+  [Ver plantilla](source/templates/classic/README.md)
+
+- 📘 **Plantilla de Repositorio**: Muestra métricas centradas en los repositorios.  
+  [Ver plantilla](source/templates/repository/README.md)
+
+- 📙 **Plantilla de Terminal**: Perfecta si prefieres un diseño estilo consola.  
+  [Ver plantilla](source/templates/terminal/README.md)
+
+### Ejemplo de Plantilla Clásica
+![Ejemplo Clásico](https://github.com/lowlighter/metrics/blob/examples/metrics.classic.svg)
+
+---
+
+## 🌍 Métricas de Actividad
+
+Puedes integrar métricas adicionales sobre tu actividad reciente en GitHub, tus contribuciones, o incluso estadísticas sobre tu organización.
+
+### 🏅 Contribuidores de Repositorios
+Muestra las estadísticas sobre las contribuciones de tus repositorios.  
+[Ver plugin](source/plugins/contributors/README.md)
+
+![Contribuidores](https://github.com/lowlighter/metrics/blob/examples/metrics.plugin.contributors.svg)
+
+### 🧑‍🤝‍🧑 Personas Relacionadas
+Ve a los usuarios que más han interactuado con tus repositorios.  
+[Ver plugin](source/plugins/people/README.md)
+
+### 🗂️ Proyectos en GitHub
+Agrega métricas relacionadas con los proyectos de GitHub que sigues o que contribuyes.  
+[Ver plugin](source/plugins/projects/README.md)
+
+![Proyectos GitHub](https://github.com/lowlighter/metrics/blob/examples/metrics.plugin.projects.svg)
+
+---
+
+## 🎼 Actividad Musical
+
+Si eres fanático de la música, puedes incluir tu actividad musical reciente de Spotify, Apple Music, o cualquier otra plataforma integrada.
+
+### 🎼 Actividad en Música y Recomendaciones
+Muestra tu actividad musical reciente o las recomendaciones basadas en tu gusto.  
+[Ver plugin](source/plugins/music/README.md)
+
+![Música](https://github.com/lowlighter/metrics/blob/examples/metrics.plugin.music.playlist.svg)
+
+---
+
+## 🧑‍💻 Contribuciones y Actividad Reciente
+
+Haz un seguimiento de tus contribuciones y actividad en GitHub con las siguientes métricas:
+
+### 📆 Actividad Reciente
+Muestra las contribuciones de tus repositorios, incluyendo el número de commits, pull requests y más.  
+[Ver plugin](source/plugins/activity/README.md)
+
+![Actividad](https://github.com/lowlighter/metrics/blob/examples/metrics.plugin.activity.svg)
+
+### 🗓️ Calendario de Commits
+Visualiza los commits realizados en el año con un calendario isométrico.  
+[Ver plugin](source/plugins/calendar/README.md)
+
+![Calendario de Commits](https://github.com/lowlighter/metrics/blob/examples/metrics.plugin.calendar.svg)
+
+---
+
+## 📜 Licencia
+
+Este proyecto está bajo la **MIT License**.  
+*Copyright (c) 2020-present lowlighter.*
+
+---
+
+## 🚀 Contribuir
+
+Si estás interesado en contribuir a este proyecto, puedes hacerlo de las siguientes maneras:
+
+1. **Enviar un pull request**: Si tienes alguna idea o solución que quieras compartir, ¡envía un PR!
+
+2. **Abrir un issue**: Si encuentras un error o tienes alguna sugerencia, abre un issue en el repositorio.
+
+**Guía de Contribución**: [Guía de contribución](https://github.com/lowlighter/metrics/blob/master/CONTRIBUTING.md)  
+**Arquitectura del proyecto**: [Arquitectura](https://github.com/lowlighter/metrics/blob/master/ARCHITECTURE.md)  
+**Licencia del proyecto**: [Licencia](https://github.com/lowlighter/metrics/blob/master/LICENSE)
+
+---
+
+## ⚙️ Configuración
+
+Hay varias maneras de configurar las métricas para tu perfil de GitHub:
+
+1. **Usando GitHub Action**  
+   Puedes configurar las métricas con la acción de GitHub. Este método es muy recomendado para tener la mejor disponibilidad y rendimiento.
+
+2. **Usando una instancia compartida**  
+   Configura tu perfil fácilmente con la instancia compartida. ¡Solo toma un minuto!
+
+3. **Desplegando una instancia web**  
+   Si prefieres tener el control total, puedes desplegar una instancia en tu propio servidor.
+
+---
+
+## 🧩 Plugins y Personalización
+
+Hay muchos plugins que puedes agregar a tu perfil para personalizar tu presentación, como:
+
+- **📅 Calendario de Commits**
+- **🗂️ Repositorios más destacados**
+- **🎮 Actividad de videojuegos (Steam)**
+- **🌟 Estrellas y seguidores**
+- **🧑‍🤝‍🧑 Personas relacionadas con tus proyectos**
+
+¡Explora todos los plugins disponibles y encuentra los que más te gusten!
+
+---
+
+## 🌟 Recientes Actualizaciones
+
+- Se han añadido nuevas funcionalidades de personalización, ¡ahora puedes agregar más estadísticas!
+- ¡Métricas más detalladas para contribuciones en organizaciones y repositorios públicos!
+
+## 🎲 Comunidad
+
+Si deseas agregar más métricas o plantillas personalizadas, la comunidad tiene varios recursos útiles:
+
+- **16 Personalities**: [Ver plugin](source/plugins/community/16personalities/README.md)
+- **Crypto**: [Ver plugin](source/plugins/community/crypto/README.md)
+- **Stock Prices**: [Ver plugin](source/plugins/community/stock/README.md)
+- **Chess**: [Ver plugin](source/plugins/community/chess/README.md)
+
+---
+
+## 📲 Incrustar las métricas en tu perfil
+
+¡Ya estás listo para incrustar las métricas en tu perfil de GitHub! Para hacerlo, solo necesitas incluir las métricas generadas en tu archivo `README.md`. Puedes obtener imágenes actualizadas y dinámicas con las métricas, directamente desde este [enlace de inserción de métricas](https://metrics.lecoq.io/embed).
+
+---
+
+## 🧰 Configuración Adicional
+
+Si quieres más control, puedes configurar métricas adicionales como las **recientes contribuciones**, **estrellas de repositorios**, o incluso un resumen de tu **actividad de código**.
+
+---
+
+## ⚡ Características Especiales
+
+¡Ahora puedes ver tu **actividad de música** y otros datos interesantes como **las estrellas en tus repositorios** y **las contribuciones de otros usuarios**!
+
+**Métricas extra**:
+- **🌟 Estrellas en tu perfil**
+- **📊 Resumen de contribuciones recientes**
+- **🎮 Actividad en Steam o videojuegos**
+
+## 📊 Progreso y Métricas
+
+Te invitamos a explorar cómo puedes integrar **todas estas métricas** en tu perfil y **compartir tu progreso** con la comunidad. ¡No te olvides de visitar el [repositorio de métricas](https://github.com/lowlighter/metrics) para ver más detalles!
+
+---
+
+## 🏆 Reconocimientos
+
+¡Gracias por usar esta herramienta y por contribuir a la comunidad de GitHub!  
+Recuerda que siempre puedes **enviar tus sugerencias**, **informar problemas** o **mejorar la configuración de las métricas**.
+
+---
+
+## 🎲 Más Plantillas
+
+Si prefieres un diseño diferente, hay más plantillas para elegir:
+
+- **📗 Plantilla Clásica**: Simple y elegante.
+- **📘 Plantilla de Repositorio**: Perfecta para proyectos.
+- **📙 Plantilla de Terminal**: Para los amantes del estilo de consola.
+
+---
+
+## 🚀 Usabilidad
+
+Este proyecto es **open-source** y está diseñado para ayudar a cualquier desarrollador a mostrar estadísticas detalladas de su actividad en GitHub de forma atractiva y fácil de integrar.
+
+---
 
 
 
