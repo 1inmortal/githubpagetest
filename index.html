@@ -3,29 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Menú Estilo Matrix</title>
+    <title>INMORTAL - Interfaz Terminal</title>
     <style>
-        /* Reseteo básico */
+        /* ========================================================================
+            Reset Básico
+        ======================================================================== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        /* Configuración global del body */
+        /* ========================================================================
+            Variables CSS para Temas y Colores
+        ======================================================================== */
+        :root {
+            --background-color: #000000;
+            --text-color: #00FF00;
+            --secondary-text-color: #00FF00;
+            --link-color: #00FF00;
+            --button-bg: #00FF00;
+            --button-text: #000000;
+            --info-bg: #111111;
+            --footer-bg: #111111;
+            --border-color: #00FF00;
+            --button-bg-hover: #00CC00;
+            --ticker-color: #00FF00;
+            --background-opacity: rgba(0, 0, 0, 0.85);
+        }
+
+        /* ========================================================================
+            Configuración Global del Body
+        ======================================================================== */
         body {
-            font-family: 'Arial', sans-serif;
-            background: #000;
-            color: #ffffff;
-            overflow: hidden;
+            font-family: 'Courier New', Courier, monospace;
+            background: var(--background-color);
+            color: var(--text-color);
+            overflow-x: hidden;
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             position: relative;
+            transition: background-color 0.5s, color 0.5s;
         }
 
-        /* Fondo del efecto Matrix */
+        /* ========================================================================
+            Fondo del efecto Matrix
+        ======================================================================== */
         canvas {
             position: absolute;
             top: 0;
@@ -33,75 +58,647 @@
             z-index: -1;
         }
 
-        /* Estilo del menú */
-        .menu {
-            list-style: none;
+        /* ========================================================================
+            Contenedor Principal Estilo Terminal
+        ======================================================================== */
+        .main-container {
+            background: var(--background-opacity);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+            max-width: 1000px;
+            width: 90%;
+            animation: fadeInTerminal 1.5s ease-out forwards;
+            opacity: 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ========================================================================
+            Animaciones de Aparición
+        ======================================================================== */
+        @keyframes fadeInTerminal {
+            0% { opacity: 0; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: var(--text-color) }
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        @keyframes slideDown {
+            0% {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInFromLeft {
+            0% {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            100% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* ========================================================================
+            Barra de Navegación Superior
+        ======================================================================== */
+        nav {
+            background-color: var(--info-bg);
             display: flex;
-            flex-direction: column; /* Mantener diseño vertical */
-            gap: 25px; /* Incrementar espacio entre los botones */
-            text-align: center;
+            justify-content: center;
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.5s;
+            animation: slideDown 1s ease-out forwards;
+            opacity: 0;
         }
 
-        /* Botones del menú */
-        .menu li a {
+        nav a {
+            color: var(--link-color);
             text-decoration: none;
+            margin: 0 20px;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            transition: color 0.3s, transform 0.3s;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            width: 0%;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background-color: var(--link-color);
+            transition: width 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--button-bg-hover);
+            transform: scale(1.1);
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        /* ========================================================================
+            Header con Animación de Tipeo
+        ======================================================================== */
+        header {
+            padding: 40px 20px;
+            text-align: center;
+            border-bottom: 2px solid var(--border-color);
+            position: relative;
+            z-index: 1;
+            animation: fadeIn 2s ease-in-out forwards;
+            opacity: 0;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            border-right: .15em solid var(--text-color);
+            width: 0;
+            animation: typing 3s steps(30, end) forwards, blink-caret .75s step-end infinite;
+            color: var(--text-color);
+            text-shadow: 0 0 10px var(--text-color), 0 0 20px var(--text-color);
+        }
+
+        header p {
+            font-size: 1.2rem;
+            color: var(--secondary-text-color);
+            opacity: 0;
+            animation: fadeIn 2s ease-in-out forwards;
+            animation-delay: 3.5s;
+        }
+
+        /* ========================================================================
+            Secciones de Contenido
+        ======================================================================== */
+        section {
+            display: none;
+            padding: 60px 20px;
+            text-align: center;
+            animation: fadeInSection 1s forwards;
+            z-index: 1;
+        }
+
+        section.active {
+            display: block;
+        }
+
+        @keyframes fadeInSection {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ========================================================================
+            Feed de Proyectos
+        ======================================================================== */
+        .feed {
+            background-color: #181818;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+            animation: fadeInSection 1s ease-out forwards;
+            opacity: 0;
+        }
+
+        .feed h2 {
+            color: var(--text-color);
+            font-size: 2rem;
+            margin-bottom: 15px;
+            transition: color 0.3s ease;
+        }
+
+        .feed h2 a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .feed h2 a:hover {
+            color: var(--button-bg-hover);
+            text-decoration: underline;
+        }
+
+        .feed-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #121212;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feed-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+        }
+
+        .feed-item span {
+            font-size: 14px;
+            color: #7f7f7f;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .feed-item p {
             font-size: 16px;
-            color: #00ff00;
-            font-weight: bold;
-            padding: 10px 20px;
-            background: rgba(0, 255, 0, 0.1);
-            border: 2px solid #00ff00;
-            border-radius: 25px;
-            transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+            color: var(--secondary-text-color);
+            line-height: 1.5;
         }
 
-        /* Efecto hover en los botones */
-        .menu li a:hover {
-            background: #00ff00;
-            color: #000;
-            box-shadow: 0 6px 12px rgba(0, 255, 0, 0.5);
+        /* ========================================================================
+            Botones de Acción Animados
+        ======================================================================== */
+        .btn {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            font-size: 1.2rem;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+            margin-top: 20px;
+            display: inline-block;
+            text-decoration: none;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            animation: buttonEffect 2s infinite;
         }
 
-        /* Estilo del enlace de contribuciones */
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300%;
+            height: 300%;
+            background: rgba(0, 255, 0, 0.2);
+            transition: all 0.5s ease;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            z-index: -1;
+        }
+
+        .btn:hover::before {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .btn:hover {
+            background-color: var(--button-bg-hover);
+            color: #fff;
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 0 15px var(--button-bg-hover), 0 0 25px var(--button-bg-hover), 0 0 35px var(--button-bg-hover);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 10px var(--button-bg), 0 0 20px var(--button-bg), 0 0 30px var(--button-bg);
+        }
+
+        @keyframes buttonEffect {
+            0% { box-shadow: 0 0 5px var(--button-bg); }
+            50% { box-shadow: 0 0 20px var(--button-bg); }
+            100% { box-shadow: 0 0 5px var(--button-bg); }
+        }
+
+        /* ========================================================================
+            Botón de Contribuciones Animado
+        ======================================================================== */
         .contribution-button {
             position: fixed;
             bottom: 20px;
             right: 20px;
             z-index: 1000;
+            animation: blinkEffect 2s infinite;
+            transition: transform 0.3s ease;
+        }
+
+        @keyframes blinkEffect {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .contribution-button img {
+            width: 120px;
+            height: auto;
+            transition: transform 0.5s ease;
+        }
+
+        .contribution-button:hover img {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        /* ========================================================================
+            Barra de Música Animada
+        ======================================================================== */
+        .music-bar {
+            background-color: #1e1e1e;
+            padding: 15px 25px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+            animation: bounceMusicBar 3s infinite;
+            margin-top: 25px;
+        }
+
+        @keyframes bounceMusicBar {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .music-bar .icon {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .music-bar .icon:hover {
+            transform: rotate(360deg);
+        }
+
+        .music-bar .btn {
+            margin: 0 10px;
+        }
+
+        /* ========================================================================
+            Ticker de Texto Dinámico
+        ======================================================================== */
+        .ticker {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--info-bg);
+            color: var(--ticker-color);
+            font-size: 18px;
+            padding: 12px 0;
+            overflow: hidden;
+            white-space: nowrap;
+            box-shadow: 0 -2px 15px rgba(0, 255, 0, 0.5);
+        }
+
+        .ticker-text {
+            display: inline-block;
+            padding-left: 100%;
+            animation: tickerMove 60s linear infinite;
+        }
+
+        @keyframes tickerMove {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* ========================================================================
+            Animaciones de Fondo Decorativas
+        ======================================================================== */
+        .background-decoration {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 150%;
+            height: 150%;
+            background: radial-gradient(circle, rgba(0,255,0,0.05) 0%, rgba(0,0,0,0) 70%);
+            transform: translate(-50%, -50%) rotate(0deg);
+            animation: rotateBackground 120s linear infinite;
+            z-index: 1;
+            opacity: 0.1;
+        }
+
+        @keyframes rotateBackground {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* ========================================================================
+            Partículas Flotantes de Fondo
+        ======================================================================== */
+        .particle {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 8px;
+            height: 8px;
+            background: rgba(0, 255, 0, 0.6);
+            border-radius: 50%;
+            animation: float 10s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            from { transform: translateY(0) translateX(0); opacity: 1; }
+            to { transform: translateY(-800px) translateX(400px); opacity: 0; }
+        }
+
+        /* ========================================================================
+            Responsive Design para Pantallas de PC
+        ======================================================================== */
+        @media (min-width: 1024px) {
+            .main-container {
+                padding: 50px;
+                max-width: 800px;
+            }
+
+            nav a {
+                font-size: 1.2rem;
+                margin: 0 15px;
+            }
+
+            header h1 {
+                font-size: 3rem;
+            }
+
+            header p {
+                font-size: 1.2rem;
+            }
+
+            .btn {
+                font-size: 1.2rem;
+                padding: 15px 30px;
+            }
+
+            .music-bar .icon {
+                width: 60px;
+                height: 60px;
+            }
+
+            .ticker {
+                font-size: 20px;
+                padding: 15px 0;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- Menú -->
-    <ul class="menu">
-        <li>
-            <a href="Inicio.html">Inicio</a>
-        </li>
-        <li>
-            <a href="Evidencias/Menu.html">Evidencias</a>
-        </li>
-        <li>
-            <a href="contacto.html">Contacto</a>
-        </li>
-    </ul>
-
-    <!-- Efecto Matrix -->
+    <!-- ========================================================================
+        Elementos de Fondo Decorativos
+    ======================================================================== -->
     <canvas id="matrix"></canvas>
+    <div class="background-decoration"></div>
 
-    <!-- Audio de fondo -->
+    <!-- ========================================================================
+        Contenedor Principal
+    ======================================================================== -->
+    <div class="main-container">
+
+        <!-- Header con Animación de Tipeo -->
+        <header>
+            <h1>INMORTAL</h1>
+            <p>Portafolio</p>
+        </header>
+
+        <!-- Barra de Navegación -->
+        <nav>
+            <a href="Inicio.html">Inicio</a>
+            <a href="Evidencias/Menu.html">Evidencias</a>
+            <a href="contacto.html">Contacto</a>
+        </nav>
+
+        <!-- Sección Inicio -->
+        <section id="inicio" class="active">
+            <h2>Bienvenido a INMORTAL</h2>
+            <p>Explora nuestros proyectos y descubre más sobre nuestro portafolio.</p>
+            <p><a href="Evidencias/Menu.html" class="btn">Ver Proyectos</a></p>
+        </section>
+
+        <!-- Sección Evidencias (Proyectos) -->
+        <section id="evidencias">
+            <h2>Proyectos Destacados</h2>
+            <div class="feed">
+                <div class="feed-item">
+                    <h2><a href="Evidencias/Menu.html">PROYECTOS</a></h2>
+                    <span>Sábado, 23 de noviembre de 2024</span>
+                    <p>Este proyecto explora la intersección de caminos y decisiones. Se centra en cómo las personas enfrentan momentos clave en sus vidas y las repercusiones de esas decisiones.</p>
+                </div>
+                <div class="feed-item">
+                    <h2><a href="#">Pecas de bambú</a></h2>
+                    <span>Jueves, 21 de noviembre de 2024</span>
+                    <p>Un proyecto experimental que mezcla arte digital y tecnología. Utiliza texturas inspiradas en la naturaleza, como las pecas de bambú, para crear una experiencia visual única.</p>
+                </div>
+                <div class="feed-item">
+                    <h2><a href="#">Sueños digitales</a></h2>
+                    <span>Lunes, 25 de noviembre de 2024</span>
+                    <p>Este proyecto explora la fusión entre los sueños y la tecnología en un entorno virtual. Busca inspirar reflexiones sobre la realidad y la percepción digital en el futuro.</p>
+                </div>
+            </div>
+            <p><a href="contacto.html" class="btn">Contactar</a></p>
+        </section>
+
+        <!-- Sección Contacto -->
+        <section id="contacto">
+            <h2>Contacto</h2>
+            <div class="info">
+                <h3>Información de Contacto</h3>
+                <p>Email: <a href="mailto:info@inmortal.com">info@inmortal.com</a></p>
+                <p>Teléfono: +123 456 7890</p>
+
+                <!-- Formulario de Contacto -->
+                <form action="tu_script_de_procesamiento.php" method="POST">
+                    <label for="nombre">Nombre:</label>
+                    <input type="text" id="nombre" name="nombre" placeholder="Tu nombre" required>
+
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" placeholder="Tu email" required>
+
+                    <label for="mensaje">Mensaje:</label>
+                    <textarea id="mensaje" name="mensaje" placeholder="Tu mensaje" required></textarea>
+
+                    <button type="submit" class="btn">Enviar</button>
+                </form>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- ========================================================================
+        Botón de Contribuciones
+    ======================================================================== -->
+    <a href="https://www.buymeacoffee.com/Inmortal" class="contribution-button">
+        <img src="https://img.buymeacoffee.com/button-api/?text=Contribuciones&emoji=💻️&slug=Inmortal&button_colour=001905&font_colour=ffffff&font_family=Lato&outline_colour=ffffff&coffee_colour=FFDD00" alt="Contribuciones">
+    </a>
+
+    <!-- ========================================================================
+        Ticker de Texto
+    ======================================================================== -->
+    <div class="ticker">
+        <div class="ticker-text">
+            ¡Bienvenido a INMORTAL! Últimas actualizaciones: Nuevos proyectos y mejoras en la página en proceso. ¡Mantente al tanto! | 
+            Anuncio: La próxima versión incluirá mejoras de rendimiento y nuevas funcionalidades interactivas. ¡No te lo pierdas! | 
+            Proyecto destacado: "Sueños Digitales", explorando la fusión entre la tecnología y los sueños en un entorno inmersivo. Más detalles en la sección de Proyectos. | 
+            Recordatorio: Puedes contribuir al proyecto a través del botón de "Contribuciones" en la página. Apreciamos tu apoyo para seguir creando contenido innovador. | 
+            Tip de seguridad: Recuerda actualizar tus contraseñas regularmente y activar la autenticación en dos pasos para proteger tu información. ¡Mantente seguro en línea!
+        </div>
+    </div>
+
+    <!-- ========================================================================
+        Audio de Fondo
+    ======================================================================== -->
     <audio id="background-audio" autoplay loop>
         <source src="Menu.mp3" type="audio/mpeg">
         Tu navegador no soporta el elemento de audio.
     </audio>
 
-    <!-- Enlace de contribuciones en la esquina inferior derecha -->
-    <a href="https://www.buymeacoffee.com/Inmortal" class="contribution-button">
-        <img src="https://img.buymeacoffee.com/button-api/?text=Contribuciones&emoji=💻️&slug=Inmortal&button_colour=001905&font_colour=ffffff&font_family=Lato&outline_colour=ffffff&coffee_colour=FFDD00" />
-    </a>
-
+    <!-- ========================================================================
+        JavaScript
+    ======================================================================== -->
     <script>
+        // ========================================================================
+        // Actualizar la Hora Local
+        // ========================================================================
+        function updateLocalTime() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            // Si tienes un elemento con id 'hora-local', puedes actualizarlo aquí
+            // document.getElementById('hora-local').textContent = `${hours}:${minutes}:${seconds}`;
+        }
+
+        // Actualizar hora cada segundo
+        setInterval(updateLocalTime, 1000);
+        updateLocalTime(); // Llamar una vez al cargar la página
+
+        // ========================================================================
+        // Control de Audio de Fondo
+        // ========================================================================
+        const audio = new Audio('Menu.mp3');
+        audio.loop = true;
+        audio.volume = 0.5;
+        let isPlaying = false;
+
+        // Botón Play/Pause
+        // Asegúrate de tener un botón con id 'playPauseBtn' si deseas controlarlo
+        /*
+        document.getElementById('playPauseBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            if (isPlaying) {
+                audio.pause();
+                document.getElementById('playPauseBtn').textContent = 'Play';
+            } else {
+                audio.play();
+                document.getElementById('playPauseBtn').textContent = 'Pause';
+            }
+            isPlaying = !isPlaying;
+        });
+        */
+
+        // Reproducir el audio solo después de interactuar con la página
+        document.body.addEventListener('click', () => {
+            if (audio.paused && !isPlaying) {
+                audio.play();
+                isPlaying = true;
+                // Si tienes un botón para mostrar el estado, actualízalo aquí
+                // document.getElementById('playPauseBtn').textContent = 'Pause';
+            }
+        });
+
+        // ========================================================================
+        // Generación Dinámica de Partículas Flotantes
+        // ========================================================================
+        const numParticles = 30; // Reducido para mejor rendimiento
+
+        for (let i = 0; i < numParticles; i++) {
+            const particle = document.createElement('div');
+            particle.classList.add('particle');
+            particle.style.left = `${Math.random() * 100}%`;
+            particle.style.top = `${Math.random() * 100}%`;
+            particle.style.animationDuration = `${Math.random() * 5 + 5}s`;
+            particle.style.animationDelay = `${Math.random() * 10}s`;
+            particle.style.width = `${Math.random() * 5 + 5}px`;
+            particle.style.height = particle.style.width;
+            document.body.appendChild(particle);
+        }
+
+        // ========================================================================
+        // Función para mostrar secciones
+        // ========================================================================
+        function showSection(section) {
+            const sections = document.querySelectorAll('section');
+            sections.forEach(sec => sec.classList.remove('active'));
+            document.getElementById(section).classList.add('active');
+        }
+
+        // ========================================================================
         // Configuración del efecto Matrix
+        // ========================================================================
         const canvas = document.getElementById('matrix');
         const ctx = canvas.getContext('2d');
 
@@ -122,12 +719,22 @@
         const columns = canvas.width / fontSize;
         const drops = Array(Math.floor(columns)).fill(1);
 
+        // Ajustar columnas al redimensionar la ventana
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            const newColumns = canvas.width / fontSize;
+            drops.length = 0;
+            for (let i = 0; i < Math.floor(newColumns); i++) {
+                drops[i] = Math.floor(Math.random() * 20) + 1;
+            }
+        });
+
         // Dibujar el efecto Matrix
         function drawMatrix() {
             ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            ctx.fillStyle = '#00ff00';
+            ctx.fillStyle = 'var(--link-color)';
             ctx.font = `${fontSize}px monospace`;
 
             drops.forEach((y, index) => {
@@ -146,18 +753,8 @@
 
         // Ejecutar el efecto
         setInterval(drawMatrix, 50);
-
-        // Ajustar el canvas al redimensionar la ventana
-        window.addEventListener('resize', resizeCanvas);
-
-        // Opcional: Reproducir el audio solo después de interactuar con la página
-        document.body.addEventListener('click', () => {
-            const audio = document.getElementById('background-audio');
-            if (audio.paused) {
-                audio.play();
-            }
-        });
     </script>
+
 </body>
 </html>
 
