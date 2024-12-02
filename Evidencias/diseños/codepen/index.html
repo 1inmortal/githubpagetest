@@ -1,59 +1,507 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="random_csrf_token_value">
   <title>INMORTAL Profile</title>
 
-  <!-- Fonts and Styles -->
+  <!-- Fuentes y Estilos -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap">
-  <link rel="stylesheet" href="style.css">
+  
+  <style>
+    /* ========================================================================
+        General Styling
+    ======================================================================== */
+    body {
+      font-family: 'Lato', sans-serif;
+      background: linear-gradient(135deg, #1a1a1a, #333);
+      color: #f1f1f1;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh; /* Permite que el contenido se expanda */
+      display: flex;
+      justify-content: center;
+      align-items: flex-start; /* Alinea los contenidos al inicio para permitir scroll */
+      position: relative;
+      transition: background-color 0.5s, color 0.5s;
+    }
+
+    h1, h2, h3 {
+      color: #e0e0e0;
+    }
+
+    p {
+      color: #b0b0b0;
+    }
+
+    /* ========================================================================
+        Fondo Animado Estilo Terminal
+    ======================================================================== */
+    .animated-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, rgba(0,255,0,0.1) 25%, transparent 25%),
+                  linear-gradient(-45deg, rgba(0,255,0,0.1) 25%, transparent 25%),
+                  linear-gradient(45deg, transparent 75%, rgba(0,255,0,0.1) 75%),
+                  linear-gradient(-45deg, transparent 75%, rgba(0,255,0,0.1) 75%);
+      background-size: 50px 50px;
+      z-index: 0;
+      animation: moveBackground 60s linear infinite;
+      pointer-events: none; /* Permite interactuar con elementos debajo */
+    }
+
+    @keyframes moveBackground {
+      0% { background-position: 0 0, 0 0, 0 0, 0 0; }
+      100% { background-position: 100px 100px, -100px 100px, 100px -100px, -100px -100px; }
+    }
+
+    /* ========================================================================
+        Header
+    ======================================================================== */
+    .header {
+      text-align: center;
+      padding: 50px 20px;
+      background: #444;
+      color: #fff;
+      width: 100%;
+      max-width: 1200px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+      z-index: 2;
+      position: relative;
+    }
+
+    .subtitle {
+      margin-top: 10px;
+      font-size: 1.2em;
+    }
+
+    /* ========================================================================
+        Sections
+    ======================================================================== */
+    .section {
+      padding: 60px 20px;
+      border-top: 1px solid #444;
+      width: 100%;
+      max-width: 1200px;
+      text-align: left;
+      z-index: 2;
+      position: relative;
+    }
+
+    .section h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-weight: 900;
+      color: #e0e0e0;
+      position: relative;
+      display: inline-block;
+    }
+
+    .section h2::after {
+      content: '';
+      position: absolute;
+      width: 50px;
+      height: 2px;
+      background-color: #e0e0e0;
+      left: 50%;
+      bottom: -5px;
+      transform: translateX(-50%);
+    }
+
+    /* ========================================================================
+        Cards
+    ======================================================================== */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      padding: 20px 0;
+    }
+
+    .card {
+      background: #2a2a2a;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .card h3 {
+      margin-bottom: 10px;
+      font-weight: bold;
+      color: #e0e0e0;
+    }
+
+    .card p {
+      margin-bottom: 20px;
+      color: #b0b0b0;
+    }
+
+    .btn {
+      background: #4caf50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn:hover {
+      background: #81c784;
+    }
+
+    /* ========================================================================
+        Skills Section
+    ======================================================================== */
+    .skills-list {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .skills-list li {
+      background: #2a2a2a;
+      padding: 10px 15px;
+      border-radius: 20px;
+      font-size: 1rem;
+      color: #00ff00;
+      box-shadow: 0 2px 5px rgba(0, 255, 0, 0.3);
+    }
+
+    /* ========================================================================
+        Contact Section
+    ======================================================================== */
+    .contact .form-group {
+      margin-bottom: 15px;
+    }
+
+    .contact label {
+      display: block;
+      margin-bottom: 5px;
+      color: #e0e0e0;
+      font-weight: bold;
+    }
+
+    .contact input,
+    .contact textarea {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #00ff00;
+      border-radius: 5px;
+      background: transparent;
+      color: #f1f1f1;
+      transition: border-color 0.3s ease;
+    }
+
+    .contact input:focus,
+    .contact textarea:focus {
+      border-color: #ffffff;
+      outline: none;
+    }
+
+    .contact textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    /* ========================================================================
+        Footer
+    ======================================================================== */
+    footer {
+      text-align: center;
+      padding: 20px;
+      background: #444;
+      color: #fff;
+      width: 100%;
+      max-width: 1200px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+      z-index: 2;
+      position: relative;
+    }
+
+    /* ========================================================================
+        Botón de Control de Audio
+    ======================================================================== */
+    .audio-control {
+      position: fixed; /* Posicionado fijo para que permanezca visible al hacer scroll */
+      top: 20px;
+      right: 20px;
+      background: #4caf50;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+      font-size: 1rem;
+      font-weight: bold;
+      z-index: 3; /* Asegura que esté por encima de otros elementos */
+    }
+
+    .audio-control:hover {
+      background: #81c784;
+      transform: scale(1.05);
+    }
+
+    /* ========================================================================
+        Botón de Contribuciones Animado (Fijo en Pantalla)
+    ======================================================================== */
+    .contribution-button-fixed {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+      animation: blinkEffect 2s infinite;
+      transition: transform 0.3s ease;
+    }
+
+    @keyframes blinkEffect {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .contribution-button-fixed img {
+      width: 120px;
+      height: auto;
+      transition: transform 0.5s ease;
+    }
+
+    .contribution-button-fixed:hover img {
+      transform: scale(1.1) rotate(5deg);
+    }
+
+    /* ========================================================================
+        Ventanas Modales
+    ======================================================================== */
+    .modal {
+      display: none; /* Oculto por defecto */
+      position: fixed;
+      z-index: 1001; /* Por encima del botón de contribuciones */
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.5); /* Fondo overlay modal */
+      padding-top: 60px;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-content {
+      background-color: #2a2a2a;
+      margin: 5% auto;
+      padding: 20px;
+      border: 1px solid #4caf50;
+      width: 80%;
+      max-width: 700px;
+      border-radius: 10px;
+      position: relative;
+      box-shadow: 0 5px 15px rgba(0, 255, 0, 0.3);
+      animation: fadeInModal 0.5s ease-out;
+    }
+
+    @keyframes fadeInModal {
+      from { opacity: 0; transform: translateY(-50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .close-modal {
+      color: #b0b0b0;
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 2rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    .close-modal:hover {
+      color: #00ff00;
+    }
+
+    /* ========================================================================
+        Responsive Design
+    ======================================================================== */
+    @media (max-width: 768px) {
+      .terminal-panel {
+        padding: 30px 20px;
+        width: 100%;
+      }
+
+      .header {
+        padding: 30px 10px;
+      }
+
+      .section {
+        padding: 40px 10px;
+      }
+
+      .section h2 {
+        font-size: 1.5rem;
+      }
+
+      .card-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .btn {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+      }
+
+      .audio-control {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+      }
+
+      .contribution-button-fixed img {
+        width: 80px;
+      }
+
+      .modal-content {
+        width: 90%;
+      }
+    }
+
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .terminal-panel {
+        padding: 40px 30px;
+        width: 95%;
+      }
+
+      .section h2 {
+        font-size: 1.8rem;
+      }
+
+      .card-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      }
+
+      .btn {
+        padding: 10px 20px;
+        font-size: 1rem;
+      }
+
+      .audio-control {
+        padding: 10px 20px;
+        font-size: 1rem;
+      }
+
+      .contribution-button-fixed img {
+        width: 100px;
+      }
+
+      .modal-content {
+        width: 80%;
+      }
+    }
+
+    @media (min-width: 1025px) {
+      .terminal-panel {
+        padding: 50px 50px;
+        width: 100%;
+        max-width: 1200px;
+      }
+
+      .section h2 {
+        font-size: 2rem;
+      }
+
+      .card-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      }
+
+      .btn {
+        padding: 12px 24px;
+        font-size: 1rem;
+      }
+
+      .audio-control {
+        padding: 12px 24px;
+        font-size: 1rem;
+      }
+
+      .contribution-button-fixed img {
+        width: 120px;
+      }
+
+      .modal-content {
+        width: 70%;
+      }
+    }
+  </style>
 </head>
 
-<body class="not-team logged-in">
-  <!-- React Container -->
-  <div id="react-page"></div>
+<body>
 
-  <!-- Page Header -->
-  <header class="header">
-    <div class="container">
-      <h1>INMORTAL</h1>
-      <p class="subtitle">Creating beautiful, functional web interfaces.</p>
-    </div>
-  </header>
+  <!-- ========================================================================
+      Fondo Animado Estilo Terminal
+  ======================================================================== -->
+  <div class="animated-background"></div>
 
-  <!-- Main Content -->
-  <main>
+  <!-- ========================================================================
+      Contenedor Principal
+  ======================================================================== -->
+  <div class="terminal-panel">
+    <!-- Header -->
+    <header class="header">
+      <div class="container">
+        <h1>INMORTAL</h1>
+        <p class="subtitle">Creating beautiful, functional web interfaces.</p>
+      </div>
+    </header>
+
     <!-- About Section -->
     <section class="section about">
       <div class="container">
-        <h2>About Me</h2>
-        <p class="intro">Passionate developer with expertise in HTML, CSS, and JavaScript. I specialize in crafting responsive and user-friendly web applications.</p>
+        <h2>Sobre Mí</h2>
+        <p class="intro">Desarrollador apasionado con experiencia en HTML, CSS y JavaScript. Me especializo en crear aplicaciones web responsivas y fáciles de usar, combinando diseño atractivo con funcionalidad robusta.</p>
       </div>
     </section>
 
     <!-- Projects Section -->
     <section class="section projects">
       <div class="container">
-        <h2>Projects</h2>
+        <h2>Proyectos</h2>
         <div class="card-grid">
-          <div class="card">
-            <h3>Responsive Portfolio</h3>
-            <p>A sleek and modern personal portfolio website.</p>
-            <button class="btn">View Details</button>
+          <div class="card" data-modal="modal1">
+            <h3>Portfolio Responsivo</h3>
+            <p>Un sitio web de portfolio personal moderno y elegante.</p>
+            <button class="btn">Ver Detalles</button>
           </div>
-          <div class="card">
-            <h3>Weather App</h3>
-            <p>Real-time weather updates using an API.</p>
-            <button class="btn">View Details</button>
+          <div class="card" data-modal="modal2">
+            <h3>Aplicación del Clima</h3>
+            <p>Actualizaciones meteorológicas en tiempo real utilizando una API.</p>
+            <button class="btn">Ver Detalles</button>
           </div>
-          <div class="card">
-            <h3>Interactive To-Do List</h3>
-            <p>Manage tasks efficiently with a clean UI.</p>
-            <button class="btn">View Details</button>
+          <div class="card" data-modal="modal3">
+            <h3>Lista de Tareas Interactiva</h3>
+            <p>Gestiona tus tareas de manera eficiente con una interfaz limpia.</p>
+            <button class="btn">Ver Detalles</button>
           </div>
+          <!-- Puedes añadir más tarjetas de proyectos aquí -->
         </div>
       </div>
     </section>
@@ -61,28 +509,189 @@
     <!-- Skills Section -->
     <section class="section skills">
       <div class="container">
-        <h2>Skills</h2>
+        <h2>Habilidades</h2>
         <ul class="skills-list">
-          <li>HTML</li>
-          <li>CSS</li>
+          <li>HTML5</li>
+          <li>CSS3</li>
           <li>JavaScript</li>
           <li>React</li>
           <li>Node.js</li>
+          <li>Responsive Design</li>
+          <li>APIs</li>
+          <li>Git & GitHub</li>
         </ul>
       </div>
     </section>
-  </main>
 
-  <!-- Footer -->
-  <footer>
-    <div class="container">
-      <p>© 2024 INMORTAL. All rights reserved.</p>
+    <!-- Contact Section -->
+    <section class="section contact">
+      <div class="container">
+        <h2>Contacto</h2>
+        <form id="contactForm">
+          <div class="form-group">
+            <label for="name">Nombre:</label>
+            <input type="text" id="name" name="name" required placeholder="Tu nombre">
+          </div>
+          <div class="form-group">
+            <label for="email">Correo Electrónico:</label>
+            <input type="email" id="email" name="email" required placeholder="Tu correo">
+          </div>
+          <div class="form-group">
+            <label for="message">Mensaje:</label>
+            <textarea id="message" name="message" required placeholder="Tu mensaje"></textarea>
+          </div>
+          <button type="submit" class="btn">Enviar</button>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <!-- ========================================================================
+      Botón de Contribuciones Fijo en Pantalla
+  ======================================================================== -->
+  <a href="https://www.buymeacoffee.com/Inmortal" class="contribution-button-fixed" target="_blank" rel="noopener noreferrer">
+    <img src="https://img.buymeacoffee.com/button-api/?text=Contribuciones&emoji=💻️&slug=Inmortal&button_colour=001905&font_colour=ffffff&font_family=Lato&outline_colour=ffffff&coffee_colour=FFDD00" alt="Contribuciones">
+  </a>
+
+  <!-- ========================================================================
+      Ventanas Modales para Proyectos
+  ======================================================================== -->
+  
+  <!-- Modal 1 -->
+  <div id="modal1" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2>Portfolio Responsivo</h2>
+      <p>Este proyecto es un sitio web de portfolio personal diseñado para mostrar mis trabajos y habilidades de manera elegante y responsiva. Utiliza tecnologías modernas como HTML5, CSS3 Flexbox y Grid, y JavaScript para interactividad.</p>
+      <a href="https://github.com/tuusuario/portfolio-responsivo" target="_blank" class="btn">Ver en GitHub</a>
     </div>
-  </footer>
+  </div>
 
-  <!-- JavaScript -->
-  <script src="script.js"></script>
+  <!-- Modal 2 -->
+  <div id="modal2" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2>Aplicación del Clima</h2>
+      <p>Una aplicación web que proporciona actualizaciones meteorológicas en tiempo real utilizando la API de OpenWeatherMap. Permite a los usuarios buscar el clima de cualquier ciudad y ver información detallada como temperatura, humedad y condiciones climáticas actuales.</p>
+      <a href="https://github.com/tuusuario/aplicacion-del-clima" target="_blank" class="btn">Ver en GitHub</a>
+    </div>
+  </div>
+
+  <!-- Modal 3 -->
+  <div id="modal3" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2>Lista de Tareas Interactiva</h2>
+      <p>Una aplicación de lista de tareas que permite a los usuarios añadir, eliminar y marcar tareas como completadas. Diseñada con una interfaz limpia y funcional, utiliza JavaScript para manejar la lógica de las tareas y el almacenamiento local para persistir los datos.</p>
+      <a href="https://github.com/tuusuario/lista-de-tareas-interactiva" target="_blank" class="btn">Ver en GitHub</a>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+      Audio de Fondo
+  ======================================================================== -->
+  <audio id="background-audio" autoplay loop>
+    <source src="Audio/bit2-bass-beat-slow.mp3" type="audio/mpeg">
+    Tu navegador no soporta el elemento de audio.
+  </audio>
+
+  <!-- ========================================================================
+      JavaScript
+  ======================================================================== -->
+  <script>
+    // ========================================================================
+    // Control de Audio de Fondo
+    // ========================================================================
+    const audio = document.getElementById('background-audio');
+    const audioControl = document.createElement('button');
+    audioControl.className = 'audio-control';
+    audioControl.id = 'audioControl';
+    document.body.appendChild(audioControl);
+
+    // Actualizar el texto del botón según el estado del audio
+    function updateAudioControl() {
+      if (audio.paused) {
+        audioControl.textContent = 'Reproducir Audio';
+      } else {
+        audioControl.textContent = 'Pausar Audio';
+      }
+    }
+
+    // Evento al hacer clic en el botón de control de audio
+    audioControl.addEventListener('click', () => {
+      if (audio.paused) {
+        audio.play();
+      } else {
+        audio.pause();
+      }
+      updateAudioControl();
+    });
+
+    // Inicializar el texto del botón
+    updateAudioControl();
+
+    // ========================================================================
+    // Funciones para Ventanas Modales
+    // ========================================================================
+    const modals = document.querySelectorAll('.modal');
+    const openModalButtons = document.querySelectorAll('.card');
+    const closeModalButtons = document.querySelectorAll('.close-modal');
+
+    openModalButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const modalId = button.getAttribute('data-modal');
+        const modal = document.getElementById(modalId);
+        if (modal) {
+          modal.style.display = 'block';
+        }
+      });
+    });
+
+    closeModalButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const modal = button.closest('.modal');
+        if (modal) {
+          modal.style.display = 'none';
+        }
+      });
+    });
+
+    // Cerrar modales al hacer clic fuera del contenido
+    window.addEventListener('click', (event) => {
+      modals.forEach(modal => {
+        if (event.target == modal) {
+          modal.style.display = 'none';
+        }
+      });
+    });
+
+    // ========================================================================
+    // Formulario de Contacto
+    // ========================================================================
+    const contactForm = document.getElementById('contactForm');
+
+    contactForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      // Aquí puedes agregar la lógica para manejar el envío del formulario,
+      // como enviar los datos a un servidor o utilizar servicios como EmailJS.
+
+      alert('¡Mensaje enviado! Gracias por contactarme.');
+
+      // Limpiar el formulario
+      contactForm.reset();
+    });
+
+    // ========================================================================
+    // Reproducción de Audio Tras Interacción
+    // ========================================================================
+    document.body.addEventListener('click', () => {
+      if (audio.paused) {
+        audio.play();
+        updateAudioControl();
+      }
+    });
+  </script>
+
 </body>
 
 </html>
-

@@ -70,6 +70,8 @@
 
         /* Botones del Menú */
         .menu-button {
+            position: relative; /* Para el efecto de ondulación */
+            overflow: hidden; /* Ocultar el ripple */
             background: rgba(0, 255, 0, 0.2); /* Fondo translúcido */
             border: 2px solid #00ff00;
             border-radius: 12px;
@@ -79,43 +81,39 @@
             color: #00ff00;
             text-decoration: none;
             text-transform: uppercase;
-            transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+            transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
             box-shadow: 0 0 10px rgba(0, 255, 0, 0.4);
             display: inline-block;
             width: 80%;
             max-width: 400px;
             text-align: center;
+            cursor: pointer;
         }
 
+        /* Efectos al pasar el cursor */
         .menu-button:hover {
             background: rgba(0, 255, 0, 0.5);
-            transform: translateY(-5px);
+            transform: translateY(-5px) scale(1.05);
             box-shadow: 0 0 20px rgba(0, 255, 0, 0.7);
+            color: #ffffff;
+            animation: pulse 1.5s infinite;
         }
 
         .menu-button:active {
-            transform: translateY(2px);
+            transform: translateY(2px) scale(0.95);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
         }
 
-        /* Animación de Botones */
-        .menu-button:nth-child(1) {
-            animation: bounce 2s infinite ease-in-out;
-        }
-
-        .menu-button:nth-child(2) {
-            animation: bounce 2s infinite ease-in-out 0.2s;
-        }
-
-        .menu-button:nth-child(3) {
-            animation: bounce 2s infinite ease-in-out 0.4s;
-        }
-
-        @keyframes bounce {
-            0%, 100% {
-                transform: translateY(0);
+        /* Animación de Pulse */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 20px rgba(0, 255, 0, 0.7);
             }
             50% {
-                transform: translateY(-10px);
+                box-shadow: 0 0 30px rgba(0, 255, 0, 1);
+            }
+            100% {
+                box-shadow: 0 0 20px rgba(0, 255, 0, 0.7);
             }
         }
 
@@ -151,10 +149,10 @@
 
         <!-- Menú de Opciones -->
         <div class="menu-container">
-            <a href="codepen/index.html" class="menu-button">Codepen</a>
-            <a href="mp3-carrusel/index.html" class="menu-button">MP3 Carrusel</a>
-            <a href="Texto IA/Index.html" class="menu-button">Texto IA</a>
-            <a href="web/web-menu.html" class="menu-button">WEBS</a>
+            <a href="codepen/index.html" class="menu-button" aria-label="Ir a Codepen">Codepen</a>
+            <a href="mp3-carrusel/index.html" class="menu-button" aria-label="Ir a MP3 Carrusel">MP3 Carrusel</a>
+            <a href="Texto IA/Index.html" class="menu-button" aria-label="Ir a Texto IA">Texto IA</a>
+            <a href="web/web-menu.html" class="menu-button" aria-label="Ir a WEBS">WEBS</a>
         </div>
     </div>
 
@@ -210,6 +208,12 @@
         window.addEventListener("resize", () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+            // Recalcular columnas y reiniciar drops
+            const newColumns = Math.floor(canvas.width / fontSize);
+            drops.length = newColumns;
+            for (let i = 0; i < newColumns; i++) {
+                drops[i] = 0;
+            }
         });
 
         // -----------------------------------
@@ -230,11 +234,26 @@
 
         buttons.forEach(button => {
             button.addEventListener('click', (e) => {
-                e.preventDefault();
-                const href = button.getAttribute('href');
-                button.style.transform = "scale(0.9)";
+                // Crear el efecto de ondulación (Ripple Effect)
+                const ripple = document.createElement('span');
+                ripple.classList.add('ripple');
+                const rect = button.getBoundingClientRect();
+                const size = Math.max(button.clientWidth, button.clientHeight);
+                ripple.style.width = ripple.style.height = `${size}px`;
+                ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
+                ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
+                button.appendChild(ripple);
+
+                // Remover el ripple después de la animación
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+
+                // Animación de escala al hacer clic
+                button.style.transform = "scale(0.95)";
                 setTimeout(() => {
                     button.style.transform = "scale(1)";
+                    const href = button.getAttribute('href');
                     window.location.href = href;
                 }, 200);
             });
@@ -242,4 +261,6 @@
     </script>
 </body>
 </html>
+
+
 
