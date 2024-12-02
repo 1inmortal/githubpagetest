@@ -1,28 +1,574 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bot de Extracción de Información</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="(link unavailable)"></script>
-    <script src="(link unavailable)"></script>
-    <script src="(link unavailable)"></script>
-    <script src="script.js"></script>
+    <!-- Fuentes y Estilos -->
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ========================================================================
+            Reset de Estilos
+        ======================================================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ========================================================================
+            General Styling
+        ======================================================================== */
+        body {
+            font-family: 'Lato', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a, #333);
+            color: #f1f1f1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            transition: background-color 0.5s, color 0.5s;
+        }
+        
+        h1, h2, h3 {
+            color: #e0e0e0;
+        }
+        
+        p {
+            color: #b0b0b0;
+        }
+        
+        /* ========================================================================
+            Fondo Animado Estilo Terminal
+        ======================================================================== */
+        .animated-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(0,255,0,0.1) 25%, transparent 25%),
+                        linear-gradient(-45deg, rgba(0,255,0,0.1) 25%, transparent 25%),
+                        linear-gradient(45deg, transparent 75%, rgba(0,255,0,0.1) 75%),
+                        linear-gradient(-45deg, transparent 75%, rgba(0,255,0,0.1) 75%);
+            background-size: 50px 50px;
+            z-index: -1;
+            animation: moveBackground 60s linear infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes moveBackground {
+            0% { background-position: 0 0, 0 0, 0 0, 0 0; }
+            100% { background-position: 100px 100px, -100px 100px, 100px -100px, -100px -100px; }
+        }
+        
+        /* ========================================================================
+            Contenedor Principal
+        ======================================================================== */
+        .container {
+            background: rgba(0, 0, 0, 0.85);
+            padding: 40px 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            width: 90%;
+            max-width: 900px;
+            margin: 20px 0;
+            z-index: 1;
+            position: relative;
+        }
+        
+        /* ========================================================================
+            Header
+        ======================================================================== */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            color: #b0b0b0;
+        }
+        
+        /* ========================================================================
+            Formulario de Carga de PDF
+        ======================================================================== */
+        #form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        #form .upload-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        #form .upload-options input[type="file"],
+        #form .upload-options input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #4caf50;
+            border-radius: 5px;
+            background: transparent;
+            color: #f1f1f1;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        #form .upload-options input[type="file"]::file-selector-button {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        #form .upload-options input[type="file"]::file-selector-button:hover {
+            background: #81c784;
+        }
+        
+        #form .upload-options input[type="text"]::placeholder {
+            color: #b0b0b0;
+        }
+        
+        #procesar-btn, #guardar-btn {
+            background: #4caf50;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease;
+            font-size: 1rem;
+            font-weight: bold;
+            align-self: flex-start;
+        }
+        
+        #procesar-btn:hover, #guardar-btn:hover {
+            background: #81c784;
+            transform: scale(1.05);
+        }
+        
+        /* ========================================================================
+            Resultado
+        ======================================================================== */
+        #resultado {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 255, 0, 0.3);
+            min-height: 150px;
+            max-height: 400px;
+            overflow-y: auto;
+            color: #f1f1f1;
+            font-size: 1rem;
+        }
+        
+        /* ========================================================================
+            Preguntas y Respuestas
+        ======================================================================== */
+        .qa-section {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .qa-section input[type="text"] {
+            padding: 12px;
+            border: 2px solid #4caf50;
+            border-radius: 5px;
+            background: transparent;
+            color: #f1f1f1;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .qa-section input[type="text"]::placeholder {
+            color: #b0b0b0;
+        }
+        
+        .qa-section button {
+            background: #4caf50;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease;
+            font-size: 1rem;
+            font-weight: bold;
+            align-self: flex-start;
+        }
+        
+        .qa-section button:hover {
+            background: #81c784;
+            transform: scale(1.05);
+        }
+        
+        #respuesta {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 255, 0, 0.3);
+            min-height: 50px;
+            color: #f1f1f1;
+            font-size: 1rem;
+        }
+        
+        /* ========================================================================
+            Footer
+        ======================================================================== */
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: #444;
+            color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            width: 90%;
+            max-width: 900px;
+            margin-top: auto;
+        }
+        
+        /* ========================================================================
+            Botón de Contribuciones Animado (Fijo en Pantalla)
+        ======================================================================== */
+        .contribution-button-fixed {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            animation: blinkEffect 2s infinite;
+            transition: transform 0.3s ease;
+        }
+        
+        @keyframes blinkEffect {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .contribution-button-fixed img {
+            width: 120px;
+            height: auto;
+            transition: transform 0.5s ease;
+        }
+        
+        .contribution-button-fixed:hover img {
+            transform: scale(1.1) rotate(5deg);
+        }
+        
+        /* ========================================================================
+            Indicador de Carga
+        ======================================================================== */
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #4caf50;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* ========================================================================
+            Responsive Design
+        ======================================================================== */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            #procesar-btn, #guardar-btn, .qa-section button {
+                width: 100%;
+                padding: 10px;
+            }
+            
+            .qa-section input[type="text"] {
+                width: 100%;
+            }
+            
+            #form .upload-options {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
 <body>
+
+    <!-- ========================================================================
+        Fondo Animado Estilo Terminal
+    ======================================================================== -->
+    <div class="animated-background"></div>
+
+    <!-- ========================================================================
+        Contenedor Principal
+    ======================================================================== -->
     <div class="container">
-        <h1>Bot de Extracción de Información</h1>
+        <!-- Header -->
+        <div class="header">
+            <h1>Bot de Extracción de Información</h1>
+            <p>Sube un PDF desde tu computadora o ingresa una URL y haz preguntas sobre su contenido.</p>
+        </div>
+
+        <!-- Formulario de Carga de PDF -->
         <form id="form">
-            <input type="file" id="pdf-input" accept=".pdf">
-            <button id="procesar-btn">Procesar</button>
+            <div class="upload-options">
+                <!-- Opción para subir archivo desde el sistema local -->
+                <input type="file" id="pdf-file-input" accept=".pdf">
+                <!-- Opción para ingresar URL del PDF -->
+                <input type="text" id="pdf-url-input" placeholder="URL del PDF">
+            </div>
+            <div class="buttons">
+                <button type="button" id="procesar-btn">Procesar PDF</button>
+                <button type="button" id="guardar-btn">Guardar Resultado</button>
+            </div>
         </form>
-        <div id="resultado"></div>
+
+        <!-- Indicador de Carga -->
+        <div class="loader" id="loader"></div>
+
+        <!-- Resultado de la Extracción -->
+        <div id="resultado">
+            <h3>Texto Extraído:</h3>
+            <p>Aún no se ha procesado ningún PDF.</p>
+        </div>
+
+        <!-- Sección de Preguntas y Respuestas -->
+        <div class="qa-section">
+            <input type="text" id="pregunta-input" placeholder="Haz una pregunta sobre el PDF">
+            <button id="preguntar-btn">Preguntar</button>
+            <div id="respuesta">
+                <h3>Respuesta:</h3>
+                <p>Aún no se ha realizado ninguna pregunta.</p>
+            </div>
+        </div>
     </div>
-    <!-- Comentarios -->
-    <!-- Quitar: <div id="debug"></div> -->
-    <!-- Cambiar: <input type="file" id="pdf-input" accept=".pdf"> por <input type="text" id="pdf-input"> -->
-    <!-- Agregar: <button id="guardar-btn">Guardar</button> -->
+
+    <!-- ========================================================================
+        Botón de Contribuciones Fijo en Pantalla
+    ======================================================================== -->
+    <a href="https://www.buymeacoffee.com/Inmortal" class="contribution-button-fixed" target="_blank" rel="noopener noreferrer">
+        <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Contribuciones">
+    </a>
+
+    <!-- ========================================================================
+        Footer
+    ======================================================================== -->
+    <footer>
+        <p>© 2024 INMORTAL. Todos los derechos reservados.</p>
+    </footer>
+
+    <!-- ========================================================================
+        JavaScript
+    ======================================================================== -->
+    <!-- Incluir pdf.js desde CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+    <!-- Incluir TensorFlow.js desde CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.20.0/dist/tf.min.js"></script>
+    <!-- Incluir Natural.js desde CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/natural/0.6.3/natural.min.js"></script>
+
+    <script>
+        // ========================================================================
+        // Inicialización de Librerías
+        // ========================================================================
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+        const tokenizer = new natural.WordTokenizer();
+
+        // Elementos del DOM
+        const procesarBtn = document.getElementById('procesar-btn');
+        const guardarBtn = document.getElementById('guardar-btn');
+        const pdfFileInput = document.getElementById('pdf-file-input');
+        const pdfUrlInput = document.getElementById('pdf-url-input');
+        const resultadoDiv = document.getElementById('resultado');
+        const loader = document.getElementById('loader');
+        const preguntaBtn = document.getElementById('preguntar-btn');
+        const preguntaInput = document.getElementById('pregunta-input');
+        const respuestaDiv = document.getElementById('respuesta');
+
+        let textoExtraido = '';
+
+        // ========================================================================
+        // Funciones de Utilidad
+        // ========================================================================
+
+        // Mostrar el loader
+        function mostrarLoader() {
+            loader.style.display = 'block';
+        }
+
+        // Ocultar el loader
+        function ocultarLoader() {
+            loader.style.display = 'none';
+        }
+
+        // Extraer texto del PDF desde archivo
+        async function extraerTextoDesdeArchivo(file) {
+            try {
+                mostrarLoader();
+                resultadoDiv.innerHTML = '<h3>Texto Extraído:</h3><p>Procesando el PDF...</p>';
+
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+                let texto = '';
+
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    const strings = content.items.map(item => item.str);
+                    texto += strings.join(' ') + ' ';
+                }
+
+                textoExtraido = texto.trim();
+                resultadoDiv.innerHTML = `<h3>Texto Extraído:</h3><p>${textoExtraido}</p>`;
+                ocultarLoader();
+            } catch (error) {
+                console.error('Error al procesar el PDF:', error);
+                alert('Hubo un error al procesar el PDF. Asegúrate de que el archivo no esté dañado.');
+                resultadoDiv.innerHTML = '<h3>Texto Extraído:</h3><p>Error al procesar el PDF.</p>';
+                ocultarLoader();
+            }
+        }
+
+        // Extraer texto del PDF desde URL
+        async function extraerTextoDesdeURL(url) {
+            try {
+                mostrarLoader();
+                resultadoDiv.innerHTML = '<h3>Texto Extraído:</h3><p>Procesando el PDF...</p>';
+
+                const loadingTask = pdfjsLib.getDocument(url);
+                const pdf = await loadingTask.promise;
+
+                let texto = '';
+
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    const strings = content.items.map(item => item.str);
+                    texto += strings.join(' ') + ' ';
+                }
+
+                textoExtraido = texto.trim();
+                resultadoDiv.innerHTML = `<h3>Texto Extraído:</h3><p>${textoExtraido}</p>`;
+                ocultarLoader();
+            } catch (error) {
+                console.error('Error al procesar el PDF:', error);
+                alert('Hubo un error al procesar el PDF. Asegúrate de que la URL sea correcta y que el PDF permita acceso desde tu origen.');
+                resultadoDiv.innerHTML = '<h3>Texto Extraído:</h3><p>Error al procesar el PDF.</p>';
+                ocultarLoader();
+            }
+        }
+
+        // Procesar el PDF dependiendo de la fuente
+        function procesarPdf() {
+            const file = pdfFileInput.files[0];
+            const url = pdfUrlInput.value.trim();
+
+            if (file) {
+                extraerTextoDesdeArchivo(file);
+            } else if (url) {
+                extraerTextoDesdeURL(url);
+            } else {
+                alert('Por favor, sube un archivo PDF o ingresa una URL de un PDF.');
+            }
+        }
+
+        // Guardar el texto extraído como archivo .txt
+        function guardarResultado() {
+            if (!textoExtraido) {
+                alert('No hay resultados para guardar.');
+                return;
+            }
+
+            const blob = new Blob([textoExtraido], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'resultado.txt';
+            link.click();
+        }
+
+        // Responder preguntas básicas sobre el texto extraído
+        function responderPregunta(pregunta) {
+            if (!textoExtraido) {
+                return 'Por favor, procesa un PDF primero.';
+            }
+
+            const textoLower = textoExtraido.toLowerCase();
+            const preguntaLower = pregunta.toLowerCase();
+
+            // Buscar si la pregunta está contenida en el texto
+            if (textoLower.includes(preguntaLower)) {
+                return 'La información solicitada está presente en el PDF.';
+            } else {
+                return 'No pude encontrar una respuesta en el PDF.';
+            }
+        }
+
+        // Evento para procesar el PDF
+        procesarBtn.addEventListener('click', () => {
+            procesarPdf();
+        });
+
+        // Evento para guardar el resultado
+        guardarBtn.addEventListener('click', () => {
+            guardarResultado();
+        });
+
+        // Evento para responder preguntas
+        preguntarBtn.addEventListener('click', () => {
+            const pregunta = preguntaInput.value.trim();
+            if (!pregunta) {
+                alert('Por favor, ingresa una pregunta.');
+                return;
+            }
+
+            const respuesta = responderPregunta(pregunta);
+            respuestaDiv.innerHTML = `<h3>Respuesta:</h3><p>${respuesta}</p>`;
+        });
+
+        // Opcional: Permitir presionar "Enter" para procesar el PDF desde URL
+        pdfUrlInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                procesarPdf();
+            }
+        });
+
+        // Opcional: Permitir presionar "Enter" para hacer preguntas
+        preguntaInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                preguntarBtn.click();
+            }
+        });
+    </script>
+
 </body>
 </html>
+
