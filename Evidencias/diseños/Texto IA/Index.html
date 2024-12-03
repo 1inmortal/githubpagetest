@@ -1,574 +1,523 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bot de Extracción de Información</title>
-    <!-- Fuentes y Estilos -->
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
-    
-    <style>
-        /* ========================================================================
-            Reset de Estilos
-        ======================================================================== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        /* ========================================================================
-            General Styling
-        ======================================================================== */
-        body {
-            font-family: 'Lato', sans-serif;
-            background: linear-gradient(135deg, #1a1a1a, #333);
-            color: #f1f1f1;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
-            transition: background-color 0.5s, color 0.5s;
-        }
-        
-        h1, h2, h3 {
-            color: #e0e0e0;
-        }
-        
-        p {
-            color: #b0b0b0;
-        }
-        
-        /* ========================================================================
-            Fondo Animado Estilo Terminal
-        ======================================================================== */
-        .animated-background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, rgba(0,255,0,0.1) 25%, transparent 25%),
-                        linear-gradient(-45deg, rgba(0,255,0,0.1) 25%, transparent 25%),
-                        linear-gradient(45deg, transparent 75%, rgba(0,255,0,0.1) 75%),
-                        linear-gradient(-45deg, transparent 75%, rgba(0,255,0,0.1) 75%);
-            background-size: 50px 50px;
-            z-index: -1;
-            animation: moveBackground 60s linear infinite;
-            pointer-events: none;
-        }
-        
-        @keyframes moveBackground {
-            0% { background-position: 0 0, 0 0, 0 0, 0 0; }
-            100% { background-position: 100px 100px, -100px 100px, 100px -100px, -100px -100px; }
-        }
-        
-        /* ========================================================================
-            Contenedor Principal
-        ======================================================================== */
-        .container {
-            background: rgba(0, 0, 0, 0.85);
-            padding: 40px 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
-            width: 90%;
-            max-width: 900px;
-            margin: 20px 0;
-            z-index: 1;
-            position: relative;
-        }
-        
-        /* ========================================================================
-            Header
-        ======================================================================== */
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            color: #00ff00;
-            text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00;
-        }
-        
-        .header p {
-            font-size: 1.2em;
-            color: #b0b0b0;
-        }
-        
-        /* ========================================================================
-            Formulario de Carga de PDF
-        ======================================================================== */
-        #form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-        
-        #form .upload-options {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        #form .upload-options input[type="file"],
-        #form .upload-options input[type="text"] {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #4caf50;
-            border-radius: 5px;
-            background: transparent;
-            color: #f1f1f1;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-        }
-        
-        #form .upload-options input[type="file"]::file-selector-button {
-            background: #4caf50;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-        
-        #form .upload-options input[type="file"]::file-selector-button:hover {
-            background: #81c784;
-        }
-        
-        #form .upload-options input[type="text"]::placeholder {
-            color: #b0b0b0;
-        }
-        
-        #procesar-btn, #guardar-btn {
-            background: #4caf50;
-            color: white;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s ease, transform 0.3s ease;
-            font-size: 1rem;
-            font-weight: bold;
-            align-self: flex-start;
-        }
-        
-        #procesar-btn:hover, #guardar-btn:hover {
-            background: #81c784;
-            transform: scale(1.05);
-        }
-        
-        /* ========================================================================
-            Resultado
-        ======================================================================== */
-        #resultado {
-            background: #2a2a2a;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 255, 0, 0.3);
-            min-height: 150px;
-            max-height: 400px;
-            overflow-y: auto;
-            color: #f1f1f1;
-            font-size: 1rem;
-        }
-        
-        /* ========================================================================
-            Preguntas y Respuestas
-        ======================================================================== */
-        .qa-section {
-            margin-top: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        .qa-section input[type="text"] {
-            padding: 12px;
-            border: 2px solid #4caf50;
-            border-radius: 5px;
-            background: transparent;
-            color: #f1f1f1;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-        }
-        
-        .qa-section input[type="text"]::placeholder {
-            color: #b0b0b0;
-        }
-        
-        .qa-section button {
-            background: #4caf50;
-            color: white;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s ease, transform 0.3s ease;
-            font-size: 1rem;
-            font-weight: bold;
-            align-self: flex-start;
-        }
-        
-        .qa-section button:hover {
-            background: #81c784;
-            transform: scale(1.05);
-        }
-        
-        #respuesta {
-            background: #2a2a2a;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 255, 0, 0.3);
-            min-height: 50px;
-            color: #f1f1f1;
-            font-size: 1rem;
-        }
-        
-        /* ========================================================================
-            Footer
-        ======================================================================== */
-        footer {
-            text-align: center;
-            padding: 20px;
-            background: #444;
-            color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
-            width: 90%;
-            max-width: 900px;
-            margin-top: auto;
-        }
-        
-        /* ========================================================================
-            Botón de Contribuciones Animado (Fijo en Pantalla)
-        ======================================================================== */
-        .contribution-button-fixed {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-            animation: blinkEffect 2s infinite;
-            transition: transform 0.3s ease;
-        }
-        
-        @keyframes blinkEffect {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        .contribution-button-fixed img {
-            width: 120px;
-            height: auto;
-            transition: transform 0.5s ease;
-        }
-        
-        .contribution-button-fixed:hover img {
-            transform: scale(1.1) rotate(5deg);
-        }
-        
-        /* ========================================================================
-            Indicador de Carga
-        ======================================================================== */
-        .loader {
-            border: 8px solid #f3f3f3;
-            border-top: 8px solid #4caf50;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-            display: none;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* ========================================================================
-            Responsive Design
-        ======================================================================== */
-        @media (max-width: 768px) {
-            .container {
-                padding: 20px;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            #procesar-btn, #guardar-btn, .qa-section button {
-                width: 100%;
-                padding: 10px;
-            }
-            
-            .qa-section input[type="text"] {
-                width: 100%;
-            }
-            
-            #form .upload-options {
-                flex-direction: column;
-            }
-        }
-    </style>
-</head>
-<body>
-
-    <!-- ========================================================================
-        Fondo Animado Estilo Terminal
-    ======================================================================== -->
-    <div class="animated-background"></div>
-
-    <!-- ========================================================================
-        Contenedor Principal
-    ======================================================================== -->
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>Bot de Extracción de Información</h1>
-            <p>Sube un PDF desde tu computadora o ingresa una URL y haz preguntas sobre su contenido.</p>
-        </div>
-
-        <!-- Formulario de Carga de PDF -->
-        <form id="form">
-            <div class="upload-options">
-                <!-- Opción para subir archivo desde el sistema local -->
-                <input type="file" id="pdf-file-input" accept=".pdf">
-                <!-- Opción para ingresar URL del PDF -->
-                <input type="text" id="pdf-url-input" placeholder="URL del PDF">
+   <head>
+      <!-- básico -->
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <!-- metas móviles -->
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <!-- metas del sitio -->
+      <title>Las mejores tarjetas gráficas</title>
+      <meta name="keywords" content="tarjetas gráficas, análisis, rendimiento, comparaciones">
+      <meta name="description" content="Análisis detallados de tarjetas gráficas, comparaciones y rendimiento.">
+      <meta name="author" content="">
+      <!-- CSS de Bootstrap -->
+      <link rel="stylesheet" href="css/bootstrap.min.css">
+      <!-- CSS de estilo -->
+      <link rel="stylesheet" href="css/style.css">
+      <!-- CSS Responsivo -->
+      <link rel="stylesheet" href="css/responsive.css">
+      <!-- favicon -->
+      <link rel="icon" href="icon/fevicon.png" type="image/gif" />
+      <!-- CSS de Scrollbar Personalizado -->
+      <link rel="stylesheet" href="css/jquery.mCustomScrollbar.min.css">
+      <!-- Ajustes para navegadores antiguos -->
+      <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/2.1.5/jquery.fancybox.min.css" media="screen">
+      <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script><![endif]-->
+   </head>
+   <!-- Código para el chatbot -->
+   <script>
+      window.embeddedChatbotConfig = {
+          chatbotId: "hzzu0Oo1G1O-5kgk_eplV",
+          domain: "www.chatbase.co"
+      }
+  </script>
+  <script src="https://www.chatbase.co/embed.min.js"
+          chatbotId="hzzu0Oo1G1O-5kgk_eplV"
+          domain="www.chatbase.co"
+          defer>
+  </script>
+   <!-- cuerpo -->
+   <body class="main-layout">
+      <!-- cargador -->
+      <div class="loader_bg">
+         <div class="loader"><img src="images/loading.gif" alt="Cargando..."/></div>
+      </div>
+      <!-- fin del cargador -->
+      <!-- encabezado -->
+      <header>
+         <!-- encabezado interno -->
+         <div class="header">
+            <div class="container">
+               <div class="row">
+                  <div class="col-md-12 col-sm-3 col logo_section">
+                     <div class="full">
+                        <div class="center-desk">
+                           <div class="logo">
+                              <a href="index.html"><img src="images/logo.png" alt="Logo de la empresa" /></a>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="col-md-10 offset-md-1">
+                     <nav class="navigation navbar navbar-expand-md navbar-dark ">
+                        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExample04" aria-controls="navbarsExample04" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse" id="navbarsExample04">
+                           <ul class="navbar-nav mr-auto">
+                              <li class="nav-item active">
+                                 <a class="nav-link" href="index.html">Inicio</a>
+                              </li>
+                              <li class="nav-item">
+                                 <a class="nav-link" href="about.html">Acerca de</a>
+                              </li>
+                              <li class="nav-item">
+                                 <a class="nav-link" href="service.html">Servicios</a>
+                              </li>
+                              <li class="nav-item">
+                                 <a class="nav-link" href="gallery.html">Galería</a>
+                              </li>
+                              <li class="nav-item">
+                                 <a class="nav-link" href="testimonial.html">Testimonios</a>
+                              </li>
+                              <li class="nav-item">
+                                 <a class="nav-link" href="contact.html">Contáctenos</a>
+                              </li>
+                              <li class="nav-item">
+                                 <a class="nav-link" href="bot.HTML">IA</a>
+                              </li>
+                           </ul>
+                        </div>
+                     </nav>
+                  </div>
+               </div>
             </div>
-            <div class="buttons">
-                <button type="button" id="procesar-btn">Procesar PDF</button>
-                <button type="button" id="guardar-btn">Guardar Resultado</button>
+         </div>
+      </header>
+      <!-- fin del encabezado interno -->
+      <!-- fin del encabezado -->
+      <!-- banner -->
+      <section class="banner_main">
+         <div id="myCarousel" class="carousel slide banner" data-ride="carousel">
+            <ol class="carousel-indicators">
+               <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+               <li data-target="#myCarousel" data-slide-to="1"></li>
+               <li data-target="#myCarousel" data-slide-to="2"></li>
+            </ol>
+         </div>
+      </section>
+      <!-- fin del banner -->
+      <!-- acerca de -->
+      <div id="about" class="about">
+         <div class="container">
+            <div class="row">
+               <div class="col-md-5">
+                  <div class="titlepage">
+                     <h2>Acerca de <span class="green">Nosotros</span></h2>
+                     <p>En nuestra web, nos especializamos en poner a prueba tarjetas gráficas para ofrecerte análisis detallados de rendimiento. Realizamos pruebas exhaustivas con benchmarks, juegos y aplicaciones exigentes, brindando comparaciones precisas entre modelos.</p>
+                     <a class="read_more" href="https://www.techpowerup.com/">Leer más</a>
+                  </div>
+               </div>
+               <div class="col-md-7">
+                  <div class="about_img">
+                     <figure><img src="images/about.png" alt="Imagen sobre nosotros"/></figure>
+                  </div>
+               </div>
             </div>
-        </form>
-
-        <!-- Indicador de Carga -->
-        <div class="loader" id="loader"></div>
-
-        <!-- Resultado de la Extracción -->
-        <div id="resultado">
-            <h3>Texto Extraído:</h3>
-            <p>Aún no se ha procesado ningún PDF.</p>
-        </div>
-
-        <!-- Sección de Preguntas y Respuestas -->
-        <div class="qa-section">
-            <input type="text" id="pregunta-input" placeholder="Haz una pregunta sobre el PDF">
-            <button id="preguntar-btn">Preguntar</button>
-            <div id="respuesta">
-                <h3>Respuesta:</h3>
-                <p>Aún no se ha realizado ninguna pregunta.</p>
+         </div>
+      </div>
+      <!-- fin de acerca de -->
+      <!-- servicio -->
+      <div id="service" class="service">
+         <div class="container">
+            <div class="row">
+               <div class="col-md-12">
+                  <div class="titlepage">
+                     <h2>Nuestros <span class="green">Servicios</span></h2>
+                  </div>
+               </div>
             </div>
-        </div>
-    </div>
-
-    <!-- ========================================================================
-        Botón de Contribuciones Fijo en Pantalla
-    ======================================================================== -->
-    <a href="https://www.buymeacoffee.com/Inmortal" class="contribution-button-fixed" target="_blank" rel="noopener noreferrer">
-        <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Contribuciones">
-    </a>
-
-    <!-- ========================================================================
-        Footer
-    ======================================================================== -->
-    <footer>
-        <p>© 2024 INMORTAL. Todos los derechos reservados.</p>
-    </footer>
-
-    <!-- ========================================================================
-        JavaScript
-    ======================================================================== -->
-    <!-- Incluir pdf.js desde CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
-    <!-- Incluir TensorFlow.js desde CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.20.0/dist/tf.min.js"></script>
-    <!-- Incluir Natural.js desde CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/natural/0.6.3/natural.min.js"></script>
-
-    <script>
-        // ========================================================================
-        // Inicialización de Librerías
-        // ========================================================================
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
-        const tokenizer = new natural.WordTokenizer();
-
-        // Elementos del DOM
-        const procesarBtn = document.getElementById('procesar-btn');
-        const guardarBtn = document.getElementById('guardar-btn');
-        const pdfFileInput = document.getElementById('pdf-file-input');
-        const pdfUrlInput = document.getElementById('pdf-url-input');
-        const resultadoDiv = document.getElementById('resultado');
-        const loader = document.getElementById('loader');
-        const preguntaBtn = document.getElementById('preguntar-btn');
-        const preguntaInput = document.getElementById('pregunta-input');
-        const respuestaDiv = document.getElementById('respuesta');
-
-        let textoExtraido = '';
-
-        // ========================================================================
-        // Funciones de Utilidad
-        // ========================================================================
-
-        // Mostrar el loader
-        function mostrarLoader() {
-            loader.style.display = 'block';
-        }
-
-        // Ocultar el loader
-        function ocultarLoader() {
-            loader.style.display = 'none';
-        }
-
-        // Extraer texto del PDF desde archivo
-        async function extraerTextoDesdeArchivo(file) {
-            try {
-                mostrarLoader();
-                resultadoDiv.innerHTML = '<h3>Texto Extraído:</h3><p>Procesando el PDF...</p>';
-
-                const arrayBuffer = await file.arrayBuffer();
-                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-
-                let texto = '';
-
-                for (let i = 1; i <= pdf.numPages; i++) {
-                    const page = await pdf.getPage(i);
-                    const content = await page.getTextContent();
-                    const strings = content.items.map(item => item.str);
-                    texto += strings.join(' ') + ' ';
-                }
-
-                textoExtraido = texto.trim();
-                resultadoDiv.innerHTML = `<h3>Texto Extraído:</h3><p>${textoExtraido}</p>`;
-                ocultarLoader();
-            } catch (error) {
-                console.error('Error al procesar el PDF:', error);
-                alert('Hubo un error al procesar el PDF. Asegúrate de que el archivo no esté dañado.');
-                resultadoDiv.innerHTML = '<h3>Texto Extraído:</h3><p>Error al procesar el PDF.</p>';
-                ocultarLoader();
-            }
-        }
-
-        // Extraer texto del PDF desde URL
-        async function extraerTextoDesdeURL(url) {
-            try {
-                mostrarLoader();
-                resultadoDiv.innerHTML = '<h3>Texto Extraído:</h3><p>Procesando el PDF...</p>';
-
-                const loadingTask = pdfjsLib.getDocument(url);
-                const pdf = await loadingTask.promise;
-
-                let texto = '';
-
-                for (let i = 1; i <= pdf.numPages; i++) {
-                    const page = await pdf.getPage(i);
-                    const content = await page.getTextContent();
-                    const strings = content.items.map(item => item.str);
-                    texto += strings.join(' ') + ' ';
-                }
-
-                textoExtraido = texto.trim();
-                resultadoDiv.innerHTML = `<h3>Texto Extraído:</h3><p>${textoExtraido}</p>`;
-                ocultarLoader();
-            } catch (error) {
-                console.error('Error al procesar el PDF:', error);
-                alert('Hubo un error al procesar el PDF. Asegúrate de que la URL sea correcta y que el PDF permita acceso desde tu origen.');
-                resultadoDiv.innerHTML = '<h3>Texto Extraído:</h3><p>Error al procesar el PDF.</p>';
-                ocultarLoader();
-            }
-        }
-
-        // Procesar el PDF dependiendo de la fuente
-        function procesarPdf() {
-            const file = pdfFileInput.files[0];
-            const url = pdfUrlInput.value.trim();
-
-            if (file) {
-                extraerTextoDesdeArchivo(file);
-            } else if (url) {
-                extraerTextoDesdeURL(url);
-            } else {
-                alert('Por favor, sube un archivo PDF o ingresa una URL de un PDF.');
-            }
-        }
-
-        // Guardar el texto extraído como archivo .txt
-        function guardarResultado() {
-            if (!textoExtraido) {
-                alert('No hay resultados para guardar.');
-                return;
-            }
-
-            const blob = new Blob([textoExtraido], { type: 'text/plain;charset=utf-8' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'resultado.txt';
-            link.click();
-        }
-
-        // Responder preguntas básicas sobre el texto extraído
-        function responderPregunta(pregunta) {
-            if (!textoExtraido) {
-                return 'Por favor, procesa un PDF primero.';
-            }
-
-            const textoLower = textoExtraido.toLowerCase();
-            const preguntaLower = pregunta.toLowerCase();
-
-            // Buscar si la pregunta está contenida en el texto
-            if (textoLower.includes(preguntaLower)) {
-                return 'La información solicitada está presente en el PDF.';
-            } else {
-                return 'No pude encontrar una respuesta en el PDF.';
-            }
-        }
-
-        // Evento para procesar el PDF
-        procesarBtn.addEventListener('click', () => {
-            procesarPdf();
-        });
-
-        // Evento para guardar el resultado
-        guardarBtn.addEventListener('click', () => {
-            guardarResultado();
-        });
-
-        // Evento para responder preguntas
-        preguntarBtn.addEventListener('click', () => {
-            const pregunta = preguntaInput.value.trim();
-            if (!pregunta) {
-                alert('Por favor, ingresa una pregunta.');
-                return;
-            }
-
-            const respuesta = responderPregunta(pregunta);
-            respuestaDiv.innerHTML = `<h3>Respuesta:</h3><p>${respuesta}</p>`;
-        });
-
-        // Opcional: Permitir presionar "Enter" para procesar el PDF desde URL
-        pdfUrlInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                procesarPdf();
-            }
-        });
-
-        // Opcional: Permitir presionar "Enter" para hacer preguntas
-        preguntaInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                preguntarBtn.click();
-            }
-        });
-    </script>
-
-</body>
+            <div class="row">
+               <div class="col-md-10 offset-md-1">
+                  <div class="row">
+                     <div class="col-md-4 col-sm-6">
+                        <div class="service_box">
+                           <i><img src="images/service1.png" alt="Servicio 1"/></i>
+                           <h3>Alto Rendimiento</h3>
+                           <p>Equipos diseñados para máxima eficiencia en tareas exigentes.</p>
+                        </div>
+                     </div>
+                     <div class="col-md-4 offset-md-1 col-sm-6">
+                        <div class="service_box">
+                           <i><img src="images/service2.png" alt="Servicio 2"/></i>
+                           <h3>Optimizado para Gaming</h3>
+                           <p>Hardware especializado para los últimos juegos.</p>
+                        </div>
+                     </div>
+                     <div class="col-md-4 offset-md-3 col-sm-6 mar_top">
+                        <div class="service_box">
+                           <i><img src="images/service3.png" alt="Servicio 3"/></i>
+                           <h3>Fácil de Usar</h3>
+                           <p>Interfaz intuitiva y componentes que facilitan el uso diario para todos los usuarios.</p>
+                        </div>
+                     </div>
+                     <div class="col-md-4 offset-md-1 col-sm-6 mar_top">
+                        <div class="service_box">
+                           <i><img src="images/service4.png" alt="Servicio 4"/></i>
+                           <h3>Fácil Actualización</h3>
+                           <p>Las PCs están diseñadas para facilitar la adición o sustitución de componentes.</p>
+                        </div>
+                     </div>
+                     <div class="col-md-12">
+                        <a class="read_more" href="https://www.techpowerup.com/gpu-specs/">Leer más</a>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+      <!-- fin de servicio -->
+      <!-- galería -->
+      <div id="gallery" class="gallery">
+         <div class="container">
+            <div class="row">
+               <div class="col-md-12">
+                  <div class="titlepage">
+                     <h2>Nuestra <span class="green">Galería</span></h2>
+                     <p>Hay muchos modelos de tarjetas grafica por conocer.</p>
+                  </div>
+               </div>
+            </div>
+            <div class="row">
+               <div class="col-md-4 col-sm-6">
+                  <div class="gallery_text">
+                     <div class="galleryh3">
+                        <h3>Modelos de 3 ventiladores</h3>              
+                     </div>
+                  </div>
+               </div>
+               <div class="col-md-4 col-sm-6">
+                  <div class="gallery_img">
+                     <figure><img src="images/gallery1.jpg" alt="RTX 3070TI GIGABYTE"/></figure>
+                  </div>
+               </div>
+               <div class="col-md-4 col-sm-6">
+                  <div class="gallery_img">
+                     <figure><img src="images/gallery2.jpg" alt="RTX 3070TI TUF GAMING"/></figure>
+                  </div>
+               </div>
+               <div class="col-md-4 col-sm-6">
+                  <div class="gallery_img">
+                     <figure><img src="images/gallery3.jpg" alt="RTX 3070 MSI VENTUS"/></figure>
+                  </div>
+               </div>
+               <div class="col-md-4 col-sm-6">
+                  <div class="gallery_img">
+                     <figure><img src="images/gallery4.jpg" alt="RTX 3070 ASUS"/></figure>
+                  </div>
+               </div>
+               <div class="col-md-4 col-sm-6">
+                  <div class="gallery_text">
+                     <div class="galleryh3">
+                        <h3>Modelo de 2 ventiladores</h3>
+                     </div>
+                  </div>
+               </div>
+               <div class="col-md-4 col-sm-6">
+                  <div class="gallery_text">
+                     <div class="galleryh3">
+                        <h3>Enfriado por Agua</h3>
+                     </div>
+                  </div>
+               </div>
+               <div class="col-md-4 col-sm-6">
+                  <div class="gallery_img">
+                     <figure><img src="images/gallery5.jpg" alt="RTX 3080 WHATERFORCE XTREME"/></figure>
+                  </div>
+               </div>
+               <div class="col-md-4 col-sm-6">
+                  <div class="gallery_img">
+                     <figure><img src="images/gallery6.jpg" alt="RTX 4090 WHATERFORCE XTREME"/></figure>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+      <!-- fin de galería -->
+      <!-- diseño -->
+      <div class="design">
+         <div class="container-fluid">
+            <div class="row d_flex">
+               <div class="col-md-5">
+                  <div id="design" class="carousel slide banner_design" data-ride="carousel">
+                     <ol class="carousel-indicators">
+                        <li data-target="#design" data-slide-to="0" class="active"></li>
+                        <li data-target="#design" data-slide-to="1"></li>
+                        <li data-target="#design" data-slide-to="2"></li>
+                     </ol>
+                     <div class="carousel-inner">
+                        <div class="carousel-item active">
+                           <div class="container">
+                              <div class="carousel-caption relative">
+                                 <div class="row">
+                                    <div class="col-md-12">
+                                       <div class="text_de">
+                                          <div class="titlepage">
+                                             <h2>Nuevas ideas de <span class="green">Diseño</span></h2>
+                                          </div>
+                                          <p>Hay muchas variaciones de diseños exclusivos de tarjetas gráficas, optimizadas con iluminación RGB, ventiladores personalizados y acabados únicos. Estas mejoras no solo aumentan el rendimiento, sino que también brindan un estilo distintivo a cada modelo.</p>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               <div class="col-md-7 pad_roght0">
+                  <div class="design_img">
+                     <figure><img src="images/desi.jpg" alt="Diseño"/></figure>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+      <!-- fin de diseño -->
+      <!-- noticias recientes -->
+      <div class="latest_news">
+         <div class="container">
+            <div class="row">
+               <div class="col-md-12">
+                  <div class="titlepage">
+                     <h2>Noticias<span class="green"> recientes</span></h2>
+                  </div>
+               </div>
+            </div>
+            <div class="row">
+               <div class="col-md-4 offset-md-2">
+                  <div id="new" class="news_box">
+                     <div class="news_img">
+                        <figure><img src="images/RTX5000.webp" alt="Noticia 1"/></figure>
+                     </div>
+                     <div class="news_room">
+                        <span>Publicado por: Las mejores tarjetas gráficas</span>
+                        <ul>
+                           <li><a href="#">Me gusta <i class="fa fa-heart-o" aria-hidden="true"></i></a></li>
+                           <li><a href="#">Comentario <i class="fa fa-comments-o" aria-hidden="true"></i></a></li>
+                           <li><a href="#">Compartir <i class="fa fa-share-alt" aria-hidden="true"></i></a></li>
+                        </ul>
+                        <h3>Se lanza la nueva RTX SERIE 5000</h3>
+                        <p>La Nvidia serie 5000 es la próxima generación de tarjetas gráficas que promete revolucionar el rendimiento gráfico y la computación avanzada.
+                        </p>
+                     </div>
+                  </div>
+               </div>
+               <div class="col-md-4 ">
+                  <div id="new" class="news_box">
+                     <div class="news_img mr_le">
+                        <figure><img src="images/RX 8000.jpg" alt="Noticia 2"/></figure>
+                     </div>
+                     <div class="news_room">
+                        <span>Publicado por: Las mejores tarjetas gráficas </span>
+                        <ul>
+                           <li><a href="#">Me gusta <i class="fa fa-heart-o" aria-hidden="true"></i></a></li>
+                           <li><a href="#">Comentario <i class="fa fa-comments-o" aria-hidden="true"></i></a></li>
+                           <li><a href="#">Compartir <i class="fa fa-share-alt" aria-hidden="true"></i></a></li>
+                        </ul>
+                        <h3>Nuevo lanzamiento por parte de AMD.</h3>
+                        <p>AMD ha estado trabajando durante mucho tiempo para tener listas las nuevas tarjetas gráficas Radeon RX 8000 Series, la sucesora de la arquitectura RDNA3, que se presentará próximamente para competir con NVIDIA. </p>
+                     </div>
+                  </div>
+               </div>
+               <div class="col-md-12">
+                  <a class="read_more" href="https://www.google.com/webhp?hl=es-419&sa=X&ved=0ahUKEwiJ74jF252JAxUZKEQIHeO7KLAQPAgI">Leer más</a>
+               </div>
+            </div>
+         </div>
+      </div>
+      <!-- fin de noticias recientes -->
+      <!-- testimonio -->
+      <div id="testimonial" class="Testimonial">
+         <div class="container-fluid">
+            <div class="row d_flex">
+               <div class="col-md-8 pad_left0">
+                  <div id="testimon" class="carousel slide banner_testimonial" data-ride="carousel">
+                     <ol class="carousel-indicators">
+                        <li data-target="#testimon" data-slide-to="0" class="active"></li>
+                        <li data-target="#testimon" data-slide-to="1"></li>
+                        <li data-target="#testimon" data-slide-to="2"></li>
+                     </ol>
+                     <div class="carousel-inner">
+                        <div class="carousel-item active">
+                           <div class="container">
+                              <div class="carousel-caption relative">
+                                 <div class="row">
+                                    <div class="col-md-6">
+                                       <div class="text_humai">
+                                          <i><img src="images/tett1.png" alt="Testimonio 1"/></i>
+                                          <span>Chuchito perez</span>
+                                          <p>Gracias a esta página pude encontrar la tarjeta gráfica perfecta para mi PC de gaming.</p>
+                                       </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                       <div class="text_humai">
+                                          <i><img src="images/tett2.png" alt="Testimonio 2"/></i>
+                                          <span>Victor palma </span>
+                                          <p>Esta página es mi referencia número uno para conocer el rendimiento real de las tarjetas gráficas.</p>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="carousel-item">
+                           <div class="container">
+                              <div class="carousel-caption relative">
+                                 <div class="row">
+                                    <div class="col-md-6">
+                                       <div class="text_humai">
+                                          <i><img src="images/tett3.png" alt="Testimonio 3"/></i>
+                                          <span>Juan perez</span>
+                                          <p>¡Excelente página! Las reseñas de tarjetas gráficas me ayudaron a encontrar la mejor opción para mis juegos. ¡Totalmente recomendado!</p>
+                                       </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                       <div class="text_humai">
+                                          <i><img src="images/tett4.png" alt="Testimonio 4"/></i>
+                                          <span>Armando</span>
+                                          <p>Gran recurso para editores de video. Las comparativas son claras y me ayudaron a elegir la tarjeta gráfica perfecta. ¡Muy útil!.</p>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>>
+                     </div>
+                     <a class="carousel-control-prev" href="#testimon" role="button" data-slide="prev" aria-label="Anterior">
+                     <i class="fa fa-angle-left" aria-hidden="true"></i>
+                     <span class="sr-only">Anterior</span>
+                     </a>
+                     <a class="carousel-control-next" href="#testimon" role="button" data-slide="next" aria-label="Siguiente">
+                     <i class="fa fa-angle-right" aria-hidden="true"></i>
+                     <span class="sr-only">Siguiente</span>
+                     </a>
+                  </div>
+               </div>
+               <div class="col-md-4 ">
+                  <div class="titlepage">
+                     <h2>Testimonio</h2>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+      <!-- fin de testimonio -->
+      <!-- contacto -->
+      <div id="contact" class="contact">
+         <div class="container">
+            <div class="row">
+               <div class="col-md-12">
+                  <div class="titlepage">
+                     <h2>Contáctenos</h2>
+                  </div>
+               </div>
+            </div>
+            <div class="row">
+               <div class="col-md-6">
+                  <form id="request" class="main_form">
+                     <div class="row">
+                        <div class="col-md-12 ">
+                           <input class="contactus" placeholder="Nombre" type="text" name="Nombre"> 
+                        </div>
+                        <div class="col-md-12">
+                           <input class="contactus" placeholder="Correo electrónico" type="text" name="Correo electrónico"> 
+                        </div>
+                        <div class="col-md-12">
+                           <input class="contactus" placeholder="Número de teléfono" type="text" name="Número de teléfono">                          
+                        </div>
+                        <div class="col-md-12">
+                           <textarea class="textarea" placeholder="Mensaje" name="Mensaje">Mensaje</textarea>
+                        </div>
+                        <div class="col-md-12">
+                           <button class="send_btn">Enviar</button>
+                        </div>
+                     </div>
+                  </form>
+               </div>
+               <div class="col-md-6">
+                  <div class="map_main">
+                     <div class="map-responsive">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3443.511970728992!2d-98.28661602475795!3d26.082849277151496!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x86650f344c67082f%3A0xbc8afbfbc984bb60!2sUMAN%20Unidad%20Michoac%C3%A1n!5e1!3m2!1ses-419!2smx!4v1729690459427!5m2!1ses-419!2smx" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+      <!-- fin de contacto -->
+      <!-- pie de página -->
+      <footer>
+         <div class="footer">
+            <div class="container">
+               <div class="row">
+                  <div class="col-md-3 col-sm-6">
+                     <ul class="social_icon">
+                        <li><a href="https://www.facebook.com/emiliano.delacruzrodriguez/?locale=es_LA" target="_blank"><i class="fa fa-facebook" aria-hidden="true"></i></a></li>
+                        <li><a href="https://x.com/home?lang=es" target="_blank"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+                        <li><a href="https://www.linkedin.com/in/emiliano-de-la-cruz-483a08333/" target="_blank"><i class="fa fa-linkedin" aria-hidden="true"></i></a></li>
+                        <li><a href="https://www.instagram.com/__emiliano_r_d_z__/" target="_blank"><i class="fa fa-instagram" aria-hidden="true"></i></a></li>
+                     </ul>
+                     <p class="variat pad_roght2">Hay muchas tarjetas gráficas por conocer</p>
+                  </div>
+                  <div class="col-md-3 col-sm-6">
+                     <h3>¿Cómo podemos ayudarte?</h3>
+                     <p>Conoce las mejores tarjetas graficas para 2024</p>
+                  </div>
+                  <div class="col-md-3 col-sm-6">
+                     <h3>Información</h3>
+                     <ul class="link_menu">
+                        <li><a href="index.html">Inicio</a></li>
+                        <li><a href="about.html">Acerca de</a></li>
+                        <li><a href="service.html">Servicios</a></li>
+                        <li><a href="gallery.html">Galería</a></li>
+                        <li><a href="testimonial.html">Testimonios</a></li>
+                        <li><a href="contact.html">Contáctenos</a></li>
+                     </ul>
+                  </div>
+                  <div class="col-md-3 col-sm-6">
+                     <h3>Nuestro diseño</h3>
+                     <p>Diseño elaborado por Emiliano de la cruz Ing en Sistemas en la UMAN.</p>
+                  </div>
+                  <div class="col-md-6 offset-md-6">
+                     <form id="hkh" class="bottom_form">
+                        <input class="enter" placeholder="jorgeemi011@gmail.com" type="text" name="jorgeemi011@gmail.com">
+                        <button class="sub_btn">Suscribirse</button>
+                     </form>
+                  </div>
+               </div>
+            </div>
+            <div class="copyright">
+               <div class="container">
+                  <div class="row">
+                     <div class="col-md-10 offset-md-1">
+                        <p>2024 Todos los derechos reservados. <a href="https://www.facebook.com/emiliano.delacruzrodriguez/?locale=es_LA">Emiliano Rdz</a></p>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </footer>
+      <!-- fin de pie de página -->
+      <!-- archivos JavaScript -->
+      <script src="js/jquery.min.js"></script>
+      <script src="js/bootstrap.bundle.min.js"></script>
+      <script src="js/jquery-3.0.0.min.js"></script>
+      <!-- barra lateral -->
+      <script src="js/jquery.mCustomScrollbar.concat.min.js"></script>
+      <script src="js/custom.js"></script>
+   </body>
 </html>
-
