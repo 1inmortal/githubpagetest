@@ -1,770 +1,873 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>INMORTAL - Interfaz Terminal</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        /* ========================================================================
-            Reset Básico
-        ======================================================================== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Portafolio Futurista Avanzado</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Fuentes Futuristas -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --color-bg: #0f0f0f;
+      --color-accent: #0aff99;
+      --color-text: #ffffff;
+      --color-muted: #cccccc;
+      --transition-fast: 0.3s;
+      --transition-medium: 0.6s;
+      --transition-slow: 1s;
+      --font-main: 'Share Tech Mono', monospace;
+      --font-heading: 'VT323', monospace;
+      --bg-gradient: linear-gradient(135deg, rgba(0,0,0,0.8), transparent);
+      --aurora1: #0aff99;
+      --aurora2: #0af9ff;
+      --aurora3: #ff0af9;
+      --aurora4: #f9ff0a;
+      --mobile-break: 768px;
+    }
 
-        /* ========================================================================
-            Variables CSS para Temas y Colores
-        ======================================================================== */
-        :root {
-            --background-color: #000000;
-            --text-color: #00FF00;
-            --secondary-text-color: #00FF00;
-            --link-color: #00FF00;
-            --button-bg: #00FF00;
-            --button-text: #000000;
-            --info-bg: #111111;
-            --footer-bg: #111111;
-            --border-color: #00FF00;
-            --button-bg-hover: #00CC00;
-            --ticker-color: #00FF00;
-            --background-opacity: rgba(0, 0, 0, 0.85);
-        }
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+    }
 
-        /* ========================================================================
-            Configuración Global del Body
-        ======================================================================== */
-        body {
-            font-family: 'Courier New', Courier, monospace;
-            background: var(--background-color);
-            color: var(--text-color);
-            overflow-x: hidden;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            transition: background-color 0.5s, color 0.5s;
-        }
+    body {
+      font-family: var(--font-main);
+      background: var(--color-bg);
+      color: var(--color-text);
+      overflow-x: hidden;
+      position: relative;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
 
-        /* ========================================================================
-            Fondo del efecto Matrix
-        ======================================================================== */
-        canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: -1;
-        }
+    a, button {
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+    }
 
-        /* ========================================================================
-            Contenedor Principal Estilo Terminal
-        ======================================================================== */
-        .main-container {
-            background: var(--background-opacity);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
-            max-width: 1000px;
-            width: 100%;
-            animation: fadeInTerminal 1.5s ease-out forwards;
-            opacity: 0;
-            position: relative;
-            z-index: 2;
-        }
+    img, video {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
 
-        /* ========================================================================
-            Animaciones de Aparición
-        ======================================================================== */
-        @keyframes fadeInTerminal {
-            0% { opacity: 0; transform: scale(0.95); }
-            100% { opacity: 1; transform: scale(1); }
-        }
+    ul, li {
+      list-style: none;
+    }
 
-        @keyframes typing {
-            from { width: 0 }
-            to { width: 100% }
-        }
+    body::before, body::after {
+      content: "";
+      position: fixed;
+      top:0; left:0;
+      width:100vw; height:100vh;
+      pointer-events:none;
+      z-index:-3;
+    }
 
-        @keyframes blink-caret {
-            from, to { border-color: transparent }
-            50% { border-color: var(--text-color) }
-        }
+    body::before {
+      background: radial-gradient(circle at 50% 50%, var(--aurora1) 0%, transparent 70%);
+      opacity:0.1;
+      mix-blend-mode: screen;
+      animation: aurora1 30s ease-in-out infinite alternate;
+    }
 
-        @keyframes fadeIn {
-            to { opacity: 1; }
-        }
+    @keyframes aurora1 {
+      0% {transform: translate(-10%, -10%) scale(1);}
+      50% {transform: translate(10%, 20%) scale(1.2);}
+      100% {transform: translate(-5%, -15%) scale(1);}
+    }
 
-        @keyframes slideDown {
-            0% {
-                transform: translateY(-50px);
-                opacity: 0;
-            }
-            100% {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
+    body::after {
+      background: radial-gradient(circle at 20% 80%, var(--aurora2), transparent 60%);
+      opacity:0.1;
+      mix-blend-mode: screen;
+      animation: aurora2 40s ease-in-out infinite alternate;
+    }
 
-        @keyframes slideInFromLeft {
-            0% {
-                transform: translateX(-100%);
-                opacity: 0;
-            }
-            100% {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
+    @keyframes aurora2 {
+      0% {transform: translate(10%, 10%) scale(1);}
+      50% {transform: translate(-10%, -20%) scale(1.3);}
+      100% {transform: translate(5%, 15%) scale(1);}
+    }
 
-        /* ========================================================================
-            Barra de Navegación Superior (Bootstrap)
-        ======================================================================== */
-        nav {
-            background-color: var(--info-bg);
-            padding: 15px 0;
-            border-bottom: 1px solid var(--border-color);
-            transition: background-color 0.5s;
-            animation: slideDown 1s ease-out forwards;
-            opacity: 0;
-        }
+    .particles {
+      position: fixed;
+      top:0; left:0;
+      width:100vw; height:100vh;
+      z-index:-2;
+      pointer-events:none;
+      overflow:hidden;
+    }
 
-        nav a {
-            color: var(--link-color);
-            text-decoration: none;
-            margin: 0 10px;
-            font-size: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            position: relative;
-            transition: color 0.3s, transform 0.3s;
-        }
+    .particle {
+      position:absolute;
+      width:10px; height:10px;
+      background: var(--color-accent);
+      border-radius:50%;
+      opacity:0.2;
+      animation: floatParticle 10s linear infinite;
+    }
 
-        nav a::after {
-            content: '';
-            position: absolute;
-            width: 0%;
-            height: 2px;
-            bottom: -5px;
-            left: 0;
-            background-color: var(--link-color);
-            transition: width 0.3s;
-        }
+    @keyframes floatParticle {
+      0% {transform:translateY(0);}
+      100% {transform:translateY(-2000px);}
+    }
 
-        nav a:hover {
-            color: var(--button-bg-hover);
-            transform: scale(1.1);
-        }
+    /* Pantalla de Carga */
+    .loader-overlay {
+      position: fixed;
+      top:0; left:0;
+      width:100vw; height:100vh;
+      background:#000;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      z-index:9999;
+      transition: opacity 0.5s ease;
+    }
 
-        nav a:hover::after {
-            width: 100%;
-        }
+    .loader-text {
+      font-family:'Courier New', monospace;
+      font-size:1.5rem;
+      color: var(--color-accent);
+      margin-bottom:20px;
+      text-transform:uppercase;
+      letter-spacing:2px;
+    }
 
-        /* ========================================================================
-            Header con Animación de Tipeo
-        ======================================================================== */
-        header {
-            padding: 40px 20px;
-            text-align: center;
-            border-bottom: 2px solid var(--border-color);
-            position: relative;
-            z-index: 1;
-            animation: fadeIn 2s ease-in-out forwards;
-            opacity: 0;
-        }
+    .loader-bar-container {
+      width:80%;
+      background:rgba(0,255,153,0.1);
+      border:2px solid var(--color-accent);
+      border-radius:5px;
+      overflow:hidden;
+      margin-bottom:15px;
+    }
 
-        header h1 {
-            font-size: 3rem;
-            margin-bottom: 10px;
-            white-space: nowrap;
-            overflow: hidden;
-            border-right: .15em solid var(--text-color);
-            width: 0;
-            animation: typing 3s steps(30, end) forwards, blink-caret .75s step-end infinite;
-            color: var(--text-color);
-            text-shadow: 0 0 10px var(--text-color), 0 0 20px var(--text-color);
-        }
+    .loader-bar {
+      width:0%;
+      height:20px;
+      background:var(--color-accent);
+      transition:width 0.1s;
+    }
 
-        header p {
-            font-size: 1.2rem;
-            color: var(--secondary-text-color);
-            opacity: 0;
-            animation: fadeIn 2s ease-in-out forwards;
-            animation-delay: 3.5s;
-        }
+    .loader-percentage {
+      font-family:'Courier New', monospace;
+      font-size:1.2rem;
+      color:var(--color-accent);
+      letter-spacing:2px;
+    }
 
-        /* ========================================================================
-            Secciones de Contenido
-        ======================================================================== */
-        section {
-            display: none;
-            padding: 60px 20px;
-            text-align: center;
-            animation: fadeInSection 1s forwards;
-            z-index: 1;
-        }
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(0,0,0,0.5);
+      border-bottom: 1px solid var(--color-accent);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10000;
+      backdrop-filter: blur(5px);
+      opacity:0;
+      transform:translateY(-50px);
+      transition:opacity var(--transition-slow) ease, transform var(--transition-slow) ease;
+    }
 
-        section.active {
-            display: block;
-        }
+    header.visible {
+      opacity:1;transform:translateY(0);
+    }
 
-        @keyframes fadeInSection {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+    .branding a {
+      color: var(--color-accent);
+      font-family: var(--font-heading);
+      font-size: 1.5rem;
+      text-decoration: none;
+      letter-spacing:2px;
+    }
 
-        /* ========================================================================
-            Feed de Proyectos
-        ======================================================================== */
-        .feed {
-            background-color: #181818;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
-            animation: fadeInSection 1s ease-out forwards;
-            opacity: 0;
-        }
+    .filter-btn {
+      background: none;
+      border: 1px solid var(--color-accent);
+      color: var(--color-accent);
+      padding: 5px 10px;
+      border-radius:5px;
+      font-family: var(--font-heading);
+      cursor:pointer;
+      position: relative;
+    }
 
-        .feed h2 {
-            color: var(--text-color);
-            font-size: 2rem;
-            margin-bottom: 15px;
-            transition: color 0.3s ease;
-        }
+    .filter-btn:hover {
+      background: var(--color-accent);
+      color:#000;
+      box-shadow:0 0 10px var(--color-accent);
+    }
 
-        .feed h2 a {
-            color: inherit;
-            text-decoration: none;
-        }
+    .filter-panel {
+      position:absolute;
+      top: calc(100% + 10px);
+      right:0;
+      width:200px;
+      background:rgba(0,0,0,0.95);
+      border:1px solid var(--color-accent);
+      border-radius:5px;
+      padding:10px;
+      display:none;
+      z-index:99999;
+    }
 
-        .feed h2 a:hover {
-            color: var(--button-bg-hover);
-            text-decoration: underline;
-        }
+    .filter-panel ul {
+      margin:0; padding:0; list-style:none;
+    }
 
-        .feed-item {
-            margin-bottom: 20px;
-            padding: 15px;
-            background-color: #121212;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
+    .filter-panel li {
+      margin-bottom:10px;
+    }
 
-        .feed-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
-        }
+    .filter-panel a {
+      text-decoration:none;
+      color:var(--color-text);
+      transition: var(--transition-fast);
+      display:block;
+      text-transform: uppercase;
+      font-size:0.9rem;
+    }
 
-        .feed-item span {
-            font-size: 14px;
-            color: #7f7f7f;
-            display: block;
-            margin-bottom: 10px;
-        }
+    .filter-panel a:hover {
+      color: var(--color-accent);
+      text-shadow:0 0 5px var(--color-accent);
+    }
 
-        .feed-item p {
-            font-size: 16px;
-            color: var(--secondary-text-color);
-            line-height: 1.5;
-        }
+    .hero {
+      width: 100%;
+      height: 100vh;
+      padding-top: 60px;
+      display: flex;
+      flex-direction: column;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      background: var(--bg-gradient);
+      position:relative;
+      overflow:hidden;
+      opacity:0;
+      transform:translateY(20px);
+      transition:opacity 1s ease, transform 1s ease;
+    }
 
-        /* ========================================================================
-            Botones de Acción Animados
-        ======================================================================== */
-        .btn-custom {
-            background-color: var(--button-bg);
-            color: var(--button-text);
-            font-size: 1.2rem;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.3s;
-            margin-top: 20px;
-            display: inline-block;
-            text-decoration: none;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
-            position: relative;
-            overflow: hidden;
-            animation: buttonEffect 2s infinite;
-        }
+    .hero.visible {
+      opacity:1;
+      transform:translateY(0);
+    }
 
-        .btn-custom::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 300%;
-            height: 300%;
-            background: rgba(0, 255, 0, 0.2);
-            transition: all 0.5s ease;
-            border-radius: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            z-index: -1;
-        }
+    .hero::before, .hero::after {
+      content:"";
+      position:absolute;
+      top:50%; left:50%;
+      width:1000px; height:1000px;
+      border-radius:50%;
+      background: radial-gradient(var(--color-accent), transparent);
+      transform: translate(-50%, -50%) scale(0.5);
+      mix-blend-mode: screen;
+      opacity:0.05;
+      animation: pulse 10s ease-in-out infinite;
+    }
 
-        .btn-custom:hover::before {
-            transform: translate(-50%, -50%) scale(1);
-        }
+    .hero::after {
+      animation-delay:5s;
+      opacity:0.03;
+    }
 
-        .btn-custom:hover {
-            background-color: var(--button-bg-hover);
-            color: #fff;
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 0 15px var(--button-bg-hover), 0 0 25px var(--button-bg-hover), 0 0 35px var(--button-bg-hover);
-        }
+    @keyframes pulse {
+      0%,100% {transform: translate(-50%, -50%) scale(0.4);}
+      50% {transform:translate(-50%, -50%) scale(0.6);}
+    }
 
-        .btn-custom:active {
-            transform: scale(0.95);
-            box-shadow: 0 0 10px var(--button-bg), 0 0 20px var(--button-bg), 0 0 30px var(--button-bg);
-        }
+    .hero h1 {
+      font-family: var(--font-heading);
+      font-size:4rem;
+      margin-bottom:20px;
+      letter-spacing:-0.05em;
+      position:relative;
+      color: var(--color-accent);
+      text-shadow:0 0 10px var(--color-accent),0 0 20px var(--color-accent);
+      opacity:0;
+      animation: fadeInDown 1s ease forwards;
+    }
 
-        @keyframes buttonEffect {
-            0% { box-shadow: 0 0 5px var(--button-bg); }
-            50% { box-shadow: 0 0 20px var(--button-bg); }
-            100% { box-shadow: 0 0 5px var(--button-bg); }
-        }
+    .hero h1::before, .hero h1::after {
+      content: attr(data-text);
+      position:absolute;
+      top:0; left:0;
+      width:100%; height:100%;
+      overflow:hidden;
+    }
 
-        /* ========================================================================
-            Botón de Contribuciones Animado
-        ======================================================================== */
-        .contribution-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-            animation: blinkEffect 2s infinite;
-            transition: transform 0.3s ease;
-        }
+    .hero h1::before {
+      left:2px;
+      text-shadow:-2px 0 var(--color-accent);
+      clip: rect(0,0,0,0);
+      animation: glitch 2.5s infinite ease-in-out alternate-reverse;
+    }
 
-        @keyframes blinkEffect {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
+    .hero h1::after {
+      left:-2px;
+      text-shadow:-2px 0 var(--color-accent);
+      clip: rect(0,0,0,0);
+      animation: glitch2 3s infinite ease-in-out alternate-reverse;
+    }
 
-        .contribution-button img {
-            width: 120px;
-            height: auto;
-            transition: transform 0.5s ease;
-        }
+    @keyframes glitch {
+      0% {clip: rect(0,0,0,0);}
+      5% {clip: rect(0,1000px,1000px,0);}
+      10% {clip:rect(0,0,0,0);}
+      15% {clip:rect(200px,1000px,1000px,0);}
+      20% {clip:rect(0,0,0,0);}
+    }
 
-        .contribution-button:hover img {
-            transform: scale(1.1) rotate(5deg);
-        }
+    @keyframes glitch2 {
+      0% {clip: rect(0,0,0,0);}
+      5% {clip:rect(300px,1000px,1000px,0);}
+      10% {clip:rect(0,0,0,0);}
+      15% {clip:rect(50px,1000px,1000px,0);}
+      20% {clip:rect(0,0,0,0);}
+    }
 
-        /* ========================================================================
-            Barra de Música Animada
-        ======================================================================== */
-        .music-bar {
-            background-color: #1e1e1e;
-            padding: 15px 25px;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
-            animation: bounceMusicBar 3s infinite;
-            margin-top: 25px;
-        }
+    @keyframes fadeInDown {
+      0% {opacity:0;transform:translateY(-20px);}
+      100% {opacity:1;transform:translateY(0);}
+    }
 
-        @keyframes bounceMusicBar {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
+    .hero p {
+      font-size:1.2rem;
+      max-width:600px;
+      line-height:1.5;
+      color: var(--color-muted);
+      opacity:0;
+      animation: fadeInUp 1.5s ease forwards 0.5s;
+    }
 
-        .music-bar .icon {
-            width: 50px;
-            height: 50px;
-            margin-bottom: 10px;
-            transition: transform 0.3s ease;
-        }
+    @keyframes fadeInUp {
+      0% {opacity:0;transform:translateY(20px);}
+      100% {opacity:1;transform:translateY(0);}
+    }
 
-        .music-bar .icon:hover {
-            transform: rotate(360deg);
-        }
+    .reveal {
+      opacity:0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
 
-        .music-bar .btn {
-            margin: 0 10px;
-        }
+    .reveal.visible {
+      opacity:1;
+      transform:translateY(0);
+    }
 
-        /* ========================================================================
-            Ticker de Texto Dinámico
-        ======================================================================== */
-        .ticker {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background-color: var(--info-bg);
-            color: var(--ticker-color);
-            font-size: 18px;
-            padding: 12px 0;
-            overflow: hidden;
-            white-space: nowrap;
-            box-shadow: 0 -2px 15px rgba(0, 255, 0, 0.5);
-        }
+    .section-title {
+      font-family: var(--font-heading);
+      font-size:2.5rem;
+      text-align:center;
+      margin-bottom:60px;
+      position:relative;
+      display:inline-block;
+      color:var(--color-accent);
+      opacity:0;
+      transform:translateY(30px);
+      transition:opacity var(--transition-slow) ease, transform var(--transition-slow) ease;
+    }
 
-        .ticker-text {
-            display: inline-block;
-            padding-left: 100%;
-            animation: tickerMove 60s linear infinite;
-        }
+    .section-title.visible {
+      opacity:1; transform:translateY(0);
+    }
 
-        @keyframes tickerMove {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
+    .projects {
+      padding:150px 20px;
+      position:relative;
+    }
 
-        /* ========================================================================
-            Animaciones de Fondo Decorativas
-        ======================================================================== */
-        .background-decoration {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 150%;
-            height: 150%;
-            background: radial-gradient(circle, rgba(0,255,0,0.05) 0%, rgba(0,0,0,0) 70%);
-            transform: translate(-50%, -50%) rotate(0deg);
-            animation: rotateBackground 120s linear infinite;
-            z-index: 1;
-            opacity: 0.1;
-        }
+    .project-grid {
+      display:grid;
+      gap:40px;
+      grid-template-columns: repeat(auto-fit, minmax(300px,1fr));
+      align-items:start;
+    }
 
-        @keyframes rotateBackground {
-            from { transform: translate(-50%, -50%) rotate(0deg); }
-            to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
+    .project-item {
+      background:rgba(255,255,255,0.05);
+      border:1px solid var(--color-accent);
+      border-radius:5px;
+      padding:20px;
+      transition: var(--transition-fast);
+      position:relative;
+      overflow:hidden;
+      box-shadow:0 0 10px transparent;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
 
-        /* ========================================================================
-            Partículas Flotantes de Fondo
-        ======================================================================== */
-        .particle {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 8px;
-            height: 8px;
-            background: rgba(0, 255, 0, 0.6);
-            border-radius: 50%;
-            animation: float 10s linear infinite;
-            pointer-events: none;
-        }
+    .project-item:hover {
+      transform:scale(1.02);
+      box-shadow:0 0 20px var(--color-accent);
+    }
 
-        @keyframes float {
-            from { transform: translateY(0) translateX(0); opacity: 1; }
-            to { transform: translateY(-800px) translateX(400px); opacity: 0; }
-        }
+    .project-item h3 {
+      font-family: var(--font-heading);
+      font-size:1.5rem;
+      color: var(--color-accent);
+      margin-bottom:10px;
+    }
 
-        /* ========================================================================
-            Responsive Design (Ajustes adicionales si es necesario)
-        ======================================================================== */
-        @media (min-width: 1024px) {
-            .main-container {
-                padding: 50px;
-                max-width: 800px;
-            }
+    .project-item p {
+      color:var(--color-muted);
+      font-size:0.9rem;
+      line-height:1.4;
+      flex:1;
+    }
 
-            nav a {
-                font-size: 1.2rem;
-                margin: 0 15px;
-            }
+    .project-item video {
+      width:100%;
+      border-radius:5px;
+      border:1px solid var(--color-accent);
+    }
 
-            header h1 {
-                font-size: 3rem;
-            }
+    .gallery {
+      padding:150px 20px;
+      position:relative;
+    }
 
-            header p {
-                font-size: 1.2rem;
-            }
+    .image-grid {
+      display:grid;
+      gap:20px;
+      grid-template-columns:repeat(auto-fit, minmax(200px,1fr));
+    }
 
-            .btn-custom {
-                font-size: 1.2rem;
-                padding: 15px 30px;
-            }
+    .image-item {
+      position:relative;
+      overflow:hidden;
+      border-radius:5px;
+      border:1px solid var(--color-accent);
+      transition: var(--transition-fast);
+    }
 
-            .music-bar .icon {
-                width: 60px;
-                height: 60px;
-            }
+    .image-item:hover {
+      transform:scale(1.05);
+      box-shadow:0 0 20px var(--color-accent);
+    }
 
-            .ticker {
-                font-size: 20px;
-                padding: 15px 0;
-            }
-        }
+    .image-item img {
+      display:block;
+      width:100%;
+      height:auto;
+    }
 
-        /* Ajustes específicos de Bootstrap si es necesario */
-    </style>
+    .testimonials {
+      padding:150px 20px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .testimonials-carousel {
+      max-width:800px;
+      margin:0 auto;
+      position:relative;
+      opacity:1;
+      transform:translateY(0);
+      transition:opacity var(--transition-slow), transform var(--transition-slow);
+    }
+
+    .testimonial {
+      background:rgba(255,255,255,0.05);
+      border:1px solid var(--color-accent);
+      border-radius:5px;
+      padding:30px;
+      text-align:center;
+      position:absolute;
+      width:100%;
+      left:0; top:0;
+      opacity:0;
+      transform:translateX(50px);
+      transition: var(--transition-slow) ease;
+    }
+
+    .testimonial.active {
+      opacity:1;
+      transform:translateX(0);
+      position:relative;
+    }
+
+    .testimonial p {
+      font-size:1rem;
+      color:var(--color-muted);
+      margin-bottom:20px;
+    }
+
+    .testimonial cite {
+      font-style:normal;
+      font-weight:bold;
+      color:var(--color-accent);
+    }
+
+    .carousel-controls {
+      margin-top:50px;
+      display:flex;
+      justify-content:center;
+      gap:10px;
+    }
+
+    .carousel-controls button {
+      width:15px; height:15px;
+      background: var(--color-accent);
+      border:none;
+      border-radius:50%;
+      cursor:pointer;
+      opacity:0.5;
+      transition: var(--transition-fast);
+    }
+
+    .carousel-controls button.active {
+      opacity:1;
+      transform:scale(1.5);
+      box-shadow:0 0 10px var(--color-accent);
+    }
+
+    .contact-section {
+      text-align:center;
+      padding:150px 20px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .contact-section p {
+      font-size:1.1rem;
+      color:var(--color-muted);
+      margin-bottom:30px;
+      opacity:0;
+      transform:translateY(20px);
+      transition:opacity var(--transition-medium), transform var(--transition-medium);
+    }
+
+    .contact-section p.visible {
+      opacity:1;
+      transform:translateY(0);
+    }
+
+    .contact-button {
+      display:inline-block;
+      padding:15px 30px;
+      background: var(--color-accent);
+      color:#000;
+      border-radius:5px;
+      font-weight:600;
+      text-transform:uppercase;
+      letter-spacing:1px;
+      position:relative;
+      overflow:hidden;
+      opacity:0;
+      transform:translateY(20px);
+      transition:opacity var(--transition-medium), transform var(--transition-medium);
+    }
+
+    .contact-button.visible {
+      opacity:1; transform:translateY(0);
+    }
+
+    .contact-button:hover {
+      background:#07e686;
+      box-shadow:0 0 15px var(--color-accent);
+    }
+
+    .contact-button::before {
+      content:"";
+      position:absolute;
+      top:0; left:-100%;
+      width:100%; height:100%;
+      background:linear-gradient(to right, transparent, rgba(0,0,0,0.5), transparent);
+      animation: scanner 2s linear infinite;
+    }
+
+    @keyframes scanner {
+      0% {left:-100%;}
+      50% {left:100%;}
+      100% {left:-100%;}
+    }
+
+    footer {
+      background:rgba(0,0,0,0.5);
+      border-top:1px solid var(--color-accent);
+      padding:20px;
+      text-align:center;
+      font-size:0.8rem;
+      position:relative;
+      overflow:hidden;
+      color:var(--color-text);
+    }
+
+    footer p {
+      margin-bottom:5px;
+      color:var(--color-muted);
+    }
+
+    footer a {
+      color:var(--color-accent);
+      text-decoration:none;
+      transition: var(--transition-fast);
+    }
+
+    footer a:hover {
+      text-decoration:underline;
+    }
+
+    @media(max-width: var(--mobile-break)) {
+      .hero h1 {
+        font-size:2.5rem;
+      }
+
+      .project-grid, .image-grid {
+        grid-template-columns:1fr;
+      }
+    }
+  </style>
 </head>
 <body>
 
-    <!-- ========================================================================
-        Elementos de Fondo Decorativos
-    ======================================================================== -->
-    <canvas id="matrix"></canvas>
-    <div class="background-decoration"></div>
-
-    <!-- ========================================================================
-        Contenedor Principal
-    ======================================================================== -->
-    <div class="container main-container my-5">
-
-        <!-- Header con Animación de Tipeo -->
-        <header class="mb-4">
-            <h1>INMORTAL</h1>
-            <p>Portafolio</p>
-        </header>
-
-        <!-- Barra de Navegación (Usando Navbar de Bootstrap) -->
-        <nav class="navbar navbar-expand-lg navbar-dark">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="Inicio.html">INMORTAL</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="Inicio.html">Inicio</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="Evidencias/Menu.html">Evidencias</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="contacto.html">Contacto</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-
-        <!-- Sección Inicio -->
-        <section id="inicio" class="active">
-            <div class="row justify-content-center">
-                <div class="col-md-8">
-                    <h2>Bienvenido a INMORTAL</h2>
-                    <p>Explora nuestros proyectos y descubre más sobre nuestro portafolio.</p>
-                    <p><a href="Evidencias/Menu.html" class="btn btn-custom">Ver Proyectos</a></p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Sección Evidencias (Proyectos) -->
-        <section id="evidencias">
-            <div class="row justify-content-center">
-                <div class="col-md-10">
-                    <h2>Proyectos Destacados</h2>
-                    <div class="feed">
-                        <div class="feed-item">
-                            <h2><a href="Evidencias/Menu.html">PROYECTOS</a></h2>
-                            <span>Sábado, 23 de noviembre de 2024</span>
-                            <p>Este proyecto explora la intersección de caminos y decisiones. Se centra en cómo las personas enfrentan momentos clave en sus vidas y las repercusiones de esas decisiones.</p>
-                        </div>
-                        <div class="feed-item">
-                            <h2><a href="#">Pecas de bambú</a></h2>
-                            <span>Jueves, 21 de noviembre de 2024</span>
-                            <p>Un proyecto experimental que mezcla arte digital y tecnología. Utiliza texturas inspiradas en la naturaleza, como las pecas de bambú, para crear una experiencia visual única.</p>
-                        </div>
-                        <div class="feed-item">
-                            <h2><a href="#">Sueños digitales</a></h2>
-                            <span>Lunes, 25 de noviembre de 2024</span>
-                            <p>Este proyecto explora la fusión entre los sueños y la tecnología en un entorno virtual. Busca inspirar reflexiones sobre la realidad y la percepción digital en el futuro.</p>
-                        </div>
-                    </div>
-                    <p><a href="contacto.html" class="btn btn-custom">Contactar</a></p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Sección Contacto -->
-        <section id="contacto">
-            <div class="row justify-content-center">
-                <div class="col-md-8">
-                    <h2>Contacto</h2>
-                    <div class="info">
-                        <h3>Información de Contacto</h3>
-                        <p>Email: <a href="mailto:info@inmortal.com">info@inmortal.com</a></p>
-                        <p>Teléfono: +123 456 7890</p>
-
-                        <!-- Formulario de Contacto (Usando Formulario de Bootstrap) -->
-                        <form action="tu_script_de_procesamiento.php" method="POST" class="mt-4">
-                            <div class="mb-3">
-                                <label for="nombre" class="form-label">Nombre:</label>
-                                <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Tu nombre" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Email:</label>
-                                <input type="email" class="form-control" id="email" name="email" placeholder="Tu email" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="mensaje" class="form-label">Mensaje:</label>
-                                <textarea class="form-control" id="mensaje" name="mensaje" rows="5" placeholder="Tu mensaje" required></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-custom">Enviar</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </section>
-
+  <!-- Pantalla de Carga -->
+  <div class="loader-overlay" id="loaderOverlay">
+    <div class="loader-text">Cargando...</div>
+    <div class="loader-bar-container">
+      <div class="loader-bar" id="loaderBar"></div>
     </div>
+    <div class="loader-percentage" id="loaderPercentage">0%</div>
+  </div>
 
-    <!-- ========================================================================
-        Botón de Contribuciones
-    ======================================================================== -->
-    <a href="https://www.buymeacoffee.com/Inmortal" class="contribution-button">
-        <img src="https://img.buymeacoffee.com/button-api/?text=Contribuciones&emoji=💻️&slug=Inmortal&button_colour=001905&font_colour=ffffff&font_family=Lato&outline_colour=ffffff&coffee_colour=FFDD00" alt="Contribuciones">
-    </a>
+  <div class="particles"></div>
 
-    <!-- ========================================================================
-        Ticker de Texto
-    ======================================================================== -->
-    <div class="ticker">
-        <div class="ticker-text">
-            ¡Bienvenido a INMORTAL! Últimas actualizaciones: Nuevos proyectos y mejoras en la página en proceso. ¡Mantente al tanto! | 
-            Anuncio: La próxima versión incluirá mejoras de rendimiento y nuevas funcionalidades interactivas. ¡No te lo pierdas! | 
-            Proyecto destacado: "Sueños Digitales", explorando la fusión entre la tecnología y los sueños en un entorno inmersivo. Más detalles en la sección de Proyectos. | 
-            Recordatorio: Puedes contribuir al proyecto a través del botón de "Contribuciones" en la página. Apreciamos tu apoyo para seguir creando contenido innovador. | 
-            Tip de seguridad: Recuerda actualizar tus contraseñas regularmente y activar la autenticación en dos pasos para proteger tu información. ¡Mantente seguro en línea!
-        </div>
+  <header id="mainHeader">
+    <div class="branding">
+      <a href="#">LOGO</a>
     </div>
+    <!-- Botón Filtrar sin input -->
+    <div class="position-relative" style="display:inline-block;">
+      <button class="filter-btn" id="filter-btn">Filtrar</button>
+      <div class="filter-panel" id="filter-panel">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="Inicio.html">Inicio</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="Evidencias/Menu.html">Evidencias</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="contacto.html">Contacto</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </header>
 
-    <!-- ========================================================================
-        Audio de Fondo
-    ======================================================================== -->
-    <audio id="background-audio" autoplay loop>
-        <source src="Menu.mp3" type="audio/mpeg">
-        Tu navegador no soporta el elemento de audio.
-    </audio>
+  <!-- HERO -->
+  <section class="hero reveal" id="hero">
+    <h1 data-text="Interfaz Minimalista Futurista">Interfaz Minimalista Futurista</h1>
+    <p>Creando experiencias digitales imposibles, fusionando estética, tecnología y efectos glitch que desafían la lógica, con auroras danzantes y partículas interactivas.</p>
+  </section>
 
-    <!-- ========================================================================
-        JavaScript de Bootstrap y Personalizado
-    ======================================================================== -->
-    <!-- Bootstrap JS Bundle con Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // ========================================================================
-        // Actualizar la Hora Local
-        // ========================================================================
-        function updateLocalTime() {
-            const now = new Date();
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            const seconds = now.getSeconds().toString().padStart(2, '0');
-            // Si tienes un elemento con id 'hora-local', puedes actualizarlo aquí
-            // document.getElementById('hora-local').textContent = `${hours}:${minutes}:${seconds}`;
+  <!-- PROYECTOS -->
+  <section class="projects reveal" id="proyectos">
+    <h2 class="section-title">Proyectos Destacados</h2>
+    <div class="project-grid">
+      <div class="project-item">
+        <h3>Proyecto A</h3>
+        <video controls muted>
+          <source src="https://www.example.com/video1.mp4" type="video/mp4">
+        </video>
+        <p>Una experiencia web inmersiva con parallax y animaciones 3D.</p>
+      </div>
+      <div class="project-item">
+        <h3>Proyecto B</h3>
+        <video controls muted>
+          <source src="https://www.example.com/video2.mp4" type="video/mp4">
+        </video>
+        <p>Plataforma interactiva con realidad aumentada y visuales reactivos.</p>
+      </div>
+      <div class="project-item">
+        <h3>Proyecto C</h3>
+        <video controls muted>
+          <source src="https://www.example.com/video3.mp4" type="video/mp4">
+        </video>
+        <p>Landing page con tipografía deformable y espectros cromáticos, impulsada por IA.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- GALERÍA -->
+  <section class="gallery reveal" id="gallery">
+    <h2 class="section-title">Galería</h2>
+    <div class="image-grid">
+      <div class="image-item">
+        <img src="https://www.example.com/image1.jpg" alt="Imagen 1">
+      </div>
+      <div class="image-item">
+        <img src="https://www.example.com/image2.jpg" alt="Imagen 2">
+      </div>
+      <div class="image-item">
+        <img src="https://www.example.com/image3.jpg" alt="Imagen 3">
+      </div>
+      <div class="image-item">
+        <img src="https://www.example.com/image4.jpg" alt="Imagen 4">
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIOS -->
+  <section class="testimonials reveal" id="testimonials">
+    <h2 class="section-title">Lo Que Dicen</h2>
+    <div class="testimonials-carousel">
+      <div class="testimonial active">
+        <p>"Increíble trabajo, el resultado superó todas mis expectativas."</p>
+        <cite>— Juan Pérez</cite>
+      </div>
+      <div class="testimonial">
+        <p>"Profesional, creativo y fácil de colaborar. Una visión futurista."</p>
+        <cite>— María López</cite>
+      </div>
+      <div class="testimonial">
+        <p>"El diseño y las animaciones elevaron nuestro producto a otro nivel."</p>
+        <cite>— Carlos Gómez</cite>
+      </div>
+      <div class="carousel-controls">
+        <button class="active"></button>
+        <button></button>
+        <button></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACTO -->
+  <section class="contact-section reveal" id="contact">
+    <h2 class="section-title">Hablemos</h2>
+    <p>¿Listo para impulsar tu siguiente proyecto? Aquí la tecnología, el arte y la interacción convergen. Contáctame.</p>
+    <a href="mailto:info@tusitio.com" class="contact-button">Contactar</a>
+  </section>
+
+  <footer>
+    <p>© 2024 Futurismo. Todos los derechos reservados.</p>
+    <p><a href="#">Privacidad</a> | <a href="#">Términos</a></p>
+  </footer>
+
+  <!-- AUDIO DE FONDO -->
+  <audio id="background-audio" loop>
+    <source src="Audio/fondo.mp3" type="audio/mpeg">
+    Tu navegador no soporta el elemento de audio.
+  </audio>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // Pantalla de carga
+    let progress = 0;
+    const loaderOverlay = document.createElement('div');
+    const loaderBar = document.getElementById('loaderBar');
+    const loaderPercentage = document.getElementById('loaderPercentage');
+    const loaderOverlayEl = document.getElementById('loaderOverlay');
+
+    const simulateLoading = setInterval(() => {
+      progress += 1;
+      loaderBar.style.width = progress + '%';
+      loaderPercentage.textContent = progress + '%';
+
+      if(progress >= 100) {
+        clearInterval(simulateLoading);
+        loaderOverlayEl.style.opacity = '0';
+        setTimeout(()=>{
+          loaderOverlayEl.style.display = 'none';
+          // Mostrar el header y hero con animación
+          const mainHeader = document.getElementById('mainHeader');
+          mainHeader.classList.add('visible');
+
+          const heroSection = document.querySelector('.hero');
+          heroSection.classList.add('visible');
+        },500);
+      }
+    }, 30);
+
+    const filterBtn = document.getElementById('filter-btn');
+    const filterPanel = document.getElementById('filter-panel');
+
+    filterBtn.addEventListener('click', () => {
+      if (filterPanel.style.display === 'block') {
+        filterPanel.style.display = 'none';
+      } else {
+        filterPanel.style.display = 'block';
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!filterPanel.contains(e.target) && !filterBtn.contains(e.target)) {
+        filterPanel.style.display = 'none';
+      }
+    });
+
+    // IntersectionObserver para scroll reveal con fade in y fade out
+    const reveals = document.querySelectorAll('.reveal, .section-title, .contact-section p, .contact-button');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if(entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        } else {
+          entry.target.classList.remove('visible');
         }
+      });
+    }, {threshold:0.1});
+    reveals.forEach(el => observer.observe(el));
 
-        // Actualizar hora cada segundo
-        setInterval(updateLocalTime, 1000);
-        updateLocalTime(); // Llamar una vez al cargar la página
+    // Carrusel Testimonios
+    const testimonials = document.querySelectorAll('.testimonial');
+    const buttons = document.querySelectorAll('.carousel-controls button');
+    let currentIndex = 0;
 
-        // ========================================================================
-        // Control de Audio de Fondo
-        // ========================================================================
-        const audio = new Audio('Menu.mp3');
-        audio.loop = true;
-        audio.volume = 0.5;
-        let isPlaying = false;
+    buttons.forEach((btn,i)=>{
+      btn.addEventListener('click',()=>{
+        changeTestimonial(i);
+      });
+    });
 
-        // Reproducir el audio solo después de interactuar con la página
-        document.body.addEventListener('click', () => {
-            if (audio.paused && !isPlaying) {
-                audio.play();
-                isPlaying = true;
-            }
-        });
+    function changeTestimonial(index) {
+      testimonials[currentIndex].classList.remove('active');
+      buttons[currentIndex].classList.remove('active');
+      currentIndex = index;
+      testimonials[currentIndex].classList.add('active');
+      buttons[currentIndex].classList.add('active');
+    }
 
-        // ========================================================================
-        // Generación Dinámica de Partículas Flotantes
-        // ========================================================================
-        const numParticles = 30; // Reducido para mejor rendimiento
+    // Partículas aleatorias
+    const particlesContainer = document.querySelector('.particles');
+    const particleCount = 50;
+    for(let i=0;i<particleCount;i++){
+      const p = document.createElement('div');
+      p.classList.add('particle');
+      const size = Math.random()*5+5;
+      p.style.width = size+'px';
+      p.style.height=size+'px';
+      p.style.left = (Math.random()*100)+'vw';
+      p.style.top = (Math.random()*100)+'vh';
+      p.style.animationDelay = (Math.random()*5)+'s';
+      p.style.animationDuration = (10+Math.random()*10)+'s';
+      particlesContainer.appendChild(p);
+    }
 
-        for (let i = 0; i < numParticles; i++) {
-            const particle = document.createElement('div');
-            particle.classList.add('particle');
-            particle.style.left = `${Math.random() * 100}%`;
-            particle.style.top = `${Math.random() * 100}%`;
-            particle.style.animationDuration = `${Math.random() * 5 + 5}s`;
-            particle.style.animationDelay = `${Math.random() * 10}s`;
-            particle.style.width = `${Math.random() * 5 + 5}px`;
-            particle.style.height = particle.style.width;
-            document.body.appendChild(particle);
-        }
-
-        // ========================================================================
-        // Función para mostrar secciones
-        // ========================================================================
-        function showSection(section) {
-            const sections = document.querySelectorAll('section');
-            sections.forEach(sec => sec.classList.remove('active'));
-            document.getElementById(section).classList.add('active');
-        }
-
-        // ========================================================================
-        // Configuración del efecto Matrix
-        // ========================================================================
-        const canvas = document.getElementById('matrix');
-        const ctx = canvas.getContext('2d');
-
-        function resizeCanvas() {
-            // Ajustar el canvas al tamaño de la pantalla
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-
-        resizeCanvas();
-
-        // Caracteres para el efecto Matrix
-        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%';
-        const matrixChars = characters.split('');
-
-        // Configuración de columnas
-        const fontSize = 16;
-        let columns = Math.floor(canvas.width / fontSize);
-        let drops = Array(columns).fill(1);
-
-        // Ajustar columnas al redimensionar la ventana
-        window.addEventListener('resize', () => {
-            resizeCanvas();
-            columns = Math.floor(canvas.width / fontSize);
-            drops = Array(columns).fill(1);
-        });
-
-        // Dibujar el efecto Matrix
-        function drawMatrix() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.fillStyle = 'var(--link-color)';
-            ctx.font = `${fontSize}px monospace`;
-
-            for (let i = 0; i < drops.length; i++) {
-                const text = matrixChars[Math.floor(Math.random() * matrixChars.length)];
-                const x = i * fontSize;
-                const y = drops[i] * fontSize;
-
-                ctx.fillText(text, x, y);
-
-                if (y > canvas.height && Math.random() > 0.975) {
-                    drops[i] = 0;
-                }
-
-                drops[i]++;
-            }
-        }
-
-        // Ejecutar el efecto
-        setInterval(drawMatrix, 50);
-    </script>
-
+    // Reproducir el audio tras la interacción del usuario
+    document.body.addEventListener('click', () => {
+      const audioElement = document.getElementById('background-audio');
+      if (audioElement.paused) {
+        audioElement.play();
+      }
+    }, {once:true});
+  </script>
 </body>
 </html>
+

@@ -1,397 +1,424 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Contacto - José Armando Espinosa Martínez</title>
     <style>
-        /* ========================================================================
-            Reset Básico
-        ======================================================================== */
+        /* Reset */
         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            margin:0; padding:0; box-sizing:border-box;
         }
 
-        /* ========================================================================
-            Variables CSS para Temas y Colores
-        ======================================================================== */
         :root {
-            --background-color: #000000; /* Fondo negro */
-            --text-color: #00ff00; /* Texto verde terminal */
-            --secondary-text-color: #cccccc; /* Texto secundario gris */
-            --link-color: #00ff00; /* Enlaces verdes */
-            --button-bg: #00ff00; /* Fondo botones verde */
-            --button-text: #000000; /* Texto botones negro */
-            --button-bg-hover: #00cc00; /* Fondo botones al pasar */
-            --input-border: #00ff00; /* Bordes de inputs */
-            --input-focus-border: #ffffff; /* Bordes de inputs al enfocar */
-            --input-bg: transparent; /* Fondo inputs transparente */
-            --shadow-color: rgba(0, 255, 0, 0.3); /* Sombra verde */
+            --bg-color: #000;
+            --text-color: #0aff99;
+            --secondary-text: #cccccc;
+            --link-color: #0aff99;
+            --button-bg: #0aff99;
+            --button-text: #000000;
+            --button-hover-bg: #00cc66;
+            --input-border: #0aff99;
+            --input-focus: #ffffff;
+            --shadow-color: rgba(0,255,153,0.3);
+            --transition: 0.5s ease;
+            --aurora1: #0aff99;
+            --aurora2: #0af9ff;
         }
 
-        /* ========================================================================
-            Configuración Global del Body
-        ======================================================================== */
         body {
-            font-family: 'Courier New', Courier, monospace;
-            background: var(--background-color);
+            font-family:'Courier New', Courier, monospace;
+            background:var(--bg-color);
+            color:var(--text-color);
+            overflow:hidden;
+            height:100vh;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            position:relative;
+            padding:20px;
+        }
+
+        /* Auroras de fondo */
+        body::before, body::after {
+            content:"";
+            position:fixed;
+            top:0;left:0;
+            width:100vw; height:100vh;
+            pointer-events:none;
+            z-index:-3;
+        }
+
+        body::before {
+            background: radial-gradient(circle at 50% 50%, var(--aurora1) 5%, transparent 60%);
+            opacity:0.1;
+            mix-blend-mode: screen;
+            animation: aurora1 20s ease-in-out infinite alternate;
+        }
+
+        body::after {
+            background: radial-gradient(circle at 80% 20%, var(--aurora2) 5%, transparent 60%);
+            opacity:0.1;
+            mix-blend-mode: screen;
+            animation: aurora2 30s ease-in-out infinite alternate;
+        }
+
+        @keyframes aurora1 {
+            0% {transform:translate(-10%,-10%) scale(1);}
+            50% {transform:translate(10%,20%) scale(1.3);}
+            100% {transform:translate(-5%,-15%) scale(1);}
+        }
+
+        @keyframes aurora2 {
+            0% {transform:translate(10%,10%) scale(1);}
+            50% {transform:translate(-10%,-10%) scale(1.2);}
+            100% {transform:translate(5%,10%) scale(1);}
+        }
+
+        /* Pantalla de carga */
+        .loader-overlay {
+            position:fixed;
+            top:0;left:0;
+            width:100vw; height:100vh;
+            background:#000;
+            display:flex; flex-direction:column;
+            align-items:center; justify-content:center;
+            z-index:9999;
+        }
+
+        .loader-text {
+            font-family:'Courier New', monospace;
+            font-size:1.5rem;
             color: var(--text-color);
-            overflow-x: hidden;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            padding: 20px; /* Añadido para evitar que el contenido toque los bordes en móviles */
-            transition: background-color 0.5s, color 0.5s;
+            margin-bottom:20px;
+            text-transform:uppercase;
+            letter-spacing:2px;
         }
 
-        /* ========================================================================
-            Contenedor Principal Estilo Terminal
-        ======================================================================== */
-        .container {
-            max-width: 800px; /* Reducido de 1200px a 800px */
-            width: 100%;
-            padding: 20px 15px; /* Reducido de 30px 20px a 20px 15px */
-            background: rgba(0, 0, 0, 0.85); /* Fondo semi-transparente */
-            border-radius: 10px; /* Reducido de 15px a 10px */
-            box-shadow: 0 5px 15px var(--shadow-color); /* Reducido de 10px 20px a 5px 15px */
-            position: relative;
-            z-index: 2; /* Para asegurar que el contenido quede sobre el fondo */
+        .loader-bar-container {
+            width:80%;
+            background:rgba(0,255,153,0.1);
+            border:2px solid var(--text-color);
+            border-radius:5px;
+            overflow:hidden;
+            margin-bottom:15px;
         }
 
-        /* ========================================================================
-            Barra de Navegación Superior
-        ======================================================================== */
+        .loader-bar {
+            width:0%;
+            height:20px;
+            background:var(--text-color);
+            transition:width 0.1s;
+        }
+
+        .loader-percentage {
+            font-family:'Courier New', monospace;
+            font-size:1.2rem;
+            color:var(--text-color);
+            letter-spacing:2px;
+        }
+
+        /* Navegación */
         nav {
-            background-color: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-            padding: 10px 0; /* Reducido de 15px a 10px */
-            border-bottom: 1px solid var(--link-color);
-            margin-bottom: 30px; /* Reducido de 50px a 30px */
+            background:rgba(0,0,0,0.5);
+            display:flex;
+            justify-content:center;
+            border-bottom:1px solid var(--link-color);
+            margin-bottom:20px;
+            padding:10px 0;
+            width:100%;
+            max-width:800px;
         }
 
         nav a {
-            color: var(--link-color);
-            text-decoration: none;
-            margin: 0 15px; /* Reducido de 20px a 15px */
-            font-size: 1rem; /* Reducido de 1.2rem a 1rem */
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            position: relative;
-            transition: color 0.3s, transform 0.3s;
+            color:var(--link-color);
+            text-decoration:none;
+            margin:0 15px;
+            font-size:1rem;
+            text-transform:uppercase;
+            letter-spacing:2px;
+            position:relative;
+            transition:color 0.3s, transform 0.3s;
         }
 
         nav a::after {
-            content: '';
-            position: absolute;
-            width: 0%;
-            height: 2px;
-            bottom: -5px;
-            left: 0;
-            background-color: var(--link-color);
-            transition: width 0.3s;
+            content:"";
+            position:absolute;
+            width:0%;height:2px;
+            bottom:-5px;left:0;
+            background:var(--link-color);
+            transition:width 0.3s;
         }
 
         nav a:hover {
-            color: var(--button-bg-hover);
-            transform: scale(1.05); /* Reducido de 1.1 a 1.05 */
+            color: var(--button-hover-bg);
+            transform:scale(1.05);
         }
 
         nav a:hover::after {
-            width: 100%;
+            width:100%;
         }
 
-        /* ========================================================================
-            Sección de Contacto
-        ======================================================================== */
+        /* Sección contacto */
         #contacto {
-            text-align: center;
-            padding: 40px 15px; /* Reducido de 50px 20px a 40px 15px */
-            background: rgba(0, 0, 0, 0.8);
-            border-radius: 10px; /* Reducido de 15px a 10px */
-            box-shadow: 0 5px 15px var(--shadow-color); /* Reducido de 10px 20px a 5px 15px */
-            z-index: 2;
+            background:rgba(0,0,0,0.5);
+            border-radius:10px;
+            box-shadow:0 5px 15px var(--shadow-color);
+            padding:30px 20px;
+            text-align:center;
+            max-width:800px;
+            width:100%;
+            opacity:0;
+            transform:translateY(20px);
+            transition:opacity 1s ease, transform 1s ease;
         }
 
         #contacto h1 {
-            font-size: 2rem; /* Reducido de 2.5rem a 2rem */
+            font-size:2rem;
             color: var(--text-color);
-            margin-bottom: 15px; /* Reducido de 20px a 15px */
+            margin-bottom:15px;
+            opacity:0;
+            transform:translateY(20px);
+            transition:var(--transition);
         }
 
         #contacto p {
-            font-size: 1rem; /* Reducido de 1.2rem a 1rem */
-            margin-bottom: 30px; /* Reducido de 40px a 30px */
-            color: var(--secondary-text-color);
+            font-size:1rem;
+            color:var(--secondary-text);
+            margin-bottom:30px;
+            opacity:0;
+            transform:translateY(20px);
+            transition:var(--transition);
         }
 
-        /* ========================================================================
-            Formulario de Contacto
-        ======================================================================== */
+        /* Formulario */
         .formulario {
-            max-width: 700px; /* Reducido de 800px a 700px */
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px; /* Reducido de 20px a 15px */
-            justify-content: center;
+            display:flex;
+            flex-direction:column;
+            gap:15px;
+            opacity:0;
+            transform:translateY(20px);
+            transition:var(--transition);
         }
 
         .form-group {
-            display: flex;
-            flex-direction: column;
-            position: relative;
+            position:relative;
         }
 
         .form-group input,
         .form-group textarea {
-            width: 100%;
-            padding: 12px; /* Reducido de 15px a 12px */
-            border: 2px solid var(--input-border);
-            background: var(--input-bg);
+            width:100%;
+            padding:12px;
+            border:2px solid var(--input-border);
+            background:transparent;
             color: var(--text-color);
-            border-radius: 5px;
-            font-size: 0.9rem; /* Reducido de 1rem a 0.9rem */
-            outline: none;
-            transition: all 0.3s ease;
+            border-radius:5px;
+            font-size:0.9rem;
+            outline:none;
+            transition:border-color 0.3s, box-shadow 0.3s;
         }
 
         .form-group textarea {
-            resize: none;
-            height: 120px; /* Reducido de 150px a 120px */
+            resize:none;
+            height:100px;
         }
 
         .form-group input:focus,
         .form-group textarea:focus {
-            border-color: var(--input-focus-border);
-            box-shadow: 0 0 10px var(--text-color);
+            border-color: var(--input-focus);
+            box-shadow:0 0 10px var(--input-focus);
         }
 
         .form-group label {
-            position: absolute;
-            top: 12px; /* Reducido de 15px a 12px */
-            left: 12px; /* Reducido de 15px a 12px */
-            font-size: 0.9rem; /* Reducido de 1rem a 0.9rem */
-            color: var(--secondary-text-color);
-            pointer-events: none;
-            transition: all 0.3s ease;
+            position:absolute;
+            top:12px;left:12px;
+            font-size:0.9rem;
+            color:var(--secondary-text);
+            pointer-events:none;
+            transition:all 0.3s ease;
         }
 
         .form-group input:focus + label,
         .form-group input:not(:placeholder-shown) + label,
         .form-group textarea:focus + label,
         .form-group textarea:not(:placeholder-shown) + label {
-            top: -10px;
-            left: 8px; /* Reducido de 10px a 8px */
-            font-size: 0.8rem; /* Reducido de 0.9rem a 0.8rem */
-            color: var(--text-color);
+            top:-10px;left:8px;
+            font-size:0.8rem;
+            color:var(--text-color);
         }
 
-        /* ========================================================================
-            Botón Enviar
-        ======================================================================== */
         .boton {
-            text-align: center;
-            margin-top: 15px; /* Reducido de 20px a 15px */
-            grid-column: span 2;
+            text-align:center;
+            margin-top:15px;
         }
 
         .boton button {
-            background: var(--button-bg);
+            background:var(--button-bg);
             color: var(--button-text);
-            padding: 12px 25px; /* Reducido de 15px 30px a 12px 25px */
-            border: none;
-            border-radius: 5px;
-            font-size: 1rem; /* Reducido de 1.2rem a 1rem */
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            padding:12px 25px;
+            border:none;
+            border-radius:5px;
+            font-size:1rem;
+            font-weight:bold;
+            cursor:pointer;
+            transition:all 0.3s ease;
         }
 
         .boton button:hover {
-            background: var(--button-bg-hover);
-            color: #fff;
-            box-shadow: 0 5px 10px var(--shadow-color); /* Reducido de 8px 15px a 5px 10px */
+            background:var(--button-hover-bg);
+            color:#fff;
+            box-shadow:0 5px 10px var(--shadow-color);
         }
 
-        /* ========================================================================
-            QR y Mensaje de Apoyo
-        ======================================================================== */
         .qr-container {
-            margin-top: 20px; /* Reducido de 30px a 20px */
-            text-align: center;
-            grid-column: span 2;
+            margin-top:20px;
+            text-align:center;
+            opacity:0;
+            transform:translateY(20px);
+            transition:var(--transition);
         }
 
         .qr-container img {
-            width: 80px; /* Reducido de 100px a 80px */
-            height: 80px; /* Reducido de 100px a 80px */
-            border-radius: 8px; /* Reducido de 10px a 8px */
-            box-shadow: 0 0 8px var(--shadow-color); /* Reducido de 0 0 10px a 0 0 8px */
+            width:80px;
+            height:80px;
+            border-radius:8px;
+            box-shadow:0 0 8px var(--shadow-color);
         }
 
         .qr-message {
-            margin-top: 10px; /* Reducido de 15px a 10px */
-            font-size: 0.9rem; /* Reducido de 1rem a 0.9rem */
-            color: var(--secondary-text-color);
+            margin-top:10px;
+            font-size:0.9rem;
+            color:var(--secondary-text);
         }
 
         .qr-message a {
-            color: var(--link-color);
+            color:var(--link-color);
         }
 
-        /* ========================================================================
-            Botón de Contribuciones Animado
-        ======================================================================== */
+        /* Botón de Contribuciones */
         .contribution-button {
-            position: fixed;
-            bottom: 15px; /* Reducido de 20px a 15px */
-            right: 15px; /* Reducido de 20px a 15px */
-            z-index: 1000;
+            position:fixed;
+            bottom:15px; right:15px;
+            z-index:1000;
             animation: blinkEffect 2s infinite;
             transition: transform 0.3s ease;
         }
 
         @keyframes blinkEffect {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            0%,100% {opacity:1;}
+            50% {opacity:0.5;}
         }
 
         .contribution-button img {
-            width: 100px; /* Reducido de 120px a 100px */
-            height: auto;
-            transition: transform 0.5s ease;
+            width:100px; height:auto;
+            transition:transform 0.5s ease;
         }
 
         .contribution-button:hover img {
-            transform: scale(1.05) rotate(5deg); /* Reducido de 1.1 a 1.05 */
+            transform: scale(1.05) rotate(5deg);
         }
 
-        /* ========================================================================
-            Responsive Design
-        ======================================================================== */
-        @media (max-width: 768px) {
-            #contacto h1 {
-                font-size: 1.8rem; /* Reducido de 2rem a 1.8rem */
-            }
+        /* Estado visible */
+        nav.visible, #contacto.visible {
+            opacity:1;
+            transform:translateY(0);
+        }
 
-            #contacto p {
-                font-size: 0.95rem; /* Reducido de 1rem a 0.95rem */
-            }
+        #contacto h1.visible,
+        #contacto p.visible,
+        .formulario.visible,
+        .qr-container.visible {
+            opacity:1; transform:translateY(0);
+        }
 
-            .formulario {
-                grid-template-columns: 1fr;
-            }
-
-            .form-group {
-                flex-direction: row;
-            }
-
-            .form-group input,
-            .form-group textarea {
-                width: 100%;
-            }
-
-            .boton button {
-                width: 100%;
-                font-size: 0.95rem; /* Reducido de 1rem a 0.95rem */
-            }
-
+        @media(max-width:768px) {
             .qr-container img {
-                width: 70px; /* Reducido de 80px a 70px */
-                height: 70px; /* Reducido de 80px a 70px */
+                width:70px; height:70px;
             }
 
             .qr-message {
-                font-size: 0.85rem; /* Reducido de 0.9rem a 0.85rem */
+                font-size:0.85rem;
             }
         }
     </style>
 </head>
 <body>
-    <!-- ========================================================================
-        Contenedor Principal
-    ======================================================================== -->
-    <div class="container">
-        <!-- Barra de Navegación -->
-        <nav>
-            <a href="index.html">Menu</a>
-            <a href="Evidencias/Menu.html">Evidencias</a>
-            <a href="contacto.html">Contacto</a>
-        </nav>
-
-        <!-- Sección de Contacto -->
-        <section id="contacto">
-            <h1>Contacto</h1>
-            <p>¿Tienes preguntas o quieres colaborar? Completa el formulario y me pondré en contacto contigo.</p>
-
-            <!-- Formulario -->
-            <form class="formulario" id="contactForm">
-                <!-- Nombre -->
-                <div class="form-group">
-                    <input type="text" id="nombre" placeholder=" " required>
-                    <label for="nombre">Nombre Completo</label>
-                </div>
-
-                <!-- Correo Electrónico -->
-                <div class="form-group">
-                    <input type="email" id="correo" placeholder=" " required>
-                    <label for="correo">Correo Electrónico</label>
-                </div>
-
-                <!-- Teléfono -->
-                <div class="form-group">
-                    <input type="tel" id="telefono" placeholder=" " pattern="[0-9]{10}">
-                    <label for="telefono">Número de Teléfono</label>
-                </div>
-
-                <!-- Mensaje -->
-                <div class="form-group">
-                    <textarea id="mensaje" placeholder=" " required></textarea>
-                    <label for="mensaje">Tu Mensaje</label>
-                </div>
-
-                <!-- Botón Enviar -->
-                <div class="boton">
-                    <button type="submit">Enviar</button>
-                </div>
-            </form>
-
-            <!-- Imagen QR y mensaje de apoyo -->
-            <div class="qr-container">
-                <a href="https://www.buymeacoffee.com/Inmortal" target="_blank">
-                    <img src="IMG/COFFE.jpeg" alt="QR Code">
-                </a>
-                <div class="qr-message">
-                    <p>Si te gustaría apoyarme en mis proyectos futuros, escanea este código QR.</p>
-                </div>
-            </div>
-        </section>
+    <!-- Pantalla de Carga -->
+    <div class="loader-overlay" id="loaderOverlay">
+        <div class="loader-text">Cargando...</div>
+        <div class="loader-bar-container">
+            <div class="loader-bar" id="loaderBar"></div>
+        </div>
+        <div class="loader-percentage" id="loaderPercentage">0%</div>
     </div>
 
-    <!-- ========================================================================
-        Botón de Contribuciones
-    ======================================================================== -->
+    <!-- Barra de Navegación -->
+    <nav id="mainNav">
+        <a href="index.html">Menu</a>
+        <a href="Evidencias/Menu.html">Evidencias</a>
+        <a href="contacto.html">Contacto</a>
+    </nav>
+
+    <!-- Sección de Contacto -->
+    <section id="contacto">
+        <h1>Contacto</h1>
+        <p>¿Tienes preguntas o quieres colaborar? Completa el formulario y me pondré en contacto contigo.</p>
+
+        <!-- Formulario -->
+        <form class="formulario" id="contactForm">
+            <!-- Nombre -->
+            <div class="form-group">
+                <input type="text" id="nombre" placeholder=" " required>
+                <label for="nombre">Nombre Completo</label>
+            </div>
+
+            <!-- Correo Electrónico -->
+            <div class="form-group">
+                <input type="email" id="correo" placeholder=" " required>
+                <label for="correo">Correo Electrónico</label>
+            </div>
+
+            <!-- Teléfono -->
+            <div class="form-group">
+                <input type="tel" id="telefono" placeholder=" " pattern="[0-9]{10}">
+                <label for="telefono">Número de Teléfono</label>
+            </div>
+
+            <!-- Mensaje -->
+            <div class="form-group">
+                <textarea id="mensaje" placeholder=" " required></textarea>
+                <label for="mensaje">Tu Mensaje</label>
+            </div>
+
+            <!-- Botón Enviar -->
+            <div class="boton">
+                <button type="submit">Enviar</button>
+            </div>
+        </form>
+
+        <!-- Imagen QR y mensaje de apoyo -->
+        <div class="qr-container">
+            <a href="https://www.buymeacoffee.com/Inmortal" target="_blank">
+                <img src="IMG/COFFE.jpeg" alt="QR Code">
+            </a>
+            <div class="qr-message">
+                <p>Si te gustaría apoyarme en mis proyectos futuros, escanea este código QR.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Botón de Contribuciones -->
     <a href="https://www.buymeacoffee.com/Inmortal" class="contribution-button">
         <img src="https://img.buymeacoffee.com/button-api/?text=Contribuciones&emoji=💻️&slug=Inmortal&button_colour=001905&font_colour=ffffff&font_family=Lato&outline_colour=ffffff&coffee_colour=FFDD00" alt="Contribuciones">
     </a>
 
-    <!-- ========================================================================
-        Audio de Fondo
-    ======================================================================== -->
+    <!-- Audio de Fondo -->
     <audio id="background-audio" loop>
         <source src="Audio/atmosphere-sound.mp3" type="audio/mpeg">
         Tu navegador no soporta el elemento de audio.
     </audio>
 
-    <!-- ========================================================================
-        JavaScript
-    ======================================================================== -->
-    <!-- EmailJS SDK (Debe estar antes del script que lo utiliza) -->
+    <!-- EmailJS SDK -->
     <script type="text/javascript" src="https://cdn.emailjs.com/sdk/2.3.2/email.min.js"></script>
     <script type="text/javascript">
         (function(){
@@ -400,9 +427,43 @@
     </script>
 
     <script>
-        // ========================================================================
-        // Reproducir el audio solo después de interactuar con la página
-        // ========================================================================
+        // Simular carga
+        let progress = 0;
+        const loaderBar = document.getElementById('loaderBar');
+        const loaderPercentage = document.getElementById('loaderPercentage');
+        const loaderOverlay = document.getElementById('loaderOverlay');
+
+        const mainNav = document.getElementById('mainNav');
+        const contactoSection = document.getElementById('contacto');
+        const heroTitle = document.querySelector('#contacto h1');
+        const heroP = document.querySelector('#contacto p');
+        const formSection = document.querySelector('.formulario');
+        const qrContainer = document.querySelector('.qr-container');
+
+        const simulateLoading = setInterval(() => {
+            progress += 1;
+            loaderBar.style.width = progress + '%';
+            loaderPercentage.textContent = progress + '%';
+
+            if(progress >= 100) {
+                clearInterval(simulateLoading);
+                loaderOverlay.style.opacity = '0';
+                setTimeout(()=>{
+                    loaderOverlay.style.display = 'none';
+                    // Mostrar secciones con animación
+                    mainNav.classList.add('visible');
+                    contactoSection.classList.add('visible');
+                    setTimeout(()=>{
+                        heroTitle.classList.add('visible');
+                        heroP.classList.add('visible');
+                        formSection.classList.add('visible');
+                        qrContainer.classList.add('visible');
+                    },500);
+                },500);
+            }
+        }, 30);
+
+        // Reproducir el audio solo tras interacción
         document.body.addEventListener('click', () => {
             const audioElement = document.getElementById('background-audio');
             if (audioElement.paused) {
@@ -410,11 +471,8 @@
             }
         });
 
-        // ========================================================================
-        // Manejar el envío del formulario con EmailJS
-        // ========================================================================
+        // Enviar formulario con EmailJS
         const form = document.getElementById('contactForm');
-
         form.addEventListener('submit', function (e) {
             e.preventDefault();
 
@@ -439,4 +497,5 @@
     </script>
 </body>
 </html>
+
 
