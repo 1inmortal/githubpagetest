@@ -3,9 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Menú Estilo Matrix</title>
+    <title>Menú Estilo Futurista</title>
+    <!-- Fuentes Futuristas -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
     <style>
-        /* Estilos Globales */
+        :root {
+          --color-bg: #000;
+          --color-text: #fff;
+          --color-accent: #00ff00;
+          --color-secondary: #d3d3d3;
+          --transition: 0.5s ease;
+          --font-main: 'Share Tech Mono', monospace;
+          --font-heading: 'VT323', monospace;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,49 +26,109 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #000; /* Fondo negro */
-            color: #fff;
+            font-family: var(--font-main);
+            background-color: var(--color-bg);
+            color: var(--color-text);
             overflow: hidden;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
             position: relative;
         }
 
-        /* Animación de entrada */
-        body.fade-in {
-            animation: fadeIn 1.5s ease-in-out;
+        /* Pantalla de carga */
+        .loader-overlay {
+          position: fixed;
+          top:0; left:0;
+          width:100vw; height:100vh;
+          background:#000;
+          display:flex; flex-direction:column;
+          align-items:center; justify-content:center;
+          z-index:9999;
+          transition:opacity 0.5s ease;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        .loader-text {
+          font-family:'Courier New', monospace;
+          font-size:1.5rem;
+          color: var(--color-accent);
+          margin-bottom:20px;
+          text-transform:uppercase;
+          letter-spacing:2px;
         }
 
-        /* Fondo de Matrix */
-        canvas {
+        .loader-bar-container {
+          width:80%;
+          background:rgba(0,255,0,0.1);
+          border:2px solid var(--color-accent);
+          border-radius:5px;
+          overflow:hidden;
+          margin-bottom:15px;
+        }
+
+        .loader-bar {
+          width:0%;
+          height:20px;
+          background:var(--color-accent);
+          transition:width 0.1s;
+        }
+
+        .loader-percentage {
+          font-family:'Courier New', monospace;
+          font-size:1.2rem;
+          color:var(--color-accent);
+          letter-spacing:2px;
+        }
+
+        /* Video de fondo */
+        video {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -1; /* Detrás del contenido */
+            object-fit: cover;
+            z-index: -2;
+            filter: brightness(0.4);
+        }
+
+        /* Canvas Matrix Effect */
+        canvas#matrix {
+            position: fixed;
+            top:0; left:0;
+            width:100%;
+            height:100%;
+            z-index:-1;
         }
 
         /* Contenedor Principal */
         .main-container {
             text-align: center;
-            z-index: 10; /* Para mantener el contenido encima del canvas */
+            z-index: 10;
+            opacity:0;
+            transform:translateY(20px);
+            transition:opacity 1s ease, transform 1s ease;
+        }
+
+        .main-container.visible {
+            opacity:1;
+            transform:translateY(0);
         }
 
         /* Título */
         .title {
             font-size: 3rem;
-            color: #00ff00; /* Verde brillante */
+            color: var(--color-accent);
             text-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
             margin-bottom: 40px;
+            opacity:0;
+            transform:translateY(20px);
+            transition: var(--transition);
+        }
+
+        .title.visible {
+            opacity:1; transform:translateY(0);
         }
 
         /* Botones del menú */
@@ -64,11 +137,18 @@
             flex-direction: column;
             gap: 25px;
             align-items: center;
+            opacity:0;
+            transform:translateY(20px);
+            transition:var(--transition);
+        }
+
+        .button-container.visible {
+            opacity:1;transform:translateY(0);
         }
 
         .button {
             text-decoration: none;
-            background-color: #00ff00;
+            background-color: var(--color-accent);
             color: #000;
             font-size: 1.2rem;
             font-weight: bold;
@@ -90,36 +170,80 @@
             transform: scale(0.95);
         }
 
-        /* Fondo de Audio */
+        /* Audio oculto */
         audio {
-            display: none; /* Ocultar el reproductor de audio */
+            display: none;
         }
+
     </style>
 </head>
 <body>
+
+    <!-- Pantalla de Carga -->
+    <div class="loader-overlay" id="loaderOverlay">
+      <div class="loader-text">Cargando...</div>
+      <div class="loader-bar-container">
+        <div class="loader-bar" id="loaderBar"></div>
+      </div>
+      <div class="loader-percentage" id="loaderPercentage">0%</div>
+    </div>
+
+    <!-- Video de fondo -->
+    <video autoplay muted loop>
+        <source src="MP4/Matrix.mp4" type="video/mp4">
+        Tu navegador no soporta videos de fondo.
+    </video>
 
     <!-- Efecto Matrix -->
     <canvas id="matrix"></canvas>
 
     <!-- Audio de fondo -->
-    <audio id="background-audio" autoplay loop>
-        <source src="Audio/bit2-bass-beat-slow.mp3" type="audio/mpeg">
+    <audio id="background-audio" loop>
+        <source src="Audio/leap.mp3" type="audio/mpeg">
         Tu navegador no soporta el elemento de audio.
     </audio>
 
     <!-- Contenedor Principal -->
-    <div class="main-container">
+    <div class="main-container" id="mainContainer">
         <h1 class="title">Proyectos</h1>
 
         <!-- Botones Verticales -->
         <div class="button-container">
             <a href="diseños/Menu.html" class="button">Diseños</a>
             <a href="presentacion/presentacion.html" class="button">Presentación</a>
-            
         </div>
     </div>
 
     <script>
+        // Simular carga
+        let progress = 0;
+        const loaderOverlay = document.getElementById('loaderOverlay');
+        const loaderBar = document.getElementById('loaderBar');
+        const loaderPercentage = document.getElementById('loaderPercentage');
+        const mainContainer = document.getElementById('mainContainer');
+        const titleEl = document.querySelector('.title');
+        const buttonContainer = document.querySelector('.button-container');
+
+        const simulateLoading = setInterval(() => {
+          progress += 1;
+          loaderBar.style.width = progress + '%';
+          loaderPercentage.textContent = progress + '%';
+
+          if(progress >= 100) {
+            clearInterval(simulateLoading);
+            loaderOverlay.style.opacity = '0';
+            setTimeout(()=>{
+              loaderOverlay.style.display = 'none';
+              // Mostrar contenido con animación
+              mainContainer.classList.add('visible');
+              setTimeout(()=>{
+                titleEl.classList.add('visible');
+                buttonContainer.classList.add('visible');
+              },500);
+            },500);
+          }
+        }, 30);
+
         // Efecto Matrix
         const canvas = document.getElementById('matrix');
         const ctx = canvas.getContext('2d');
@@ -133,56 +257,52 @@
         const drops = Array(Math.floor(columns)).fill(0);
 
         function drawMatrix() {
-            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "rgba(0,0,0,0.05)";
+            ctx.fillRect(0,0,canvas.width,canvas.height);
 
-            ctx.fillStyle = "#00ff00";
-            ctx.font = `${fontSize}px monospace`;
+            ctx.fillStyle = varColor = "#00ff00";
+            ctx.font = fontSize+"px monospace";
 
-            drops.forEach((y, x) => {
-                const text = matrixChars[Math.floor(Math.random() * matrixChars.length)];
-                ctx.fillText(text, x * fontSize, y * fontSize);
+            drops.forEach((y,x)=>{
+                const text = matrixChars[Math.floor(Math.random()*matrixChars.length)];
+                ctx.fillText(text, x*fontSize, y*fontSize);
 
-                if (y * fontSize > canvas.height && Math.random() > 0.975) {
-                    drops[x] = 0;
+                if(y*fontSize > canvas.height && Math.random()>0.975) {
+                    drops[x]=0;
                 }
-
                 drops[x]++;
             });
         }
 
-        setInterval(drawMatrix, 50);
+        setInterval(drawMatrix,50);
 
-        // Ajustar canvas al redimensionar
-        window.addEventListener("resize", () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+        window.addEventListener("resize",()=>{
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
         });
 
-        // Audio de fondo
+        // Reproducir el audio tras la interacción
         const audio = document.getElementById('background-audio');
-        document.body.classList.add('fade-in');
-
-        // Reproducir el audio solo después de interactuar con la página
         document.body.addEventListener('click', () => {
-            if (audio.paused) {
-                audio.play();
-            } else {
-                audio.pause();
-            }
-        });
+          if (audio.paused) {
+            audio.play();
+          }
+        }, {once:true});
 
-        // Redirección dinámica al hacer clic en los botones
+        // Transición al hacer clic en los botones
         const buttons = document.querySelectorAll('.button');
         buttons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-                const href = button.getAttribute('href');
-                setTimeout(() => {
-                    window.location.href = href;
-                }, 1500); // Redirigir después de 1.5 segundos
-            });
+          button.addEventListener('click', (e) => {
+            e.preventDefault();
+            const href = button.getAttribute('href');
+            // pequeña animación de salida
+            mainContainer.style.opacity = '0';
+            setTimeout(()=>{
+              window.location.href = href;
+            },1500);
+          });
         });
     </script>
 </body>
 </html>
+

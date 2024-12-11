@@ -1,266 +1,428 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Diseños - Menú</title>
-    <style>
-        /* ------------------------------------
-           Estilos Globales
-        ------------------------------------ */
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Courier New', Courier, monospace;
-            background: #000; /* Fondo negro puro */
-            color: #00ff00; /* Texto verde estilo Matrix */
-            overflow: hidden; /* Evitar scroll innecesario */
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            position: relative;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Diseños - Menú</title>
+  
+  <!-- Fuentes Futuristas -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --color-bg: #000000;
+      --color-accent: #00ff00;
+      --color-text: #ffffff;
+      --color-muted: #cccccc;
+      --transition-fast: 0.3s;
+      --transition-medium: 0.6s;
+      --transition-slow: 1s;
+      --font-main: 'Share Tech Mono', monospace;
+      --font-heading: 'VT323', monospace;
+      --bg-gradient: linear-gradient(135deg, rgba(0,0,0,0.8), transparent);
+      --aurora1: #0aff99;
+      --aurora2: #0af9ff;
+      --aurora3: #ff0af9;
+      --aurora4: #f9ff0a;
+      --mobile-break: 768px;
+    }
 
-        /* ------------------------------------
-           Fondo animado Matrix (Canvas)
-        ------------------------------------ */
-        canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1; /* Detrás del contenido */
-        }
+    * {
+      margin:0; padding:0; box-sizing:border-box;
+    }
 
-        /* ------------------------------------
-           Título Principal
-        ------------------------------------ */
-        .title {
-            font-size: 3.5rem;
-            color: #00ff00; /* Verde Matrix */
-            text-shadow: 0 0 10px rgba(0, 255, 0, 0.8), 0 0 20px rgba(0, 255, 0, 0.6);
-            margin-bottom: 30px;
-            animation: glow 2s infinite alternate; /* Efecto de brillo intermitente */
-        }
+    body {
+      font-family: var(--font-main);
+      background: var(--color-bg);
+      color: var(--color-text);
+      overflow:hidden;
+      height: 100vh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+      text-align:center;
+      padding:20px;
+    }
 
-        @keyframes glow {
-            from {
-                text-shadow: 0 0 10px rgba(0, 255, 0, 0.6);
-            }
-            to {
-                text-shadow: 0 0 20px rgba(0, 255, 0, 1);
-            }
-        }
+    /* Pantalla de Carga */
+    .loader-overlay {
+      position: fixed;
+      top:0; left:0;
+      width:100vw; height:100vh;
+      background:#000;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      z-index:9999;
+      transition:opacity 0.5s ease;
+    }
 
-        /* ------------------------------------
-           Contenedor del Menú
-        ------------------------------------ */
-        .menu-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            width: 100%;
-            max-width: 600px;
-            align-items: center;
-        }
+    .loader-text {
+      font-family:'Courier New', monospace;
+      font-size:1.5rem;
+      color: var(--color-accent);
+      margin-bottom:20px;
+      text-transform:uppercase;
+      letter-spacing:2px;
+    }
 
-        /* Botones del Menú */
-        .menu-button {
-            position: relative; /* Para el efecto de ondulación */
-            overflow: hidden; /* Ocultar el ripple */
-            background: rgba(0, 255, 0, 0.2); /* Fondo translúcido */
-            border: 2px solid #00ff00;
-            border-radius: 12px;
-            padding: 15px 25px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #00ff00;
-            text-decoration: none;
-            text-transform: uppercase;
-            transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.4);
-            display: inline-block;
-            width: 80%;
-            max-width: 400px;
-            text-align: center;
-            cursor: pointer;
-        }
+    .loader-bar-container {
+      width:80%;
+      background:rgba(0,255,0,0.1);
+      border:2px solid var(--color-accent);
+      border-radius:5px;
+      overflow:hidden;
+      margin-bottom:15px;
+    }
 
-        /* Efectos al pasar el cursor */
-        .menu-button:hover {
-            background: rgba(0, 255, 0, 0.5);
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.7);
-            color: #ffffff;
-            animation: pulse 1.5s infinite;
-        }
+    .loader-bar {
+      width:0%;
+      height:20px;
+      background:var(--color-accent);
+      transition:width 0.1s;
+    }
 
-        .menu-button:active {
-            transform: translateY(2px) scale(0.95);
-            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
-        }
+    .loader-percentage {
+      font-family:'Courier New', monospace;
+      font-size:1.2rem;
+      color:var(--color-accent);
+      letter-spacing:2px;
+    }
 
-        /* Animación de Pulse */
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 20px rgba(0, 255, 0, 0.7);
-            }
-            50% {
-                box-shadow: 0 0 30px rgba(0, 255, 0, 1);
-            }
-            100% {
-                box-shadow: 0 0 20px rgba(0, 255, 0, 0.7);
-            }
-        }
+    /* Auroras de fondo */
+    body::before, body::after {
+      content:"";
+      position:fixed;
+      top:0; left:0;
+      width:100vw; height:100vh;
+      pointer-events:none;
+      z-index:-3;
+    }
 
-        /* ------------------------------------
-           Pie de Página
-        ------------------------------------ */
-        .footer {
-            position: absolute;
-            bottom: 20px;
-            font-size: 1rem;
-            color: rgba(0, 255, 0, 0.7);
-        }
+    body::before {
+      background: radial-gradient(circle at 50% 50%, var(--aurora1) 0%, transparent 70%);
+      opacity:0.1;
+      mix-blend-mode: screen;
+      animation: aurora1 30s ease-in-out infinite alternate;
+    }
 
-        .footer a {
-            color: #00ff00;
-            text-decoration: none;
-            font-weight: bold;
-        }
+    @keyframes aurora1 {
+      0% {transform: translate(-10%, -10%) scale(1);}
+      50% {transform: translate(10%, 20%) scale(1.2);}
+      100% {transform: translate(-5%, -15%) scale(1);}
+    }
 
-        .footer a:hover {
-            text-decoration: underline;
-        }
-    </style>
+    body::after {
+      background: radial-gradient(circle at 20% 80%, var(--aurora2), transparent 60%);
+      opacity:0.1;
+      mix-blend-mode: screen;
+      animation: aurora2 40s ease-in-out infinite alternate;
+    }
+
+    @keyframes aurora2 {
+      0% {transform: translate(10%, 10%) scale(1);}
+      50% {transform: translate(-10%, -20%) scale(1.3);}
+      100% {transform: translate(5%, 15%) scale(1);}
+    }
+
+    /* Video de fondo */
+    video {
+      position: fixed;
+      top:0; left:0;
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      z-index:-4;
+      filter: brightness(0.4);
+    }
+
+    /* Canvas (Matrix) */
+    canvas#matrix {
+      position: fixed;
+      top:0; left:0;
+      width:100%;
+      height:100%;
+      z-index:-1;
+    }
+
+    /* Contenedor Principal */
+    .main-container {
+      z-index:2;
+      opacity:0;
+      transform:translateY(20px);
+      transition:opacity 1s ease, transform 1s ease;
+    }
+
+    .main-container.visible {
+      opacity:1;
+      transform:translateY(0);
+    }
+
+    /* Título */
+    .title {
+      font-size: 3.5rem;
+      color: var(--color-accent);
+      text-shadow: 0 0 10px rgba(0, 255, 0, 0.8), 0 0 20px rgba(0, 255, 0, 0.6);
+      margin-bottom: 30px;
+      animation: glow 2s infinite alternate;
+      opacity:0;
+      transform:translateY(20px);
+      transition:var(--transition-slow);
+    }
+
+    .title.visible {
+      opacity:1;transform:translateY(0);
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 10px rgba(0,255,0,0.6); }
+      to { text-shadow: 0 0 20px rgba(0,255,0,1); }
+    }
+
+    /* Menú */
+    .menu-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 100%;
+      max-width: 600px;
+      align-items: center;
+      opacity:0;
+      transform:translateY(20px);
+      transition:var(--transition-slow);
+    }
+
+    .menu-container.visible {
+      opacity:1;transform:translateY(0);
+    }
+
+    .menu-button {
+      position: relative;
+      overflow: hidden;
+      background: rgba(0,255,0,0.2);
+      border: 2px solid var(--color-accent);
+      border-radius: 12px;
+      padding: 15px 25px;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--color-accent);
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+      box-shadow: 0 0 10px rgba(0,255,0,0.4);
+      display: inline-block;
+      width: 80%;
+      max-width: 400px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .menu-button:hover {
+      background: rgba(0,255,0,0.5);
+      transform: translateY(-5px) scale(1.05);
+      box-shadow: 0 0 20px rgba(0,255,0,0.7);
+      color: #ffffff;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 20px rgba(0,255,0,0.7); }
+      50% { box-shadow: 0 0 30px rgba(0,255,0,1); }
+      100% { box-shadow: 0 0 20px rgba(0,255,0,0.7); }
+    }
+
+    .menu-button:active {
+      transform: translateY(2px) scale(0.95);
+      box-shadow: 0 0 15px rgba(0,255,0,0.5);
+    }
+
+    .footer {
+      position: absolute;
+      bottom: 20px;
+      font-size: 1rem;
+      color: rgba(0,255,0,0.7);
+      opacity:0;
+      transform:translateY(20px);
+      transition:var(--transition-slow);
+    }
+
+    .footer.visible {
+      opacity:1;transform:translateY(0);
+    }
+
+    .footer a {
+      color: var(--color-accent);
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Ripple animation Keyframes */
+    @keyframes ripple-animation {
+      from {transform:scale(0.2); opacity:1;}
+      to {transform:scale(2); opacity:0;}
+    }
+
+  </style>
 </head>
 <body>
 
-    <!-- Fondo Animado (Canvas) -->
-    <canvas id="matrix"></canvas>
+  <!-- Pantalla de Carga -->
+  <div class="loader-overlay" id="loaderOverlay">
+    <div class="loader-text">Cargando...</div>
+    <div class="loader-bar-container">
+      <div class="loader-bar" id="loaderBar"></div>
+    </div>
+    <div class="loader-percentage" id="loaderPercentage">0%</div>
+  </div>
 
-    <!-- Contenedor Principal -->
-    <div class="main-container">
-        <h1 class="title">Diseños</h1>
+  <!-- Video de fondo -->
+  <video autoplay muted loop>
+    <source src="MP4/Matrix.mp4" type="video/mp4">
+    Tu navegador no soporta el video.
+  </video>
 
-        <!-- Menú de Opciones -->
-        <div class="menu-container">
-            <a href="codepen/index.html" class="menu-button" aria-label="Ir a Codepen">Codepen</a>
-            <a href="mp3-carrusel/index.html" class="menu-button" aria-label="Ir a MP3 Carrusel">MP3 Carrusel</a>
-            <a href="Texto IA/Index.html" class="menu-button" aria-label="Ir a Texto IA">web-ia</a>
-            <a href="web/web-menu.html" class="menu-button" aria-label="Ir a WEBS">WEBS</a>
-        </div>
+  <!-- Canvas Matrix -->
+  <canvas id="matrix"></canvas>
+
+  <!-- Audio de Fondo -->
+  <audio id="background-audio" loop>
+    <source src="Audio/fondo.mp3" type="audio/mpeg">
+    Tu navegador no soporta el elemento de audio.
+  </audio>
+
+  <!-- Contenedor Principal -->
+  <div class="main-container" id="mainContainer">
+    <h1 class="title">Diseños</h1>
+
+    <!-- Menú de Opciones -->
+    <div class="menu-container" id="menuContainer">
+      <a href="codepen/index.html" class="menu-button">Codepen</a>
+      <a href="mp3-carrusel/index.html" class="menu-button">MP3 Carrusel</a>
+      <a href="Texto IA/Index.html" class="menu-button">Web-IA</a>
+      <a href="web/web-menu.html" class="menu-button">WEBS</a>
     </div>
 
     <!-- Footer -->
-    <div class="footer">
-        Creado por <a href="#">Tu Nombre</a>. Todos los derechos reservados.
+    <div class="footer" id="footerEl">
+      Creado por <a href="#">Tu Nombre</a>. Todos los derechos reservados.
     </div>
+  </div>
 
-    <!-- Audio de fondo -->
-    <audio id="background-audio" autoplay loop>
-        <source src="Audio/bit2-bass-beat-slow.mp3" type="audio/mpeg">
-        Tu navegador no soporta el elemento de audio.
-    </audio>
+  <script>
+    // Simular carga
+    let progress = 0;
+    const loaderOverlay = document.getElementById('loaderOverlay');
+    const loaderBar = document.getElementById('loaderBar');
+    const loaderPercentage = document.getElementById('loaderPercentage');
+    const mainContainer = document.getElementById('mainContainer');
+    const titleEl = document.querySelector('.title');
+    const menuContainer = document.getElementById('menuContainer');
+    const footerEl = document.getElementById('footerEl');
 
-    <script>
-        // -----------------------------------
-        // Fondo Matrix Animado
-        // -----------------------------------
-        const canvas = document.getElementById('matrix');
-        const ctx = canvas.getContext('2d');
+    const simulateLoading = setInterval(() => {
+      progress += 1;
+      loaderBar.style.width = progress + '%';
+      loaderPercentage.textContent = progress + '%';
 
-        // Ajustar el tamaño del canvas al de la ventana
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+      if(progress >= 100) {
+        clearInterval(simulateLoading);
+        loaderOverlay.style.opacity = '0';
+        setTimeout(()=>{
+          loaderOverlay.style.display = 'none';
+          // Mostrar contenido con animación
+          mainContainer.classList.add('visible');
+          setTimeout(()=>{
+            titleEl.classList.add('visible');
+            menuContainer.classList.add('visible');
+            footerEl.classList.add('visible');
+          },500);
+        },500);
+      }
+    }, 30);
 
-        const matrixCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%".split("");
-        const fontSize = 16;
-        const columns = canvas.width / fontSize;
-        const drops = Array(Math.floor(columns)).fill(0);
+    // Efecto Matrix en Canvas
+    const canvas = document.getElementById('matrix');
+    const ctx = canvas.getContext('2d');
 
-        function drawMatrix() {
-            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
 
-            ctx.fillStyle = "#00ff00";
-            ctx.font = `${fontSize}px monospace`;
+    const matrixChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%".split("");
+    const fontSize = 16;
+    let columns = canvas.width / fontSize;
+    let drops = Array(Math.floor(columns)).fill(0);
 
-            drops.forEach((y, x) => {
-                const text = matrixCharacters[Math.floor(Math.random() * matrixCharacters.length)];
-                ctx.fillText(text, x * fontSize, y * fontSize);
+    function drawMatrix() {
+      ctx.fillStyle = "rgba(0,0,0,0.05)";
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle = "#00ff00";
+      ctx.font = fontSize+"px monospace";
 
-                if (y * fontSize > canvas.height && Math.random() > 0.975) {
-                    drops[x] = 0;
-                }
-
-                drops[x]++;
-            });
+      drops.forEach((y,x)=>{
+        const text = matrixChars[Math.floor(Math.random()*matrixChars.length)];
+        ctx.fillText(text, x*fontSize, y*fontSize);
+        if(y*fontSize > canvas.height && Math.random()>0.975) {
+          drops[x]=0;
         }
+        drops[x]++;
+      });
+    }
 
-        setInterval(drawMatrix, 50);
+    setInterval(drawMatrix,50);
 
-        // Ajustar el canvas al redimensionar la ventana
-        window.addEventListener("resize", () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            // Recalcular columnas y reiniciar drops
-            const newColumns = Math.floor(canvas.width / fontSize);
-            drops.length = newColumns;
-            for (let i = 0; i < newColumns; i++) {
-                drops[i] = 0;
-            }
-        });
+    window.addEventListener("resize",()=>{
+      columns = canvas.width/fontSize;
+      drops = Array(Math.floor(columns)).fill(0);
+    });
 
-        // -----------------------------------
-        // Reproducir el audio solo después de interactuar con la página
-        // Esto es útil para navegadores que bloquean reproducción automática
-        // -----------------------------------
-        document.body.addEventListener('click', () => {
-            const audio = document.getElementById('background-audio');
-            if (audio.paused) {
-                audio.play();
-            }
-        });
+    // Reproducir audio tras interacción
+    const audioElement = document.getElementById('background-audio');
+    document.body.addEventListener('click', () => {
+      if (audioElement.paused) {
+        audioElement.play();
+      }
+    }, {once:true});
 
-        // -----------------------------------
-        // Animación de Clic en los Botones
-        // -----------------------------------
-        const buttons = document.querySelectorAll('.menu-button');
+    // Efecto ripple y redirección en botones
+    const buttons = document.querySelectorAll('.menu-button');
+    buttons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        const href = button.getAttribute('href');
 
-        buttons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                // Crear el efecto de ondulación (Ripple Effect)
-                const ripple = document.createElement('span');
-                ripple.classList.add('ripple');
-                const rect = button.getBoundingClientRect();
-                const size = Math.max(button.clientWidth, button.clientHeight);
-                ripple.style.width = ripple.style.height = `${size}px`;
-                ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
-                ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
-                button.appendChild(ripple);
+        // Efecto ripple
+        const ripple = document.createElement('span');
+        ripple.style.position = 'absolute';
+        ripple.style.borderRadius = '50%';
+        ripple.style.background = 'rgba(255,255,255,0.2)';
+        ripple.style.width = ripple.style.height = '100px';
+        ripple.style.transform = 'translate(-50%, -50%)';
+        ripple.style.pointerEvents = 'none';
+        ripple.style.animation = 'ripple-animation 0.6s ease-out';
+        const rect = button.getBoundingClientRect();
+        ripple.style.left = `${e.clientX - rect.left}px`;
+        ripple.style.top = `${e.clientY - rect.top}px`;
+        button.appendChild(ripple);
 
-                // Remover el ripple después de la animación
-                setTimeout(() => {
-                    ripple.remove();
-                }, 600);
+        setTimeout(()=>ripple.remove(),600);
 
-                // Animación de escala al hacer clic
-                button.style.transform = "scale(0.95)";
-                setTimeout(() => {
-                    button.style.transform = "scale(1)";
-                    const href = button.getAttribute('href');
-                    window.location.href = href;
-                }, 200);
-            });
-        });
-    </script>
+        // Pequeña pausa antes de redirigir
+        mainContainer.style.opacity = '0';
+        setTimeout(()=>{
+          window.location.href = href;
+        },1500);
+      });
+    });
+  </script>
 </body>
 </html>
-
-
-

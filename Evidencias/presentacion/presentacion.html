@@ -1,82 +1,212 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Proyectos Dinámicos - José Armando Espinosa Martínez</title>
+  
+  <!-- Fuentes Futuristas -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  
   <style>
-    /* ========================================================================
-        Reset Básico
-    ======================================================================== */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    /* ========================================================================
-        Variables CSS para Temas y Colores
-    ======================================================================== */
     :root {
-      --background-color: #000000; /* Fondo negro */
-      --text-color: #00ff00; /* Texto verde terminal */
-      --secondary-text-color: #cccccc; /* Texto secundario gris */
-      --link-color: #00ff00; /* Enlaces verdes */
-      --button-bg: #00ff00; /* Fondo botones verde */
-      --button-text: #000000; /* Texto botones negro */
-      --button-bg-hover: #00cc00; /* Fondo botones al pasar */
-      --input-border: #00ff00; /* Bordes de inputs */
-      --input-focus-border: #ffffff; /* Bordes de inputs al enfocar */
-      --input-bg: transparent; /* Fondo inputs transparente */
-      --shadow-color: rgba(0, 255, 0, 0.3); /* Sombra verde */
+      --color-bg: #000000;
+      --color-accent: #00ff00;
+      --color-text: #ffffff;
+      --color-muted: #cccccc;
+      --transition-fast: 0.3s;
+      --transition-medium: 0.6s;
+      --transition-slow: 1s;
+      --font-main: 'Share Tech Mono', monospace;
+      --font-heading: 'VT323', monospace;
+      --bg-gradient: linear-gradient(135deg, rgba(0,0,0,0.8), transparent);
+      --aurora1: #0aff99;
+      --aurora2: #0af9ff;
+      --aurora3: #ff0af9;
+      --aurora4: #f9ff0a;
+      --mobile-break: 768px;
+      --button-bg: #00ff00;
+      --button-text: #000000;
+      --button-bg-hover: #00cc00;
+      --input-border: #00ff00;
+      --input-focus-border: #ffffff;
+      --input-bg: transparent;
+      --shadow-color: rgba(0, 255, 0, 0.3);
     }
 
-    /* ========================================================================
-        Configuración Global del Body
-    ======================================================================== */
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+    }
+
     body {
-      font-family: 'Courier New', Courier, monospace;
-      background: var(--background-color);
-      color: var(--text-color);
+      font-family: var(--font-main);
+      background: var(--color-bg);
+      color: var(--color-text);
       overflow-x: hidden;
       min-height: 100vh;
+      position: relative;
+      padding: 20px;
       display: flex;
       justify-content: center;
       align-items: center;
-      position: relative;
-      padding: 20px; /* Evita que el contenido toque los bordes en móviles */
-      transition: background-color 0.5s, color 0.5s;
     }
 
-    /* ========================================================================
-        Contenedor Principal Estilo Terminal
-    ======================================================================== */
+    /* Pantalla de Carga */
+    .loader-overlay {
+      position: fixed;
+      top:0; left:0;
+      width:100vw; height:100vh;
+      background:#000;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      z-index:9999;
+      transition:opacity 0.5s ease;
+    }
+
+    .loader-text {
+      font-family:'Courier New', monospace;
+      font-size:1.5rem;
+      color: var(--color-accent);
+      margin-bottom:20px;
+      text-transform:uppercase;
+      letter-spacing:2px;
+    }
+
+    .loader-bar-container {
+      width:80%;
+      background:rgba(0,255,0,0.1);
+      border:2px solid var(--color-accent);
+      border-radius:5px;
+      overflow:hidden;
+      margin-bottom:15px;
+    }
+
+    .loader-bar {
+      width:0%;
+      height:20px;
+      background:var(--color-accent);
+      transition:width 0.1s;
+    }
+
+    .loader-percentage {
+      font-family:'Courier New', monospace;
+      font-size:1.2rem;
+      color:var(--color-accent);
+      letter-spacing:2px;
+    }
+
+    /* Auroras de fondo */
+    body::before, body::after {
+      content:"";
+      position:fixed;
+      top:0; left:0;
+      width:100vw; height:100vh;
+      pointer-events:none;
+      z-index:-3;
+    }
+
+    body::before {
+      background: radial-gradient(circle at 50% 50%, var(--aurora1) 0%, transparent 70%);
+      opacity:0.1;
+      mix-blend-mode: screen;
+      animation: aurora1 30s ease-in-out infinite alternate;
+    }
+
+    @keyframes aurora1 {
+      0% {transform: translate(-10%, -10%) scale(1);}
+      50% {transform: translate(10%, 20%) scale(1.2);}
+      100% {transform: translate(-5%, -15%) scale(1);}
+    }
+
+    body::after {
+      background: radial-gradient(circle at 20% 80%, var(--aurora2), transparent 60%);
+      opacity:0.1;
+      mix-blend-mode: screen;
+      animation: aurora2 40s ease-in-out infinite alternate;
+    }
+
+    @keyframes aurora2 {
+      0% {transform: translate(10%, 10%) scale(1);}
+      50% {transform: translate(-10%, -20%) scale(1.3);}
+      100% {transform: translate(5%, 15%) scale(1);}
+    }
+
+    /* Partículas */
+    .particles {
+      position: fixed;
+      top:0; left:0;
+      width:100vw; height:100vh;
+      z-index:-2;
+      pointer-events:none;
+      overflow:hidden;
+    }
+
+    .particle {
+      position:absolute;
+      width:10px; height:10px;
+      background: var(--color-accent);
+      border-radius:50%;
+      opacity:0.2;
+      animation: floatParticle 10s linear infinite;
+    }
+
+    @keyframes floatParticle {
+      0% {transform:translateY(0);}
+      100% {transform:translateY(-2000px);}
+    }
+
+    /* Video de fondo */
+    video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -4;
+      filter: brightness(0.4);
+    }
+
+    /* Contenedor Principal */
     .container {
       display: flex;
       flex-direction: column;
       align-items: center;
-      max-width: 800px; /* Aumentado para acomodar dos paneles */
+      max-width: 800px;
       width: 100%;
-      gap: 20px; /* Espacio entre los paneles */
+      gap: 20px;
       position: relative;
-      z-index: 2; /* Para asegurar que el contenido quede sobre el fondo */
+      z-index: 2;
+      opacity:0;
+      transform:translateY(20px);
+      transition:opacity 1s ease, transform 1s ease;
     }
 
-    /* ========================================================================
-        Paneles
-    ======================================================================== */
+    .container.visible {
+      opacity:1;
+      transform:translateY(0);
+    }
+
     .panel {
-      background: rgba(0, 0, 0, 0.85); /* Fondo semi-transparente */
-      border-radius: 10px; /* Bordes sutiles */
-      box-shadow: 0 5px 15px var(--shadow-color); /* Sombra ligera */
-      padding: 20px 15px; /* Espaciado interno */
+      background: rgba(0, 0, 0, 0.85);
+      border-radius: 10px;
+      box-shadow: 0 5px 15px var(--shadow-color);
+      padding: 20px 15px;
       width: 100%;
-      max-width: 700px; /* Tamaño máximo del panel */
+      max-width: 700px;
       display: flex;
       flex-direction: column;
       align-items: center;
       position: relative;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
+      opacity:0;
+      transform:translateY(20px);
+    }
+
+    .panel.visible {
+      opacity:1;
+      transform:translateY(0);
     }
 
     .panel:hover {
@@ -84,13 +214,10 @@
       box-shadow: 0 10px 20px var(--shadow-color);
     }
 
-    /* ========================================================================
-        Estilo de los Botones
-    ======================================================================== */
     .btn, .btn-back {
       background-color: transparent;
-      border: 2px solid var(--button-bg);
-      color: var(--button-bg);
+      border: 2px solid var(--color-accent);
+      color: var(--color-accent);
       font-size: 20px;
       padding: 15px 40px;
       margin: 10px;
@@ -103,6 +230,7 @@
       border-radius: 5px;
       box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
       cursor: pointer;
+      font-family: var(--font-heading);
     }
 
     .btn-back {
@@ -111,7 +239,7 @@
     }
 
     .btn:hover, .btn-back:hover {
-      background-color: var(--button-bg);
+      background-color: var(--color-accent);
       color: #000;
       transform: scale(1.05);
     }
@@ -123,7 +251,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: var(--button-bg);
+      background-color: var(--color-accent);
       opacity: 0;
       transition: opacity 0.3s ease;
       border-radius: 5px;
@@ -133,13 +261,10 @@
       opacity: 0.2;
     }
 
-    /* ========================================================================
-        Descripciones de Proyectos
-    ======================================================================== */
     .project-description {
       margin-top: 15px;
       font-size: 1rem;
-      color: var(--secondary-text-color);
+      color: var(--color-muted);
       text-align: left;
       max-width: 650px;
       animation: fadeIn 1s ease-in-out;
@@ -150,9 +275,6 @@
       to { opacity: 1; }
     }
 
-    /* ========================================================================
-        QR y Mensaje de Apoyo
-    ======================================================================== */
     .qr-container {
       margin-top: 15px;
       text-align: center;
@@ -169,23 +291,20 @@
     .qr-message {
       margin-top: 10px;
       font-size: 0.85rem;
-      color: var(--secondary-text-color);
+      color: var(--color-muted);
     }
 
     .qr-message a {
-      color: var(--link-color);
+      color: var(--color-accent);
     }
 
-    /* ========================================================================
-        Botón de Contribuciones Animado (Dentro del Panel)
-    ======================================================================== */
     .contribution-button {
-      margin-top: 20px; /* Añadido margen superior para separación */
+      margin-top: 20px;
       transition: transform 0.3s ease;
     }
 
     .contribution-button img {
-      width: 100px; /* Reducido para mejor adaptación */
+      width: 100px;
       height: auto;
       transition: transform 0.5s ease;
     }
@@ -194,46 +313,15 @@
       transform: scale(1.05) rotate(5deg);
     }
 
-    /* ========================================================================
-        Animaciones de Fondo Decorativas
-    ======================================================================== */
-    .background-decoration {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 150%;
-      height: 150%;
-      background: radial-gradient(circle, rgba(0,255,0,0.05) 0%, rgba(0,0,0,0) 70%);
-      transform: translate(-50%, -50%) rotate(0deg);
-      animation: rotateBackground 120s linear infinite;
-      z-index: 1;
-      opacity: 0.1;
-    }
-
-    @keyframes rotateBackground {
-      from { transform: translate(-50%, -50%) rotate(0deg); }
-      to { transform: translate(-50%, -50%) rotate(360deg); }
-    }
-
-    /* ========================================================================
-        Responsive Design
-    ======================================================================== */
     @media (max-width: 768px) {
-      .container {
-        max-width: 90%; /* Ajuste para pantallas pequeñas */
-        padding: 15px 10px;
-      }
-
       .btn, .btn-back {
         font-size: 18px;
         padding: 12px 35px;
-        margin: 8px;
       }
 
       .btn-back {
         font-size: 16px;
         padding: 10px 25px;
-        margin: 8px;
       }
 
       .project-description {
@@ -253,52 +341,48 @@
   </style>
 </head>
 <body>
-  <!-- ========================================================================
-      Elementos de Fondo Decorativos
-  ======================================================================== -->
-  <div class="background-decoration"></div>
 
-  <!-- ========================================================================
-      Contenedor Principal
-  ======================================================================== -->
-  <div class="container">
-    <!-- ========================================================================
-        Primer Panel: Proyecto 1 - Interfaz de Sonido
-    ======================================================================== -->
-    <div class="panel">
-      <!-- Botón del Proyecto -->
+  <!-- Pantalla de Carga -->
+  <div class="loader-overlay" id="loaderOverlay">
+    <div class="loader-text">Cargando...</div>
+    <div class="loader-bar-container">
+      <div class="loader-bar" id="loaderBar"></div>
+    </div>
+    <div class="loader-percentage" id="loaderPercentage">0%</div>
+  </div>
+
+  <!-- Video de fondo -->
+  <video autoplay muted loop>
+    <source src="MP4/Matrix.mp4" type="video/mp4">
+    Tu navegador no soporta videos de fondo.
+  </video>
+
+  <!-- Partículas (opcional) -->
+  <div class="particles"></div>
+
+  <!-- Contenedor Principal -->
+  <div class="container" id="mainContainer">
+    <!-- Primer Panel -->
+    <div class="panel" id="panel1">
       <a href="audio-controlled/dist/index.html" class="btn">Interfaz de Sonido</a>
-      
-      <!-- Descripción del Proyecto -->
-      <div class="project-description" id="proyecto1">
-        <h2>Interfaz de Sonido Reactiva</h2>
+      <div class="project-description">
+        <h2 style="font-family: var(--font-heading); color:var(--color-accent);">Interfaz de Sonido Reactiva</h2>
         <p>
           Este proyecto desarrolla una interfaz que responde al ruido generado por el usuario. Utilizando la API de Web Audio, la aplicación detecta los niveles de sonido ambiente y ajusta dinámicamente elementos visuales en pantalla, creando una experiencia interactiva y envolvente.
         </p>
-        <!-- Puedes agregar una demostración o enlaces adicionales aquí -->
       </div>
     </div>
 
-    <!-- ========================================================================
-        Segundo Panel: Proyecto 2 - Banner Lateral
-    ======================================================================== -->
-    <div class="panel">
-      <!-- Botón del Proyecto -->
+    <!-- Segundo Panel -->
+    <div class="panel" id="panel2">
       <a href="sub menu/index.html" class="btn">Banner Lateral</a>
-      
-      <!-- Descripción del Proyecto -->
-      <div class="project-description" id="proyecto2">
-        <h2>Banner Lateral Dinámico</h2>
+      <div class="project-description">
+        <h2 style="font-family: var(--font-heading); color:var(--color-accent);">Banner Lateral Dinámico</h2>
         <p>
-          El segundo proyecto consiste en un banner lateral que se despliega y contrae de manera fluida. Este banner puede contener información adicional, enlaces rápidos o cualquier contenido relevante. Implementado con CSS y JavaScript, garantiza una integración perfecta y una experiencia de usuario optimizada.
+          El segundo proyecto consiste en un banner lateral que se despliega y contrae de manera fluida. Este banner puede contener información adicional, enlaces rápidos o cualquier contenido relevante. Implementado con CSS y JavaScript, garantiza una experiencia de usuario optimizada.
         </p>
-        <!-- Puedes agregar una demostración o enlaces adicionales aquí -->
       </div>
-
-      <!-- Botón Retroceder -->
       <button class="btn-back" onclick="history.back()">Retroceder</button>
-      
-      <!-- Botón de Contribuciones -->
       <div class="contribution-button">
         <a href="https://www.buymeacoffee.com/Inmortal" target="_blank">
           <img src="https://img.buymeacoffee.com/button-api/?text=Contribuciones&emoji=💻️&slug=Inmortal&button_colour=001905&font_colour=ffffff&font_family=Lato&outline_colour=ffffff&coffee_colour=FFDD00" alt="Contribuciones">
@@ -307,37 +391,48 @@
     </div>
   </div>
 
-  <!-- ========================================================================
-      Reproductor de audio (Se mantiene fuera del contenedor para no interferir)
-  ======================================================================== -->
-  <audio id="background-audio" autoplay loop>
-    <source src="audio/matrix-sound.mp3" type="audio/mp3">
-    Tu navegador no soporta la etiqueta de audio.
+  <!-- Audio de fondo -->
+  <audio id="background-audio" loop>
+    <source src="Audio/fondo.mp3" type="audio/mpeg">
+    Tu navegador no soporta el elemento de audio.
   </audio>
 
-  <!-- ========================================================================
-      JavaScript
-  ======================================================================== -->
   <script>
-    // ========================================================================
-    // Reproducir el audio solo después de interactuar con la página
-    // ========================================================================
-    document.body.addEventListener('click', () => {
-      const audioElement = document.getElementById('background-audio');
-      if (audioElement.paused) {
-        audioElement.play();
-      }
-    });
+    // Simulación de carga
+    let progress = 0;
+    const loaderOverlay = document.getElementById('loaderOverlay');
+    const loaderBar = document.getElementById('loaderBar');
+    const loaderPercentage = document.getElementById('loaderPercentage');
+    const mainContainer = document.getElementById('mainContainer');
+    const panel1 = document.getElementById('panel1');
+    const panel2 = document.getElementById('panel2');
 
-    // ========================================================================
-    // Funcionalidad del Banner Lateral (Proyecto 2)
-    // ========================================================================
-    // Crear el banner lateral
-    const btnProyecto2 = document.querySelector('.panel:nth-child(2) .btn');
+    const simulateLoading = setInterval(() => {
+      progress += 1;
+      loaderBar.style.width = progress + '%';
+      loaderPercentage.textContent = progress + '%';
+
+      if(progress >= 100) {
+        clearInterval(simulateLoading);
+        loaderOverlay.style.opacity = '0';
+        setTimeout(()=>{
+          loaderOverlay.style.display = 'none';
+          // Mostrar el contenido con animaciones
+          mainContainer.classList.add('visible');
+          setTimeout(()=>{
+            panel1.classList.add('visible');
+            panel2.classList.add('visible');
+          },500);
+        },500);
+      }
+    }, 30);
+
+    // Banner Lateral
+    const btnProyecto2 = document.querySelector('#panel2 .btn');
     const banner = document.createElement('div');
     banner.style.position = 'fixed';
     banner.style.top = '0';
-    banner.style.right = '-300px'; // Inicialmente oculto
+    banner.style.right = '-300px';
     banner.style.width = '300px';
     banner.style.height = '100%';
     banner.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
@@ -345,27 +440,46 @@
     banner.style.transition = 'right 0.3s ease';
     banner.style.zIndex = '100';
     banner.innerHTML = `
-      <h2 style="color: var(--text-color); padding: 20px;">Información Adicional</h2>
-      <p style="color: var(--secondary-text-color); padding: 0 20px;">
-        Este banner lateral puede contener enlaces rápidos, información relevante o cualquier otro contenido que desees mostrar de manera accesible.
+      <h2 style="color: var(--color-text); padding: 20px; font-family: var(--font-heading);">Información Adicional</h2>
+      <p style="color: var(--color-muted); padding: 0 20px;">
+        Este banner lateral puede contener enlaces rápidos, información relevante o cualquier otro contenido extra.
       </p>
-      <button id="close-banner" style="margin: 20px; padding: 10px 20px; background-color: var(--button-bg); color: var(--button-text); border: none; border-radius: 5px; cursor: pointer;">Cerrar</button>
+      <button id="close-banner" style="margin: 20px; padding: 10px 20px; background-color: var(--button-bg); color: var(--button-text); border: none; border-radius: 5px; cursor: pointer; font-family:var(--font-heading);">Cerrar</button>
     `;
     document.body.appendChild(banner);
 
-    // Evento para abrir el banner
     btnProyecto2.addEventListener('click', (e) => {
       e.preventDefault();
       banner.style.right = '0';
     });
 
-    // Evento para cerrar el banner
     document.getElementById('close-banner').addEventListener('click', () => {
       banner.style.right = '-300px';
     });
+
+    // Reproducir audio tras interacción
+    const audioElement = document.getElementById('background-audio');
+    document.body.addEventListener('click', () => {
+      if (audioElement.paused) {
+        audioElement.play();
+      }
+    }, {once:true});
+
+    // Efecto Matrix no solicitado aquí, pero mantenemos la estética 
+    // (El usuario solo menciona auroras, no matrix code, 
+    //   sin embargo, la versión anterior tenía matrix en video de fondo)
+    // Mantendremos solo el video de fondo con auroras ya que se pide 
+    // "como el portafolio" (el portafolio tenía auroras no matrix code)
+    // Si queremos el matrix code estilo: ya está en el video. (No canvas matrix code se solicito) 
+    // Si se desea, se puede omitir el matrix code canvas.
+    
+    // (No se solicitó remover nada, mejor dejarlo tal cual. 
+    //   El snippet original no tenía canvas matrix, 
+    //   tenía video MP4. Ya está el video.)
   </script>
 </body>
 </html>
+
 
 
 
