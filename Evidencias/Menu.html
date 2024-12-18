@@ -1,308 +1,441 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Menú Estilo Futurista</title>
-    <!-- Fuentes Futuristas -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Menú Estilo Futurista</title>
 
-    <style>
-        :root {
-          --color-bg: #000;
-          --color-text: #fff;
-          --color-accent: #00ff00;
-          --color-secondary: #d3d3d3;
-          --transition: 0.5s ease;
-          --font-main: 'Share Tech Mono', monospace;
-          --font-heading: 'VT323', monospace;
-        }
+  <!-- Fuentes Futuristas -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <style>
+    /* ================================
+       :root Variables
+    ================================= */
+    :root {
+      --color-bg: #0f0f0f;
+      --color-accent: #0aff99;
+      --color-text: #ffffff;
+      --color-muted: #cccccc;
+      --transition-fast: 0.3s;
+      --transition-medium: 0.6s;
+      --transition-slow: 1s;
+      --font-main: 'Share Tech Mono', monospace;
+      --font-heading: 'VT323', monospace;
+      --bg-gradient: linear-gradient(135deg, rgba(0,0,0,0.8), transparent);
+      --aurora1: #0aff99;
+      --aurora2: #0af9ff;
+      --aurora3: #ff0af9;
+      --aurora4: #f9ff0a;
+      --mobile-break: 768px;
+    }
 
-        body {
-            font-family: var(--font-main);
-            background-color: var(--color-bg);
-            color: var(--color-text);
-            overflow: hidden;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-        }
+    /* ================================
+       Base Styles
+    ================================= */
+    * {
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box;
+    }
 
-        /* Pantalla de carga */
-        .loader-overlay {
-          position: fixed;
-          top:0; left:0;
-          width:100vw; height:100vh;
-          background:#000;
-          display:flex; flex-direction:column;
-          align-items:center; justify-content:center;
-          z-index:9999;
-          transition:opacity 0.5s ease;
-        }
+    body {
+      font-family: var(--font-main);
+      background: var(--color-bg);
+      color: var(--color-text);
+      overflow: hidden;
+      min-height: 100vh;
+      position: relative;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      display:flex; 
+      align-items:center; 
+      justify-content:center;
+    }
 
-        .loader-text {
-          font-family:'Courier New', monospace;
-          font-size:1.5rem;
-          color: var(--color-accent);
-          margin-bottom:20px;
-          text-transform:uppercase;
-          letter-spacing:2px;
-        }
+    a, button {
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+    }
 
-        .loader-bar-container {
-          width:80%;
-          background:rgba(0,255,0,0.1);
-          border:2px solid var(--color-accent);
-          border-radius:5px;
-          overflow:hidden;
-          margin-bottom:15px;
-        }
+    img, video {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
 
-        .loader-bar {
-          width:0%;
-          height:20px;
-          background:var(--color-accent);
-          transition:width 0.1s;
-        }
+    ul, li {
+      list-style: none;
+    }
 
-        .loader-percentage {
-          font-family:'Courier New', monospace;
-          font-size:1.2rem;
-          color:var(--color-accent);
-          letter-spacing:2px;
-        }
+    /* ================================
+       Body Pseudo-Elements (Auroras)
+    ================================= */
+    body::before, body::after {
+      content: "";
+      position: fixed;
+      top:0; left:0;
+      width:100vw; height:100vh;
+      pointer-events:none;
+      z-index:-3;
+    }
 
-        /* Video de fondo */
-        video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: -2;
-            filter: brightness(0.4);
-        }
+    body::before {
+      background: radial-gradient(circle at 50% 50%, var(--aurora1) 0%, transparent 70%);
+      opacity:0.1;
+      mix-blend-mode: screen;
+      animation: aurora1 30s ease-in-out infinite alternate;
+    }
 
-        /* Canvas Matrix Effect */
-        canvas#matrix {
-            position: fixed;
-            top:0; left:0;
-            width:100%;
-            height:100%;
-            z-index:-1;
-        }
+    @keyframes aurora1 {
+      0% {transform: translate(-10%, -10%) scale(1);}
+      50% {transform: translate(10%, 20%) scale(1.2);}
+      100% {transform: translate(-5%, -15%) scale(1);}
+    }
 
-        /* Contenedor Principal */
-        .main-container {
-            text-align: center;
-            z-index: 10;
-            opacity:0;
-            transform:translateY(20px);
-            transition:opacity 1s ease, transform 1s ease;
-        }
+    body::after {
+      background: radial-gradient(circle at 20% 80%, var(--aurora2), transparent 60%);
+      opacity:0.1;
+      mix-blend-mode: screen;
+      animation: aurora2 40s ease-in-out infinite alternate;
+    }
 
-        .main-container.visible {
-            opacity:1;
-            transform:translateY(0);
-        }
+    @keyframes aurora2 {
+      0% {transform: translate(10%, 10%) scale(1);}
+      50% {transform: translate(-10%, -20%) scale(1.3);}
+      100% {transform: translate(5%, 15%) scale(1);}
+    }
 
-        /* Título */
-        .title {
-            font-size: 3rem;
-            color: var(--color-accent);
-            text-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
-            margin-bottom: 40px;
-            opacity:0;
-            transform:translateY(20px);
-            transition: var(--transition);
-        }
+    /* ================================
+       Particles Styles
+    ================================= */
+    .particles {
+      position: fixed;
+      top:0; left:0;
+      width:100vw; height:100vh;
+      z-index:-2;
+      pointer-events:none;
+      overflow:hidden;
+    }
 
-        .title.visible {
-            opacity:1; transform:translateY(0);
-        }
+    .particle {
+      position:absolute;
+      width:10px; height:10px;
+      background: var(--color-accent);
+      border-radius:50%;
+      opacity:0.2;
+      animation: floatParticle 10s linear infinite;
+    }
 
-        /* Botones del menú */
-        .button-container {
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-            align-items: center;
-            opacity:0;
-            transform:translateY(20px);
-            transition:var(--transition);
-        }
+    @keyframes floatParticle {
+      0% {transform:translateY(0);}
+      100% {transform:translateY(-2000px);}
+    }
 
-        .button-container.visible {
-            opacity:1;transform:translateY(0);
-        }
+    /* ================================
+       Pantalla de Carga
+    ================================= */
+    .loader-overlay {
+      position: fixed;
+      top:0; left:0;
+      width:100vw; height:100vh;
+      background:#000;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      z-index:9999;
+      transition:opacity 0.5s ease;
+    }
 
-        .button {
-            text-decoration: none;
-            background-color: var(--color-accent);
-            color: #000;
-            font-size: 1.2rem;
-            font-weight: bold;
-            padding: 15px 25px;
-            border-radius: 10px;
-            text-align: center;
-            width: 200px;
-            transition: transform 0.3s, background-color 0.3s, box-shadow 0.3s;
-            box-shadow: 0px 4px 10px rgba(0, 255, 0, 0.4);
-        }
+    .loader-text {
+      font-family:'Courier New', monospace;
+      font-size:1.5rem;
+      color: var(--color-accent);
+      margin-bottom:20px;
+      text-transform:uppercase;
+      letter-spacing:2px;
+    }
 
-        .button:hover {
-            background-color: #008f00;
-            color: #fff;
-            transform: scale(1.05);
-        }
+    .loader-bar-container {
+      width:80%;
+      background:rgba(0,255,153,0.1);
+      border:2px solid var(--color-accent);
+      border-radius:5px;
+      overflow:hidden;
+      margin-bottom:15px;
+    }
 
-        .button:active {
-            transform: scale(0.95);
-        }
+    .loader-bar {
+      width:0%;
+      height:20px;
+      background:var(--color-accent);
+      transition:width 0.1s;
+    }
 
-        /* Audio oculto */
-        audio {
-            display: none;
-        }
+    .loader-percentage {
+      font-family:'Courier New', monospace;
+      font-size:1.2rem;
+      color:var(--color-accent);
+      letter-spacing:2px;
+    }
 
-    </style>
+    /* ================================
+       Video de fondo
+    ================================= */
+    video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -4;
+      filter: brightness(0.3);
+    }
+
+    /* ================================
+       Contenedor Principal
+    ================================= */
+    .main-container {
+      text-align: center;
+      z-index: 10;
+      opacity:0;
+      transform:translateY(20px);
+      transition:opacity 1s ease, transform 1s ease;
+    }
+
+    .main-container.visible {
+      opacity:1;
+      transform:translateY(0);
+    }
+
+    /* ================================
+       Título con efecto glitch
+    ================================= */
+    .title {
+      font-family: var(--font-heading);
+      font-size:3rem;
+      color: var(--color-accent);
+      margin-bottom:40px;
+      text-shadow:0 0 10px var(--color-accent),0 0 20px var(--color-accent);
+      position:relative;
+      opacity:0;
+      transform:translateY(20px);
+      transition:var(--transition-slow);
+    }
+
+    .title.visible {
+      opacity:1; 
+      transform:translateY(0);
+    }
+
+    .title::before,
+    .title::after {
+      content: "Proyectos";
+      position:absolute;
+      top:0; left:0;
+      width:100%; height:100%;
+      overflow:hidden;
+    }
+
+    .title::before {
+      left:2px;
+      text-shadow:-2px 0 var(--color-accent);
+      clip: rect(0,0,0,0);
+      animation: glitch 2.5s infinite ease-in-out alternate-reverse;
+    }
+
+    .title::after {
+      left:-2px;
+      text-shadow:-2px 0 var(--color-accent);
+      clip: rect(0,0,0,0);
+      animation: glitch2 3s infinite ease-in-out alternate-reverse;
+    }
+
+    @keyframes glitch {
+      0% {clip: rect(0,0,0,0);}
+      5% {clip: rect(0,1000px,1000px,0);}
+      10% {clip:rect(0,0,0,0);}
+      15% {clip:rect(200px,1000px,1000px,0);}
+      20% {clip:rect(0,0,0,0);}
+    }
+
+    @keyframes glitch2 {
+      0% {clip: rect(0,0,0,0);}
+      5% {clip:rect(300px,1000px,1000px,0);}
+      10% {clip:rect(0,0,0,0);}
+      15% {clip:rect(50px,1000px,1000px,0);}
+      20% {clip:rect(0,0,0,0);}
+    }
+
+    /* ================================
+       Botones del menú
+    ================================= */
+    .button-container {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+      align-items: center;
+      opacity:0;
+      transform:translateY(20px);
+      transition:var(--transition-slow);
+    }
+
+    .button-container.visible {
+      opacity:1;transform:translateY(0);
+    }
+
+    .button {
+      text-decoration: none;
+      background-color: var(--color-accent);
+      color: #000;
+      font-size: 1.2rem;
+      font-weight: bold;
+      padding: 15px 25px;
+      border-radius: 10px;
+      text-align: center;
+      width: 200px;
+      transition: transform 0.3s, background-color 0.3s, box-shadow 0.3s;
+      box-shadow: 0px 4px 10px rgba(0,255,153,0.4);
+    }
+
+    .button:hover {
+      background-color:#07e686;
+      color:#000;
+      transform: scale(1.05);
+      box-shadow:0 0 15px var(--color-accent);
+    }
+
+    .button:active {
+      transform: scale(0.95);
+    }
+
+    /* Audio oculto */
+    audio {
+      display: none;
+    }
+
+    @media(max-width: var(--mobile-break)) {
+      .title {
+        font-size:2.5rem;
+      }
+    }
+  </style>
 </head>
 <body>
 
-    <!-- Pantalla de Carga -->
-    <div class="loader-overlay" id="loaderOverlay">
-      <div class="loader-text">Cargando...</div>
-      <div class="loader-bar-container">
-        <div class="loader-bar" id="loaderBar"></div>
-      </div>
-      <div class="loader-percentage" id="loaderPercentage">0%</div>
+  <!-- Pantalla de Carga -->
+  <div class="loader-overlay" id="loaderOverlay">
+    <div class="loader-text">Cargando...</div>
+    <div class="loader-bar-container">
+      <div class="loader-bar" id="loaderBar"></div>
     </div>
+    <div class="loader-percentage" id="loaderPercentage">0%</div>
+  </div>
 
-    <!-- Video de fondo -->
-    <video autoplay muted loop>
-        <source src="MP4/Matrix.mp4" type="video/mp4">
-        Tu navegador no soporta videos de fondo.
-    </video>
+  <!-- Partículas -->
+  <div class="particles"></div>
 
-    <!-- Efecto Matrix -->
-    <canvas id="matrix"></canvas>
+  <!-- Video de fondo -->
+  <video autoplay muted loop>
+    <source src="MP4/Matrix.mp4" type="video/mp4">
+    Tu navegador no soporta videos de fondo.
+  </video>
 
-    <!-- Audio de fondo -->
-    <audio id="background-audio" loop>
-        <source src="Audio/leap.mp3" type="audio/mpeg">
-        Tu navegador no soporta el elemento de audio.
-    </audio>
+  <!-- Audio de fondo -->
+  <audio id="background-audio" loop>
+    <source src="Audio/leap.mp3" type="audio/mpeg">
+    Tu navegador no soporta el elemento de audio.
+  </audio>
 
-    <!-- Contenedor Principal -->
-    <div class="main-container" id="mainContainer">
-        <h1 class="title">Proyectos</h1>
+  <!-- Contenedor Principal -->
+  <div class="main-container" id="mainContainer">
+    <h1 class="title">Proyectos</h1>
 
-        <!-- Botones Verticales -->
-        <div class="button-container">
-            <a href="diseños/Menu.html" class="button">Diseños</a>
-            <a href="presentacion/presentacion.html" class="button">Presentación</a>
-        </div>
+    <!-- Botones Verticales -->
+    <div class="button-container">
+      <a href="diseños/Menu.html" class="button">Diseños</a>
+      <a href="presentacion/presentacion.html" class="button">Presentación</a>
     </div>
+  </div>
 
-    <script>
-        // Simular carga
-        let progress = 0;
-        const loaderOverlay = document.getElementById('loaderOverlay');
-        const loaderBar = document.getElementById('loaderBar');
-        const loaderPercentage = document.getElementById('loaderPercentage');
-        const mainContainer = document.getElementById('mainContainer');
-        const titleEl = document.querySelector('.title');
-        const buttonContainer = document.querySelector('.button-container');
+  <script>
+    // Simular carga
+    let progress = 0;
+    const loaderOverlay = document.getElementById('loaderOverlay');
+    const loaderBar = document.getElementById('loaderBar');
+    const loaderPercentage = document.getElementById('loaderPercentage');
+    const mainContainer = document.getElementById('mainContainer');
+    const titleEl = document.querySelector('.title');
+    const buttonContainer = document.querySelector('.button-container');
 
-        const simulateLoading = setInterval(() => {
-          progress += 1;
-          loaderBar.style.width = progress + '%';
-          loaderPercentage.textContent = progress + '%';
+    const simulateLoading = setInterval(() => {
+      progress += 1;
+      loaderBar.style.width = progress + '%';
+      loaderPercentage.textContent = progress + '%';
 
-          if(progress >= 100) {
-            clearInterval(simulateLoading);
-            loaderOverlay.style.opacity = '0';
-            setTimeout(()=>{
-              loaderOverlay.style.display = 'none';
-              // Mostrar contenido con animación
-              mainContainer.classList.add('visible');
-              setTimeout(()=>{
-                titleEl.classList.add('visible');
-                buttonContainer.classList.add('visible');
-              },500);
-            },500);
-          }
-        }, 30);
+      if(progress >= 100) {
+        clearInterval(simulateLoading);
+        loaderOverlay.style.opacity = '0';
+        setTimeout(()=>{
+          loaderOverlay.style.display = 'none';
+          // Mostrar contenido con animación
+          mainContainer.classList.add('visible');
+          setTimeout(()=>{
+            titleEl.classList.add('visible');
+            buttonContainer.classList.add('visible');
+          },500);
+        },500);
+      }
+    }, 30);
 
-        // Efecto Matrix
-        const canvas = document.getElementById('matrix');
-        const ctx = canvas.getContext('2d');
+    // Crear partículas aleatorias
+    const particlesContainer = document.querySelector('.particles');
+    const particleCount = 50;
+    for(let i=0;i<particleCount;i++){
+      const p = document.createElement('div');
+      p.classList.add('particle');
+      const size = Math.random()*5+5;
+      p.style.width = size+'px';
+      p.style.height=size+'px';
+      p.style.left = (Math.random()*100)+'vw';
+      p.style.top = (Math.random()*100)+'vh';
+      p.style.animationDelay = (Math.random()*5)+'s';
+      p.style.animationDuration = (10+Math.random()*10)+'s';
+      particlesContainer.appendChild(p);
+    }
 
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+    // Reproducir el audio tras la primera interacción
+    const audio = document.getElementById('background-audio');
+    document.body.addEventListener('click', () => {
+      if (audio.paused) {
+        audio.play();
+      }
+    }, {once:true});
 
-        const matrixChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%".split("");
-        const fontSize = 16;
-        const columns = canvas.width / fontSize;
-        const drops = Array(Math.floor(columns)).fill(0);
+    // Transición al hacer clic en los botones
+    const buttons = document.querySelectorAll('.button');
+    buttons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        const href = button.getAttribute('href');
+        mainContainer.style.opacity = '0';
+        setTimeout(()=>{
+          window.location.href = href;
+        },1500);
+      });
+    });
 
-        function drawMatrix() {
-            ctx.fillStyle = "rgba(0,0,0,0.05)";
-            ctx.fillRect(0,0,canvas.width,canvas.height);
-
-            ctx.fillStyle = varColor = "#00ff00";
-            ctx.font = fontSize+"px monospace";
-
-            drops.forEach((y,x)=>{
-                const text = matrixChars[Math.floor(Math.random()*matrixChars.length)];
-                ctx.fillText(text, x*fontSize, y*fontSize);
-
-                if(y*fontSize > canvas.height && Math.random()>0.975) {
-                    drops[x]=0;
-                }
-                drops[x]++;
-            });
-        }
-
-        setInterval(drawMatrix,50);
-
-        window.addEventListener("resize",()=>{
-          canvas.width = window.innerWidth;
-          canvas.height = window.innerHeight;
-        });
-
-        // Reproducir el audio tras la interacción
-        const audio = document.getElementById('background-audio');
-        document.body.addEventListener('click', () => {
-          if (audio.paused) {
-            audio.play();
-          }
-        }, {once:true});
-
-        // Transición al hacer clic en los botones
-        const buttons = document.querySelectorAll('.button');
-        buttons.forEach(button => {
-          button.addEventListener('click', (e) => {
-            e.preventDefault();
-            const href = button.getAttribute('href');
-            // pequeña animación de salida
-            mainContainer.style.opacity = '0';
-            setTimeout(()=>{
-              window.location.href = href;
-            },1500);
-          });
-        });
-    </script>
+    // Forzar la recarga al volver atrás si la página se carga desde el caché
+    window.addEventListener('pageshow', function(event) {
+      if (event.persisted) {
+        // Si la página se cargó desde el caché, forzar recarga completa
+        window.location.reload();
+      }
+    });
+  </script>
 </body>
 </html>
+
 
