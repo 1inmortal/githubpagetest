@@ -12,7 +12,7 @@
   <style>
     :root {
       --color-bg: #000000;
-      --color-accent: #00ff00;
+      --color-accent: #0aff99;
       --color-text: #ffffff;
       --color-muted: #cccccc;
       --transition-fast: 0.3s;
@@ -45,6 +45,8 @@
       position:relative;
       text-align:center;
       padding:20px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     /* Pantalla de Carga */
@@ -70,7 +72,7 @@
 
     .loader-bar-container {
       width:80%;
-      background:rgba(0,255,0,0.1);
+      background:rgba(0,255,153,0.1);
       border:2px solid var(--color-accent);
       border-radius:5px;
       overflow:hidden;
@@ -138,13 +140,28 @@
       filter: brightness(0.4);
     }
 
-    /* Canvas (Matrix) */
-    canvas#matrix {
+    /* Partículas */
+    .particles {
       position: fixed;
       top:0; left:0;
-      width:100%;
-      height:100%;
-      z-index:-1;
+      width:100vw; height:100vh;
+      z-index:-2;
+      pointer-events:none;
+      overflow:hidden;
+    }
+
+    .particle {
+      position:absolute;
+      width:10px; height:10px;
+      background: var(--color-accent);
+      border-radius:50%;
+      opacity:0.2;
+      animation: floatParticle 10s linear infinite;
+    }
+
+    @keyframes floatParticle {
+      0% {transform:translateY(0);}
+      100% {transform:translateY(-2000px);}
     }
 
     /* Contenedor Principal */
@@ -160,13 +177,14 @@
       transform:translateY(0);
     }
 
-    /* Título */
+    /* Título con glitch */
     .title {
-      font-size: 3.5rem;
+      font-family: var(--font-heading);
+      font-size:3.5rem;
       color: var(--color-accent);
-      text-shadow: 0 0 10px rgba(0, 255, 0, 0.8), 0 0 20px rgba(0, 255, 0, 0.6);
-      margin-bottom: 30px;
-      animation: glow 2s infinite alternate;
+      margin-bottom:30px;
+      text-shadow:0 0 10px var(--color-accent),0 0 20px var(--color-accent);
+      position:relative;
       opacity:0;
       transform:translateY(20px);
       transition:var(--transition-slow);
@@ -176,9 +194,43 @@
       opacity:1;transform:translateY(0);
     }
 
-    @keyframes glow {
-      from { text-shadow: 0 0 10px rgba(0,255,0,0.6); }
-      to { text-shadow: 0 0 20px rgba(0,255,0,1); }
+    .title::before,
+    .title::after {
+      content: "Diseños";
+      position:absolute;
+      top:0; left:0;
+      width:100%; height:100%;
+      overflow:hidden;
+    }
+
+    .title::before {
+      left:2px;
+      text-shadow:-2px 0 var(--color-accent);
+      clip: rect(0,0,0,0);
+      animation: glitch 2.5s infinite ease-in-out alternate-reverse;
+    }
+
+    .title::after {
+      left:-2px;
+      text-shadow:-2px 0 var(--color-accent);
+      clip: rect(0,0,0,0);
+      animation: glitch2 3s infinite ease-in-out alternate-reverse;
+    }
+
+    @keyframes glitch {
+      0% {clip: rect(0,0,0,0);}
+      5% {clip: rect(0,1000px,1000px,0);}
+      10% {clip:rect(0,0,0,0);}
+      15% {clip:rect(200px,1000px,1000px,0);}
+      20% {clip:rect(0,0,0,0);}
+    }
+
+    @keyframes glitch2 {
+      0% {clip: rect(0,0,0,0);}
+      5% {clip:rect(300px,1000px,1000px,0);}
+      10% {clip:rect(0,0,0,0);}
+      15% {clip:rect(50px,1000px,1000px,0);}
+      20% {clip:rect(0,0,0,0);}
     }
 
     /* Menú */
@@ -201,7 +253,7 @@
     .menu-button {
       position: relative;
       overflow: hidden;
-      background: rgba(0,255,0,0.2);
+      background: rgba(0,255,153,0.2);
       border: 2px solid var(--color-accent);
       border-radius: 12px;
       padding: 15px 25px;
@@ -211,7 +263,7 @@
       text-decoration: none;
       text-transform: uppercase;
       transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
-      box-shadow: 0 0 10px rgba(0,255,0,0.4);
+      box-shadow: 0 0 10px rgba(0,255,153,0.4);
       display: inline-block;
       width: 80%;
       max-width: 400px;
@@ -220,29 +272,29 @@
     }
 
     .menu-button:hover {
-      background: rgba(0,255,0,0.5);
+      background: rgba(0,255,153,0.5);
       transform: translateY(-5px) scale(1.05);
-      box-shadow: 0 0 20px rgba(0,255,0,0.7);
+      box-shadow: 0 0 20px rgba(0,255,153,0.7);
       color: #ffffff;
       animation: pulse 1.5s infinite;
     }
 
     @keyframes pulse {
-      0% { box-shadow: 0 0 20px rgba(0,255,0,0.7); }
-      50% { box-shadow: 0 0 30px rgba(0,255,0,1); }
-      100% { box-shadow: 0 0 20px rgba(0,255,0,0.7); }
+      0% { box-shadow: 0 0 20px rgba(0,255,153,0.7); }
+      50% { box-shadow: 0 0 30px rgba(0,255,153,1); }
+      100% { box-shadow: 0 0 20px rgba(0,255,153,0.7); }
     }
 
     .menu-button:active {
       transform: translateY(2px) scale(0.95);
-      box-shadow: 0 0 15px rgba(0,255,0,0.5);
+      box-shadow: 0 0 15px rgba(0,255,153,0.5);
     }
 
     .footer {
       position: absolute;
       bottom: 20px;
       font-size: 1rem;
-      color: rgba(0,255,0,0.7);
+      color: rgba(0,255,153,0.7);
       opacity:0;
       transform:translateY(20px);
       transition:var(--transition-slow);
@@ -268,6 +320,11 @@
       to {transform:scale(2); opacity:0;}
     }
 
+    @media(max-width: var(--mobile-break)) {
+      .title {
+        font-size:2.5rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -281,14 +338,14 @@
     <div class="loader-percentage" id="loaderPercentage">0%</div>
   </div>
 
+  <!-- Partículas -->
+  <div class="particles"></div>
+
   <!-- Video de fondo -->
   <video autoplay muted loop>
     <source src="MP4/Matrix.mp4" type="video/mp4">
     Tu navegador no soporta el video.
   </video>
-
-  <!-- Canvas Matrix -->
-  <canvas id="matrix"></canvas>
 
   <!-- Audio de Fondo -->
   <audio id="background-audio" loop>
@@ -308,11 +365,7 @@
       <a href="web/web-menu.html" class="menu-button">WEBS</a>
     </div>
 
-    <!-- Footer -->
-    <div class="footer" id="footerEl">
-      Creado por <a href="#">Tu Nombre</a>. Todos los derechos reservados.
-    </div>
-  </div>
+
 
   <script>
     // Simular carga
@@ -346,44 +399,21 @@
       }
     }, 30);
 
-    // Efecto Matrix en Canvas
-    const canvas = document.getElementById('matrix');
-    const ctx = canvas.getContext('2d');
-
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+    // Crear partículas aleatorias
+    const particlesContainer = document.querySelector('.particles');
+    const particleCount = 50;
+    for(let i=0;i<particleCount;i++){
+      const p = document.createElement('div');
+      p.classList.add('particle');
+      const size = Math.random()*5+5;
+      p.style.width = size+'px';
+      p.style.height=size+'px';
+      p.style.left = (Math.random()*100)+'vw';
+      p.style.top = (Math.random()*100)+'vh';
+      p.style.animationDelay = (Math.random()*5)+'s';
+      p.style.animationDuration = (10+Math.random()*10)+'s';
+      particlesContainer.appendChild(p);
     }
-    resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
-
-    const matrixChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%".split("");
-    const fontSize = 16;
-    let columns = canvas.width / fontSize;
-    let drops = Array(Math.floor(columns)).fill(0);
-
-    function drawMatrix() {
-      ctx.fillStyle = "rgba(0,0,0,0.05)";
-      ctx.fillRect(0,0,canvas.width,canvas.height);
-      ctx.fillStyle = "#00ff00";
-      ctx.font = fontSize+"px monospace";
-
-      drops.forEach((y,x)=>{
-        const text = matrixChars[Math.floor(Math.random()*matrixChars.length)];
-        ctx.fillText(text, x*fontSize, y*fontSize);
-        if(y*fontSize > canvas.height && Math.random()>0.975) {
-          drops[x]=0;
-        }
-        drops[x]++;
-      });
-    }
-
-    setInterval(drawMatrix,50);
-
-    window.addEventListener("resize",()=>{
-      columns = canvas.width/fontSize;
-      drops = Array(Math.floor(columns)).fill(0);
-    });
 
     // Reproducir audio tras interacción
     const audioElement = document.getElementById('background-audio');
@@ -422,6 +452,13 @@
           window.location.href = href;
         },1500);
       });
+    });
+
+    // Forzar recarga al volver atrás si la página se carga desde caché
+    window.addEventListener('pageshow', function(event) {
+      if (event.persisted) {
+        window.location.reload();
+      }
     });
   </script>
 </body>
