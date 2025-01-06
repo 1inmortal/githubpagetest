@@ -1,7 +1,3 @@
-¡Claro! A continuación, te proporciono un archivo CONTRIBUTING.md diseñado específicamente para tu proyecto de desarrollo web enfocado en HTML, CSS, JavaScript y la creación de interfaces futuristas. Este archivo guiará a los colaboradores potenciales sobre cómo pueden contribuir de manera efectiva y alineada con los objetivos de tu proyecto.
-
-Contribuyendo a [Nombre de tu Proyecto]
-
 ¡Gracias por considerar contribuir a nuestro proyecto! Tu participación es muy valiosa para nosotros y ayuda a mejorar y expandir esta plataforma de interfaces futuristas. A continuación, encontrarás una guía sobre cómo puedes aportar de manera efectiva.
 
 Índice
