@@ -167,5 +167,5 @@ public class LoginSystemStyled {
         });
     }
 }
-//javac LoginSystemStyled.java   verifica 
+//  LoginSystemStyled.java   verifica 
 // java LoginSystemStyled         ejecuta       en la terminal 
