@@ -7,7 +7,7 @@ import java.security.MessageDigest;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
-public class Foto { // Aquí cambiamos el nombre de la clase a Foto xd :3
+public class Foto {
     private static final HashMap<String, String> users = new HashMap<>();
     private static File userPhoto;
     private static JFrame userFrame = null;
@@ -73,8 +73,9 @@ public class Foto { // Aquí cambiamos el nombre de la clase a Foto xd :3
             } else if (users.containsKey(username) && users.get(username).equals(hashPassword(password))) {
                 frame.dispose();
                 showUserForm(username);
-            } else
+            } else {
                 showMessage("Usuario o contraseña incorrectos.");
+            }
         });
 
         JButton cancelButton = new JButton("Cancelar");
@@ -126,41 +127,64 @@ public class Foto { // Aquí cambiamos el nombre de la clase a Foto xd :3
     private static void showUserForm(String username) {
         if (userFrame == null) {
             userFrame = new JFrame("Panel de Usuario");
-            userFrame.setSize(400, 400);
+            userFrame.setSize(500, 500);
+            userFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            userFrame.setLocationRelativeTo(null);
 
-            JPanel panel = new JPanel(new BorderLayout());
-            panel.setBackground(new Color(40, 40, 40));
+            JPanel mainPanel = new JPanel(new BorderLayout());
+            mainPanel.setBackground(new Color(40, 40, 40));
 
             JLabel welcomeLabel = new JLabel("¡Bienvenido, " + username + "!", JLabel.CENTER);
             welcomeLabel.setFont(new Font("Arial", Font.BOLD, 20));
             welcomeLabel.setForeground(Color.WHITE);
-            panel.add(welcomeLabel, BorderLayout.NORTH);
+            mainPanel.add(welcomeLabel, BorderLayout.NORTH);
 
-            JPanel questionPanel = new JPanel(new GridLayout(3, 1, 10, 10));
+            JPanel questionPanel = new JPanel(new GridLayout(7, 2, 10, 10)); // 7 filas, 2 columnas
             questionPanel.setOpaque(false);
+            questionPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-            JLabel questionLabel = new JLabel("¿Cuál es tu color favorito?");
-            questionLabel.setForeground(Color.WHITE);
-            JTextField questionField = new JTextField(20);
-            styleField(questionField);
+            // Preguntas  :v
+            String[] questions = {
+                "¿Cuál es tu color favorito?",
+                "¿Cuál es tu comida favorita?",
+                "¿Cuál es tu película favorita?",
+                "¿Cuál es tu libro favorito?",
+                "¿Cuál es tu música favorita?",
+                "¿Cuál es tu deporte favorito?"
+            };
 
-            JLabel photoLabel = new JLabel("Selecciona una foto:");
-            JButton uploadButton = new JButton("Subir foto");
-            uploadButton.addActionListener(e -> choosePhoto());
-
-            JLabel imageLabel = new JLabel();
-            imageLabel.setPreferredSize(new Dimension(100, 100));
-            if (userPhoto != null) {
-                ImageIcon photoIcon = new ImageIcon(userPhoto.getAbsolutePath());
-                imageLabel.setIcon(new ImageIcon(photoIcon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH)));
+            JTextField[] questionFields = new JTextField[questions.length];
+            for (int i = 0; i < questions.length; i++) {
+                JLabel questionLabel = new JLabel(questions[i]);
+                questionLabel.setForeground(Color.WHITE);
+                questionLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+                questionFields[i] = new JTextField();
+                styleField(questionFields[i]);
+                questionPanel.add(questionLabel);
+                questionPanel.add(questionFields[i]);
             }
 
-            questionPanel.add(questionLabel);
-            questionPanel.add(questionField);
+            // Foto de Usuario
+            JLabel photoLabel = new JLabel("Selecciona una foto:");
+            photoLabel.setForeground(Color.WHITE);
+            JButton photoButton = new JButton("Subir foto");
+            styleButton(photoButton);
+            JLabel imageLabel = new JLabel();
+            imageLabel.setPreferredSize(new Dimension(100, 100));
+
+            photoButton.addActionListener(e -> {
+                choosePhoto(imageLabel);
+            });
+
             questionPanel.add(photoLabel);
-            questionPanel.add(uploadButton);
+            questionPanel.add(photoButton);
+            questionPanel.add(new JLabel()); // Espaciador
             questionPanel.add(imageLabel);
 
+            mainPanel.add(questionPanel, BorderLayout.CENTER);
+
+            JPanel bottomPanel = new JPanel();
+            bottomPanel.setOpaque(false);
             JButton logoutButton = new JButton("Cerrar sesión");
             styleButton(logoutButton);
             logoutButton.addActionListener(e -> {
@@ -168,17 +192,15 @@ public class Foto { // Aquí cambiamos el nombre de la clase a Foto xd :3
                 userFrame = null;
                 main(null);
             });
+            bottomPanel.add(logoutButton);
+            mainPanel.add(bottomPanel, BorderLayout.SOUTH);
 
-            panel.add(questionPanel, BorderLayout.CENTER);
-            panel.add(logoutButton, BorderLayout.SOUTH);
-
-            userFrame.add(panel);
-            userFrame.setLocationRelativeTo(null);
+            userFrame.add(mainPanel);
             userFrame.setVisible(true);
         }
     }
 
-    private static void choosePhoto() {
+    private static void choosePhoto(JLabel imageLabel) {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Selecciona una imagen");
         fileChooser.setAcceptAllFileFilterUsed(false);
@@ -187,8 +209,13 @@ public class Foto { // Aquí cambiamos el nombre de la clase a Foto xd :3
 
         if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
             userPhoto = fileChooser.getSelectedFile();
-            JOptionPane.showMessageDialog(null, "Foto seleccionada: " + userPhoto.getAbsolutePath());
-            showUserForm("Clase Alta");
+            try {
+                ImageIcon photoIcon = new ImageIcon(userPhoto.getAbsolutePath());
+                Image img = photoIcon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+                imageLabel.setIcon(new ImageIcon(img));
+            } catch (Exception ex) {
+                showMessage("Error al cargar la imagen.");
+            }
         }
     }
 }
