@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cyberpunk UI + Mini Chart + MP3 Player (Single Track)</title>
+  <style>
+    /********************************************************
+     * RESETEO BÁSICO
+     ********************************************************/
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /********************************************************
+     * BODY & BACKGROUND - DARK ENVIRONMENT
+     ********************************************************/
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #0a0a0a;  /* Fondo totalmente oscuro */
+      overflow: hidden; /* simulación fullscreen */
+      font-family: "Arial", sans-serif;
+      color: #ffffff;
+      transition: opacity 0.7s ease-in-out;
+      opacity: 1;
+    }
+    body.fade-out {
+      opacity: 0;
+    }
+
+    /********************************************************
+     * SCROLL PERSONALIZADO
+     ********************************************************/
+    ::-webkit-scrollbar {
+      width: 8px;
+      background-color: #111; /* oscuro en scrollbar */
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #ff0040;
+    }
+
+    /********************************************************
+     * BARRA SUPERIOR
+     ********************************************************/
+    .top-bar {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 50px;
+      background: #1a1a1a; /* gris muy oscuro */
+      border-bottom: 2px solid #ff0040;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      z-index: 999;
+      box-shadow: 0 0 10px #ff0040;
+    }
+    .top-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+    }
+    .level-cred {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 14px;
+    }
+    .level-cred .label {
+      color: #ff5588;
+      margin-right: 5px;
+    }
+    .level-cred .value {
+      color: #ff0040;
+    }
+    .top-nav {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      margin-left: 40px;
+    }
+    .top-nav-item {
+      color: #ffd0dc; /* un rosa claro para texto */
+      font-size: 14px;
+      text-transform: uppercase;
+      transition: color 0.2s;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .top-nav-item:hover {
+      color: #ffffff;
+    }
+    .top-nav-item.active {
+      color: #ff0040;
+      text-shadow: 0 0 5px #ff0040;
+    }
+    .top-bar-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      font-size: 14px;
+    }
+    .top-bar-right .stat {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .top-bar-right .stat .label {
+      color: #ff5588;
+    }
+    .top-bar-right .stat .value {
+      color: #ff0040;
+    }
+
+    /********************************************************
+     * CONTENEDOR PRINCIPAL (3 COLUMNAS)
+     ********************************************************/
+    .main-container {
+      position: absolute;
+      top: 50px; left: 0; right: 0; bottom: 0;
+      display: grid;
+      grid-template-columns: 300px 1fr 350px;
+      background: #0a0a0a; /* fondo totalmente negro */
+      overflow: hidden;
+      box-shadow: inset 0 0 8px #ff0040;
+    }
+
+    /********************************************************
+     * PANELES IZQUIERDA (PROJECTS + SIDE JOBS)
+     ********************************************************/
+    .left-panels {
+      border-right: 2px solid #ff0040;
+      display: flex; 
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: inset 0 0 8px #ff0040;
+    }
+
+    /* Projects */
+    .project-list-container {
+      border-bottom: 2px solid #ff0040;
+      padding: 10px 0;
+    }
+    .project-list-title {
+      color: #ff0040;
+      text-transform: uppercase;
+      font-size: 14px;
+      margin: 10px 20px;
+      text-shadow: 0 0 5px #ff0040;
+    }
+    .project-list {
+      max-height: 150px;
+      overflow-y: auto; 
+      padding: 0 5px;
+    }
+    .project-item {
+      display: flex; 
+      flex-direction: column;
+      padding: 8px 15px; 
+      border-bottom: 1px solid #421111;
+      cursor: pointer; 
+      position: relative;
+      transition: background 0.2s, box-shadow 0.2s;
+      font-size: 13px; 
+      color: #ffd0dc; /* texto en un rosa claro */
+    }
+    .project-item:hover {
+      background: #2a0a0a;
+      box-shadow: 0 0 10px #ff0040;
+    }
+    .project-item.selected {
+      background: #ff0040; 
+      color: #ffffff;
+      box-shadow: inset 0 0 10px #ff0040;
+    }
+    .project-name {
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+      color: #ffbfc6;
+    }
+    .project-summary {
+      font-size: 12px; 
+      color: #ffccaa;
+    }
+
+    /* Side Jobs */
+    .mission-list-container {
+      flex: 1; 
+      padding: 10px 0;
+      display: flex; 
+      flex-direction: column; 
+      overflow: hidden;
+    }
+    .mission-list-title {
+      color: #ff5588;
+      text-transform: uppercase; 
+      font-size: 14px; 
+      margin: 10px 20px;
+      text-shadow: 0 0 5px #ff5588;
+    }
+    .mission-list {
+      flex: 1; 
+      overflow-y: auto; 
+      padding: 0 5px;
+    }
+    .mission-item {
+      display: flex; 
+      flex-direction: column;
+      padding: 10px 15px; 
+      border-bottom: 1px solid #421111;
+      cursor: pointer; 
+      position: relative;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    .mission-item:hover {
+      background: #2a0a0a;
+      box-shadow: 0 0 10px #ff5588;
+    }
+    .mission-item.selected {
+      background: #ff0040; 
+      color: #fff;
+      box-shadow: inset 0 0 10px #ff0040;
+    }
+    .mission-icon {
+      width: 32px; 
+      height: 32px; 
+      background: #ff5588; 
+      border-radius: 4px;
+      margin-bottom: 5px;
+    }
+    .mission-name {
+      font-size: 14px; 
+      color: #ffbfc6; 
+      margin-bottom: 3px;
+      text-transform: uppercase;
+    }
+    .mission-danger {
+      font-size: 12px; 
+      color: #ff9900;
+    }
+    .new-flag {
+      position: absolute; 
+      right: 10px; 
+      top: 10px;
+      font-size: 10px;
+      background: #ff0040; 
+      color: #000;
+      padding: 2px 5px; 
+      border-radius: 2px;
+      text-transform: uppercase; 
+      pointer-events: none;
+    }
+
+    /********************************************************
+     * PANEL CENTRAL (DETAIL PROJECT)
+     ********************************************************/
+    .detail-container {
+      border-right: 2px solid #ff0040;
+      padding: 20px; 
+      display: flex; 
+      flex-direction: column; 
+      justify-content: flex-start;
+      overflow-y: auto;
+      box-shadow: inset 0 0 8px #ff0040;
+    }
+    .detail-title {
+      color: #ff0040; 
+      text-transform: uppercase; 
+      font-size: 18px; 
+      margin-bottom: 10px;
+    }
+    .detail-subtitle {
+      color: #ff5588; 
+      font-size: 14px; 
+      margin-bottom: 10px;
+    }
+    .detail-description {
+      color: #ffccaa; 
+      font-size: 13px; 
+      line-height: 1.4; 
+      flex: 1;
+      transition: opacity 0.3s;
+    }
+
+    /********************************************************
+     * PANEL DERECHO (DETAIL MISION)
+     ********************************************************/
+    .right-panel {
+      padding: 20px; 
+      overflow-y: auto;
+      box-shadow: inset 0 0 8px #ff5588;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    .right-panel-title {
+      text-transform: uppercase; 
+      color: #ff0040; 
+      font-size: 14px; 
+      margin-bottom: 10px;
+    }
+    .right-panel-image {
+      width: 100%; 
+      height: auto; 
+      border: 2px solid #ff0040;
+      background: #0a0a0a; 
+      padding: 5px;
+      transition: transform 0.2s;
+      margin-bottom: 20px; /* espacio para mini chart */
+    }
+    .right-panel-image:hover {
+      transform: scale(1.02);
+      box-shadow: 0 0 10px #ff0040;
+    }
+
+    /* Mini-Chart Container */
+    .mini-chart-container {
+      width: 100%;
+      height: 120px;
+      border: 1px solid #ff0040;
+      box-shadow: 0 0 5px #ff0040;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 15px; /* espacio para mp3 expanded */
+    }
+    #miniChart {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /********************************************************
+     * MP3 PLAYER (Single Track)
+     ********************************************************/
+    .mp3-player {
+      width: 100%;
+      background: #0a0a0a;
+      border: 1px solid #ff0040;
+      box-shadow: 0 0 5px #ff0040;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      color: #ffccaa;
+    }
+    .mp3-album-cover {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto;
+      border: 1px solid #ff0040;
+      box-shadow: 0 0 4px #ff0040;
+      margin-bottom: 6px;
+    }
+    .mp3-album-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .mp3-player-header {
+      font-size: 12px;
+      text-transform: uppercase;
+      color: #ff0040;
+      margin-bottom: 3px;
+      text-align: center;
+    }
+    #trackTitle {
+      font-size: 13px;
+      text-align: center;
+      margin-bottom: 8px;
+      color: #ffbfc6;
+    }
+    .mp3-player-controls {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      justify-content: center;
+    }
+    .mp3-btn {
+      background: #ff0040;
+      border: none;
+      color: #000;
+      padding: 4px 8px;
+      cursor: pointer;
+      text-transform: uppercase;
+      font-size: 11px;
+      transition: background 0.2s;
+    }
+    .mp3-btn:hover {
+      background: #ff5588;
+    }
+    .mp3-progress {
+      flex: 1;
+      height: 6px;
+      background: #421111;
+      border: 1px solid #ff0040;
+      position: relative;
+      margin: 0 6px;
+    }
+    .mp3-progress-fill {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 0%;
+      background: #ff0040;
+    }
+    .mp3-time {
+      font-size: 10px; 
+      color: #ffccaa;
+      width: 40px;
+      text-align: right;
+    }
+
+    /* Volumen */
+    .mp3-volume {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 5px;
+      justify-content: center;
+    }
+    .mp3-volume-label {
+      font-size: 10px; 
+      color: #ff5588;
+      text-transform: uppercase;
+    }
+    .mp3-volume input[type="range"] {
+      width: 80px;
+      -webkit-appearance: none;
+      background: #421111;
+      border: 1px solid #ff0040;
+      height: 6px;
+      cursor: pointer;
+    }
+    .mp3-volume input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px; 
+      height: 12px;
+      background: #ff0040;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    /********************************************************
+     * FOOTER BOTONES
+     ********************************************************/
+    .footer-buttons {
+      position: absolute;
+      bottom: 10px; 
+      right: 20px;
+      display: flex; 
+      gap: 20px;
+    }
+    .footer-btn {
+      color: #fff; 
+      font-size: 12px; 
+      text-transform: uppercase;
+      display: flex; 
+      align-items: center; 
+      gap: 5px;
+      cursor: pointer;
+      transition: color 0.2s, text-shadow 0.3s;
+    }
+    .footer-btn:hover {
+      color: #ff0040;
+      text-shadow: 0 0 5px #ff0040;
+    }
+
+    /********************************************************
+     * ANIMACIÓN DE APARICIÓN .fade-in
+     ********************************************************/
+    .fade-in {
+      opacity: 0;
+      animation: fadeIn 0.8s forwards;
+    }
+    @keyframes fadeIn {
+      0% {
+        opacity: 0; 
+        transform: translateY(10px);
+      }
+      100% {
+        opacity: 1; 
+        transform: translateY(0);
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <div class="level-cred">
+        <div>
+          <span class="label">Level:</span>
+          <span class="value">9</span>
+        </div>
+        <div>
+          <span class="label">Street Cred:</span>
+          <span class="value">10</span>
+        </div>
+      </div>
+      <div class="top-nav">
+        <a href="map.html" class="top-nav-item">Map</a>
+        <a href="character.html" class="top-nav-item">Character</a>
+        <a href="journal.html" class="top-nav-item active">Journal</a>
+        <a href="crafting.html" class="top-nav-item">Crafting</a>
+        <a href="inventory.html" class="top-nav-item">Inventory</a>
+      </div>
+    </div>
+    <div class="top-bar-right">
+      <div class="stat">
+        <span class="label">Capacity:</span>
+        <span class="value">83/312</span>
+      </div>
+      <div class="stat">
+        <span class="label">E$</span>
+        <span class="value">5457</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTAINER (3 columnas) -->
+  <div class="main-container fade-in">
+    
+    <!-- PANELES IZQUIERDA (Projects + Side Jobs) -->
+    <div class="left-panels">
+      
+      <!-- PANEL DE PROYECTOS -->
+      <div class="project-list-container">
+        <div class="project-list-title">Projects</div>
+        <div class="project-list" id="projectList">
+          <!-- Ejemplos de proyectos -->
+          <div class="project-item selected" data-id="neonui">
+            <div class="project-name">Neon UI</div>
+            <div class="project-summary">Futuristic neon interface concept.</div>
+          </div>
+          <div class="project-item" data-id="hackingpanel">
+            <div class="project-name">Hacking Panel</div>
+            <div class="project-summary">Immersive hacking mini-game mechanics.</div>
+          </div>
+          <div class="project-item" data-id="braininterface">
+            <div class="project-name">Brain Interface</div>
+            <div class="project-summary">BCI-based user interactions (prototype).</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL DE MISIONS (SIDE JOBS) -->
+      <div class="mission-list-container">
+        <div class="mission-list-title">Side Jobs</div>
+        <div class="mission-list" id="missionList">
+          <!-- Las misiones se generarán dinámicamente mediante JavaScript -->
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL CENTRAL (Detalle de lo seleccionado) -->
+    <div class="detail-container">
+      <h2 class="detail-title" id="detailTitle">Neon UI</h2>
+      <div class="detail-subtitle" id="detailSubtitle">
+        Futuristic neon interface concept.
+      </div>
+      <div class="detail-description" id="detailDescription">
+        This prototype explores vivid neon color schemes, glitch effects, and scanning overlays
+        to emulate a ciberpunk environment for any sci-fi project. Integrates well with 
+        advanced animations like morphing transitions and BCI-based interactions.
+      </div>
+    </div>
+
+    <!-- PANEL DERECHO (Imagen / Info Extra) -->
+    <div class="right-panel">
+      <div class="right-panel-title" id="rightPanelTitle">Epistrophy: Badlands</div>
+      <img src="src/img/seguridad.jpg" 
+           alt="Delamain Cab" 
+           class="right-panel-image"
+           id="rightPanelImage">
+
+      <!-- MINI-CHART -->
+      <div class="mini-chart-container" id="miniChartContainer">
+        <canvas id="miniChart" width="300" height="120"></canvas>
+      </div>
+
+      <!-- MP3 PLAYER (UN SOLO TRACK) -->
+      <div class="mp3-player" id="mp3Player">
+        <!-- Portada -->
+        <div class="mp3-album-cover">
+          <img id="albumCoverImg" 
+               src="src/img/seguridad.jpg" 
+               alt="Album Cover">
+        </div>
+
+        <div class="mp3-player-header">Now Playing</div>
+        <div id="trackTitle" style="font-size:13px; text-align:center; margin-bottom:8px; color:#ffbfc6;">
+          Ambient Cyberpunk
+        </div>
+
+        <!-- Controles de un solo track -->
+        <div class="mp3-player-controls">
+          <button class="mp3-btn" id="playBtn">Play</button>
+          <button class="mp3-btn" id="pauseBtn">Pause</button>
+        </div>
+
+        <!-- Barra de Progreso / Tiempo -->
+        <div class="mp3-player-controls" style="margin-top:6px;">
+          <div class="mp3-progress" id="mp3Progress">
+            <div class="mp3-progress-fill" id="mp3ProgressFill"></div>
+          </div>
+          <div class="mp3-time" id="mp3Time">0:00</div>
+        </div>
+
+        <!-- Slider de Volumen -->
+        <div class="mp3-volume">
+          <span class="mp3-volume-label">Vol</span>
+          <input type="range" id="volumeRange" min="0" max="1" step="0.01" value="1">
+        </div>
+
+        <!-- Audio Element (Un solo track) -->
+        <audio id="audioPlayer" src="src/Audio/Future セルフ - Ambient Cyberpunk.mp3"></audio>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER BOTONES -->
+  <div class="footer-buttons">
+    <div class="footer-btn">
+      <span>[ E ]</span> Select
+    </div>
+    <div class="footer-btn">
+      <span>[ R ]</span> Track Objective
+    </div>
+    <div class="footer-btn">
+      <span>[ Esc ]</span> Close
+    </div>
+  </div>
+
+  <script>
+    /************************************************************
+     * DATOS DE PROYECTOS / MISIONES
+     ************************************************************/
+    const projectData = {
+      neonui: {
+        title: "Neon UI",
+        subtitle: "Futuristic neon interface concept.",
+        description: "This prototype explores vivid neon color schemes, glitch effects, and scanning overlays to emulate a ciberpunk environment for any sci-fi project. Integrates well with advanced animations like morphing transitions and BCI-based interactions."
+      },
+      hackingpanel: {
+        title: "Hacking Panel",
+        subtitle: "Immersive hacking mini-game mechanics.",
+        description: "Approach focusing on netrunner puzzle sequences, offering players an engaging and interactive hacking experience within the cyberpunk framework."
+      },
+      braininterface: {
+        title: "Brain Interface",
+        subtitle: "BCI-based user interactions (prototype).",
+        description: "Concept for controlling the UI via neural signals, enabling seamless and intuitive interactions through brain-computer interface technology."
+      }
+    };
+
+    const missionData = {
+      badlands: {
+        title: "Epistrophy: Badlands",
+        image: "src/img/seguridad.jpg",
+        danger: "Danger: High",
+        newFlag: true
+      },
+      "the-glen": {
+        title: "Epistrophy: The Glen",
+        image: "src/img/seguridad.jpg",
+        danger: "Danger: High",
+        newFlag: true
+      },
+      northside: {
+        title: "Epistrophy: Northside",
+        image: "src/img/seguridad.jpg",
+        danger: "Danger: High",
+        newFlag: true
+      },
+      rancho: {
+        title: "Epistrophy: Rancho Coronado",
+        image: "src/img/seguridad.jpg",
+        danger: "Danger: High",
+        newFlag: true
+      }
+    };
+
+    /************************************************************
+     * GENERAR MISIONS DINÁMICAMENTE
+     ************************************************************/
+    const missionList = document.getElementById('missionList');
+    const rightPanelTitle = document.getElementById("rightPanelTitle");
+    const rightPanelImage = document.getElementById("rightPanelImage");
+
+    function createMissionItem(id, data, isSelected = false) {
+      const missionItem = document.createElement('div');
+      missionItem.classList.add('mission-item');
+      if (isSelected) {
+        missionItem.classList.add('selected');
+      }
+      missionItem.setAttribute('data-id', id);
+
+      // Icono de la misión
+      const missionIcon = document.createElement('div');
+      missionIcon.classList.add('mission-icon');
+      missionItem.appendChild(missionIcon);
+
+      // Nombre de la misión
+      const missionName = document.createElement('div');
+      missionName.classList.add('mission-name');
+      missionName.textContent = data.title;
+      missionItem.appendChild(missionName);
+
+      // Nivel de peligro
+      const missionDanger = document.createElement('div');
+      missionDanger.classList.add('mission-danger');
+      missionDanger.textContent = data.danger;
+      missionItem.appendChild(missionDanger);
+
+      // Bandera de nuevo (si aplica)
+      if (data.newFlag) {
+        const newFlag = document.createElement('div');
+        newFlag.classList.add('new-flag');
+        newFlag.textContent = 'New';
+        missionItem.appendChild(newFlag);
+      }
+
+      // Event Listener para selección de misión
+      missionItem.addEventListener('click', () => {
+        // Remover 'selected' de todas las misiones
+        const allMissions = document.querySelectorAll('.mission-item');
+        allMissions.forEach(m => m.classList.remove('selected'));
+        // Añadir 'selected' a la misión clickeada
+        missionItem.classList.add('selected');
+
+        // Actualizar el panel derecho con la información de la misión seleccionada
+        rightPanelTitle.textContent = data.title;
+        rightPanelImage.src = data.image;
+      });
+
+      return missionItem;
+    }
+
+    // Inicializar la lista de misiones
+    function initializeMissions() {
+      let isFirst = true; // Para seleccionar la primera misión por defecto
+      for (const [id, data] of Object.entries(missionData)) {
+        const missionItem = createMissionItem(id, data, isFirst);
+        missionList.appendChild(missionItem);
+        isFirst = false;
+      }
+    }
+
+    // Llamar a la función para generar las misiones
+    initializeMissions();
+
+    /************************************************************
+     * LÓGICA DE PROYECTOS
+     ************************************************************/
+    const projectItems = document.querySelectorAll(".project-item");
+
+    const detailTitle = document.getElementById("detailTitle");
+    const detailSubtitle = document.getElementById("detailSubtitle");
+    const detailDescription = document.getElementById("detailDescription");
+
+    projectItems.forEach(item => {
+      item.addEventListener("click", () => {
+        projectItems.forEach(i => i.classList.remove("selected"));
+        item.classList.add("selected");
+
+        const pid = item.getAttribute("data-id");
+        const data = projectData[pid];
+        detailTitle.textContent = data.title;
+        detailSubtitle.textContent = data.subtitle;
+        detailDescription.textContent = data.description;
+      });
+    });
+
+    /************************************************************
+     * MINI CHART (Animación Onda)
+     ************************************************************/
+    const canvas = document.getElementById('miniChart');
+    const ctx = canvas.getContext('2d');
+    let waveOffset = 0;
+    const w = canvas.width;
+    const h = canvas.height;
+
+    function drawChart(){
+      ctx.clearRect(0, 0, w, h);
+      ctx.strokeStyle = '#ff0040';
+      ctx.lineWidth = 2;
+
+      ctx.beginPath();
+      for(let x=0; x<w; x++){
+        const y = Math.sin((x + waveOffset)*0.05)*20 + (h/2);
+        if(x===0){
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      ctx.stroke();
+
+      waveOffset += 2;
+      requestAnimationFrame(drawChart);
+    }
+    drawChart();
+
+    /************************************************************
+     * MP3 PLAYER (Un Solo Track)
+     ************************************************************/
+    const audioPlayer = document.getElementById('audioPlayer');
+    const playBtn = document.getElementById('playBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const volumeRange = document.getElementById('volumeRange');
+
+    const mp3Progress = document.getElementById('mp3Progress');
+    const mp3ProgressFill = document.getElementById('mp3ProgressFill');
+    const mp3Time = document.getElementById('mp3Time');
+    const trackTitle = document.getElementById('trackTitle');
+
+    // Reproducir/Pausar
+    playBtn.addEventListener('click', () => {
+      audioPlayer.play();
+    });
+    pauseBtn.addEventListener('click', () => {
+      audioPlayer.pause();
+    });
+
+    // Barra de progreso
+    audioPlayer.addEventListener('timeupdate', () => {
+      const current = audioPlayer.currentTime;
+      const duration = audioPlayer.duration || 0;
+      const percent = (current / duration)*100;
+      mp3ProgressFill.style.width = percent + '%';
+      // actualizar tiempo (m:ss)
+      const m = Math.floor(current/60);
+      const s = Math.floor(current%60);
+      mp3Time.textContent = `${m}:${s<10?'0'+s:s}`;
+    });
+    audioPlayer.addEventListener('ended', () => {
+      mp3ProgressFill.style.width = '0%';
+      mp3Time.textContent = '0:00';
+    });
+
+    // Slider de volumen
+    volumeRange.addEventListener('input', () => {
+      audioPlayer.volume = volumeRange.value;
+    });
+    volumeRange.value = 1; // volumen max por defecto
+
+  </script>
+</body>
+</html>
+
+
