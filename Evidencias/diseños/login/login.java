@@ -1,9 +1,12 @@
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.io.File;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
-public class SistemaInventarioLogin {
+public class Login {
     public static void main(String[] args) {
         // Aplicar estilo predeterminado
         try {
@@ -12,236 +15,364 @@ public class SistemaInventarioLogin {
             e.printStackTrace();
         }
 
-        new SistemaInventario();
+        SwingUtilities.invokeLater(Login::new);
     }
 
-    public SistemaInventario() {
+    public Login() {
         mostrarLogin();
     }
 
-    // Método para mostrar la pantalla de Login
     private void mostrarLogin() {
-        JFrame frame = new JFrame("Login");
-        frame.setSize(400, 250);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new GridBagLayout());
-        frame.getContentPane().setBackground(new Color(220, 220, 220));
-
+        JFrame frame = crearFrame("Login", 400, 250);
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        panel.setBackground(new Color(245, 245, 245));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        JLabel userLabel = new JLabel("Usuario:");
-        JTextField userField = new JTextField();
+        JLabel userLabel = crearEtiqueta("Usuario:");
+        JTextField userField = crearCampoTexto();
 
-        JLabel passLabel = new JLabel("Contraseña:");
-        JPasswordField passField = new JPasswordField();
+        JLabel passLabel = crearEtiqueta("Contraseña:");
+        JPasswordField passField = crearCampoContraseña();
 
-        JButton loginButton = new JButton("Iniciar sesión");
-        loginButton.setBackground(new Color(30, 144, 255));
-        loginButton.setForeground(Color.WHITE);
-        loginButton.setFont(new Font("Arial", Font.BOLD, 14));
+        JButton loginButton = crearBoton("Iniciar Sesión", new Color(173, 216, 230), Color.BLACK);
 
         gbc.gridx = 0;
         gbc.gridy = 0;
-        frame.add(userLabel, gbc);
+        panel.add(userLabel, gbc);
 
         gbc.gridx = 1;
-        frame.add(userField, gbc);
+        panel.add(userField, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 1;
-        frame.add(passLabel, gbc);
+        panel.add(passLabel, gbc);
 
         gbc.gridx = 1;
-        frame.add(passField, gbc);
+        panel.add(passField, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.gridwidth = 2;
-        frame.add(loginButton, gbc);
+        panel.add(loginButton, gbc);
 
-        loginButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String user = userField.getText();
-                String pass = new String(passField.getPassword());
+        loginButton.addActionListener(e -> {
+            String user = userField.getText().trim();
+            String pass = new String(passField.getPassword()).trim();
 
-                // Validación de niveles de usuario
-                if (user.equals("Admin") && pass.equals("Jose1234")) {
-                    JOptionPane.showMessageDialog(frame, "Bienvenido, Admin");
-                    frame.dispose();
-                    mostrarMenu("Admin");
-                } else if (user.equals("usuario") && pass.equals("user123")) {
-                    JOptionPane.showMessageDialog(frame, "Bienvenido, Usuario");
-                    frame.dispose();
-                    mostrarMenu("Usuario");
-                } else {
-                    JOptionPane.showMessageDialog(frame, "Credenciales incorrectas");
-                }
+            if (user.isEmpty() || pass.isEmpty()) {
+                mostrarMensaje(frame, "Por favor, completa todos los campos.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            if (user.equals("Admin") && pass.equals("Jose1234")) {
+                mostrarMensaje(frame, "Bienvenido, Admin", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                frame.dispose();
+                mostrarMenu("Admin");
+            } else if (user.equals("usuario") && pass.equals("user123")) {
+                mostrarMensaje(frame, "Bienvenido, Usuario", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                frame.dispose();
+                mostrarMenu("Usuario");
+            } else {
+                mostrarMensaje(frame, "Credenciales incorrectas.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
+        frame.add(panel);
         frame.setVisible(true);
     }
 
-    // Método para mostrar el Menú Principal
     private void mostrarMenu(String nivelUsuario) {
-        JFrame frame = new JFrame("Menú Principal");
-        frame.setSize(400, 300);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new GridLayout(3, 1));
-        frame.getContentPane().setBackground(new Color(245, 245, 245));
+        JFrame frame = crearFrame("Menú Principal", 400, 300);
+        frame.setLayout(new BorderLayout());
 
-        JLabel welcomeLabel = new JLabel("Bienvenido: " + nivelUsuario, JLabel.CENTER);
-        welcomeLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        JLabel welcomeLabel = crearEtiquetaCentro("Bienvenido: " + nivelUsuario, new Font("Arial", Font.BOLD, 16));
+        welcomeLabel.setBorder(new EmptyBorder(20, 0, 20, 0));
 
-        JButton formularioButton = new JButton("Formulario de Inventario");
-        formularioButton.setBackground(new Color(60, 179, 113));
-        formularioButton.setForeground(Color.WHITE);
-        formularioButton.setFont(new Font("Arial", Font.BOLD, 14));
+        JPanel botonesPanel = new JPanel(new GridLayout(3, 1, 10, 10));
+        botonesPanel.setBorder(new EmptyBorder(10, 50, 10, 50));
+        botonesPanel.setBackground(new Color(245, 245, 245));
 
-        JButton salirButton = new JButton("Salir");
-        salirButton.setBackground(Color.RED);
-        salirButton.setForeground(Color.WHITE);
-        salirButton.setFont(new Font("Arial", Font.BOLD, 14));
+        JButton formularioButton = crearBoton("Pedido de Piezas", new Color(144, 238, 144), Color.BLACK);
+        JButton reportesButton = crearBoton("Generar Reportes", new Color(255, 228, 181), Color.BLACK);
+        JButton salirButton = crearBoton("Salir", new Color(255, 160, 122), Color.BLACK);
 
-        frame.add(welcomeLabel);
-        frame.add(formularioButton);
-        frame.add(salirButton);
+        botonesPanel.add(formularioButton);
+        botonesPanel.add(reportesButton);
+        botonesPanel.add(salirButton);
 
         formularioButton.addActionListener(e -> {
-            if (nivelUsuario.equals("Admin") || nivelUsuario.equals("Usuario")) {
-                frame.dispose();
-                mostrarFormulario();
-            } else {
-                JOptionPane.showMessageDialog(frame, "No tienes acceso.");
-            }
+            frame.dispose();
+            mostrarFormulario(nivelUsuario);
+        });
+
+        reportesButton.addActionListener(e -> {
+            // iplementar funcionalidad de reportes
+            mostrarMensaje(frame, "Funcionalidad de reportes en desarrollo.", "Información",
+                    JOptionPane.INFORMATION_MESSAGE);
         });
 
         salirButton.addActionListener(e -> System.exit(0));
 
+        frame.add(welcomeLabel, BorderLayout.NORTH);
+        frame.add(botonesPanel, BorderLayout.CENTER);
         frame.setVisible(true);
     }
 
-    // Método para mostrar el Formulario de Inventario eso creo
-    private void mostrarFormulario() {
-        JFrame frame = new JFrame("Formulario de Inventario - Chevrolet");
-        frame.setSize(600, 700);
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.setLayout(new GridBagLayout());
-        frame.getContentPane().setBackground(new Color(240, 248, 255));
-
+    private void mostrarFormulario(String nivelUsuario) {
+        JFrame frame = crearFrame("Pedido de Piezas - Chevrolet", 700, 800);
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        panel.setBackground(new Color(240, 248, 255));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        JLabel piezaLabel = new JLabel("Nombre de la Pieza:");
-        JTextField piezaField = new JTextField();
+        // Campos del formulario xd
+        JLabel piezaLabel = crearEtiqueta("Nombre de la Pieza:");
+        JTextField piezaField = crearCampoTexto();
 
-        JLabel numeroParteLabel = new JLabel("Número de Parte:");
-        JTextField numeroParteField = new JTextField();
+        JLabel numeroParteLabel = crearEtiqueta("Número de Parte:");
+        JTextField numeroParteField = crearCampoTexto();
 
-        JLabel cantidadLabel = new JLabel("Cantidad en Inventario:");
-        JTextField cantidadField = new JTextField();
+        JLabel cantidadLabel = crearEtiqueta("Cantidad:");
+        JTextField cantidadField = crearCampoTexto();
 
-        JLabel precioLabel = new JLabel("Precio:");
-        JTextField precioField = new JTextField();
+        JLabel precioLabel = crearEtiqueta("Precio (USD):");
+        JTextField precioField = crearCampoTexto();
 
-        JLabel proveedorLabel = new JLabel("Proveedor:");
-        JTextField proveedorField = new JTextField();
+        JLabel proveedorLabel = crearEtiqueta("Proveedor:");
+        JTextField proveedorField = crearCampoTexto();
 
-        JButton agregarFotoButton = new JButton("Agregar Foto");
-        JButton guardarButton = new JButton("Guardar");
-        JButton cerrarSesionButton = new JButton("Cerrar Sesión");
+        JLabel direccionProveedorLabel = crearEtiqueta("Dirección del Proveedor:");
+        JTextField direccionProveedorField = crearCampoTexto();
 
-        agregarFotoButton.setBackground(new Color(70, 130, 180));
-        agregarFotoButton.setForeground(Color.WHITE);
-        agregarFotoButton.setFont(new Font("Arial", Font.BOLD, 14));
+        JLabel descripcionLabel = crearEtiqueta("Descripción de la Pieza:");
+        JTextArea descripcionArea = crearAreaTexto(5, 20);
+        JScrollPane descripcionScroll = new JScrollPane(descripcionArea);
 
-        guardarButton.setBackground(new Color(34, 139, 34));
-        guardarButton.setForeground(Color.WHITE);
-        guardarButton.setFont(new Font("Arial", Font.BOLD, 14));
+        JLabel fechaPedidoLabel = crearEtiqueta("Fecha de Pedido:");
+        JTextField fechaPedidoField = crearCampoTexto();
+        fechaPedidoField.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        fechaPedidoField.setEditable(false);
+        fechaPedidoField.setBackground(Color.LIGHT_GRAY);
 
-        cerrarSesionButton.setBackground(Color.RED);
-        cerrarSesionButton.setForeground(Color.WHITE);
-        cerrarSesionButton.setFont(new Font("Arial", Font.BOLD, 14));
+        JLabel fotoLabel = crearEtiqueta("Foto de la Pieza:");
+        JLabel fotoPreview = new JLabel();
+        fotoPreview.setPreferredSize(new Dimension(200, 150));
+        fotoPreview.setBorder(BorderFactory.createLineBorder(Color.GRAY));
 
+        JButton agregarFotoButton = crearBoton("Agregar Foto", new Color(173, 216, 230), Color.BLACK);
+        JButton guardarButton = crearBoton("Guardar", new Color(144, 238, 144), Color.BLACK);
+        JButton cerrarSesionButton = crearBoton("Cerrar Sesión", new Color(255, 160, 122), Color.BLACK);
+
+        // Añadir componentes al panel
         gbc.gridx = 0;
         gbc.gridy = 0;
-        frame.add(piezaLabel, gbc);
+        panel.add(piezaLabel, gbc);
 
         gbc.gridx = 1;
-        frame.add(piezaField, gbc);
+        panel.add(piezaField, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 1;
-        frame.add(numeroParteLabel, gbc);
+        panel.add(numeroParteLabel, gbc);
 
         gbc.gridx = 1;
-        frame.add(numeroParteField, gbc);
+        panel.add(numeroParteField, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 2;
-        frame.add(cantidadLabel, gbc);
+        panel.add(cantidadLabel, gbc);
 
         gbc.gridx = 1;
-        frame.add(cantidadField, gbc);
+        panel.add(cantidadField, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 3;
-        frame.add(precioLabel, gbc);
+        panel.add(precioLabel, gbc);
 
         gbc.gridx = 1;
-        frame.add(precioField, gbc);
+        panel.add(precioField, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 4;
-        frame.add(proveedorLabel, gbc);
+        panel.add(proveedorLabel, gbc);
 
         gbc.gridx = 1;
-        frame.add(proveedorField, gbc);
+        panel.add(proveedorField, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 5;
-        frame.add(agregarFotoButton, gbc);
+        panel.add(direccionProveedorLabel, gbc);
 
         gbc.gridx = 1;
-        frame.add(guardarButton, gbc);
+        panel.add(direccionProveedorField, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 6;
-        gbc.gridwidth = 2;
-        frame.add(cerrarSesionButton, gbc);
+        panel.add(descripcionLabel, gbc);
 
-        guardarButton.addActionListener(e -> {
-            String pieza = piezaField.getText();
-            String numeroParte = numeroParteField.getText();
-            String cantidad = cantidadField.getText();
-            String precio = precioField.getText();
-            String proveedor = proveedorField.getText();
+        gbc.gridx = 1;
+        panel.add(descripcionScroll, gbc);
 
-            JOptionPane.showMessageDialog(frame, "Datos guardados:\n" +
-                    "Pieza: " + pieza + "\n" +
-                    "Número de Parte: " + numeroParte + "\n" +
-                    "Cantidad: " + cantidad + "\n" +
-                    "Precio: " + precio + "\n" +
-                    "Proveedor: " + proveedor);
+        gbc.gridx = 0;
+        gbc.gridy = 7;
+        panel.add(fechaPedidoLabel, gbc);
+
+        gbc.gridx = 1;
+        panel.add(fechaPedidoField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 8;
+        panel.add(fotoLabel, gbc);
+
+        gbc.gridx = 1;
+        panel.add(fotoPreview, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 9;
+        panel.add(agregarFotoButton, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 10;
+        panel.add(guardarButton, gbc);
+
+        gbc.gridx = 1;
+        panel.add(cerrarSesionButton, gbc);
+
+        // Acción para agregar foto
+        agregarFotoButton.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Seleccionar Foto de la Pieza");
+            fileChooser.setAcceptAllFileFilterUsed(false);
+            fileChooser.addChoosableFileFilter(
+                    new javax.swing.filechooser.FileNameExtensionFilter("Imágenes", "jpg", "png", "jpeg", "gif"));
+
+            int result = fileChooser.showOpenDialog(frame);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = fileChooser.getSelectedFile();
+                ImageIcon icon = new ImageIcon(
+                        new ImageIcon(selectedFile.getAbsolutePath()).getImage().getScaledInstance(
+                                fotoPreview.getWidth(), fotoPreview.getHeight(), Image.SCALE_SMOOTH));
+                fotoPreview.setIcon(icon);
+            } else {
+                mostrarMensaje(frame, "No se seleccionó ninguna foto.", "Información", JOptionPane.INFORMATION_MESSAGE);
+            }
         });
 
+        // Acción para guardar datos
+        guardarButton.addActionListener(e -> {
+            String pieza = piezaField.getText().trim();
+            String numeroParte = numeroParteField.getText().trim();
+            String cantidadStr = cantidadField.getText().trim();
+            String precioStr = precioField.getText().trim();
+            String proveedor = proveedorField.getText().trim();
+            String direccionProveedor = direccionProveedorField.getText().trim();
+            String descripcion = descripcionArea.getText().trim();
+            String fechaPedido = fechaPedidoField.getText().trim();
+            Icon foto = fotoPreview.getIcon();
+
+            if (pieza.isEmpty() || numeroParte.isEmpty() || cantidadStr.isEmpty() || precioStr.isEmpty()
+                    || proveedor.isEmpty() || direccionProveedor.isEmpty() || descripcion.isEmpty()) {
+                mostrarMensaje(frame, "Por favor, completa todos los campos.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            int cantidad;
+            double precio;
+            try {
+                cantidad = Integer.parseInt(cantidadStr);
+                precio = Double.parseDouble(precioStr);
+            } catch (NumberFormatException ex) {
+                mostrarMensaje(frame, "Cantidad y Precio deben ser números válidos.", "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Aquí puedes agregar la lógica para guardar los datos en una base de datos o
+            // archivo.
+
+            String resumen = String.format(
+                    "Datos guardados:\n" +
+                            "Pieza: %s\n" +
+                            "Número de Parte: %s\n" +
+                            "Cantidad: %d\n" +
+                            "Precio: %.2f USD\n" +
+                            "Proveedor: %s\n" +
+                            "Dirección del Proveedor: %s\n" +
+                            "Descripción: %s\n" +
+                            "Fecha de Pedido: %s\n" +
+                            "Foto Adjunta: %s",
+                    pieza, numeroParte, cantidad, precio, proveedor, direccionProveedor, descripcion, fechaPedido,
+                    (foto != null) ? "Sí" : "No");
+
+            mostrarMensaje(frame, resumen, "Éxito", JOptionPane.INFORMATION_MESSAGE);
+        });
+
+        // Acción para cerrar sesión
         cerrarSesionButton.addActionListener(e -> {
             frame.dispose();
             mostrarLogin();
         });
 
-        agregarFotoButton.addActionListener(e -> {
-            JFileChooser fileChooser = new JFileChooser();
-            int result = fileChooser.showOpenDialog(frame);
-            if (result == JFileChooser.APPROVE_OPTION) {
-                JOptionPane.showMessageDialog(frame, "Foto seleccionada: " + fileChooser.getSelectedFile().getName());
-            }
-        });
-
+        frame.add(panel);
         frame.setVisible(true);
+    }
+
+    // Métodos auxiliares para crear componentes
+    private JFrame crearFrame(String titulo, int ancho, int alto) {
+        JFrame frame = new JFrame(titulo);
+        frame.setSize(ancho, alto);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLocationRelativeTo(null); // Centrar en la pantalla
+        return frame;
+    }
+
+    private JLabel crearEtiqueta(String texto) {
+        JLabel label = new JLabel(texto + ":");
+        label.setFont(new Font("Arial", Font.PLAIN, 14));
+        return label;
+    }
+
+    private JLabel crearEtiquetaCentro(String texto, Font fuente) {
+        JLabel label = new JLabel(texto, JLabel.CENTER);
+        label.setFont(fuente);
+        return label;
+    }
+
+    private JTextField crearCampoTexto() {
+        JTextField campo = new JTextField(20);
+        campo.setFont(new Font("Arial", Font.PLAIN, 14));
+        return campo;
+    }
+
+    private JTextArea crearAreaTexto(int filas, int columnas) {
+        JTextArea area = new JTextArea(filas, columnas);
+        area.setFont(new Font("Arial", Font.PLAIN, 14));
+        area.setLineWrap(true);
+        area.setWrapStyleWord(true);
+        return area;
+    }
+
+    private JPasswordField crearCampoContraseña() {
+        JPasswordField campo = new JPasswordField(20);
+        campo.setFont(new Font("Arial", Font.PLAIN, 14));
+        return campo;
+    }
+
+    private JButton crearBoton(String texto, Color colorFondo, Color colorTexto) {
+        JButton boton = new JButton(texto);
+        boton.setBackground(colorFondo);
+        boton.setForeground(colorTexto);
+        boton.setFont(new Font("Arial", Font.BOLD, 14));
+        boton.setFocusPainted(false);
+        return boton;
+    }
+
+    private void mostrarMensaje(Component parent, String mensaje, String titulo, int tipo) {
+        JOptionPane.showMessageDialog(parent, mensaje, titulo, tipo);
     }
 }
