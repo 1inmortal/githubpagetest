@@ -2,161 +2,51 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Carrusel Musical - Ambientes Dinámicos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberMP3 - Reproductor MP3 Cyberpunk</title>
+    <!-- Iconos de Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/k7ujTnHq6cYh5Lx9qB0VYm4eQq5R6uIuQO9J2Dk1GQIxZ1I1sXf0x/kAzsZt8zK8VjS5H8w5Z+bg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-        /* Variables para personalizar colores */
+        /* Variables de Color y Fuentes */
         :root {
-            --bg-color: #000000;
+            --bg-color: #0f0f0f;
+            --primary-color: #ff00ff;
+            --secondary-color: #00ffff;
             --text-color: #ffffff;
-            --active-color: #007BFF;
-            --button-bg: rgba(0, 0, 0, 0.5);
-            --button-hover: rgba(255, 255, 255, 0.2);
-            --player-bg: #1a1a1a;
+            --accent-color: #ff9900;
+            --player-bg: rgba(20, 20, 20, 0.9);
+            --sidebar-bg: rgba(30, 30, 30, 0.95);
+            --hover-color: rgba(255, 255, 255, 0.2);
+            --transition-speed: 0.3s;
         }
 
-        /* General Styles */
-        body {
+        /* Reset de Estilos */
+        * {
             margin: 0;
-            font-family: 'Arial', sans-serif;
-            color: var(--text-color);
-            overflow: hidden;
-            transition: background-color 0.5s ease-in-out;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: var(--bg-color);
-            position: relative;
-            overflow: hidden;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        /* Video de fondo */
-        video {
-            position: absolute;
+        /* Estilos Generales */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            overflow: hidden;
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Video de Fondo */
+        #background-video {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             object-fit: cover;
-            z-index: -1;
-        }
-
-        /* Animación de entrada */
-        body.fade-in {
-            animation: fadeIn 1.5s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-
-        /* Contenedor Principal */
-        .main-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            box-sizing: border-box;
-            z-index: 1;
-            width: 100%;
-            max-width: 1000px;
-            text-align: center;
-        }
-
-        /* Título */
-        .title {
-            font-size: 2.5rem;
-            margin-bottom: 30px;
-            color: #00ff00;
-            text-shadow: 0px 0px 10px rgba(0, 255, 0, 0.8);
-        }
-
-        /* Carrusel */
-        .carousel-container {
-            position: relative;
-            max-width: 90%;
-            overflow: hidden;
-            margin: 20px auto;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .carousel {
-            display: flex;
-            transition: transform 0.5s ease-in-out;
-        }
-
-        .slide {
-            min-width: 100%;
-            height: 300px; /* Tamaño reducido para las imágenes */
-            position: relative;
-            margin: 0 auto;
-            border-radius: 20px;
-        }
-
-        .slide img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 20px;
-            filter: brightness(0.8);
-        }
-
-        /* Botones de navegación */
-        button {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background: var(--button-bg);
-            color: var(--text-color);
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 50%;
-            z-index: 1000;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background: var(--button-hover);
-        }
-
-        .prev {
-            left: 20px;
-        }
-
-        .next {
-            right: 20px;
-        }
-
-        /* Music Player */
-        .music-player {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: var(--player-bg);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.5);
-            z-index: 1;
-        }
-
-        #audioPlayer {
-            flex-grow: 1;
-        }
-
-        .track-info {
-            margin-left: 15px;
+            z-index: -2;
+            filter: brightness(0.3);
         }
 
         /* Partículas */
@@ -166,148 +56,669 @@
             height: 100%;
             top: 0;
             left: 0;
+            background: url('https://i.ibb.co/7p5C4mL/particles.png') repeat;
+            opacity: 0.3;
             z-index: -1;
-            background: radial-gradient(circle, rgba(0,0,0,1) 0%, rgba(38,38,38,1) 100%);
-            pointer-events: none;
-            animation: particles 30s infinite;
+            animation: moveParticles 60s linear infinite;
         }
 
-        @keyframes particles {
-            0%, 100% {
-                background-position: 0 0;
-            }
-            50% {
-                background-position: 100px 100px;
-            }
+        @keyframes moveParticles {
+            from { background-position: 0 0; }
+            to { background-position: 1000px 1000px; }
         }
 
-        /* Responsivo */
-        @media (max-width: 768px) {
-            .carousel-container {
-                max-width: 95%;
+        /* Barra Lateral de Navegación */
+        .sidebar {
+            width: 250px;
+            background: var(--sidebar-bg);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            transition: width var(--transition-speed);
+            overflow: hidden;
+        }
+
+        .sidebar .logo {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .sidebar .logo h2 {
+            color: var(--primary-color);
+            font-size: 2rem;
+            text-shadow: 0 0 10px var(--primary-color);
+        }
+
+        .sidebar .nav-links {
+            list-style: none;
+            flex-grow: 1;
+        }
+
+        .sidebar .nav-links li {
+            margin: 20px 0;
+        }
+
+        .sidebar .nav-links a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            transition: background var(--transition-speed);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .sidebar .nav-links a i {
+            margin-right: 10px;
+            color: var(--secondary-color);
+        }
+
+        .sidebar .nav-links a:hover {
+            background: var(--hover-color);
+        }
+
+        /* Contenedor Principal */
+        .main-container {
+            margin-left: 250px;
+            padding: 20px;
+            width: calc(100% - 250px);
+            height: 100vh;
+            overflow-y: auto;
+            background: rgba(10, 10, 10, 0.7);
+            backdrop-filter: blur(10px);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            text-shadow: 0 0 15px var(--primary-color);
+        }
+
+        /* Barra de Búsqueda */
+        .search-bar {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .search-bar input {
+            width: 50%;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 25px;
+            outline: none;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            transition: background var(--transition-speed);
+        }
+
+        .search-bar input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .search-bar input:focus {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Lista de Reproducción */
+        .playlist {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .playlist-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background var(--transition-speed);
+        }
+
+        .playlist-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .playlist-item.active {
+            background: var(--primary-color);
+            color: var(--bg-color);
+        }
+
+        .playlist-item img {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-right: 15px;
+        }
+
+        .playlist-item .track-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .playlist-item .track-info h3 {
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+
+        .playlist-item .track-info p {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Reproductor de Música */
+        .music-player {
+            background: var(--player-bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.7);
+            position: fixed;
+            bottom: 0;
+            left: 250px;
+            width: calc(100% - 250px);
+            transition: left var(--transition-speed), width var(--transition-speed);
+            z-index: 1000;
+        }
+
+        .track-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .track-info img {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-right: 15px;
+        }
+
+        .track-info .details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .track-info .details h3 {
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+        }
+
+        .track-info .details p {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+        }
+
+        .controls button {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            margin: 0 10px;
+            cursor: pointer;
+            transition: color var(--transition-speed);
+        }
+
+        .controls button:hover {
+            color: var(--primary-color);
+        }
+
+        .controls input[type="range"] {
+            width: 100px;
+            margin-left: 20px;
+            cursor: pointer;
+        }
+
+        /* Visualizador de Audio */
+        .visualizer {
+            width: 100%;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        #audio-visualizer {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Modo Dark/Light */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--player-bg);
+            border: none;
+            color: var(--text-color);
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background var(--transition-speed), color var(--transition-speed);
+            z-index: 1001;
+        }
+
+        .theme-toggle:hover {
+            background: var(--primary-color);
+            color: var(--bg-color);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 200px;
             }
 
-            .slide {
-                min-width: 90%; /* Asegura que las imágenes se adapten al tamaño de pantalla */
-            }
-
-            .title {
-                font-size: 2rem;
+            .main-container {
+                margin-left: 200px;
+                width: calc(100% - 200px);
             }
 
             .music-player {
-                flex-direction: column;
-                padding: 20px;
+                left: 200px;
+                width: calc(100% - 200px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
             }
 
-            #audioPlayer {
+            .main-container {
+                margin-left: 0;
                 width: 100%;
             }
 
-            .track-info {
-                margin-left: 0;
-                text-align: center;
-                margin-top: 10px;
+            .music-player {
+                left: 0;
+                width: 100%;
+                flex-direction: column;
+                align-items: center;
             }
 
-            button {
-                padding: 15px 25px;
+            .track-info {
+                flex-direction: column;
+                align-items: center;
+                margin-bottom: 10px;
+            }
+
+            .controls {
+                flex-direction: row;
+                justify-content: center;
+            }
+
+            .controls input[type="range"] {
+                width: 80%;
+                margin: 10px 0;
+            }
+
+            .visualizer {
+                height: 80px;
+            }
+
+            .playlist-item img {
+                width: 50px;
+                height: 50px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 2rem;
+            }
+
+            .controls button {
+                font-size: 1.2rem;
+                margin: 0 5px;
+            }
+
+            .track-info img {
+                width: 50px;
+                height: 50px;
+            }
+
+            .controls input[type="range"] {
+                width: 70%;
             }
         }
     </style>
 </head>
 <body>
     <!-- Video de fondo (agrega el link de tu video aquí) -->
-    <video autoplay muted loop>
+    <video autoplay muted loop id="background-video">
         <source src="mp4/mp4-falla.mp4" type="video/mp4"> <!-- Reemplaza con el link de tu video -->
         Tu navegador no soporta el elemento de video.
     </video>
 
+    <!-- Partículas y Animaciones -->
+    <div class="particles"></div>
+
+    <!-- Botón de Tema Dark/Light -->
+    <button class="theme-toggle" id="theme-toggle" title="Cambiar Tema">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <!-- Barra Lateral de Navegación -->
+    <nav class="sidebar">
+        <div class="logo">
+            <h2>INMORTAL</h2>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#"><i class="fas fa-home"></i> Inicio</a></li>
+            <li><a href="#"><i class="fas fa-music"></i> Biblioteca</a></li>
+            <li><a href="#"><i class="fas fa-search"></i> Buscar</a></li>
+            <li><a href="#"><i class="fas fa-cog"></i> Configuración</a></li>
+        </ul>
+    </nav>
+
     <!-- Contenedor Principal -->
     <div class="main-container">
-        <h1 class="title">Carrusel Musical - Slowed & Reverb</h1>
+        <!-- Header -->
+        <header>
+            <h1>GALACTIC SLOWED</h1>
+        </header>
 
-        <!-- Carrusel -->
-        <div class="carousel-container">
-            <div class="carousel">
-                <div class="slide" data-color="#1a1a2e" data-audio="mp3/KORDHELL.mp3">
-                    <img src="img/DEMBO.jpeg" alt="Imagen 1">
-                </div>
-                <div class="slide" data-color="#16213e" data-audio="mp3/MAQUINA DE GUERRA.mp3">
-                    <img src="img/LOCURA.jpeg" alt="Imagen 2">
-                </div>
-                <div class="slide" data-color="#0f3460" data-audio="mp3/PROTECTION.mp3">
-                    <img src="img/GALACTICO.jpeg" alt="Imagen 3">
-                </div>
-                <div class="slide" data-color="#533483" data-audio="mp3/Return to Zero Beztebya.mp3">
-                    <img src="img/RETURN TO ZERO.jpeg" alt="Imagen 4">
-                </div>
-                <div class="slide" data-color="#4a4e69" data-audio="mp3/RUSE SLOWED.mp3">
-                    <img src="img/IMPERIUM.jpeg" alt="Imagen 5">
-                </div>
-                <div class="slide" data-color="#22223b" data-audio="mp3/ZUMA JUMP.mp3">
-                    <img src="img/UNIVERSO.jpg" alt="Imagen 6">
-                </div>
-            </div>
-            <button class="prev">❮</button>
-            <button class="next">❯</button>
+        <!-- Barra de Búsqueda -->
+        <div class="search-bar">
+            <input type="text" id="search" placeholder="Buscar canciones...">
         </div>
 
-        <!-- Reproductor de música -->
-        <div class="music-player">
-            <audio id="audioPlayer" controls>
-                <source src="" type="audio/mpeg">
-                Tu navegador no soporta el formato de audio.
-            </audio>
-            <div class="track-info">
-                <span id="track-title">Selecciona una pista</span>
+        <!-- Lista de Reproducción -->
+        <div class="playlist" id="playlist">
+            <!-- Ítems de la Playlist -->
+            <div class="playlist-item active" data-index="0" data-color="#1a1a2e" data-audio="mp3/KORDHELL.mp3">
+                <img src="img/DEMBO.jpeg" alt="KORDHELL">
+                <div class="track-info">
+                    <h3>KORDHELL</h3>
+                    <p>Artista 1</p>
+                </div>
             </div>
+            <div class="playlist-item" data-index="1" data-color="#16213e" data-audio="mp3/MAQUINA DE GUERRA.mp3">
+                <img src="img/LOCURA.jpeg" alt="Máquina de Guerra">
+                <div class="track-info">
+                    <h3>Máquina de Guerra</h3>
+                    <p>Artista 2</p>
+                </div>
+            </div>
+            <div class="playlist-item" data-index="2" data-color="#0f3460" data-audio="mp3/PROTECTION.mp3">
+                <img src="img/GALACTICO.jpeg" alt="Protection">
+                <div class="track-info">
+                    <h3>Protection</h3>
+                    <p>Artista 3</p>
+                </div>
+            </div>
+            <div class="playlist-item" data-index="3" data-color="#533483" data-audio="mp3/Return to Zero Beztebya.mp3">
+                <img src="img/RETURN TO ZERO.jpeg" alt="Return to Zero">
+                <div class="track-info">
+                    <h3>Return to Zero</h3>
+                    <p>Artista 4</p>
+                </div>
+            </div>
+            <div class="playlist-item" data-index="4" data-color="#4a4e69" data-audio="mp3/RUSE SLOWED.mp3">
+                <img src="img/IMPERIUM.jpeg" alt="Ruse Slowed">
+                <div class="track-info">
+                    <h3>Ruse Slowed</h3>
+                    <p>Artista 5</p>
+                </div>
+            </div>
+            <div class="playlist-item" data-index="5" data-color="#22223b" data-audio="mp3/ZUMA JUMP.mp3">
+                <img src="img/UNIVERSO.jpg" alt="Zuma Jump">
+                <div class="track-info">
+                    <h3>Zuma Jump</h3>
+                    <p>Artista 6</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visualizador de Audio -->
+        <div class="visualizer">
+            <canvas id="audio-visualizer"></canvas>
         </div>
     </div>
 
+    <!-- Reproductor de Música -->
+    <div class="music-player">
+        <div class="track-info">
+            <img id="track-image" src="img/DEMBO.jpeg" alt="Track Image">
+            <div class="details">
+                <h3 id="track-title">Selecciona una pista</h3>
+                <p id="track-artist">Artista</p>
+            </div>
+        </div>
+        <div class="controls">
+            <button id="prev-track" title="Pista Anterior"><i class="fas fa-backward"></i></button>
+            <button id="play-pause" title="Reproducir/Pausar"><i class="fas fa-play"></i></button>
+            <button id="next-track" title="Siguiente Pista"><i class="fas fa-forward"></i></button>
+            <input type="range" id="volume-control" min="0" max="1" step="0.01" value="0.5" title="Control de Volumen">
+            <button id="fullscreen" title="Pantalla Completa"><i class="fas fa-expand"></i></button>
+        </div>
+        <audio id="audioPlayer">
+            <source src="" type="audio/mpeg">
+            Tu navegador no soporta el formato de audio.
+        </audio>
+    </div>
+
     <script>
-        // Variables para el carrusel
-        const carousel = document.querySelector('.carousel');
-        const slides = document.querySelectorAll('.slide');
-        const prevButton = document.querySelector('.prev');
-        const nextButton = document.querySelector('.next');
+        // Variables del Reproductor
+        const playlist = document.getElementById('playlist');
+        const playlistItems = document.querySelectorAll('.playlist-item');
         const audioPlayer = document.getElementById('audioPlayer');
         const trackTitle = document.getElementById('track-title');
-        let currentIndex = 0;
+        const trackArtist = document.getElementById('track-artist');
+        const trackImage = document.getElementById('track-image');
+        const playPauseButton = document.getElementById('play-pause');
+        const prevTrackButton = document.getElementById('prev-track');
+        const nextTrackButton = document.getElementById('next-track');
+        const volumeControl = document.getElementById('volume-control');
+        const fullscreenButton = document.getElementById('fullscreen');
+        const searchInput = document.getElementById('search');
+        const themeToggle = document.getElementById('theme-toggle');
 
-        // Cambiar a la diapositiva actual
-        function updateCarousel() {
-            const currentSlide = slides[currentIndex];
-            const color = currentSlide.getAttribute('data-color');
-            const audioSrc = currentSlide.getAttribute('data-audio');
-            
-            // Actualizar estilos
-            document.body.style.backgroundColor = color;
-            
-            // Actualizar el audio
+        let currentIndex = 0;
+        let isPlaying = false;
+        let isDarkMode = true;
+
+        // Función para Cargar una Pista
+        function loadTrack(index) {
+            const selectedItem = document.querySelector(`.playlist-item[data-index="${index}"]`);
+            const audioSrc = selectedItem.getAttribute('data-audio');
+            const color = selectedItem.getAttribute('data-color');
+            const imgSrc = selectedItem.querySelector('img').src;
+            const title = selectedItem.querySelector('.track-info h3').textContent;
+            const artist = selectedItem.querySelector('.track-info p').textContent;
+
             audioPlayer.src = audioSrc;
-            audioPlayer.play();
-            
-            // Actualizar la posición del carrusel
-            carousel.style.transform = `translateX(-${currentIndex * 100}%)`;
-            
-            // Cambiar título
-            trackTitle.textContent = `Reproduciendo: Pista ${currentIndex + 1}`;
+            trackTitle.textContent = title;
+            trackArtist.textContent = artist;
+            trackImage.src = imgSrc;
+            document.body.style.backgroundColor = color;
+            updateActivePlaylistItem(index);
         }
 
-        // Botones para moverse
-        prevButton.addEventListener('click', () => {
-            currentIndex = (currentIndex - 1 + slides.length) % slides.length;
-            updateCarousel();
+        // Función para Actualizar el Ítem Activo en la Playlist
+        function updateActivePlaylistItem(index) {
+            playlistItems.forEach((item, i) => {
+                if (i === index) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        // Función para Reproducir/Pausar Música
+        function togglePlayPause() {
+            if (isPlaying) {
+                audioPlayer.pause();
+                playPauseButton.innerHTML = '<i class="fas fa-play"></i>';
+            } else {
+                audioPlayer.play();
+                playPauseButton.innerHTML = '<i class="fas fa-pause"></i>';
+            }
+            isPlaying = !isPlaying;
+        }
+
+        // Función para Siguiente Pista
+        function nextTrack() {
+            currentIndex = (currentIndex + 1) % playlistItems.length;
+            loadTrack(currentIndex);
+            audioPlayer.play();
+            isPlaying = true;
+            playPauseButton.innerHTML = '<i class="fas fa-pause"></i>';
+        }
+
+        // Función para Pista Anterior
+        function prevTrack() {
+            currentIndex = (currentIndex - 1 + playlistItems.length) % playlistItems.length;
+            loadTrack(currentIndex);
+            audioPlayer.play();
+            isPlaying = true;
+            playPauseButton.innerHTML = '<i class="fas fa-pause"></i>';
+        }
+
+        // Eventos de Botones
+        playPauseButton.addEventListener('click', togglePlayPause);
+        nextTrackButton.addEventListener('click', nextTrack);
+        prevTrackButton.addEventListener('click', prevTrack);
+
+        // Evento para Seleccionar una Pista desde la Playlist
+        playlistItems.forEach((item, index) => {
+            item.addEventListener('click', () => {
+                currentIndex = index;
+                loadTrack(currentIndex);
+                audioPlayer.play();
+                isPlaying = true;
+                playPauseButton.innerHTML = '<i class="fas fa-pause"></i>';
+            });
         });
 
-        nextButton.addEventListener('click', () => {
-            currentIndex = (currentIndex + 1) % slides.length;
-            updateCarousel();
+        // Control de Volumen
+        volumeControl.addEventListener('input', (e) => {
+            audioPlayer.volume = e.target.value;
         });
 
-        // Reproducir la primera canción al cargar
-        document.addEventListener('DOMContentLoaded', updateCarousel);
+        // Actualizar Botón Play/Pause al Finalizar la Pista
+        audioPlayer.addEventListener('ended', nextTrack);
+
+        // Modo Fullscreen
+        fullscreenButton.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+                fullscreenButton.innerHTML = '<i class="fas fa-compress"></i>';
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                    fullscreenButton.innerHTML = '<i class="fas fa-expand"></i>';
+                }
+            }
+        });
+
+        // Visualizador de Audio
+        const canvas = document.getElementById('audio-visualizer');
+        const ctx = canvas.getContext('2d');
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const analyser = audioContext.createAnalyser();
+        const source = audioContext.createMediaElementSource(audioPlayer);
+        source.connect(analyser);
+        analyser.connect(audioContext.destination);
+        analyser.fftSize = 256;
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        function drawVisualizer() {
+            requestAnimationFrame(drawVisualizer);
+            analyser.getByteFrequencyData(dataArray);
+
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const barWidth = (canvas.width / bufferLength) * 2.5;
+            let barHeight;
+            let x = 0;
+
+            for(let i = 0; i < bufferLength; i++) {
+                barHeight = dataArray[i];
+                ctx.fillStyle = `rgb(${barHeight+100},50,${255 - barHeight})`;
+                ctx.fillRect(x, canvas.height - barHeight / 2, barWidth, barHeight / 2);
+                x += barWidth + 1;
+            }
+        }
+
+        drawVisualizer();
+
+        // Función de Búsqueda
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            playlistItems.forEach((item, index) => {
+                const title = item.querySelector('.track-info h3').textContent.toLowerCase();
+                const artist = item.querySelector('.track-info p').textContent.toLowerCase();
+                if (title.includes(query) || artist.includes(query)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Función para Cambiar Tema Dark/Light
+        function toggleTheme() {
+            if (isDarkMode) {
+                document.documentElement.style.setProperty('--bg-color', '#ffffff');
+                document.documentElement.style.setProperty('--primary-color', '#ff00ff');
+                document.documentElement.style.setProperty('--secondary-color', '#00ffff');
+                document.documentElement.style.setProperty('--text-color', '#000000');
+                document.documentElement.style.setProperty('--player-bg', 'rgba(240, 240, 240, 0.9)');
+                document.documentElement.style.setProperty('--sidebar-bg', 'rgba(220, 220, 220, 0.95)');
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            } else {
+                document.documentElement.style.setProperty('--bg-color', '#0f0f0f');
+                document.documentElement.style.setProperty('--primary-color', '#ff00ff');
+                document.documentElement.style.setProperty('--secondary-color', '#00ffff');
+                document.documentElement.style.setProperty('--text-color', '#ffffff');
+                document.documentElement.style.setProperty('--player-bg', 'rgba(20, 20, 20, 0.9)');
+                document.documentElement.style.setProperty('--sidebar-bg', 'rgba(30, 30, 30, 0.95)');
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+            }
+            isDarkMode = !isDarkMode;
+        }
+
+        themeToggle.addEventListener('click', toggleTheme);
+
+        // Cargar la Primera Pista al Iniciar
+        window.addEventListener('DOMContentLoaded', () => {
+            loadTrack(currentIndex);
+        });
     </script>
 </body>
 </html>
+
