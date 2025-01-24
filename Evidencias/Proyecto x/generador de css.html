@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador Avanzado de Layout CSS</title>
+    <style>
+        /* Estilos Básicos */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Barra Superior */
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+
+        /* Pestañas de Navegación */
+        .tabs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .tabs button {
+            background-color: #444;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+
+        .tabs button.active {
+            background-color: #28a745;
+        }
+
+        /* Área Principal */
+        main {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+            box-sizing: border-box;
+        }
+
+        .controls, .preview-container, .code-output {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            flex: 1 1 300px;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .controls {
+            max-width: 400px;
+        }
+
+        .controls h2, .code-output h2, .preview-container h2 {
+            margin-top: 0;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .control-group input[type="number"],
+        .control-group input[type="color"],
+        .control-group select,
+        .control-group input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        .control-group button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 10px;
+        }
+
+        .control-group button:hover {
+            background-color: #218838;
+        }
+
+        /* Vista Previa del Layout */
+        .layout-preview {
+            border: 1px solid #ddd;
+            padding: 10px;
+            height: 400px;
+            overflow: auto;
+            background-color: #fafafa;
+            position: relative;
+        }
+
+        .layout {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            background-color: #f0f0f0;
+            padding: 10px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .flex-layout {
+            display: flex;
+            background-color: #f0f0f0;
+            padding: 10px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .layout div, .flex-layout div {
+            background-color: #4CAF50;
+            border: 1px solid #333;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            box-sizing: border-box;
+            margin: 5px;
+            border-radius: 4px;
+            font-size: 1em;
+            position: relative;
+        }
+
+        /* Botón de Eliminación */
+        .remove-item {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: rgba(255, 0, 0, 0.7);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-size: 0.8em;
+            line-height: 18px;
+            text-align: center;
+        }
+
+        /* Código Generado */
+        .code-output pre {
+            background-color: #272822;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 4px;
+            overflow: auto;
+            max-height: 200px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .copy-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        .copy-button:hover {
+            background-color: #0069d9;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 15px;
+            font-size: 0.9em;
+        }
+
+        /* Resaltado de Sintaxis */
+        .token.selector { color: #66d9ef; }
+        .token.property { color: #f92672; }
+        .token.function { color: #a6e22e; }
+        .token.number { color: #ae81ff; }
+        .token.string { color: #e6db74; }
+        .token.punctuation { color: #f8f8f2; }
+        .token.comment { color: #75715e; }
+    </style>
+</head>
+<body>
+
+    <!-- Barra Superior con Pestañas -->
+    <header>
+        <h1>CSS Layout Generator</h1>
+        <div class="tabs">
+            <button id="basicTab" class="active">BASIC</button>
+            <button id="advancedTab">ADVANCED</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- Panel de Herramientas -->
+        <div class="controls">
+            <h2>Configuración</h2>
+            <!-- Tipo de Layout -->
+            <div class="control-group">
+                <label for="layoutType">Tipo de Layout</label>
+                <select id="layoutType">
+                    <option value="grid" selected>Grid</option>
+                    <option value="flex">Flexbox</option>
+                </select>
+            </div>
+
+            <!-- Controles para Grid -->
+            <div id="gridControls">
+                <div class="control-group">
+                    <label for="rows">Filas</label>
+                    <input type="number" id="rows" min="1" value="3">
+                </div>
+                <div class="control-group">
+                    <label for="columns">Columnas</label>
+                    <input type="number" id="columns" min="1" value="3">
+                </div>
+                <div class="control-group">
+                    <label for="rowGap">Gap entre Filas (px)</label>
+                    <input type="number" id="rowGap" min="0" value="10">
+                </div>
+                <div class="control-group">
+                    <label for="columnGap">Gap entre Columnas (px)</label>
+                    <input type="number" id="columnGap" min="0" value="10">
+                </div>
+                <div class="control-group">
+                    <label for="gridAreas">Áreas de Grid (Opcional)</label>
+                    <input type="text" id="gridAreas" placeholder='Ejemplo: "header header" "sidebar content" "footer footer"'>
+                </div>
+            </div>
+
+            <!-- Controles para Flexbox -->
+            <div id="flexControls" style="display: none;">
+                <div class="control-group">
+                    <label for="flexDirection">Dirección</label>
+                    <select id="flexDirection">
+                        <option value="row" selected>Fila (row)</option>
+                        <option value="column">Columna (column)</option>
+                        <option value="row-reverse">Fila Invertida (row-reverse)</option>
+                        <option value="column-reverse">Columna Invertida (column-reverse)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="justifyContent">Justificar Contenido</label>
+                    <select id="justifyContent">
+                        <option value="flex-start" selected>Inicio (flex-start)</option>
+                        <option value="flex-end">Final (flex-end)</option>
+                        <option value="center">Centro (center)</option>
+                        <option value="space-between">Espacio Entre (space-between)</option>
+                        <option value="space-around">Espacio Alrededor (space-around)</option>
+                        <option value="space-evenly">Espacio Uniforme (space-evenly)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="alignItems">Alinear Ítems</label>
+                    <select id="alignItems">
+                        <option value="stretch" selected>Estirar (stretch)</option>
+                        <option value="flex-start">Inicio (flex-start)</option>
+                        <option value="flex-end">Final (flex-end)</option>
+                        <option value="center">Centro (center)</option>
+                        <option value="baseline">Línea de Base (baseline)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="flexGap">Gap entre Ítems (px)</label>
+                    <input type="number" id="flexGap" min="0" value="10">
+                </div>
+            </div>
+
+            <!-- Personalización Adicional -->
+            <div class="control-group">
+                <label for="bgColor">Color de Fondo del Layout</label>
+                <input type="color" id="bgColor" value="#f0f0f0">
+            </div>
+            <div class="control-group">
+                <label for="itemColor">Color de Fondo de los Ítems</label>
+                <input type="color" id="itemColor" value="#4CAF50">
+            </div>
+            <div class="control-group">
+                <label for="itemBorderColor">Color del Borde de los Ítems</label>
+                <input type="color" id="itemBorderColor" value="#333333">
+            </div>
+            <div class="control-group">
+                <label for="itemTextColor">Color del Texto de los Ítems</label>
+                <input type="color" id="itemTextColor" value="#ffffff">
+            </div>
+
+            <!-- Alineación del Contenedor -->
+            <div class="control-group">
+                <label for="containerAlignHorizontal">Alineación Horizontal del Contenedor</label>
+                <select id="containerAlignHorizontal">
+                    <option value="stretch" selected>Estirar (stretch)</option>
+                    <option value="center">Centro (center)</option>
+                    <option value="start">Inicio (start)</option>
+                    <option value="end">Final (end)</option>
+                    <option value="space-between">Espacio Entre (space-between)</option>
+                    <option value="space-around">Espacio Alrededor (space-around)</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="containerAlignVertical">Alineación Vertical del Contenedor</label>
+                <select id="containerAlignVertical">
+                    <option value="stretch" selected>Estirar (stretch)</option>
+                    <option value="center">Centro (center)</option>
+                    <option value="start">Inicio (start)</option>
+                    <option value="end">Final (end)</option>
+                </select>
+            </div>
+
+            <!-- Alineación de los Ítems -->
+            <div class="control-group">
+                <label for="itemAlignHorizontal">Alineación Horizontal de los Ítems</label>
+                <select id="itemAlignHorizontal">
+                    <option value="stretch" selected>Estirar (stretch)</option>
+                    <option value="center">Centro (center)</option>
+                    <option value="start">Inicio (start)</option>
+                    <option value="end">Final (end)</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="itemAlignVertical">Alineación Vertical de los Ítems</label>
+                <select id="itemAlignVertical">
+                    <option value="stretch" selected>Estirar (stretch)</option>
+                    <option value="center">Centro (center)</option>
+                    <option value="start">Inicio (start)</option>
+                    <option value="end">Final (end)</option>
+                </select>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="control-group">
+                <button id="addPanel">Añadir Panel</button>
+            </div>
+            <div class="control-group">
+                <button id="generate">Generar Layout</button>
+            </div>
+        </div>
+
+        <!-- Vista Previa del Layout -->
+        <div class="preview-container">
+            <h2>Vista Previa</h2>
+            <div class="layout-preview" id="layoutPreview">
+                <!-- Los ítems generados aparecerán aquí -->
+            </div>
+        </div>
+
+        <!-- Código Generado -->
+        <div class="code-output">
+            <h2>Código CSS</h2>
+            <pre id="cssCode">
+/* Tu código CSS aparecerá aquí */
+            </pre>
+            <button class="copy-button" onclick="copyCode('cssCode')">Copiar CSS</button>
+
+            <h2>Código HTML</h2>
+            <pre id="htmlCode">
+<!-- Tu código HTML aparecerá aquí -->
+            </pre>
+            <button class="copy-button" onclick="copyCode('htmlCode')">Copiar HTML</button>
+        </div>
+    </main>
+
+    <footer>
+        &copy; 2025 CSS Layout Generator. Todos los derechos reservados.
+    </footer>
+
+    <script>
+        // Función para copiar el contenido al portapapeles
+        function copyCode(elementId) {
+            const el = document.getElementById(elementId);
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(el);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                alert('Código copiado al portapapeles!');
+            } catch (err) {
+                alert('No se pudo copiar el código.');
+            }
+            selection.removeAllRanges();
+        }
+
+        // Manejo de Pestañas BASIC y ADVANCED
+        document.getElementById('basicTab').addEventListener('click', function() {
+            this.classList.add('active');
+            document.getElementById('advancedTab').classList.remove('active');
+            // Puedes agregar funcionalidad para mostrar controles básicos
+            // Por ahora, todos los controles están en la vista avanzada
+        });
+
+        document.getElementById('advancedTab').addEventListener('click', function() {
+            this.classList.add('active');
+            document.getElementById('basicTab').classList.remove('active');
+            // Puedes agregar funcionalidad para mostrar controles avanzados
+        });
+
+        // Mostrar u ocultar controles según el tipo de layout seleccionado
+        document.getElementById('layoutType').addEventListener('change', function() {
+            const layoutType = this.value;
+            if (layoutType === 'grid') {
+                document.getElementById('gridControls').style.display = 'block';
+                document.getElementById('flexControls').style.display = 'none';
+            } else if (layoutType === 'flex') {
+                document.getElementById('gridControls').style.display = 'none';
+                document.getElementById('flexControls').style.display = 'block';
+            }
+        });
+
+        // Gestión de Paneles
+        let panelCount = 5; // Número inicial de paneles según la especificación
+        const panelNames = ['header', 'leftSide', 'body', 'rightSide', 'footer'];
+
+        document.getElementById('addPanel').addEventListener('click', function() {
+            panelCount++;
+            alert(`Panel ${panelCount} añadido. Actualiza y genera el layout nuevamente.`);
+        });
+
+        // Función para eliminar un panel
+        function removePanel(event) {
+            const panel = event.target.parentElement;
+            panel.remove();
+        }
+
+        // Función para generar el layout
+        document.getElementById('generate').addEventListener('click', function() {
+            const layoutType = document.getElementById('layoutType').value;
+            const bgColor = document.getElementById('bgColor').value;
+            const itemColor = document.getElementById('itemColor').value;
+            const itemBorderColor = document.getElementById('itemBorderColor').value;
+            const itemTextColor = document.getElementById('itemTextColor').value;
+            const containerAlignHorizontal = document.getElementById('containerAlignHorizontal').value;
+            const containerAlignVertical = document.getElementById('containerAlignVertical').value;
+            const itemAlignHorizontal = document.getElementById('itemAlignHorizontal').value;
+            const itemAlignVertical = document.getElementById('itemAlignVertical').value;
+
+            let css = '';
+            let html = '';
+
+            const layoutPreview = document.getElementById('layoutPreview');
+            layoutPreview.innerHTML = ''; // Limpiar vista previa
+
+            if (layoutType === 'grid') {
+                const rows = parseInt(document.getElementById('rows').value);
+                const columns = parseInt(document.getElementById('columns').value);
+                const rowGap = parseInt(document.getElementById('rowGap').value);
+                const columnGap = parseInt(document.getElementById('columnGap').value);
+                const gridAreas = document.getElementById('gridAreas').value.trim();
+
+                // Generar CSS
+                css = `
+.layout {
+    display: grid;
+    grid-template-rows: repeat(${rows}, 1fr);
+    grid-template-columns: repeat(${columns}, 1fr);
+    row-gap: ${rowGap}px;
+    column-gap: ${columnGap}px;
+    ${gridAreas ? `grid-template-areas:\n    ${gridAreas};` : ''}
+    background-color: ${bgColor};
+    padding: 10px;
+    width: 100%;
+    height: 100%;
+    align-items: ${containerAlignVertical};
+    justify-items: ${containerAlignHorizontal};
+}
+
+.layout div {
+    background-color: ${itemColor};
+    border: 1px solid ${itemBorderColor};
+    color: ${itemTextColor};
+    display: flex;
+    align-items: ${itemAlignVertical};
+    justify-content: ${itemAlignHorizontal};
+    padding: 10px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    position: relative;
+}
+
+.layout .remove-item {
+    top: 5px;
+    right: 5px;
+}
+                `.trim();
+
+                // Generar HTML
+                html = `<div class="layout">\n`;
+                for(let i = 1; i <= panelCount; i++) {
+                    const areaName = panelNames[i - 1] || `panel${i}`;
+                    html += `    <div style="grid-area: ${areaName};">\n        ${capitalizeFirstLetter(areaName)}\n        <button class="remove-item" onclick="removePanel(event)">×</button>\n    </div>\n`;
+                }
+                html += `</div>`;
+
+                // Actualizar vista previa
+                layoutPreview.className = 'layout';
+                layoutPreview.style.display = 'grid';
+                layoutPreview.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+                layoutPreview.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+                layoutPreview.style.rowGap = `${rowGap}px`;
+                layoutPreview.style.columnGap = `${columnGap}px`;
+                layoutPreview.style.backgroundColor = bgColor;
+                layoutPreview.style.alignItems = containerAlignVertical;
+                layoutPreview.style.justifyItems = containerAlignHorizontal;
+
+                if (gridAreas) {
+                    layoutPreview.style.gridTemplateAreas = gridAreas.split('\n').map(line => `"${line.trim()}"`).join('\n    ');
+                } else {
+                    layoutPreview.style.gridTemplateAreas = '';
+                }
+
+                for(let i = 1; i <= panelCount; i++) {
+                    const areaName = panelNames[i - 1] || `panel${i}`;
+                    const panel = document.createElement('div');
+                    panel.textContent = capitalizeFirstLetter(areaName);
+                    panel.style.backgroundColor = itemColor;
+                    panel.style.border = `1px solid ${itemBorderColor}`;
+                    panel.style.color = itemTextColor;
+                    panel.style.borderRadius = '4px';
+                    panel.style.display = 'flex';
+                    panel.style.alignItems = itemAlignVertical;
+                    panel.style.justifyContent = itemAlignHorizontal;
+
+                    // Botón de eliminación
+                    const removeBtn = document.createElement('button');
+                    removeBtn.textContent = '×';
+                    removeBtn.classList.add('remove-item');
+                    removeBtn.onclick = removePanel;
+                    panel.appendChild(removeBtn);
+
+                    layoutPreview.appendChild(panel);
+                }
+
+            } else if (layoutType === 'flex') {
+                const flexDirection = document.getElementById('flexDirection').value;
+                const justifyContent = document.getElementById('justifyContent').value;
+                const alignItems = document.getElementById('alignItems').value;
+                const flexGap = parseInt(document.getElementById('flexGap').value);
+
+                // Generar CSS
+                css = `
+.flex-layout {
+    display: flex;
+    flex-direction: ${flexDirection};
+    justify-content: ${justifyContent};
+    align-items: ${alignItems};
+    gap: ${flexGap}px;
+    background-color: ${bgColor};
+    padding: 10px;
+    width: 100%;
+    height: 100%;
+}
+
+.flex-layout div {
+    background-color: ${itemColor};
+    border: 1px solid ${itemBorderColor};
+    color: ${itemTextColor};
+    padding: 10px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    display: flex;
+    align-items: ${itemAlignVertical};
+    justify-content: ${itemAlignHorizontal};
+    position: relative;
+}
+
+.flex-layout .remove-item {
+    top: 5px;
+    right: 5px;
+}
+                `.trim();
+
+                // Generar HTML
+                html = `<div class="flex-layout">\n`;
+                for(let i = 1; i <= panelCount; i++) {
+                    const itemName = `Item ${i}`;
+                    html += `    <div>\n        ${itemName}\n        <button class="remove-item" onclick="removePanel(event)">×</button>\n    </div>\n`;
+                }
+                html += `</div>`;
+
+                // Actualizar vista previa
+                layoutPreview.className = 'flex-layout';
+                layoutPreview.style.display = 'flex';
+                layoutPreview.style.flexDirection = flexDirection;
+                layoutPreview.style.justifyContent = justifyContent;
+                layoutPreview.style.alignItems = alignItems;
+                layoutPreview.style.gap = `${flexGap}px`;
+                layoutPreview.style.backgroundColor = bgColor;
+
+                for(let i = 1; i <= panelCount; i++) {
+                    const itemName = `Item ${i}`;
+                    const item = document.createElement('div');
+                    item.textContent = itemName;
+                    item.style.backgroundColor = itemColor;
+                    item.style.border = `1px solid ${itemBorderColor}`;
+                    item.style.color = itemTextColor;
+                    item.style.borderRadius = '4px';
+                    item.style.display = 'flex';
+                    item.style.alignItems = itemAlignVertical;
+                    item.style.justifyContent = itemAlignHorizontal;
+
+                    // Botón de eliminación
+                    const removeBtn = document.createElement('button');
+                    removeBtn.textContent = '×';
+                    removeBtn.classList.add('remove-item');
+                    removeBtn.onclick = removePanel;
+                    item.appendChild(removeBtn);
+
+                    layoutPreview.appendChild(item);
+                }
+            }
+
+            // Mostrar Código Generado
+            document.getElementById('cssCode').textContent = css;
+            document.getElementById('htmlCode').textContent = html;
+        });
+
+        // Función para capitalizar la primera letra
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+
+        // Generar un layout inicial al cargar la página
+        window.onload = function() {
+            // Definir nombres de paneles iniciales
+            panelNames[0] = 'header';
+            panelNames[1] = 'leftSide';
+            panelNames[2] = 'body';
+            panelNames[3] = 'rightSide';
+            panelNames[4] = 'footer';
+
+            // Generar el layout inicial
+            document.getElementById('generate').click();
+        };
+    </script>
+</body>
+</html>
+
+
