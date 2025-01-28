@@ -21,6 +21,7 @@ public class Login {
     public Login() {
         mostrarLogin();
     }
+    
 
     private void mostrarLogin() {
         JFrame frame = crearFrame("Login", 400, 250);

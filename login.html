@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CYBER TERMINAL v10.0</title>
+    <style>
+        /* Estilos base */
+        :root {
+            --main-red: #ff0000;
+            --dark-bg: linear-gradient(45deg, #1a0000, #0a0a0a);
+            --neon-glow: 0 0 10px var(--main-red), 0 0 20px var(--main-red);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+
+        body {
+            background: var(--dark-bg);
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Contenedor de Autenticación */
+        .auth-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 10vh auto;
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid var(--main-red);
+            border-radius: 8px;
+            padding: 2rem;
+            position: relative;
+            z-index: 2;
+            box-shadow: var(--neon-glow);
+        }
+
+        .auth-title {
+            text-align: center;
+            color: var(--main-red);
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            text-shadow: var(--neon-glow);
+            animation: glow 1.5s infinite alternate;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-label {
+            color: var(--main-red);
+            margin-bottom: 0.5rem;
+            display: block;
+            text-shadow: var(--neon-glow);
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 0.8rem;
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid var(--main-red);
+            color: #ff4444;
+            font-size: 1rem;
+            caret-color: var(--main-red);
+            transition: all 0.3s;
+            text-shadow: var(--neon-glow);
+        }
+
+        .auth-input:focus {
+            outline: none;
+            box-shadow: var(--neon-glow);
+            background: rgba(255, 0, 0, 0.2);
+        }
+
+        .auth-button {
+            background: linear-gradient(#400000, #200000);
+            color: var(--main-red);
+            border: 2px solid var(--main-red);
+            padding: 1rem;
+            font-size: 1.1rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            text-shadow: var(--neon-glow);
+        }
+
+        .auth-button:hover {
+            background: linear-gradient(#600000, #400000);
+            box-shadow: var(--neon-glow);
+        }
+
+        .auth-toggle {
+            color: #ff4444;
+            text-align: center;
+            margin-top: 1.5rem;
+            cursor: pointer;
+            text-decoration: underline;
+            text-shadow: var(--neon-glow);
+        }
+
+        .auth-error {
+            color: #ff0000;
+            text-align: center;
+            margin-top: 1rem;
+            text-shadow: var(--neon-glow);
+            display: none;
+        }
+
+        /* Contenedor del Terminal */
+        .terminal-container {
+            width: 95%;
+            max-width: 1400px;
+            height: 90vh;
+            margin: 5vh auto;
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid var(--main-red);
+            border-radius: 8px;
+            box-shadow: var(--neon-glow),
+                        inset 0 0 20px rgba(255, 0, 0, 0.2);
+            overflow: hidden;
+            position: relative;
+            display: none; /* Oculto inicialmente */
+        }
+
+        .terminal-titlebar {
+            background: linear-gradient(#400000, #200000);
+            padding: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--main-red);
+        }
+
+        .title-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .title-button {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            border: 1px solid var(--main-red);
+            background: #500000;
+        }
+
+        .terminal-content {
+            padding: 1.5rem;
+            height: calc(100% - 50px);
+            overflow-y: auto;
+            color: #ff4444;
+            font-size: 1rem;
+            text-shadow: var(--neon-glow);
+        }
+
+        .input-group-terminal {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .prompt {
+            color: var(--main-red);
+            font-weight: bold;
+            text-shadow: var(--neon-glow);
+            white-space: nowrap;
+        }
+
+        #command-input {
+            background: transparent;
+            border: none;
+            color: #ff4444;
+            font-size: 1rem;
+            flex: 1;
+            min-width: 200px;
+            text-shadow: var(--neon-glow);
+            caret-color: var(--main-red);
+        }
+
+        #command-input::placeholder {
+            color: rgba(255, 68, 68, 0.5);
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 1.2em;
+            background: var(--main-red);
+            animation: blink 1s infinite;
+            vertical-align: middle;
+        }
+
+        .output-line {
+            margin: 0.5rem 0;
+            padding: 0.3rem;
+            border-left: 3px solid var(--main-red);
+            padding-left: 0.8rem;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        /* Animaciones */
+        @keyframes glow {
+            from { text-shadow: 0 0 10px var(--main-red); }
+            to { text-shadow: 0 0 20px var(--main-red); }
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        /* Efectos de partículas */
+        .particle {
+            position: absolute;
+            background: rgba(255, 0, 0, 0.3);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 5s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(10px, 10px); }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Reproducción Automática de Audio -->
+    <audio autoplay loop style="display: none;" id="background-audio">
+        <source src="Audio/webs/_ambient-drone-lake-nights.mp3" type="audio/mpeg">
+        <source src="Audio/webs/_ambient-drone-lake-nights.ogg" type="audio/ogg">
+
+        <audio id="error-sound" src="Audio/Sound-mp3/error.mp3" preload="auto"></audio>
+
+        Tu navegador no soporta la reproducción de audio.
+    </audio>
+    <!-- Login -->
+    <div class="auth-container" id="authContainer">
+        <h1 class="auth-title glow">ARCH LINUX v1.0</h1>
+        <form class="auth-form" id="loginForm">
+            <div class="input-group">
+                <label class="input-label">Usuario:</label>
+                <input type="text" class="auth-input" id="loginUser" required>
+            </div>
+            <div class="input-group">
+                <label class="input-label">Contraseña:</label>
+                <input type="password" class="auth-input" id="loginPass" required>
+            </div>
+            <button type="submit" class="auth-button">ACCESO AUTORIZADO</button>
+        </form>
+        <div class="auth-toggle" id="toggleAuth">¿Nuevo operador? Registra tus credenciales</div>
+        <div class="auth-error" id="authError">ERROR: Credenciales no válidas</div>
+    </div>
+
+    
+
+    <!-- Registro -->
+    <div class="auth-container" id="registerContainer" style="display: none;">
+        <h1 class="auth-title">ARCH LINUX v1.0</h1>
+        <form class="auth-form" id="registerForm">
+            <div class="input-group">
+                <label class="input-label">Usuario:</label>
+                <input type="text" class="auth-input" id="registerUser" required>
+            </div>
+            <div class="input-group">
+                <label class="input-label">Contraseña:</label>
+                <input type="password" class="auth-input" id="registerPass" required>
+            </div>
+            <button type="submit" class="auth-button">REGISTRAR</button>
+        </form>
+        <div class="auth-toggle" id="toggleRegister">¿Ya tienes una cuenta? Inicia sesión</div>
+        <div class="auth-error" id="registerError">ERROR: No se pudo registrar</div>
+    </div>
+
+    <!-- Terminal -->
+    <div class="terminal-container" id="terminalContainer">
+        <div class="terminal-titlebar">
+            <div class="title-buttons">
+                <div class="title-button"></div>
+                <div class="title-button"></div>
+                <div class="title-button"></div>
+            </div>
+            <span class="glow">CYBER TERMINAL v10.0</span>
+            <div style="width: 60px"></div>
+        </div>
+        <div class="terminal-content" id="content">
+            <div class="output-line">Bienvenido, Operador.</div>
+            <div class="output-line">> Sistema de navegación cargado</div>
+            <div class="output-line">> Escribe "help" para ver los comandos disponibles</div>
+            <div class="input-group-terminal">
+                <span class="prompt">root@terminal:~#</span>
+                <input type="text" id="command-input" autofocus placeholder="Escribe tu comando aquí">
+                <div class="cursor"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Efectos de partículas -->
+    <script>
+        for (let i = 0; i < 50; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.cssText = `
+                width: ${Math.random() * 5 + 2}px;
+                height: ${Math.random() * 5 + 2}px;
+                left: ${Math.random() * 100}%;
+                top: ${Math.random() * 100}%;
+                background: rgba(255, 0, 0, ${Math.random() * 0.4});
+            `;
+            document.body.appendChild(particle);
+        }
+    </script>
+
+    <!-- Script de funcionalidad -->
+    <script>
+        const authContainer = document.getElementById('authContainer');
+        const registerContainer = document.getElementById('registerContainer');
+        const terminalContainer = document.getElementById('terminalContainer');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const authError = document.getElementById('authError');
+        const registerError = document.getElementById('registerError');
+        const toggleAuth = document.getElementById('toggleAuth');
+        const toggleRegister = document.getElementById('toggleRegister');
+        const backgroundAudio = document.getElementById('background-audio');
+
+        // Intentar reproducir el audio automáticamente
+        window.addEventListener('load', () => {
+            backgroundAudio.play().catch((error) => {
+                console.log('Autoplay fallido, el usuario debe interactuar con la página para reproducir el audio.');
+            });
+        });
+
+        // Manejar el login
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('loginUser').value.trim();
+            const password = document.getElementById('loginPass').value.trim();
+            
+            // Obtener credenciales almacenadas
+            const storedUsername = localStorage.getItem('username');
+            const storedPassword = localStorage.getItem('password');
+            
+            if (username === storedUsername && password === storedPassword) {
+                authContainer.style.display = 'none';
+                terminalContainer.style.display = 'block';
+                initializeTerminal();
+            } else {
+                authError.style.display = 'block';
+            }
+        });
+
+        // Manejar el registro
+        registerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('registerUser').value.trim();
+            const password = document.getElementById('registerPass').value.trim();
+            
+            if (username && password) {
+                // Verificar si ya existe un usuario registrado
+                const existingUsername = localStorage.getItem('username');
+                if (existingUsername) {
+                    registerError.textContent = 'ERROR: Ya existe un usuario registrado';
+                    registerError.style.display = 'block';
+                    return;
+                }
+
+                // Almacenar credenciales
+                localStorage.setItem('username', username);
+                localStorage.setItem('password', password);
+                registerContainer.style.display = 'none';
+                authContainer.style.display = 'block';
+                registerError.style.display = 'none';
+            } else {
+                registerError.style.display = 'block';
+            }
+        });
+
+        // Alternar entre login y registro
+        toggleAuth.addEventListener('click', () => {
+            authContainer.style.display = 'none';
+            registerContainer.style.display = 'block';
+            authError.style.display = 'none';
+        });
+
+        toggleRegister.addEventListener('click', () => {
+            registerContainer.style.display = 'none';
+            authContainer.style.display = 'block';
+            registerError.style.display = 'none';
+        });
+
+        // Inicializar la terminal
+        function initializeTerminal() {
+            const commands = {
+                help: () => `
+Comandos disponibles:
+- help: Muestra esta ayuda
+- clear: Limpia la terminal
+- about: Muestra información del sistema
+- links: Muestra enlaces a otras páginas
+- open [nombre]: Abre un enlace específico
+- return: Regresa a la pantalla de login
+                `,
+                clear: () => {
+                    const content = document.getElementById('content');
+                    const inputGroup = document.querySelector('.input-group-terminal').cloneNode(true);
+                    content.innerHTML = '';
+                    content.appendChild(inputGroup);
+                    addInputListener(inputGroup.querySelector('#command-input'));
+                },
+                about: () => `
+CYBER TERMINAL v10.0
+> Sistema de navegación unificado
+> Desarrollado por Operador Anónimo
+> Todos los derechos reservados (o no)
+                `,
+                links: () => `
+Enlaces disponibles:
+- home: Página principal
+- blog: Blog de noticias
+- contact: Contacto
+- projects: Proyectos recientes
+                `,
+                open: (args) => {
+                    const pages = {
+                        home: 'index.html',
+                        blog: 'blog.html',
+                        contact: 'contact.html',
+                        projects: 'projects.html'
+                    };
+                    const page = args[0];
+                    if (pages[page]) {
+                        window.location.href = pages[page]; // Navegar dentro de la misma ventana
+                        return `Navegando a: ${page}...`;
+                    } else {
+                        return `Error: Página "${page}" no encontrada`;
+                    }
+                },
+                return: () => {
+                    // Mostrar mensaje de despedida
+                    const content = document.getElementById('content');
+                    const farewell = document.createElement('div');
+                    farewell.className = 'output-line';
+                    farewell.textContent = 'Cerrando la terminal y regresando al login...';
+                    content.insertBefore(farewell, document.querySelector('.input-group-terminal'));
+                    
+                    
+
+                    // Esperar un breve momento antes de cambiar la vista
+                    setTimeout(() => {
+                        terminalContainer.style.display = 'none';
+                        authContainer.style.display = 'block';
+                        // Limpiar la terminal para la próxima sesión
+                        content.innerHTML = `
+<div class="output-line">Bienvenido, Operador.</div>
+<div class="output-line">> Sistema de navegación cargado</div>
+<div class="output-line">> Escribe "help" para ver los comandos disponibles</div>
+<div class="input-group-terminal">
+    <span class="prompt">root@terminal:~#</span>
+    <input type="text" id="command-input" autofocus placeholder="Escribe tu comando aquí">
+    <div class="cursor"></div>
+</div>
+                        `;
+                    }, 2000); // 2 segundos de espera
+                    return ''; // No agregar ninguna línea adicional
+                }
+            };
+
+            const input = document.getElementById('command-input');
+            addInputListener(input);
+
+            function addInputListener(inputElement) {
+                inputElement.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        const cmd = inputElement.value.trim();
+                        if (!cmd) return;
+
+                        const [command, ...args] = cmd.split(' ');
+                        const output = commands[command]?.(args) || `Error: Comando "${command}" no encontrado`;
+
+                        const content = document.getElementById('content');
+
+                        if (command === 'return') {
+                            commands[command](args);
+                        } else {
+                            // Manejar salidas multilínea
+                            output.split('\n').forEach(lineText => {
+                                if (lineText.trim() !== '') {
+                                    const line = document.createElement('div');
+                                    line.className = 'output-line';
+                                    line.textContent = lineText.trim();
+                                    content.insertBefore(line, inputElement.parentElement);
+                                }
+                            });
+
+                            inputElement.value = '';
+                            content.scrollTop = content.scrollHeight;
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+
+    <script>
+        const errorSound = document.getElementById('error-sound');
+
+ //Sonido de Error al Ejecutar un Comando Inválido
+function handleInvalidCommand(command) {
+    errorSound.play();
+    addOutputLine(`Error: Comando "${command}" no encontrado`);
+}
+
+
+
+
+    </script>
+</body>
+</html>
+
+
