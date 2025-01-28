@@ -515,7 +515,7 @@ public class ChevroletApp {
                 return;
             }
 
-            // Aquí puedes agregar la lógica para guardar los datos en una base de datos o archivo.
+            //  la lógica para guardar los datos en una base de datos o archivo.
 
             String resumen = String.format(
                     "Datos guardados:\n" +
