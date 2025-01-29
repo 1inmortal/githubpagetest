@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Inventario Chevrolet | Gestión Inteligente</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- DataTables CSS -->
+    <link href="https://cdn.datatables.net/1.13.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --chevy-blue: #0066B3;
+            --chevy-silver: #A2AAAD;
+        }
+        
+        body {
+            padding-top: 70px;
+            background-color: #f8f9fa;
+        }
+
+        .navbar {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+            border-left: 4px solid var(--chevy-blue);
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .dataTables_wrapper {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+        }
+
+        .status-new {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-used {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .signature-box {
+            border: 2px dashed #dee2e6;
+            border-radius: 5px;
+            height: 100px;
+            position: relative;
+        }
+
+        .signature-box::after {
+            content: "Firma aquí";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            height: 100vh;
+            position: fixed;
+            top: 70px;
+            left: 0;
+            padding-top: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar .nav-link {
+            color: #333;
+        }
+
+        .sidebar .nav-link.active {
+            background-color: var(--chevy-blue);
+            color: white;
+            border-radius: 5px;
+        }
+
+        /* Main Content Adjustments */
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        /* Alert Styles */
+        .alert-custom {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navegación Mejorada -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">
+            <img src="https://www.chevrolet.com.co/content/dam/chevrolet/south-america/colombia/espanol/index/carros-autos/logo-chevrolet.png" 
+                 alt="Chevrolet" 
+                 style="height: 30px;">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+          <ul class="navbar-nav">
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                <i class="fas fa-user-shield me-1"></i> Administrador
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Configuración</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar bg-light" style="width:250px;">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link active" href="#" data-page="dashboard">
+                    <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-page="inventory">
+                    <i class="fas fa-boxes me-2"></i> Inventario
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-page="reports">
+                    <i class="fas fa-chart-line me-2"></i> Reportes
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-page="suppliers">
+                    <i class="fas fa-truck-moving me-2"></i> Proveedores
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Contenido Principal -->
+    <div class="main-content">
+        <!-- Alertas Dinámicas -->
+        <div id="alertContainer" class="alert-custom alert alert-success alert-dismissible fade show" role="alert">
+            <span id="alertMessage"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="page-dashboard">
+            <!-- Métricas Rápidas -->
+            <div class="row">
+                <div class="col-6 col-xl-3">
+                    <div class="metric-card">
+                        <h6 class="text-muted">Total Piezas</h6>
+                        <h2 class="mt-2" id="totalPieces">1,234</h2>
+                        <span class="text-success"><i class="fas fa-arrow-up"></i> 12%</span>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <div class="metric-card">
+                        <h6 class="text-muted">Stock Bajo</h6>
+                        <h2 class="mt-2" id="lowStock">47</h2>
+                        <span class="text-danger"><i class="fas fa-exclamation-circle"></i> Atención</span>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <div class="metric-card">
+                        <h6 class="text-muted">Categorías</h6>
+                        <h2 class="mt-2" id="totalCategories">23</h2>
+                        <span class="text-primary"><i class="fas fa-tags"></i> Ver todas</span>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <div class="metric-card">
+                        <h6 class="text-muted">Proveedores</h6>
+                        <h2 class="mt-2" id="totalSuppliers">15</h2>
+                        <span class="text-success"><i class="fas fa-check-circle"></i> Activos</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos Interactivos -->
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="chart-container">
+                        <h5 class="mb-4"><i class="fas fa-chart-bar me-2"></i>Distribución de Inventario</h5>
+                        <canvas id="inventoryChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="chart-container">
+                        <h5 class="mb-4"><i class="fas fa-chart-pie me-2"></i>Estado de las Piezas</h5>
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección de Alertas -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <div class="alert alert-warning d-flex align-items-center" role="alert">
+                        <i class="fas fa-exclamation-triangle me-3 fs-4"></i>
+                        <div>
+                            <h5 class="alert-heading mb-1">¡Stock Crítico!</h5>
+                            <p class="mb-0">15 piezas están por debajo del nivel mínimo de inventario</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventario -->
+        <div id="page-inventory" style="display:none;">
+            <!-- Tabla Interactiva Mejorada -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="dataTables_wrapper">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4><i class="fas fa-list-ul me-2"></i>Lista de Piezas</h4>
+                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addPieceModal">
+                                <i class="fas fa-plus me-2"></i>Agregar Pieza
+                            </button>
+                        </div>
+                        <table id="inventoryTable" class="table table-hover" style="width:100%">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Nombre</th>
+                                    <th>Categoría</th>
+                                    <th>Stock</th>
+                                    <th>Estado</th>
+                                    <th>Ubicación</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>CHV-1234</td>
+                                    <td>Bujía Platinum</td>
+                                    <td>Motor</td>
+                                    <td>50 <span class="text-muted">unid.</span></td>
+                                    <td>
+                                        <span class="status-badge status-new">Nuevo</span>
+                                    </td>
+                                    <td>Estante A-12</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-secondary edit-btn" data-id="CHV-1234">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger ms-2 delete-btn" data-id="CHV-1234">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <!-- Más filas... -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reportes -->
+        <div id="page-reports" style="display:none;">
+            <h3 class="mb-4"><i class="fas fa-chart-line me-2"></i>Reportes de Inventario</h3>
+            <div class="chart-container">
+                <canvas id="reportChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Proveedores -->
+        <div id="page-suppliers" style="display:none;">
+            <h3 class="mb-4"><i class="fas fa-truck-moving me-2"></i>Gestión de Proveedores</h3>
+            <div class="dataTables_wrapper">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addSupplierModal">
+                        <i class="fas fa-plus me-2"></i>Agregar Proveedor
+                    </button>
+                </div>
+                <table id="suppliersTable" class="table table-hover" style="width:100%">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Contacto</th>
+                            <th>Teléfono</th>
+                            <th>Email</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>SUP-001</td>
+                            <td>AutoPiezas S.A.</td>
+                            <td>Juan Pérez</td>
+                            <td>+57 300 1234567</td>
+                            <td>juan.perez@autopiezas.com</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-secondary edit-supplier-btn" data-id="SUP-001">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger ms-2 delete-supplier-btn" data-id="SUP-001">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <!-- Más filas... -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modales -->
+    
+    <!-- Modal Agregar Pieza -->
+    <div class="modal fade" id="addPieceModal" tabindex="-1" aria-labelledby="addPieceModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addPieceModalLabel"><i class="fas fa-plus me-2"></i>Agregar Nueva Pieza</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <form id="addPieceForm">
+                <div class="mb-3">
+                    <label for="pieceCode" class="form-label">Código de Pieza</label>
+                    <input type="text" class="form-control" id="pieceCode" required>
+                </div>
+                <div class="mb-3">
+                    <label for="pieceName" class="form-label">Nombre de la Pieza</label>
+                    <input type="text" class="form-control" id="pieceName" required>
+                </div>
+                <div class="mb-3">
+                    <label for="pieceCategory" class="form-label">Categoría</label>
+                    <select class="form-select" id="pieceCategory" required>
+                        <option value="">Selecciona una categoría</option>
+                        <option value="Motor">Motor</option>
+                        <option value="Transmisión">Transmisión</option>
+                        <option value="Frenos">Frenos</option>
+                        <option value="Suspensión">Suspensión</option>
+                        <option value="Eléctrico">Eléctrico</option>
+                        <option value="Carrocería">Carrocería</option>
+                        <option value="Accesorios">Accesorios</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="pieceStock" class="form-label">Stock</label>
+                    <input type="number" class="form-control" id="pieceStock" min="0" required>
+                </div>
+                <div class="mb-3">
+                    <label for="pieceStatus" class="form-label">Estado</label>
+                    <select class="form-select" id="pieceStatus" required>
+                        <option value="">Selecciona un estado</option>
+                        <option value="Nuevo">Nuevo</option>
+                        <option value="Usado">Usado</option>
+                        <option value="Reacondicionado">Reacondicionado</option>
+                        <option value="Dañado">Dañado</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="pieceLocation" class="form-label">Ubicación</label>
+                    <input type="text" class="form-control" id="pieceLocation" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Agregar Pieza</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Editar Pieza -->
+    <div class="modal fade" id="editPieceModal" tabindex="-1" aria-labelledby="editPieceModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editPieceModalLabel"><i class="fas fa-edit me-2"></i>Editar Pieza</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <form id="editPieceForm">
+                <input type="hidden" id="editPieceId">
+                <div class="mb-3">
+                    <label for="editPieceCode" class="form-label">Código de Pieza</label>
+                    <input type="text" class="form-control" id="editPieceCode" required>
+                </div>
+                <div class="mb-3">
+                    <label for="editPieceName" class="form-label">Nombre de la Pieza</label>
+                    <input type="text" class="form-control" id="editPieceName" required>
+                </div>
+                <div class="mb-3">
+                    <label for="editPieceCategory" class="form-label">Categoría</label>
+                    <select class="form-select" id="editPieceCategory" required>
+                        <option value="">Selecciona una categoría</option>
+                        <option value="Motor">Motor</option>
+                        <option value="Transmisión">Transmisión</option>
+                        <option value="Frenos">Frenos</option>
+                        <option value="Suspensión">Suspensión</option>
+                        <option value="Eléctrico">Eléctrico</option>
+                        <option value="Carrocería">Carrocería</option>
+                        <option value="Accesorios">Accesorios</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="editPieceStock" class="form-label">Stock</label>
+                    <input type="number" class="form-control" id="editPieceStock" min="0" required>
+                </div>
+                <div class="mb-3">
+                    <label for="editPieceStatus" class="form-label">Estado</label>
+                    <select class="form-select" id="editPieceStatus" required>
+                        <option value="">Selecciona un estado</option>
+                        <option value="Nuevo">Nuevo</option>
+                        <option value="Usado">Usado</option>
+                        <option value="Reacondicionado">Reacondicionado</option>
+                        <option value="Dañado">Dañado</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="editPieceLocation" class="form-label">Ubicación</label>
+                    <input type="text" class="form-control" id="editPieceLocation" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Agregar Proveedor -->
+    <div class="modal fade" id="addSupplierModal" tabindex="-1" aria-labelledby="addSupplierModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addSupplierModalLabel"><i class="fas fa-plus me-2"></i>Agregar Nuevo Proveedor</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <form id="addSupplierForm">
+                <div class="mb-3">
+                    <label for="supplierId" class="form-label">ID del Proveedor</label>
+                    <input type="text" class="form-control" id="supplierId" required>
+                </div>
+                <div class="mb-3">
+                    <label for="supplierName" class="form-label">Nombre del Proveedor</label>
+                    <input type="text" class="form-control" id="supplierName" required>
+                </div>
+                <div class="mb-3">
+                    <label for="supplierContact" class="form-label">Contacto</label>
+                    <input type="text" class="form-control" id="supplierContact" required>
+                </div>
+                <div class="mb-3">
+                    <label for="supplierPhone" class="form-label">Teléfono</label>
+                    <input type="tel" class="form-control" id="supplierPhone" required>
+                </div>
+                <div class="mb-3">
+                    <label for="supplierEmail" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="supplierEmail" required>
+                </div>
+                <button type="submit" class="btn btn-success">Agregar Proveedor</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Editar Proveedor -->
+    <div class="modal fade" id="editSupplierModal" tabindex="-1" aria-labelledby="editSupplierModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editSupplierModalLabel"><i class="fas fa-edit me-2"></i>Editar Proveedor</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <form id="editSupplierForm">
+                <input type="hidden" id="editSupplierId">
+                <div class="mb-3">
+                    <label for="editSupplierName" class="form-label">Nombre del Proveedor</label>
+                    <input type="text" class="form-control" id="editSupplierName" required>
+                </div>
+                <div class="mb-3">
+                    <label for="editSupplierContact" class="form-label">Contacto</label>
+                    <input type="text" class="form-control" id="editSupplierContact" required>
+                </div>
+                <div class="mb-3">
+                    <label for="editSupplierPhone" class="form-label">Teléfono</label>
+                    <input type="tel" class="form-control" id="editSupplierPhone" required>
+                </div>
+                <div class="mb-3">
+                    <label for="editSupplierEmail" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="editSupplierEmail" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Confirmar Eliminación -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminación</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <p>¿Estás seguro de que deseas eliminar este elemento?</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Eliminar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pie de Página -->
+    <footer class="mt-5">
+        <div class="container text-center">
+            <p>&copy; 2025 Inventario de Piezas Chevrolet. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Inicializar DataTables
+            var inventoryTable = $('#inventoryTable').DataTable({
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/1.13.5/i18n/es-ES.json'
+                },
+                columnDefs: [
+                    { orderable: false, targets: [6] }
+                ]
+            });
+
+            var suppliersTable = $('#suppliersTable').DataTable({
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/1.13.5/i18n/es-ES.json'
+                },
+                columnDefs: [
+                    { orderable: false, targets: [5] }
+                ]
+            });
+
+            // Gráfico de Barras Principal
+            var inventoryChart = new Chart(document.getElementById('inventoryChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Motor', 'Transmisión', 'Frenos', 'Suspensión', 'Eléctrico', 'Carrocería'],
+                    datasets: [{
+                        label: 'Unidades en Stock',
+                        data: [120, 85, 65, 45, 90, 75],
+                        backgroundColor: 'rgba(0, 102, 179, 0.7)',
+                        borderColor: 'rgba(0, 102, 179, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { mode: 'index' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // Gráfico de Estado de Piezas
+            var statusChart = new Chart(document.getElementById('statusChart'), {
+                type: 'pie',
+                data: {
+                    labels: ['Nuevo', 'Usado', 'Reacondicionado', 'Dañado'],
+                    datasets: [{
+                        data: [65, 20, 10, 5],
+                        backgroundColor: [
+                            '#28a745',
+                            '#ffc107',
+                            '#17a2b8',
+                            '#dc3545'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: { enabled: true }
+                    }
+                }
+            });
+
+            // Gráfico de Reportes
+            var reportChart = new Chart(document.getElementById('reportChart'), {
+                type: 'line',
+                data: {
+                    labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'],
+                    datasets: [{
+                        label: 'Ventas Mensuales',
+                        data: [30, 50, 40, 60, 70, 90],
+                        fill: false,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: { mode: 'index' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // Navegación de Páginas
+            $('.sidebar .nav-link').click(function(e) {
+                e.preventDefault();
+                var page = $(this).data('page');
+
+                // Remover clase active de todos los links
+                $('.sidebar .nav-link').removeClass('active');
+                // Agregar clase active al link clicado
+                $(this).addClass('active');
+
+                // Ocultar todas las páginas
+                $('#page-dashboard, #page-inventory, #page-reports, #page-suppliers').hide();
+
+                // Mostrar la página seleccionada
+                $('#page-' + page).show();
+            });
+
+            // Agregar Pieza
+            $('#addPieceForm').submit(function(e) {
+                e.preventDefault();
+                var code = $('#pieceCode').val().trim();
+                var name = $('#pieceName').val().trim();
+                var category = $('#pieceCategory').val();
+                var stock = $('#pieceStock').val();
+                var status = $('#pieceStatus').val();
+                var location = $('#pieceLocation').val().trim();
+
+                // Validación básica
+                if(code === '' || name === '' || category === '' || stock === '' || status === '' || location === '') {
+                    showAlert('Por favor, completa todos los campos.', 'danger');
+                    return;
+                }
+
+                // Agregar a la tabla
+                inventoryTable.row.add([
+                    code,
+                    name,
+                    category,
+                    stock + ' <span class="text-muted">unid.</span>',
+                    statusBadge(status),
+                    location,
+                    actionsButtons(code)
+                ]).draw(false);
+
+                // Resetear el formulario y cerrar el modal
+                $('#addPieceForm')[0].reset();
+                $('#addPieceModal').modal('hide');
+
+                showAlert('Pieza agregada exitosamente.', 'success');
+            });
+
+            // Función para crear badges de estado
+            function statusBadge(status) {
+                var badgeClass = '';
+                if(status === 'Nuevo') badgeClass = 'status-new';
+                else if(status === 'Usado') badgeClass = 'status-used';
+                else if(status === 'Reacondicionado') badgeClass = 'status-primary';
+                else if(status === 'Dañado') badgeClass = 'status-danger';
+
+                return '<span class="status-badge ' + badgeClass + '">' + status + '</span>';
+            }
+
+            // Función para crear botones de acciones
+            function actionsButtons(id) {
+                return `
+                    <button class="btn btn-sm btn-outline-secondary edit-btn" data-id="${id}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger ms-2 delete-btn" data-id="${id}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+            }
+
+            // Editar Pieza
+            $('#inventoryTable tbody').on('click', '.edit-btn', function() {
+                var data = inventoryTable.row($(this).parents('tr')).data();
+                $('#editPieceId').val(data[0]);
+                $('#editPieceCode').val(data[0]);
+                $('#editPieceName').val(data[1]);
+                $('#editPieceCategory').val(data[2]);
+                $('#editPieceStock').val(data[3].match(/\d+/)[0]);
+                $('#editPieceStatus').val($(data[4]).text());
+                $('#editPieceLocation').val(data[5]);
+                $('#editPieceModal').modal('show');
+            });
+
+            // Guardar Cambios de Pieza
+            $('#editPieceForm').submit(function(e) {
+                e.preventDefault();
+                var id = $('#editPieceId').val();
+                var code = $('#editPieceCode').val().trim();
+                var name = $('#editPieceName').val().trim();
+                var category = $('#editPieceCategory').val();
+                var stock = $('#editPieceStock').val();
+                var status = $('#editPieceStatus').val();
+                var location = $('#editPieceLocation').val().trim();
+
+                // Actualizar la fila en la tabla
+                inventoryTable.rows().every(function(rowIdx, tableLoop, rowLoop) {
+                    var data = this.data();
+                    if(data[0] === id) {
+                        this.data([
+                            code,
+                            name,
+                            category,
+                            stock + ' <span class="text-muted">unid.</span>',
+                            statusBadge(status),
+                            location,
+                            actionsButtons(code)
+                        ]).draw(false);
+                    }
+                });
+
+                $('#editPieceModal').modal('hide');
+                showAlert('Pieza actualizada exitosamente.', 'success');
+            });
+
+            // Eliminar Pieza
+            var deleteItemId = '';
+            $('#inventoryTable tbody').on('click', '.delete-btn', function() {
+                deleteItemId = $(this).data('id');
+                $('#confirmDeleteModal').modal('show');
+            });
+
+            $('#confirmDeleteBtn').click(function() {
+                inventoryTable.rows().every(function(rowIdx, tableLoop, rowLoop) {
+                    var data = this.data();
+                    if(data[0] === deleteItemId) {
+                        this.remove().draw(false);
+                    }
+                });
+                $('#confirmDeleteModal').modal('hide');
+                showAlert('Pieza eliminada exitosamente.', 'warning');
+            });
+
+            // Agregar Proveedor
+            $('#addSupplierForm').submit(function(e) {
+                e.preventDefault();
+                var id = $('#supplierId').val().trim();
+                var name = $('#supplierName').val().trim();
+                var contact = $('#supplierContact').val().trim();
+                var phone = $('#supplierPhone').val().trim();
+                var email = $('#supplierEmail').val().trim();
+
+                // Validación básica
+                if(id === '' || name === '' || contact === '' || phone === '' || email === '') {
+                    showAlert('Por favor, completa todos los campos del proveedor.', 'danger');
+                    return;
+                }
+
+                // Agregar a la tabla
+                suppliersTable.row.add([
+                    id,
+                    name,
+                    contact,
+                    phone,
+                    email,
+                    actionsButtonsSupplier(id)
+                ]).draw(false);
+
+                // Resetear el formulario y cerrar el modal
+                $('#addSupplierForm')[0].reset();
+                $('#addSupplierModal').modal('hide');
+
+                showAlert('Proveedor agregado exitosamente.', 'success');
+            });
+
+            // Función para crear botones de acciones de proveedores
+            function actionsButtonsSupplier(id) {
+                return `
+                    <button class="btn btn-sm btn-outline-secondary edit-supplier-btn" data-id="${id}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger ms-2 delete-supplier-btn" data-id="${id}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+            }
+
+            // Editar Proveedor
+            $('#suppliersTable tbody').on('click', '.edit-supplier-btn', function() {
+                var data = suppliersTable.row($(this).parents('tr')).data();
+                $('#editSupplierId').val(data[0]);
+                $('#editSupplierName').val(data[1]);
+                $('#editSupplierContact').val(data[2]);
+                $('#editSupplierPhone').val(data[3]);
+                $('#editSupplierEmail').val(data[4]);
+                $('#editSupplierModal').modal('show');
+            });
+
+            // Guardar Cambios de Proveedor
+            $('#editSupplierForm').submit(function(e) {
+                e.preventDefault();
+                var id = $('#editSupplierId').val();
+                var name = $('#editSupplierName').val().trim();
+                var contact = $('#editSupplierContact').val().trim();
+                var phone = $('#editSupplierPhone').val().trim();
+                var email = $('#editSupplierEmail').val().trim();
+
+                // Actualizar la fila en la tabla
+                suppliersTable.rows().every(function(rowIdx, tableLoop, rowLoop) {
+                    var data = this.data();
+                    if(data[0] === id) {
+                        this.data([
+                            id,
+                            name,
+                            contact,
+                            phone,
+                            email,
+                            actionsButtonsSupplier(id)
+                        ]).draw(false);
+                    }
+                });
+
+                $('#editSupplierModal').modal('hide');
+                showAlert('Proveedor actualizado exitosamente.', 'success');
+            });
+
+            // Eliminar Proveedor
+            var deleteSupplierId = '';
+            $('#suppliersTable tbody').on('click', '.delete-supplier-btn', function() {
+                deleteSupplierId = $(this).data('id');
+                $('#confirmDeleteModal').modal('show');
+            });
+
+            $('#confirmDeleteBtn').click(function() {
+                if(deleteSupplierId.startsWith('CHV-')) {
+                    // Es una pieza
+                    inventoryTable.rows().every(function(rowIdx, tableLoop, rowLoop) {
+                        var data = this.data();
+                        if(data[0] === deleteSupplierId) {
+                            this.remove().draw(false);
+                        }
+                    });
+                } else {
+                    // Es un proveedor
+                    suppliersTable.rows().every(function(rowIdx, tableLoop, rowLoop) {
+                        var data = this.data();
+                        if(data[0] === deleteSupplierId) {
+                            this.remove().draw(false);
+                        }
+                    });
+                }
+                $('#confirmDeleteModal').modal('hide');
+                showAlert('Elemento eliminado exitosamente.', 'warning');
+            });
+
+            // Función para mostrar alertas
+            function showAlert(message, type) {
+                $('#alertMessage').text(message);
+                $('#alertContainer').removeClass('alert-success alert-danger alert-warning').addClass('alert-' + type).fadeIn();
+
+                // Ocultar después de 3 segundos
+                setTimeout(function() {
+                    $('#alertContainer').fadeOut();
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>
+
