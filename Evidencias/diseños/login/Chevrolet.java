@@ -1,21 +1,28 @@
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import net.miginfocom.swing.MigLayout;
-import com.formdev.flatlaf.FlatDarkLaf;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.io.File;
 
 public class ChevroletApp {
 
     public static void main(String[] args) {
-        // Establecer FlatLaf como Look and Feel antes de crear cualquier componente Swing
+        // Aplicar el look and feel de Nimbus para una apariencia moderna
         try {
-            UIManager.setLookAndFeel(new FlatDarkLaf());
-        } catch (UnsupportedLookAndFeelException e) {
-            e.printStackTrace();
+            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            // Si Nimbus no está disponible, usar el look and feel del sistema
+            try {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
 
         SwingUtilities.invokeLater(ChevroletApp::new);
@@ -32,7 +39,7 @@ public class ChevroletApp {
 
         public LoginFrame() {
             setTitle("Login - Chevrolet");
-            setSize(800, 500);
+            setSize(700, 400);
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             setLocationRelativeTo(null); // Centrar en la pantalla
             setResizable(false);
@@ -42,67 +49,90 @@ public class ChevroletApp {
         }
 
         private void initUI() {
-            // Configurar el layout principal con MigLayout
-            JPanel mainPanel = new JPanel(new MigLayout("fill, insets 0", "[50%][50%]", "[]"));
-            mainPanel.setBackground(Color.DARK_GRAY);
+            // Configurar el layout principal
+            JPanel mainPanel = new JPanel(new BorderLayout());
+            mainPanel.setBackground(new Color(40, 40, 40));
 
             // Panel de bienvenida
-            JPanel welcomePanel = new JPanel(new BorderLayout());
-            welcomePanel.setBackground(new Color(60, 63, 65));
-            welcomePanel.setBorder(new EmptyBorder(50, 20, 50, 20));
+            JPanel welcomePanel = new JPanel();
+            welcomePanel.setPreferredSize(new Dimension(300, 0));
+            welcomePanel.setBackground(new Color(60, 63, 65)); // Gris oscuro
+            welcomePanel.setLayout(new BorderLayout());
 
-            JLabel welcomeLabel = new JLabel("<html><h1>Bienvenido a Chevrolet</h1>"
-                    + "<p>Inicia sesión para acceder a la aplicación.</p></html>", SwingConstants.CENTER);
-            welcomeLabel.setForeground(Color.WHITE);
+            JLabel welcomeLabel = new JLabel("<html><div style='text-align: center;'>"
+                    + "<h1 style='color:white;'>Bienvenido a Chevrolet</h1>"
+                    + "<p style='color:white;'>Por favor, inicia sesión para continuar.</p></div></html>", JLabel.CENTER);
             welcomePanel.add(welcomeLabel, BorderLayout.CENTER);
 
-            // Panel de login
-            JPanel loginPanel = new JPanel(new MigLayout("wrap 2", "[][grow, fill]", "[][][][][]10[]"));
+            mainPanel.add(welcomePanel, BorderLayout.WEST);
+
+            // Panel de login con fondo oscuro
+            JPanel loginPanel = new JPanel(new GridBagLayout());
             loginPanel.setBackground(new Color(45, 45, 45));
-            loginPanel.setBorder(new EmptyBorder(50, 50, 50, 50));
+            loginPanel.setBorder(new EmptyBorder(30, 30, 30, 30));
+
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(10, 10, 10, 10);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
 
             JLabel titleLabel = new JLabel("Iniciar Sesión");
             titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
             titleLabel.setForeground(Color.WHITE);
-            loginPanel.add(titleLabel, "span, center, wrap 20");
+            titleLabel.setHorizontalAlignment(JLabel.CENTER);
+
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.gridwidth = 2;
+            loginPanel.add(titleLabel, gbc);
+
+            gbc.gridwidth = 1;
 
             JLabel userLabel = new JLabel("Usuario:");
             userLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
             userLabel.setForeground(Color.WHITE);
-            loginPanel.add(userLabel);
+            gbc.gridx = 0;
+            gbc.gridy = 1;
+            loginPanel.add(userLabel, gbc);
 
-            userField = new JTextField();
+            userField = new JTextField(20);
             estilizarCampoTexto(userField);
-            loginPanel.add(userField, "grow, wrap");
+            gbc.gridx = 1;
+            loginPanel.add(userField, gbc);
 
             JLabel passLabel = new JLabel("Contraseña:");
             passLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
             passLabel.setForeground(Color.WHITE);
-            loginPanel.add(passLabel);
+            gbc.gridx = 0;
+            gbc.gridy = 2;
+            loginPanel.add(passLabel, gbc);
 
-            passField = new JPasswordField();
+            passField = new JPasswordField(20);
             estilizarCampoTexto(passField);
-            loginPanel.add(passField, "grow, wrap");
+            gbc.gridx = 1;
+            loginPanel.add(passField, gbc);
 
             JCheckBox rememberCheckBox = new JCheckBox("Recordar Usuario");
             estilizarCheckBox(rememberCheckBox);
-            loginPanel.add(rememberCheckBox, "span, align left, wrap");
+            gbc.gridx = 0;
+            gbc.gridy = 3;
+            gbc.gridwidth = 2;
+            loginPanel.add(rememberCheckBox, gbc);
 
             JButton loginButton = new JButton("Iniciar Sesión");
             estilizarBoton(loginButton, new Color(70, 130, 180));
-            loginPanel.add(loginButton, "span, grow, wrap");
+            gbc.gridy = 4;
+            loginPanel.add(loginButton, gbc);
 
             JButton forgotPassButton = new JButton("¿Olvidaste tu contraseña?");
             estilizarBotonSecundario(forgotPassButton, new Color(70, 130, 180));
-            loginPanel.add(forgotPassButton, "span, grow");
+            gbc.gridy = 5;
+            loginPanel.add(forgotPassButton, gbc);
 
             // Acciones de los botones
             loginButton.addActionListener(this::handleLogin);
             forgotPassButton.addActionListener(this::handleForgotPassword);
 
-            // Agregar los paneles al mainPanel
-            mainPanel.add(welcomePanel, "grow");
-            mainPanel.add(loginPanel, "grow");
+            mainPanel.add(loginPanel, BorderLayout.CENTER);
 
             add(mainPanel);
         }
@@ -202,7 +232,7 @@ public class ChevroletApp {
             this.userLevel = userLevel;
             this.username = username;
             setTitle("Menú Principal - Chevrolet");
-            setSize(800, 600);
+            setSize(600, 450);
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             setLocationRelativeTo(null); // Centrar en la pantalla
             setResizable(false);
@@ -212,29 +242,29 @@ public class ChevroletApp {
         }
 
         private void initUI() {
-            // Configurar el layout principal con MigLayout
-            JPanel mainPanel = new JPanel(new MigLayout("fill", "[grow]", "[grow][grow][grow]"));
-            mainPanel.setBackground(new Color(40, 40, 40));
+            setLayout(new BorderLayout());
+            getContentPane().setBackground(new Color(40, 40, 40));
 
             // Panel superior para mostrar el rol y el nombre de usuario
-            JPanel topPanel = new JPanel(new MigLayout("fillx, insets 10", "[grow][grow]", "[]"));
+            JPanel topPanel = new JPanel(new BorderLayout());
+            topPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
             topPanel.setBackground(new Color(60, 63, 65));
-            topPanel.setBorder(BorderFactory.createLineBorder(new Color(70, 130, 180), 2));
 
             JLabel roleLabel = new JLabel("Rol: " + userLevel);
             roleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
             roleLabel.setForeground(Color.WHITE);
-            topPanel.add(roleLabel, "align left");
+            topPanel.add(roleLabel, BorderLayout.WEST);
 
             JLabel userLabel = new JLabel("Usuario: " + username);
             userLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
             userLabel.setForeground(Color.WHITE);
-            topPanel.add(userLabel, "align right");
+            topPanel.add(userLabel, BorderLayout.EAST);
 
-            mainPanel.add(topPanel, "span, growx, wrap 50");
+            add(topPanel, BorderLayout.NORTH);
 
             // Panel central con los botones de funcionalidades
-            JPanel buttonsPanel = new JPanel(new MigLayout("wrap 2, fillx, insets 50", "[grow][grow]", "[]20[]20[]20[]"));
+            JPanel buttonsPanel = new JPanel(new GridLayout(4, 1, 15, 15));
+            buttonsPanel.setBorder(new EmptyBorder(30, 150, 30, 150));
             buttonsPanel.setBackground(new Color(40, 40, 40));
 
             JButton pedidoButton = new JButton("Pedido de Piezas");
@@ -247,14 +277,12 @@ public class ChevroletApp {
             estilizarBotonMenu(cambiarPassButton);
             estilizarBotonMenu(salirButton);
 
-            buttonsPanel.add(pedidoButton, "span 2, growx");
-            buttonsPanel.add(reportesButton, "span 2, growx");
-            buttonsPanel.add(cambiarPassButton, "span 2, growx");
-            buttonsPanel.add(salirButton, "span 2, growx");
+            buttonsPanel.add(pedidoButton);
+            buttonsPanel.add(reportesButton);
+            buttonsPanel.add(cambiarPassButton);
+            buttonsPanel.add(salirButton);
 
-            mainPanel.add(buttonsPanel, "span, grow");
-
-            add(mainPanel);
+            add(buttonsPanel, BorderLayout.CENTER);
 
             // Acciones de los botones
             pedidoButton.addActionListener(this::mostrarFormulario);
@@ -270,7 +298,6 @@ public class ChevroletApp {
             boton.setFocusPainted(false);
             boton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             boton.setBorder(BorderFactory.createLineBorder(new Color(70, 130, 180)));
-            boton.setPreferredSize(new Dimension(200, 50));
             // Efecto de hover
             boton.addMouseListener(new java.awt.event.MouseAdapter() {
                 public void mouseEntered(java.awt.event.MouseEvent evt) {
@@ -318,7 +345,7 @@ public class ChevroletApp {
             this.userLevel = userLevel;
             this.username = username;
             setTitle("Pedido de Piezas - Chevrolet");
-            setSize(900, 700);
+            setSize(800, 900);
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             setLocationRelativeTo(null); // Centrar en la pantalla
             setResizable(false);
@@ -328,120 +355,164 @@ public class ChevroletApp {
         }
 
         private void initUI() {
-            // Configurar el layout principal con MigLayout
-            JPanel mainPanel = new JPanel(new MigLayout("fill, wrap 1", "[grow]", "[]"));
-            mainPanel.setBackground(new Color(40, 40, 40));
+            JPanel panel = new JPanel(new GridBagLayout());
+            panel.setBorder(new EmptyBorder(30, 30, 30, 30));
+            panel.setBackground(new Color(40, 40, 40));
+
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(10, 10, 10, 10);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
 
             // Panel superior para mostrar el rol y el nombre de usuario
-            JPanel topPanel = new JPanel(new MigLayout("fillx, insets 10", "[grow][grow]", "[]"));
+            JPanel topPanel = new JPanel(new BorderLayout());
+            topPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
             topPanel.setBackground(new Color(60, 63, 65));
-            topPanel.setBorder(BorderFactory.createLineBorder(new Color(70, 130, 180), 2));
 
             JLabel roleLabel = new JLabel("Rol: " + userLevel);
             roleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
             roleLabel.setForeground(Color.WHITE);
-            topPanel.add(roleLabel, "align left");
+            topPanel.add(roleLabel, BorderLayout.WEST);
 
             JLabel userLabel = new JLabel("Usuario: " + username);
             userLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
             userLabel.setForeground(Color.WHITE);
-            topPanel.add(userLabel, "align right");
+            topPanel.add(userLabel, BorderLayout.EAST);
 
-            mainPanel.add(topPanel, "growx, wrap 20");
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.gridwidth = 2;
+            panel.add(topPanel, gbc);
 
-            // Panel de formulario
-            JPanel formPanel = new JPanel(new MigLayout("wrap 2, insets 20", "[right][grow, fill]", "[]10[]10[]10[]10[]10[]10[]10[]10[]10[]"));
-            formPanel.setBackground(new Color(45, 45, 45));
-            formPanel.setBorder(new EmptyBorder(20, 50, 20, 50));
+            gbc.gridwidth = 1;
 
             JLabel titleLabel = new JLabel("Formulario de Pedido de Piezas");
             titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
             titleLabel.setForeground(Color.WHITE);
-            formPanel.add(titleLabel, "span 2, center, wrap 20");
+            titleLabel.setHorizontalAlignment(JLabel.CENTER);
+            gbc.gridx = 0;
+            gbc.gridy = 1;
+            gbc.gridwidth = 2;
+            panel.add(titleLabel, gbc);
+
+            gbc.gridwidth = 1;
 
             // Campos del formulario
             JLabel piezaLabel = new JLabel("Nombre de la Pieza:");
             estilizarEtiquetaFormulario(piezaLabel);
-            formPanel.add(piezaLabel);
+            gbc.gridx = 0;
+            gbc.gridy = 2;
+            panel.add(piezaLabel, gbc);
 
-            piezaField = new JTextField();
+            piezaField = new JTextField(20);
             estilizarCampoTextoFormulario(piezaField);
-            formPanel.add(piezaField, "grow, wrap");
+            gbc.gridx = 1;
+            panel.add(piezaField, gbc);
 
             JLabel numeroParteLabel = new JLabel("Número de Parte:");
             estilizarEtiquetaFormulario(numeroParteLabel);
-            formPanel.add(numeroParteLabel);
+            gbc.gridx = 0;
+            gbc.gridy = 3;
+            panel.add(numeroParteLabel, gbc);
 
-            numeroParteField = new JTextField();
+            numeroParteField = new JTextField(20);
             estilizarCampoTextoFormulario(numeroParteField);
-            formPanel.add(numeroParteField, "grow, wrap");
+            gbc.gridx = 1;
+            panel.add(numeroParteField, gbc);
 
             JLabel cantidadLabel = new JLabel("Cantidad:");
             estilizarEtiquetaFormulario(cantidadLabel);
-            formPanel.add(cantidadLabel);
+            gbc.gridx = 0;
+            gbc.gridy = 4;
+            panel.add(cantidadLabel, gbc);
 
-            cantidadField = new JTextField();
+            cantidadField = new JTextField(20);
             estilizarCampoTextoFormulario(cantidadField);
-            formPanel.add(cantidadField, "grow, wrap");
+            gbc.gridx = 1;
+            panel.add(cantidadField, gbc);
 
             JLabel precioLabel = new JLabel("Precio (USD):");
             estilizarEtiquetaFormulario(precioLabel);
-            formPanel.add(precioLabel);
+            gbc.gridx = 0;
+            gbc.gridy = 5;
+            panel.add(precioLabel, gbc);
 
-            precioField = new JTextField();
+            precioField = new JTextField(20);
             estilizarCampoTextoFormulario(precioField);
-            formPanel.add(precioField, "grow, wrap");
+            gbc.gridx = 1;
+            panel.add(precioField, gbc);
 
             JLabel proveedorLabel = new JLabel("Proveedor:");
             estilizarEtiquetaFormulario(proveedorLabel);
-            formPanel.add(proveedorLabel);
+            gbc.gridx = 0;
+            gbc.gridy = 6;
+            panel.add(proveedorLabel, gbc);
 
-            proveedorField = new JTextField();
+            proveedorField = new JTextField(20);
             estilizarCampoTextoFormulario(proveedorField);
-            formPanel.add(proveedorField, "grow, wrap");
+            gbc.gridx = 1;
+            panel.add(proveedorField, gbc);
 
             JLabel direccionProveedorLabel = new JLabel("Dirección del Proveedor:");
             estilizarEtiquetaFormulario(direccionProveedorLabel);
-            formPanel.add(direccionProveedorLabel);
+            gbc.gridx = 0;
+            gbc.gridy = 7;
+            panel.add(direccionProveedorLabel, gbc);
 
-            direccionProveedorField = new JTextField();
+            direccionProveedorField = new JTextField(20);
             estilizarCampoTextoFormulario(direccionProveedorField);
-            formPanel.add(direccionProveedorField, "grow, wrap");
+            gbc.gridx = 1;
+            panel.add(direccionProveedorField, gbc);
 
             JLabel descripcionLabel = new JLabel("Descripción de la Pieza:");
             estilizarEtiquetaFormulario(descripcionLabel);
-            formPanel.add(descripcionLabel);
+            gbc.gridx = 0;
+            gbc.gridy = 8;
+            panel.add(descripcionLabel, gbc);
 
             descripcionArea = new JTextArea(5, 20);
             estilizarAreaTextoFormulario(descripcionArea);
             JScrollPane descripcionScroll = new JScrollPane(descripcionArea);
-            formPanel.add(descripcionScroll, "grow, wrap");
+            gbc.gridx = 1;
+            panel.add(descripcionScroll, gbc);
 
             JLabel fechaPedidoLabel = new JLabel("Fecha de Pedido:");
             estilizarEtiquetaFormulario(fechaPedidoLabel);
-            formPanel.add(fechaPedidoLabel);
+            gbc.gridx = 0;
+            gbc.gridy = 9;
+            panel.add(fechaPedidoLabel, gbc);
 
-            JTextField fechaPedidoField = new JTextField();
+            JTextField fechaPedidoField = new JTextField(20);
             estilizarCampoTextoFormulario(fechaPedidoField);
             fechaPedidoField.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
             fechaPedidoField.setEditable(false);
-            formPanel.add(fechaPedidoField, "grow, wrap");
+            fechaPedidoField.setBackground(new Color(70, 70, 70));
+            fechaPedidoField.setForeground(Color.WHITE);
+            gbc.gridx = 1;
+            panel.add(fechaPedidoField, gbc);
 
             JLabel fotoLabel = new JLabel("Foto de la Pieza:");
             estilizarEtiquetaFormulario(fotoLabel);
-            formPanel.add(fotoLabel);
+            gbc.gridx = 0;
+            gbc.gridy = 10;
+            panel.add(fotoLabel, gbc);
 
             fotoPreview = new JLabel();
-            estilizarFotoPreview(fotoPreview);
-            formPanel.add(fotoPreview, "grow, wrap");
+            fotoPreview.setPreferredSize(new Dimension(200, 150));
+            fotoPreview.setOpaque(true);
+            fotoPreview.setBackground(new Color(70, 70, 70));
+            fotoPreview.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+            gbc.gridx = 1;
+            panel.add(fotoPreview, gbc);
 
             JButton agregarFotoButton = new JButton("Agregar Foto");
             estilizarBotonFormulario(agregarFotoButton, new Color(70, 130, 180));
-            formPanel.add(agregarFotoButton, "span 2, growx, wrap");
+            gbc.gridx = 1;
+            gbc.gridy = 11;
+            panel.add(agregarFotoButton, gbc);
 
             // Botones de acción
             JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 20));
-            actionPanel.setBackground(new Color(45, 45, 45));
+            actionPanel.setBackground(new Color(40, 40, 40));
 
             JButton guardarButton = new JButton("Guardar");
             JButton cerrarSesionButton = new JButton("Cerrar Sesión");
@@ -452,16 +523,17 @@ public class ChevroletApp {
             actionPanel.add(guardarButton);
             actionPanel.add(cerrarSesionButton);
 
-            formPanel.add(actionPanel, "span 2, growx, wrap");
+            gbc.gridx = 0;
+            gbc.gridy = 12;
+            gbc.gridwidth = 2;
+            panel.add(actionPanel, gbc);
 
             // Acciones de los botones
             agregarFotoButton.addActionListener(e -> agregarFoto());
             guardarButton.addActionListener(e -> guardarDatos());
             cerrarSesionButton.addActionListener(e -> cerrarSesion());
 
-            mainPanel.add(formPanel, "grow");
-
-            add(mainPanel);
+            add(new JScrollPane(panel));
         }
 
         private void estilizarEtiquetaFormulario(JLabel etiqueta) {
@@ -485,13 +557,6 @@ public class ChevroletApp {
             area.setCaretColor(Color.WHITE);
             area.setLineWrap(true);
             area.setWrapStyleWord(true);
-        }
-
-        private void estilizarFotoPreview(JLabel label) {
-            label.setPreferredSize(new Dimension(200, 150));
-            label.setOpaque(true);
-            label.setBackground(new Color(70, 70, 70));
-            label.setBorder(BorderFactory.createLineBorder(Color.GRAY));
         }
 
         private void estilizarBotonFormulario(JButton boton, Color colorFondo) {
@@ -541,7 +606,7 @@ public class ChevroletApp {
 
             int result = fileChooser.showOpenDialog(this);
             if (result == JFileChooser.APPROVE_OPTION) {
-                File selectedFile = fileChooser.getSelectedFile();
+                java.io.File selectedFile = fileChooser.getSelectedFile();
                 ImageIcon icon = new ImageIcon(
                         new ImageIcon(selectedFile.getAbsolutePath()).getImage().getScaledInstance(
                                 fotoPreview.getWidth(), fotoPreview.getHeight(), Image.SCALE_SMOOTH));
@@ -609,3 +674,4 @@ public class ChevroletApp {
         }
     }
 }
+
