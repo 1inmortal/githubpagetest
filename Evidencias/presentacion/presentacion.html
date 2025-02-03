@@ -3,27 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- Meta Descripción -->
   <meta name="description" content="CyberTools es una plataforma dedicada a proporcionar herramientas y recursos para el hacking ético, mejorando la seguridad informática a través de la educación y el acceso a herramientas de alta calidad.">
-
-<!-- Palabras Clave -->
   <meta name="keywords" content="hacking ético, herramientas de seguridad, ciberseguridad, auditoría de seguridad, hacking, herramientas de hacking">
-
-<!-- Autor -->
   <meta name="author" content="Tu Nombre o Empresa">
+  <title>CyberTools - Terminal de Comandos</title>
 
-  <title>Herramientas de Hacking Ético - Cyberpunk UI</title>
-  
-  <!-- Fuentes Futuristas -->
+  <!-- Fuentes futuristas y monoespaciadas -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
-  
   <!-- Iconos -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- Favicon -->
-  <link rel="icon" href="ruta/a/tu/favicon.ico" type="image/x-icon">
 
   <style>
     :root {
@@ -37,13 +26,13 @@
       --font-heading: 'Orbitron', sans-serif;
       --transition-speed: 0.3s;
     }
-
+    
+    /* Reset y tipografía */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-
     body {
       font-family: var(--font-main);
       background-color: var(--bg-color);
@@ -51,9 +40,10 @@
       overflow-x: hidden;
       min-height: 100vh;
       display: flex;
+      flex-direction: column;
     }
 
-    /* Pantalla de Carga */
+    /* --- Pantalla de Carga --- */
     .loader-overlay {
       position: fixed;
       top:0; left:0;
@@ -66,7 +56,6 @@
       z-index: 9999;
       transition: opacity 0.5s ease;
     }
-
     .loader-text {
       font-family: var(--font-heading);
       font-size: 2rem;
@@ -75,7 +64,6 @@
       text-transform: uppercase;
       letter-spacing: 3px;
     }
-
     .loader-bar-container {
       width: 80%;
       background: rgba(255, 45, 149, 0.1);
@@ -84,136 +72,97 @@
       overflow: hidden;
       margin-bottom: 15px;
     }
-
     .loader-bar {
       width: 0%;
       height: 20px;
       background: var(--primary-color);
       transition: width 0.1s;
     }
-
     .loader-percentage {
       font-size: 1.2rem;
       color: var(--primary-color);
       letter-spacing: 2px;
     }
 
-    /* Navegación Lateral */
-    .sidebar {
-      width: 250px;
-      background-color: #1a1a1a;
-      padding: 20px;
-      position: fixed;
-      height: 100vh;
-      overflow-y: auto;
-      border-right: 2px solid var(--primary-color);
-      transition: transform var(--transition-speed) ease;
-      z-index: 1000;
-    }
-
-    .sidebar h1 {
-      font-family: var(--font-heading);
-      color: var(--primary-color);
-      margin-bottom: 30px;
-      text-align: center;
-      font-size: 1.5rem;
-      letter-spacing: 2px;
-    }
-
-    .sidebar ul {
-      list-style: none;
-    }
-
-    .sidebar ul li {
-      margin-bottom: 20px;
-    }
-
-    .sidebar ul li a {
-      text-decoration: none;
-      color: var(--text-color);
-      font-size: 1.1rem;
-      display: flex;
-      align-items: center;
-      transition: color var(--transition-speed);
-      cursor: pointer;
-    }
-
-    .sidebar ul li a:hover {
-      color: var(--primary-color);
-    }
-
-    .sidebar ul li a i {
-      margin-right: 10px;
-    }
-
-    /* Botón de Menú para Móviles */
-    .menu-toggle {
-      display: none;
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      background-color: var(--primary-color);
-      color: var(--bg-color);
-      padding: 10px;
-      border-radius: 5px;
-      cursor: pointer;
-      z-index: 1001;
-    }
-
-    /* Contenedor Principal */
-    .main-content {
-      margin-left: 250px;
-      padding: 20px;
+    /* --- Contenedor Terminal --- */
+    .terminal-container {
       flex: 1;
       display: flex;
       flex-direction: column;
+      padding: 20px;
+      overflow: auto;
+      position: relative;
+      z-index: 1;
+    }
+    .terminal-output {
+      flex: 1;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      font-size: 1rem;
+      margin-bottom: 10px;
+      /* Para feedback visual (fondo parpadeante) */
+      transition: background-color 0.3s ease;
+    }
+    .terminal-output.feedback {
+      background-color: rgba(255, 45, 149, 0.1);
+    }
+    .terminal-input-container {
+      display: flex;
       align-items: center;
-      transition: margin-left var(--transition-speed) ease;
+      border-top: 1px solid var(--primary-color);
+      padding-top: 10px;
+    }
+    .terminal-prompt {
+      margin-right: 10px;
+      color: var(--primary-color);
+    }
+    .terminal-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-family: var(--font-main);
+      color: var(--text-color);
+      font-size: 1rem;
     }
 
-    .main-content section {
+    /* --- Secciones de Contenido --- */
+    .section {
       display: none;
-      width: 100%;
-      max-width: 1200px;
-      animation: fadeIn 1s forwards;
+      animation: fadeIn 0.5s forwards;
     }
-
-    .main-content section.active {
+    .section.active {
       display: block;
     }
-
-    .main-content h2 {
+    .section h2 {
       font-family: var(--font-heading);
       color: var(--secondary-color);
-      margin-bottom: 20px;
+      margin-bottom: 10px;
       font-size: 2rem;
       text-transform: uppercase;
       letter-spacing: 2px;
     }
-
-    .cards-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 20px;
-      width: 100%;
-      max-width: 1200px;
+    .section p, .section ul {
+      font-size: 1rem;
+      color: var(--muted-color);
+      margin-bottom: 15px;
     }
-
+    .section ul li {
+      margin-left: 20px;
+      list-style: disc;
+    }
     .card {
       background-color: #1e1e1e;
       border: 2px solid var(--primary-color);
       border-radius: 10px;
       padding: 20px;
+      margin-bottom: 20px;
       transition: transform var(--transition-speed), box-shadow var(--transition-speed);
-      position: relative;
-      overflow: hidden;
     }
-
     .card:hover {
       transform: translateY(-10px);
       box-shadow: 0 0 20px var(--primary-color);
     }
-
     .card h3 {
       font-family: var(--font-heading);
       color: var(--primary-color);
@@ -221,13 +170,11 @@
       font-size: 1.5rem;
       letter-spacing: 1px;
     }
-
     .card p {
       color: var(--muted-color);
       font-size: 1rem;
       margin-bottom: 15px;
     }
-
     .card a.download-btn {
       display: inline-block;
       background-color: var(--secondary-color);
@@ -238,82 +185,69 @@
       font-weight: bold;
       transition: background-color var(--transition-speed), transform var(--transition-speed);
     }
-
     .card a.download-btn:hover {
       background-color: var(--primary-color);
       transform: scale(1.05);
     }
 
-    /* Partículas de Fondo */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* --- Pie de Página --- */
+    .footer {
+      background-color: #1a1a1a;
+      color: var(--muted-color);
+      text-align: center;
+      padding: 20px 0;
+      border-top: 2px solid var(--primary-color);
+      font-size: 0.9rem;
+    }
+    .footer .social-icons a {
+      color: var(--muted-color);
+      margin: 0 10px;
+      font-size: 1.2rem;
+      transition: color var(--transition-speed);
+    }
+    .footer .social-icons a:hover {
+      color: var(--primary-color);
+    }
+
+    /* --- Animación de Partículas en Fondo (Cenil Rojo) --- */
     .particles {
       position: fixed;
-      top:0; left:0;
-      width:100vw; height:100vh;
-      z-index: -1;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
       pointer-events: none;
       overflow: hidden;
     }
-
     .particle {
       position: absolute;
-      width: 2px; height: 2px;
-      background: var(--primary-color);
+      width: 3px;
+      height: 3px;
+      background: rgba(255, 45, 149, 0.8); /* tono rojo intenso */
       border-radius: 50%;
-      opacity: 0.7;
-      animation: moveParticle 10s linear infinite;
+      opacity: 0.8;
+      animation: moveParticle 12s linear infinite;
     }
-
     @keyframes moveParticle {
-      from { transform: translateY(0) translateX(0); opacity: 0.7;}
-      to { transform: translateY(-1000px) translateX(1000px); opacity: 0;}
-    }
-
-    /* Animaciones */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px);}
-      to { opacity: 1; transform: translateY(0);}
-    }
-
-    /* Responsividad */
-    @media (max-width: 768px) {
-      .sidebar {
-        transform: translateX(-100%);
+      0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 0.8;
       }
-
-      .sidebar.active {
-        transform: translateX(0);
+      50% {
+        transform: translate(50vw, -50vh) scale(1.5);
+        opacity: 0.4;
       }
-
-      .main-content {
-        margin-left: 0;
-      }
-
-      .menu-toggle {
-        display: block;
+      100% {
+        transform: translate(100vw, -100vh) scale(1);
+        opacity: 0;
       }
     }
-
-    /* Estilos del Pie de Página */
-.footer {
-  background-color: #1a1a1a;
-  color: var(--muted-color);
-  text-align: center;
-  padding: 20px 0;
-  margin-top: 40px;
-  border-top: 2px solid var(--primary-color);
-}
-
-.footer .social-icons a {
-  color: var(--muted-color);
-  margin: 0 10px;
-  font-size: 1.2rem;
-  transition: color var(--transition-speed);
-}
-
-.footer .social-icons a:hover {
-  color: var(--primary-color);
-}
-
   </style>
 </head>
 <body>
@@ -327,118 +261,91 @@
     <div class="loader-percentage" id="loaderPercentage">0%</div>
   </div>
 
-  <!-- Partículas de Fondo -->
+  <!-- Contenedor de Partículas (Fondo Cenil Rojo) -->
   <div class="particles" id="particlesContainer">
-    <!-- Partículas generadas por JavaScript -->
+    <!-- Las partículas se generarán mediante JavaScript -->
   </div>
 
-  <!-- Navegación Lateral -->
-  <div class="sidebar" id="sidebar">
-    <h1>CyberTools</h1>
-    <ul>
-      <li><a href="#" data-section="inicio"><i class="fas fa-home"></i>Inicio</a></li>
-      <li><a href="#" data-section="seguridad"><i class="fas fa-shield-alt"></i>Seguridad</a></li>
-      <li><a href="#" data-section="herramientas"><i class="fas fa-tools"></i>Herramientas</a></li>
-      <li><a href="#" data-section="descargas"><i class="fas fa-download"></i>Descargas</a></li>
-      <li><a href="#" data-section="acerca"><i class="fas fa-info-circle"></i>Acerca de</a></li>
-      <li><a href="#" id="backLink"><i class="fas fa-arrow-left"></i>Regresar</a></li>
-    </ul>
+  <!-- Contenedor Principal del Terminal -->
+  <div class="terminal-container" id="terminalContainer">
+    <div class="terminal-output" id="terminalOutput">
+Bienvenido a CyberTools Terminal  
+Escribe <span style="color: var(--primary-color)">help</span> para ver los comandos disponibles.
+    </div>
+    <div class="terminal-input-container">
+      <span class="terminal-prompt">user@cybertools:~$</span>
+      <input type="text" class="terminal-input" id="terminalInput" autofocus autocomplete="off">
+    </div>
   </div>
 
-  <!-- Botón de Menú para Móviles -->
-  <div class="menu-toggle" id="menuToggle">
-    <i class="fas fa-bars"></i>
-  </div>
-
-  <!-- Contenedor Principal -->
-  <div class="main-content" id="mainContent">
-    <!-- Sección Inicio -->
-    <section id="inicio" class="active">
-      <h2>Bienvenido a CyberTools</h2>
-      <p>Explora nuestras herramientas de hacking ético diseñadas para mejorar la seguridad de tus sistemas. Navega a través de las diferentes secciones para descubrir más sobre seguridad, herramientas, descargas y más.</p>
+  <!-- Secciones de Contenido (ocultas, se mostrarán mediante comandos) -->
+  <div id="sections" style="display:none;">
+    <!-- Sección: inicio -->
+    <section id="inicio" class="section active">
+      <h2>Inicio</h2>
+      <p>Explora nuestras herramientas de hacking ético diseñadas para mejorar la seguridad de tus sistemas.</p>
     </section>
 
-    <!-- Sección Seguridad -->
-    <section id="seguridad">
-      <h2>Prácticas de Seguridad</h2>
-      <p>Mantener una buena seguridad informática es crucial. A continuación, se presentan algunas prácticas recomendadas:</p>
+    <!-- Sección: seguridad -->
+    <section id="seguridad" class="section">
+      <h2>Seguridad</h2>
+      <p>Mantén tus sistemas seguros siguiendo las mejores prácticas:</p>
       <ul>
-        <li>Actualiza regularmente tus sistemas y software.</li>
-        <li>Utiliza contraseñas fuertes y cámbialas periódicamente.</li>
-        <li>Implementa autenticación de dos factores (2FA).</li>
-        <li>Realiza auditorías de seguridad periódicas.</li>
-        <li>Educa a los usuarios sobre amenazas de seguridad comunes.</li>
+        <li>Actualiza tus programas.</li>
+        <li>Utiliza contraseñas fuertes.</li>
+        <li>Implementa autenticación de dos factores.</li>
+        <li>Realiza auditorías de seguridad.</li>
       </ul>
     </section>
 
-    <!-- Sección Herramientas -->
-    <section id="herramientas">
-      <h2>Herramientas de Hacking Ético</h2>
-      <div class="cards-container">
-        <!-- Tarjeta 1 -->
-        <div class="card">
-          <h3>Nmap</h3>
-          <p>Herramienta de escaneo de redes y auditoría de seguridad. Permite descubrir hosts y servicios en una red informática.</p>
-          <a href="https://nmap.org/download.html" class="download-btn" target="_blank">Descargar</a>
-        </div>
-        
-        <!-- Tarjeta 2 -->
-        <div class="card">
-          <h3>Wireshark</h3>
-          <p>Analizador de protocolos de red que permite capturar y examinar datos de una red en tiempo real.</p>
-          <a href="https://www.wireshark.org/download.html" class="download-btn" target="_blank">Descargar</a>
-        </div>
-        
-        <!-- Tarjeta 3 -->
-        <div class="card">
-          <h3>Metasploit</h3>
-          <p>Framework de desarrollo de exploits que facilita la realización de pruebas de penetración y evaluaciones de seguridad.</p>
-          <a href="https://www.metasploit.com/" class="download-btn" target="_blank">Descargar</a>
-        </div>
-        
-        <!-- Tarjeta 4 -->
-        <div class="card">
-          <h3>Burp Suite</h3>
-          <p>Conjunto de herramientas para pruebas de seguridad de aplicaciones web, incluyendo escaneo de vulnerabilidades y análisis de tráfico.</p>
-          <a href="https://portswigger.net/burp" class="download-btn" target="_blank">Descargar</a>
-        </div>
-        
-        <!-- Tarjeta 5 -->
-        <div class="card">
-          <h3>John the Ripper</h3>
-          <p>Herramienta de cracking de contraseñas que soporta diversos algoritmos y técnicas de ataque.</p>
-          <a href="https://www.openwall.com/john/" class="download-btn" target="_blank">Descargar</a>
-        </div>
-        
-        <!-- Tarjeta 6 -->
-        <div class="card">
-          <h3>Aircrack-ng</h3>
-          <p>Suite de herramientas para auditoría de redes inalámbricas, permitiendo el análisis y cracking de claves WEP y WPA.</p>
-          <a href="https://www.aircrack-ng.org/" class="download-btn" target="_blank">Descargar</a>
-        </div>
-        
-        <!-- Puedes agregar más tarjetas siguiendo el mismo formato -->
+    <!-- Sección: herramientas -->
+    <section id="herramientas" class="section">
+      <h2>Herramientas</h2>
+      <div class="card">
+        <h3>Nmap</h3>
+        <p>Escáner de redes para descubrir hosts y servicios.</p>
+        <a href="https://nmap.org/download.html" class="download-btn" target="_blank">Descargar</a>
       </div>
-
-      <!-- Pie de Página -->
-<footer class="footer">
-  <div class="footer-content">
-    <p>&copy; 2025 CyberTools. Todos los derechos reservados.</p>
-    <div class="social-icons">
-      <a href="https://twitter.com/tuusuario" target="_blank"><i class="fab fa-twitter"></i></a>
-      <a href="https://facebook.com/tuusuario" target="_blank"><i class="fab fa-facebook-f"></i></a>
-      <a href="https://linkedin.com/in/tuusuario" target="_blank"><i class="fab fa-linkedin-in"></i></a>
-      <a href="https://github.com/tuusuario" target="_blank"><i class="fab fa-github"></i></a>
-    </div>
-  </div>
-</footer>
-
+      <div class="card">
+        <h3>Wireshark</h3>
+        <p>Analizador de protocolos de red para capturar tráfico en tiempo real.</p>
+        <a href="https://www.wireshark.org/download.html" class="download-btn" target="_blank">Descargar</a>
+      </div>
+      <div class="card">
+        <h3>Metasploit</h3>
+        <p>Framework para el desarrollo de exploits y pruebas de penetración.</p>
+        <a href="https://www.metasploit.com/" class="download-btn" target="_blank">Descargar</a>
+      </div>
+      <div class="card">
+        <h3>Burp Suite</h3>
+        <p>Herramienta para pruebas de seguridad en aplicaciones web.</p>
+        <a href="https://portswigger.net/burp" class="download-btn" target="_blank">Descargar</a>
+      </div>
+      <div class="card">
+        <h3>John the Ripper</h3>
+        <p>Herramienta de cracking de contraseñas.</p>
+        <a href="https://www.openwall.com/john/" class="download-btn" target="_blank">Descargar</a>
+      </div>
+      <div class="card">
+        <h3>Aircrack-ng</h3>
+        <p>Suite para auditoría de redes inalámbricas.</p>
+        <a href="https://www.aircrack-ng.org/" class="download-btn" target="_blank">Descargar</a>
+      </div>
+      <footer class="footer">
+        <div class="social-icons">
+          <a href="https://twitter.com/tuusuario" target="_blank"><i class="fab fa-twitter"></i></a>
+          <a href="https://facebook.com/tuusuario" target="_blank"><i class="fab fa-facebook-f"></i></a>
+          <a href="https://linkedin.com/in/tuusuario" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+          <a href="https://github.com/tuusuario" target="_blank"><i class="fab fa-github"></i></a>
+        </div>
+        <p>&copy; 2025 CyberTools. Todos los derechos reservados.</p>
+      </footer>
     </section>
 
-    <!-- Sección Descargas -->
-    <section id="descargas">
-      <h2>Descargas Disponibles</h2>
-      <p>A continuación, encontrarás enlaces para descargar diversas herramientas y recursos esenciales para el hacking ético:</p>
+    <!-- Sección: descargas -->
+    <section id="descargas" class="section">
+      <h2>Descargas</h2>
+      <p>Enlaces para descargar las herramientas:</p>
       <ul>
         <li><a href="https://nmap.org/download.html" target="_blank">Descargar Nmap</a></li>
         <li><a href="https://www.wireshark.org/download.html" target="_blank">Descargar Wireshark</a></li>
@@ -446,44 +353,42 @@
         <li><a href="https://portswigger.net/burp" target="_blank">Descargar Burp Suite</a></li>
         <li><a href="https://www.openwall.com/john/" target="_blank">Descargar John the Ripper</a></li>
         <li><a href="https://www.aircrack-ng.org/" target="_blank">Descargar Aircrack-ng</a></li>
-        <!-- Agrega más enlaces según sea necesario -->
       </ul>
     </section>
 
-    <!-- Sección Acerca de -->
-    <section id="acerca">
-      <h2>Acerca de CyberTools</h2>
-      <p>CyberTools es una plataforma dedicada a proporcionar herramientas y recursos para el hacking ético. Nuestro objetivo es mejorar la seguridad informática a través de la educación y el acceso a herramientas de alta calidad. Si tienes alguna pregunta o deseas colaborar, no dudes en contactarnos.</p>
-      <div class="contribution-button">
-        <a href="https://www.buymeacoffee.com/Inmortal" target="_blank">
-          <img src="https://img.buymeacoffee.com/button-api/?text=Contribuciones&emoji=💻️&slug=Inmortal&button_colour=001905&font_colour=ffffff&font_family=Lato&outline_colour=ffffff&coffee_colour=FFDD00" alt="Contribuciones">
-        </a>
-      </div>
+    <!-- Sección: acerca -->
+    <section id="acerca" class="section">
+      <h2>Acerca de</h2>
+      <p>CyberTools es una plataforma dedicada a proporcionar herramientas y recursos para el hacking ético. Nuestro objetivo es mejorar la seguridad informática a través de la educación y el acceso a herramientas de alta calidad.</p>
+      <p>Si deseas colaborar, contáctanos o visita <a href="https://www.buymeacoffee.com/Inmortal" target="_blank">BuyMeACoffee</a>.</p>
     </section>
   </div>
-  
 
-  <!-- Partículas (opcional) -->
-  <!-- Ya incluidas arriba -->
-
-  <!-- Audio de fondo -->
+  <!-- Audio de fondo (se reproducirá tras la primera interacción) -->
   <audio id="background-audio" loop>
-    <source src="src/Audio/Programming  Coding  Hacking music vol.mp3" type="audio/mpeg">
+    <source src="src/Audio/Programming%20%20Coding%20%20Hacking%20music%20vol.mp3" type="audio/mpeg">
     Tu navegador no soporta el elemento de audio.
   </audio>
 
-  <!-- Chart.js CDN -->
+  <!-- Audio para feedback de comandos -->
+  <audio id="command-sound">
+    <source src="src/Audio/command.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="error-sound">
+    <source src="src/Audio/error.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Chart.js CDN (opcional) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-
   <script>
-    // Simulación de carga
+    /* ------------------------------
+       Simulación de carga
+    ------------------------------ */
     let progress = 0;
     const loaderOverlay = document.getElementById('loaderOverlay');
     const loaderBar = document.getElementById('loaderBar');
     const loaderPercentage = document.getElementById('loaderPercentage');
-    const mainContent = document.getElementById('mainContent');
-
     const simulateLoading = setInterval(() => {
       progress += Math.random() * 5;
       if (progress >= 100) progress = 100;
@@ -495,15 +400,15 @@
         loaderOverlay.style.opacity = '0';
         setTimeout(() => {
           loaderOverlay.style.display = 'none';
-          mainContent.style.animation = 'fadeIn 1s forwards';
         }, 500);
       }
     }, 100);
 
-    // Generar partículas
+    /* ------------------------------
+       Generar partículas de fondo (Cenil Rojo)
+    ------------------------------ */
     const particlesContainer = document.getElementById('particlesContainer');
     const particleCount = 100;
-
     for(let i = 0; i < particleCount; i++) {
       const particle = document.createElement('div');
       particle.classList.add('particle');
@@ -514,66 +419,192 @@
       particlesContainer.appendChild(particle);
     }
 
-    // Menú lateral para móviles
-    const menuToggle = document.getElementById('menuToggle');
-    const sidebar = document.getElementById('sidebar');
-
-    menuToggle.addEventListener('click', () => {
-      sidebar.classList.toggle('active');
-    });
-
-    // Cerrar el menú al hacer clic fuera
-    document.addEventListener('click', (e) => {
-      if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
-        sidebar.classList.remove('active');
-      }
-    });
-
-    // Navegación entre secciones
-    const navLinks = document.querySelectorAll('.sidebar ul li a[data-section]');
-    const sections = document.querySelectorAll('.main-content section');
-
-    navLinks.forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const target = link.getAttribute('data-section');
-
-        sections.forEach(section => {
-          if(section.id === target) {
-            section.classList.add('active');
-          } else {
-            section.classList.remove('active');
-          }
-        });
-
-        // Cerrar el menú en dispositivos móviles después de seleccionar una opción
-        if(window.innerWidth <= 768){
-          sidebar.classList.remove('active');
-        }
-      });
-    });
-
-    // Enlace de regresar a la página anterior
-    const backLink = document.getElementById('backLink');
-    backLink.addEventListener('click', (e) => {
-      e.preventDefault();
-      window.history.back();
-    });
-
-    // Reproducir audio tras interacción
+    /* ------------------------------
+       Reproducir audio de fondo tras la primera interacción
+    ------------------------------ */
     const audioElement = document.getElementById('background-audio');
     document.body.addEventListener('click', () => {
       if (audioElement.paused) {
-        audioElement.play();
+        audioElement.play().catch(() => {});
       }
     }, {once:true});
+
+    /* ------------------------------
+       Función de Efecto de Tipeo (Idea 5)
+    ------------------------------ */
+    function typeOutput(text, callback) {
+      let index = 0;
+      function typeChar() {
+        if (index < text.length) {
+          terminalOutput.innerHTML += text.charAt(index);
+          index++;
+          setTimeout(typeChar, 20); // Velocidad de tipeo (ajustable)
+        } else if(callback) {
+          callback();
+        }
+      }
+      typeChar();
+    }
+
+    /* ------------------------------
+       Función para Feedback Visual (Idea 9)
+    ------------------------------ */
+    function flashOutput(success = true) {
+      terminalOutput.classList.add('feedback');
+      setTimeout(() => {
+        terminalOutput.classList.remove('feedback');
+      }, 150);
+    }
+
+    /* ------------------------------
+       Terminal: manejo de comandos, ayuda contextual y feedback avanzado
+    ------------------------------ */
+    const terminalInput = document.getElementById('terminalInput');
+    const terminalOutput = document.getElementById('terminalOutput');
+    const sectionsContainer = document.getElementById('sections');
+    
+    // Sonidos para feedback
+    const commandSound = document.getElementById('command-sound');
+    const errorSound = document.getElementById('error-sound');
+    function playCommandSound() {
+      if(commandSound) {
+        commandSound.currentTime = 0;
+        commandSound.play().catch(() => {});
+      }
+    }
+    function playErrorSound() {
+      if(errorSound) {
+        errorSound.currentTime = 0;
+        errorSound.play().catch(() => {});
+      }
+    }
+
+    // Función para crear enlaces clicables en el terminal (Idea 6)
+    function createClickableSectionLink(sectionId) {
+      return `<a href="#" style="color: var(--primary-color); text-decoration: underline;" onclick="handleOpenCommand('${sectionId}'); return false;">${sectionId}</a>`;
+    }
+
+    // Comandos disponibles y sus funciones, incluyendo ayuda contextual (Idea 4)
+    const commands = {
+      help: function(args) {
+        if(args.length === 0) {
+          return `Comandos disponibles:
+  help                      Muestra esta ayuda
+  help <comando>            Muestra ayuda detallada para el comando especificado
+  ls                        Lista las secciones disponibles
+  open <sección>            Abre una sección (ej: open inicio)
+  info <sección>            Muestra información adicional sobre la sección
+  clear                     Limpia la pantalla
+  exit                      Reinicia la terminal`;
+        } else {
+          const cmd = args[0].toLowerCase();
+          const helpDetails = {
+            open: "open <sección>: Abre la sección especificada. Ejemplo: open inicio",
+            info: "info <sección>: Muestra información adicional sobre la sección. Ejemplo: info seguridad",
+            ls: "ls: Lista todas las secciones disponibles. Los nombres se muestran como enlaces clicables.",
+            clear: "clear: Limpia la pantalla de la terminal.",
+            exit: "exit: Reinicia la terminal borrando la salida."
+          };
+          return helpDetails[cmd] || "No hay información adicional para el comando: " + cmd;
+        }
+      },
+      ls: function() {
+        const sectionIds = Array.from(sectionsContainer.querySelectorAll('.section'))
+                                .map(sec => sec.id);
+        let output = 'Secciones disponibles: ';
+        output += sectionIds.map(id => createClickableSectionLink(id)).join(', ');
+        return output;
+      },
+      open: function(args) {
+        if(args.length === 0) {
+          playErrorSound();
+          flashOutput(false);
+          return 'Uso: open <sección>';
+        }
+        const target = args[0].toLowerCase();
+        const allSections = sectionsContainer.querySelectorAll('.section');
+        allSections.forEach(sec => sec.classList.remove('active'));
+        const sectionToOpen = sectionsContainer.querySelector('#' + target);
+        if(sectionToOpen) {
+          sectionToOpen.classList.add('active');
+          flashOutput(true);
+          return 'Abriendo sección: ' + target + '\n\n' + sectionToOpen.innerText;
+        } else {
+          playErrorSound();
+          flashOutput(false);
+          return 'Sección no encontrada: ' + target;
+        }
+      },
+      info: function(args) {
+        if(args.length === 0) {
+          playErrorSound();
+          flashOutput(false);
+          return 'Uso: info <sección>';
+        }
+        const target = args[0].toLowerCase();
+        const infoMap = {
+          inicio: 'La sección de inicio da la bienvenida y explica la funcionalidad básica.',
+          seguridad: 'Aquí se detallan las mejores prácticas para mantener tus sistemas seguros.',
+          herramientas: 'Se muestran las herramientas disponibles, con enlaces de descarga.',
+          descargas: 'Lista de enlaces para descargar herramientas de hacking ético.',
+          acerca: 'Información sobre CyberTools, la misión y cómo colaborar.'
+        };
+        if(infoMap[target]) {
+          flashOutput(true);
+          return `Información sobre ${target}: ${infoMap[target]}`;
+        } else {
+          playErrorSound();
+          flashOutput(false);
+          return 'No hay información adicional para la sección: ' + target;
+        }
+      },
+      clear: function() {
+        terminalOutput.innerHTML = '';
+        return '';
+      },
+      exit: function() {
+        terminalOutput.innerHTML = '';
+        return 'Terminal reiniciada.';
+      }
+    };
+
+    // Función para manejar comando "open" desde enlaces clicables (Idea 6)
+    function handleOpenCommand(sectionId) {
+      terminalOutput.innerHTML += "\nuser@cybertools:~$ open " + sectionId;
+      const result = commands.open([sectionId]);
+      // Usar efecto de tipeo para mostrar el resultado
+      typeOutput("\n" + result, function() {
+        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+      });
+      playCommandSound();
+    }
+
+    // Manejo de envío de comando y efecto de tipeo (Idea 5)
+    terminalInput.addEventListener('keydown', function(e) {
+      if(e.key === 'Enter') {
+        const inputText = terminalInput.value.trim();
+        terminalOutput.innerHTML += "\nuser@cybertools:~$ " + inputText;
+        terminalInput.value = '';
+        const parts = inputText.split(' ');
+        const cmd = parts[0].toLowerCase();
+        const args = parts.slice(1);
+        if(commands[cmd]) {
+          playCommandSound();
+          const result = commands[cmd](args);
+          // Imprimir el resultado con efecto de tipeo
+          typeOutput("\n" + result, function() {
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+          });
+        } else {
+          playErrorSound();
+          typeOutput("\n<span style='color: red;'>Error: Comando no reconocido: " + cmd + "</span>", function() {
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+          });
+        }
+      }
+    });
   </script>
 </body>
 </html>
-
-
-
-
-
 
 

@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PANDORA - Joyería de Lujo Slider</title>
+  <style>
+    /* Paleta de Colores Lujosa */
+    :root {
+      --fondo-general: #1a1a1a;         /* Fondo oscuro */
+      --fondo-elemento: #2a2a2a;        /* Fondo de elementos (header, menú, etc.) */
+      --texto-principal: #e5e5e5;       /* Texto claro */
+      --acento: #d4af37;               /* Dorado lujoso */
+      --input-fondo: #333333;          /* Fondo de inputs */
+      --input-borde: #555555;
+      --hover-fondo: #3a3a3a;
+    }
+
+    /* Scroll Progress Indicator */
+    #scroll-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 0%;
+      height: 4px;
+      background-color: var(--acento);
+      z-index: 9999;
+    }
+
+    /* Estilos Generales */
+    body {
+      font-family: 'Georgia', serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--texto-principal);
+      background-color: var(--fondo-general);
+    }
+
+    /* =============================
+       HEADER Y MENÚ (SIN MODIFICAR)
+       ============================= */
+    header {
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      background-color: var(--fondo-elemento);
+      padding: 10px 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .logo {
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      color: var(--acento);
+      font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+    }
+    .search-bar {
+      display: flex;
+      align-items: center;
+    }
+    .search-bar input {
+      margin: 0 5px;
+      padding: 8px 12px;
+      border: 1px solid var(--input-borde);
+      border-radius: 5px;
+      font-size: 14px;
+      background-color: var(--input-fondo);
+      color: var(--texto-principal);
+    }
+    /* Botón Hamburguesa (inicialmente oculto) */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: space-around;
+      width: 25px;
+      height: 20px;
+      cursor: pointer;
+      margin-left: auto;
+    }
+    .hamburger span {
+      display: block;
+      height: 3px;
+      background-color: var(--acento);
+      border-radius: 2px;
+      transition: all 0.3s;
+    }
+
+    /* Menú de Filtros con Submenús Desplegables (SIN MODIFICAR) */
+    .filters {
+      width: 100%;
+      margin: 80px 0 20px 0;
+      background-color: var(--fondo-elemento);
+      padding: 10px 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .filters ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .filter-item {
+      position: relative;
+      margin: 0 15px;
+    }
+    .filter-item > a {
+      color: var(--texto-principal);
+      text-decoration: none;
+      font-size: 16px;
+      padding: 5px 0;
+      font-weight: 500;
+      transition: color 0.3s;
+      position: relative;
+    }
+    .filter-item > a::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 0;
+      height: 2px;
+      background-color: var(--acento);
+      transition: width 0.3s ease-in-out;
+    }
+    .filter-item > a:hover::after {
+      width: 100%;
+    }
+    .filter-item > a:hover {
+      color: var(--acento);
+    }
+    /* Submenú Desplegable */
+    .submenu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background-color: var(--fondo-elemento);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(10px);
+      transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+      z-index: 10;
+      padding: 10px;
+      white-space: nowrap;
+    }
+    .submenu a {
+      display: block;
+      color: var(--texto-principal);
+      text-decoration: none;
+      padding: 5px 10px;
+      transition: background-color 0.3s;
+    }
+    .submenu a:hover {
+      background-color: var(--hover-fondo);
+    }
+    /* Activa el submenu en escritorio */
+    .filter-item:hover .submenu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    /* =============================
+       SECCIÓN HERO
+       ============================= */
+    .hero {
+      width: 100%;
+      height: 400px;
+      background: linear-gradient(135deg, var(--acento), #000);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: var(--texto-principal);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 40px;
+    }
+    .hero h1 {
+      font-size: 48px;
+      margin-bottom: 20px;
+      z-index: 2;
+      animation: fadeInDown 1s ease-in-out;
+    }
+    .hero button {
+      padding: 15px 30px;
+      background-color: var(--fondo-elemento);
+      color: var(--acento);
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+      transition: background-color 0.3s, color 0.3s;
+      z-index: 2;
+      animation: fadeInUp 1s ease-in-out;
+    }
+    .hero button:hover {
+      background-color: var(--hover-fondo);
+    }
+    .slider {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      transition: transform 0.5s ease-in-out;
+    }
+    .slide {
+      min-width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      filter: brightness(0.7);
+    }
+    /* Animaciones */
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    /* Botones de navegación del Hero */
+    .nav-button {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0, 0, 0, 0.5);
+      border: none;
+      padding: 8px 12px;
+      cursor: pointer;
+      border-radius: 50%;
+      z-index: 3;
+      transition: background 0.3s;
+      font-size: 24px;
+      color: var(--acento);
+      font-weight: bold;
+      user-select: none;
+    }
+    .nav-button:hover {
+      background: rgba(0, 0, 0, 0.7);
+    }
+    .prev { left: 30px; }
+    .next { right: 30px; }
+
+    /* =============================
+       Sección de Categorías
+       ============================= */
+    .categories {
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      margin: 20px 0;
+      padding: 0 20px;
+    }
+    .categories a {
+      margin: 10px;
+      color: var(--texto-principal);
+      text-decoration: none;
+      font-size: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.3s;
+      font-weight: 500;
+    }
+    .categories a:hover { transform: scale(1.05); }
+    .categories img {
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      margin-bottom: 5px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+      transition: transform 0.3s;
+    }
+    .categories a:hover img { transform: scale(1.1); }
+
+    /* =============================
+       Sección de Joyería de Lujo - Slider de Tarjetas
+       ============================= */
+    .luxury-jewelry {
+      width: 100%;
+      padding: 60px 20px;
+      background-color: var(--fondo-elemento);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .luxury-jewelry h2 {
+      font-size: 36px;
+      color: var(--acento);
+      margin-bottom: 40px;
+      font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+      animation: fadeInUp 1s ease-in-out;
+    }
+    /* Contenedor del slider de joyería */
+    .jewelry-slider-container {
+      position: relative;
+      overflow: hidden;
+    }
+    .jewelry-slider {
+      display: flex;
+      transition: transform 0.5s ease-in-out;
+    }
+    /* Cada tarjeta (slide) */
+    .jewelry-item {
+      min-width: 350px;
+      margin: 0 10px;
+      background-color: var(--fondo-general);
+      border: 1px solid var(--input-borde);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .jewelry-item:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 8px 12px rgba(0,0,0,0.7);
+    }
+    /* Contenedor de imagen y efecto hover para cambiar imagen */
+    .card-image-container {
+      position: relative;
+      width: 100%;
+      height: 250px;
+      overflow: hidden;
+    }
+    .card-image-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      top: 0;
+      left: 0;
+      transition: opacity 0.3s ease;
+    }
+    /* Imagen por defecto visible y la alterna oculta */
+    .card-image-container .default-img {
+      opacity: 1;
+      z-index: 1;
+    }
+    .card-image-container .hover-img {
+      opacity: 0;
+      z-index: 2;
+    }
+    /* Al pasar el cursor, se cambia la imagen */
+    .card-image-container:hover .default-img { opacity: 0; }
+    .card-image-container:hover .hover-img { opacity: 1; }
+    /* Etiqueta sobre la imagen */
+    .card-label {
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: rgba(0, 0, 0, 0.6);
+      color: var(--texto-principal);
+      padding: 5px 10px;
+      font-size: 14px;
+      font-weight: bold;
+      width: 100%;
+      text-align: center;
+      z-index: 3;
+    }
+    /* Botones de navegación para el slider de joyería */
+    .slider-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0, 0, 0, 0.5);
+      border: none;
+      padding: 8px 12px;
+      cursor: pointer;
+      border-radius: 50%;
+      z-index: 3;
+      transition: background 0.3s;
+      font-size: 24px;
+      color: var(--acento);
+      font-weight: bold;
+    }
+    .slider-nav:hover { background: rgba(0, 0, 0, 0.7); }
+    .slider-nav.prev { left: 10px; }
+    .slider-nav.next { right: 10px; }
+
+    /* =============================
+       Secciones y animaciones adicionales
+       ============================= */
+
+    /* Divisor animado */
+    .divider {
+      width: 100%;
+      overflow: hidden;
+      line-height: 0;
+    }
+    .divider svg {
+      display: block;
+      width: 100%;
+      height: 80px;
+    }
+
+    /* 1. Colecciones Exclusivas */
+    .exclusive-collections {
+      padding: 60px 20px;
+      background-color: var(--fondo-general);
+      text-align: center;
+    }
+    .exclusive-collections h2 {
+      font-size: 36px;
+      color: var(--acento);
+      margin-bottom: 40px;
+    }
+    .collections-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+    .collection-card {
+      background-color: var(--fondo-elemento);
+      border: 1px solid var(--input-borde);
+      border-radius: 10px;
+      overflow: hidden;
+      width: 300px;
+      transition: transform 0.3s, box-shadow 0.3s;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    .collection-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .collection-card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+    .collection-card h3 {
+      font-size: 24px;
+      color: var(--acento);
+      margin: 15px 0 10px;
+    }
+    .collection-card p {
+      font-size: 16px;
+      padding: 0 15px;
+      color: var(--texto-principal);
+      margin-bottom: 15px;
+    }
+    .collection-card button {
+      margin-bottom: 15px;
+      padding: 10px 20px;
+      border: none;
+      background-color: var(--acento);
+      color: #fff;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .collection-card button:hover {
+      background-color: #b58d2e;
+    }
+
+    /* 2. Artesanía & Diseño (efecto parallax y animación de texto) */
+    .craftsmanship-design {
+      position: relative;
+      background-image: url('arte/arte1.jpg'); /* Cambia la ruta según tu imagen */
+      background-attachment: fixed;
+      background-size: cover;
+      background-position: center;
+      height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .craftsmanship-design .overlay {
+      background: rgba(0, 0, 0, 0.5);
+      padding: 40px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .craftsmanship-design h2 {
+      font-size: 36px;
+      color: var(--acento);
+      margin-bottom: 20px;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    .craftsmanship-design p {
+      font-size: 18px;
+      color: var(--texto-principal);
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    .craftsmanship-design.visible .overlay h2,
+    .craftsmanship-design.visible .overlay p {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    /* 3. Datos Destacados (paneles y contadores) */
+    .data-highlights {
+      padding: 60px 20px;
+      background-color: var(--fondo-elemento);
+      text-align: center;
+    }
+    .data-highlights h2 {
+      font-size: 36px;
+      color: var(--acento);
+      margin-bottom: 40px;
+    }
+    .data-panels {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+    .data-panel {
+      background-color: var(--fondo-general);
+      border: 1px solid var(--input-borde);
+      border-radius: 10px;
+      width: 250px;
+      padding: 20px;
+      transition: transform 0.3s;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    .data-panel.visible {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .data-panel h3 {
+      font-size: 48px;
+      color: var(--acento);
+      margin-bottom: 10px;
+    }
+    .data-panel p {
+      font-size: 18px;
+      color: var(--texto-principal);
+    }
+
+    /* 4. Testimonios */
+    .testimonials {
+      padding: 60px 20px;
+      background-color: var(--fondo-general);
+      text-align: center;
+    }
+    .testimonials h2 {
+      font-size: 36px;
+      color: var(--acento);
+      margin-bottom: 40px;
+    }
+    .testimonials-slider {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      gap: 20px;
+      padding: 20px;
+    }
+    .testimonial {
+      min-width: 300px;
+      background-color: var(--fondo-elemento);
+      border: 1px solid var(--input-borde);
+      border-radius: 10px;
+      padding: 20px;
+      scroll-snap-align: center;
+      transition: transform 0.3s;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    .testimonial.visible {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .testimonial p {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .testimonial h4 {
+      font-size: 20px;
+      color: var(--acento);
+    }
+
+    /* 5. Línea de Tiempo (Nuestra Historia) - DISPUESTO HORIZONTALMENTE */
+    .timeline {
+      padding: 60px 20px;
+      background-color: var(--fondo-elemento);
+      text-align: center;
+    }
+    .timeline h2 {
+      font-size: 36px;
+      color: var(--acento);
+      margin-bottom: 40px;
+    }
+    /* Cambiamos el layout de la línea de tiempo a horizontal */
+    .timeline-container {
+      display: flex;
+      flex-direction: row;
+      overflow-x: auto;
+      gap: 20px;
+      padding-bottom: 20px;
+      margin: auto;
+    }
+    .timeline-event {
+      flex: 0 0 auto;
+      padding: 20px;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    .timeline-event.visible {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    /* Opcional: quitar la línea vertical si no resulta en horizontal */
+    .timeline-event::before {
+      content: none;
+    }
+    .timeline-content {
+      background: var(--fondo-general);
+      padding: 15px 25px;
+      border: 1px solid var(--input-borde);
+      border-radius: 10px;
+      display: inline-block;
+      position: relative;
+      z-index: 1;
+    }
+    .timeline-content h3 {
+      margin: 0;
+      font-size: 24px;
+      color: var(--acento);
+    }
+    .timeline-content p {
+      margin: 10px 0 0;
+      font-size: 16px;
+    }
+
+    /* 6. Galería de Arte - DISPUESTA HORIZONTALMENTE */
+    .gallery {
+      padding: 60px 20px;
+      background-color: var(--fondo-general);
+      text-align: center;
+    }
+    .gallery h2 {
+      font-size: 36px;
+      color: var(--acento);
+      margin-bottom: 40px;
+    }
+    /* Cambiamos la galería a un contenedor horizontal */
+    .gallery-grid {
+      display: flex;
+      flex-direction: row;
+      overflow-x: auto;
+      gap: 20px;
+      padding-bottom: 20px;
+    }
+    .gallery-grid img {
+      flex: 0 0 auto;
+      width: 200px;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 10px;
+      transition: transform 0.3s;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    .gallery-grid img.visible {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .gallery-grid img:hover {
+      transform: scale(1.05);
+    }
+
+    /* 7. CTA (Llamada a la Acción) */
+    .cta {
+      padding: 60px 20px;
+      background-color: var(--fondo-elemento);
+      text-align: center;
+    }
+    .cta h2 {
+      font-size: 36px;
+      color: var(--acento);
+      margin-bottom: 20px;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    .cta p {
+      font-size: 18px;
+      color: var(--texto-principal);
+      margin-bottom: 30px;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    .cta button {
+      padding: 15px 30px;
+      background-color: var(--acento);
+      border: none;
+      border-radius: 5px;
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .cta button:hover {
+      background-color: #b58d2e;
+    }
+    .cta.visible h2,
+    .cta.visible p {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    /* 8. Redes Sociales */
+    .social-media {
+      padding: 60px 20px;
+      background-color: var(--fondo-general);
+      text-align: center;
+    }
+    .social-media h2 {
+      font-size: 36px;
+      color: var(--acento);
+      margin-bottom: 40px;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    .social-icons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+    .social-icons a img {
+      width: 40px;
+      height: 40px;
+      transition: transform 0.3s;
+    }
+    .social-icons a:hover img {
+      transform: scale(1.1);
+    }
+    .social-media h2.visible {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+  </style>
+</head>
+<body>
+  <!-- Scroll Progress Indicator -->
+  <div id="scroll-progress"></div>
+
+  <!-- Header (SIN MODIFICAR) -->
+  <header>
+    <div class="logo" onclick="navigateTo('home')">PANDORA</div>
+    <form class="search-bar">
+      <input type="text" placeholder="Busca tu producto">
+      <input type="date">
+      <input type="text" placeholder="Color">
+      <input type="text" placeholder="Ambiance">
+      <input type="text" placeholder="Cerca por">
+    </form>
+    <div class="hamburger" onclick="toggleMenu()">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </header>
+
+  <!-- Menú de Filtros (SIN MODIFICAR) -->
+  <nav class="filters">
+    <ul>
+      <li class="filter-item">
+        <a href="#" onmouseover="navigateTo('valentines_day')">Valentine's Day</a>
+        <div class="submenu">
+          <a href="#">Subpágina 1</a>
+          <a href="#">Subpágina 2</a>
+          <a href="#">Subpágina 3</a>
+        </div>
+      </li>
+      <li class="filter-item">
+        <a href="#" onmouseover="navigateTo('novedades')">Novedades</a>
+        <div class="submenu">
+          <a href="#">Lo más reciente</a>
+          <a href="#">Destacados</a>
+        </div>
+      </li>
+      <li class="filter-item">
+        <a href="#" onmouseover="navigateTo('charms')">Charms</a>
+        <div class="submenu">
+          <a href="#">Nuevos diseños</a>
+          <a href="#">Tendencias</a>
+        </div>
+      </li>
+      <li class="filter-item">
+        <a href="#" onmouseover="navigateTo('brazaletes')">Brazaletes</a>
+        <div class="submenu">
+          <a href="#">Brazaletes Clásicos</a>
+          <a href="#">Brazaletes Modernos</a>
+        </div>
+      </li>
+      <li class="filter-item">
+        <a href="#" onmouseover="navigateTo('anillos')">Anillos</a>
+        <div class="submenu">
+          <a href="#">Anillos de compromiso</a>
+          <a href="#">Anillos de moda</a>
+        </div>
+      </li>
+      <li class="filter-item">
+        <a href="#" onmouseover="navigateTo('aretes')">Aretes</a>
+        <div class="submenu">
+          <a href="#">Aretes pequeños</a>
+          <a href="#">Aretes grandes</a>
+        </div>
+      </li>
+      <li class="filter-item">
+        <a href="#" onmouseover="navigateTo('collares_y_dijes')">Collares y Dijes</a>
+        <div class="submenu">
+          <a href="#">Collares Elegantes</a>
+          <a href="#">Dijes Modernos</a>
+        </div>
+      </li>
+      <li class="filter-item">
+        <a href="#" onmouseover="navigateTo('diamantes_de_laboratorio')">DIAMANTES DE LABORATORIO</a>
+        <div class="submenu">
+          <a href="#">Calidad Garantizada</a>
+          <a href="#">Nuevas colecciones</a>
+        </div>
+      </li>
+      <li class="filter-item">
+        <a href="#" onmouseover="navigateTo('regalos')">Regalos</a>
+        <div class="submenu">
+          <a href="#">Ideas de regalo</a>
+          <a href="#">Ofertas especiales</a>
+        </div>
+      </li>
+      <li class="filter-item">
+        <a href="#" onmouseover="navigateTo('descubrir')">Descubrir</a>
+        <div class="submenu">
+          <a href="#">Explorar más</a>
+          <a href="#">Sorpresas</a>
+        </div>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Sección Hero -->
+  <div class="hero">
+    <div class="slider" id="slider">
+      <div class="slide" style="background-image: url('https://pandoramx.vtexassets.com/assets/vtex.file-manager-graphql/images/b51ad45b-4ae6-439b-ba05-b696c71a9c73___747f0332dcbab37a49e5ddc57e5dfc22.jpg');"></div>
+      <div class="slide" style="background-image: url('https://pandoramx.vtexassets.com/assets/vtex.file-manager-graphql/images/d73fd9e6-ddce-49c6-b31e-cd52c71ffc52___fa6af3f54dc1747894f4f4f1d6a71f96.jpg');"></div>
+      <div class="slide" style="background-image: url('https://pandoramx.vtexassets.com/assets/vtex.file-manager-graphql/images/b51ad45b-4ae6-439b-ba05-b696c71a9c73___747f0332dcbab37a49e5ddc57e5dfc22.jpg');"></div>
+    </div>
+    <button class="nav-button prev" onclick="prevSlide()" aria-label="Anterior">&lt;</button>
+    <button class="nav-button next" onclick="nextSlide()" aria-label="Siguiente">&gt;</button>
+    <h1>PROTEGE LO QUE AMARRAS</h1>
+    <button>COMPRAR AHORA</button>
+  </div>
+
+  <!-- Sección de Categorías -->
+  <div class="categories">
+    <a href="#">
+      <img src="aretes/aretes1.jpg" alt="Rings">
+      RINGS
+    </a>
+    <a href="#">
+      <img src="aretes/aretes2.jpg" alt="Necklaces">
+      NECKLACES
+    </a>
+    <a href="#">
+      <img src="aretes/aretes3.jpg" alt="Earrings">
+      EARRINGS
+    </a>
+    <a href="#">
+      <img src="aretes/aretes4.jpg" alt="Brownies">
+      BROWNIES
+    </a>
+    <a href="#">
+      <img src="aretes/aretes5.jpg" alt="Ambassadors">
+      AMBASSADORS
+    </a>
+    <a href="#">
+      <img src="aretes/aretes6.jpg" alt="Disney">
+      DISNEY
+    </a>
+    <a href="#">
+      <img src="aretes/aretes1.jpg" alt="Pandora">
+      PANDORA
+    </a>
+  </div>
+
+  <!-- Sección de Joyería de Lujo - Slider de Tarjetas -->
+  <div class="luxury-jewelry">
+    <h2>Joyería de Lujo</h2>
+    <div class="jewelry-slider-container">
+      <button class="slider-nav prev" onclick="prevJewelrySlide()" aria-label="Anterior">&lt;</button>
+      <div class="jewelry-slider" id="jewelry-slider">
+        <!-- Ítem 1 -->
+        <div class="jewelry-item">
+          <div class="card-image-container">
+            <img class="default-img" src="collares/collar1.jpg" alt="Collar de Oro">
+            <img class="hover-img" src="collares/collar2.jpg" alt="Collar de Oro - Perspectiva alterna">
+            <div class="card-label">Collar de Oro 18k</div>
+          </div>
+          <h3>Collar de Oro 18k</h3>
+          <p>Elegante collar de oro 18 quilates con diamantes incrustados.</p>
+          <div class="price">$2,500</div>
+        </div>
+        <!-- Ítem 2 -->
+        <div class="jewelry-item">
+          <div class="card-image-container">
+            <img class="default-img" src="Anillos/anillos1.jpg" alt="Anillo Diamante">
+            <img class="hover-img" src="Anillos/anillos2.jpg" alt="Anillo Diamante - Perspectiva alterna">
+            <div class="card-label">Anillo de Diamante</div>
+          </div>
+          <h3>Anillo de Diamante</h3>
+          <p>Anillo de compromiso con un brillante diamante central.</p>
+          <div class="price">$3,200</div>
+        </div>
+        <!-- Ítem 3 -->
+        <div class="jewelry-item">
+          <div class="card-image-container">
+            <img class="default-img" src="pulseras/pulseras1.jpg" alt="Pulsera de Plata">
+            <img class="hover-img" src="pulseras/pulseras2.jpg" alt="Pulsera de Plata - Perspectiva alterna">
+            <div class="card-label">Pulsera de Plata</div>
+          </div>
+          <h3>Pulsera de Plata</h3>
+          <p>Pulsera de plata esterlina con diseño moderno y sofisticado.</p>
+          <div class="price">$800</div>
+        </div>
+        <!-- Ítem 4 -->
+        <div class="jewelry-item">
+          <div class="card-image-container">
+            <img class="default-img" src="pulseras/pulseras5.jpg" alt="Pendientes de Esmeralda">
+            <img class="hover-img" src="pulseras/pulseras6.jpg" alt="Pendientes de Esmeralda - Perspectiva alterna">
+            <div class="card-label">Pendientes de Esmeralda</div>
+          </div>
+          <h3>Pendientes de Esmeralda</h3>
+          <p>Pendientes de esmeralda engastados en oro blanco.</p>
+          <div class="price">$1,500</div>
+        </div>
+      </div>
+      <button class="slider-nav next" onclick="nextJewelrySlide()" aria-label="Siguiente">&gt;</button>
+    </div>
+  </div>
+
+  <!-- ================= Secciones adicionales ================= -->
+
+  <!-- Divisor -->
+  <div class="divider">
+    <svg viewBox="0 0 500 80" preserveAspectRatio="none">
+      <path class="shape-fill" d="M0,0 C150,100 350,-50 500,0 L500,80 L0,80 Z"></path>
+    </svg>
+  </div>
+
+  <!-- 1. Colecciones Exclusivas -->
+  <section class="exclusive-collections">
+    <h2>Colecciones Exclusivas</h2>
+    <div class="collections-grid">
+      <div class="collection-card">
+        <img src="aretes/aretes1.jpg" alt="Colección Aurora">
+        <h3>Colección Aurora</h3>
+        <p>Una fusión de elegancia y modernidad.</p>
+        <button>Ver Más</button>
+      </div>
+      <div class="collection-card">
+        <img src="aretes/aretes2.jpg" alt="Colección Época">
+        <h3>Colección Época</h3>
+        <p>Piezas inspiradas en la historia y la tradición.</p>
+        <button>Ver Más</button>
+      </div>
+      <div class="collection-card">
+        <img src="aretes/aretes3.jpg" alt="Colección Brillante">
+        <h3>Colección Brillante</h3>
+        <p>Destellos de lujo en cada detalle.</p>
+        <button>Ver Más</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Divisor -->
+  <div class="divider">
+    <svg viewBox="0 0 500 80" preserveAspectRatio="none">
+      <path class="shape-fill" d="M0,0 C200,100 300,-50 500,0 L500,80 L0,80 Z"></path>
+    </svg>
+  </div>
+
+  <!-- 2. Artesanía & Diseño -->
+  <section class="craftsmanship-design">
+    <div class="overlay">
+      <h2>Artesanía & Diseño</h2>
+      <p>Descubre la pasión y el arte detrás de cada creación única.</p>
+    </div>
+  </section>
+
+  <!-- Divisor -->
+  <div class="divider">
+    <svg viewBox="0 0 500 80" preserveAspectRatio="none">
+      <path class="shape-fill" d="M0,0 C150,100 350,-50 500,0 L500,80 L0,80 Z"></path>
+    </svg>
+  </div>
+
+  <!-- 3. Datos Destacados -->
+  <section class="data-highlights">
+    <h2>Datos Destacados</h2>
+    <div class="data-panels">
+      <div class="data-panel">
+        <h3 class="counter" data-target="10000">0</h3>
+        <p>Clientes Satisfechos</p>
+      </div>
+      <div class="data-panel">
+        <h3 class="counter" data-target="50">0</h3>
+        <p>Años de Experiencia</p>
+      </div>
+      <div class="data-panel">
+        <h3 class="counter" data-target="200">0</h3>
+        <p>Piezas Exclusivas</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Divisor -->
+  <div class="divider">
+    <svg viewBox="0 0 500 80" preserveAspectRatio="none">
+      <path class="shape-fill" d="M0,0 C200,100 300,-50 500,0 L500,80 L0,80 Z"></path>
+    </svg>
+  </div>
+
+  <!-- 4. Testimonios -->
+  <section class="testimonials">
+    <h2>Testimonios</h2>
+    <div class="testimonials-slider">
+      <div class="testimonial">
+        <p>"La calidad y el diseño son excepcionales. ¡Una experiencia inolvidable!"</p>
+        <h4>Cliente 1</h4>
+      </div>
+      <div class="testimonial">
+        <p>"Cada pieza es una obra de arte. Me encanta la atención al detalle."</p>
+        <h4>Cliente 2</h4>
+      </div>
+      <div class="testimonial">
+        <p>"La mejor inversión en elegancia y sofisticación."</p>
+        <h4>Cliente 3</h4>
+      </div>
+    </div>
+  </section>
+
+  <!-- Divisor -->
+  <div class="divider">
+    <svg viewBox="0 0 500 80" preserveAspectRatio="none">
+      <path class="shape-fill" d="M0,0 C150,100 350,-50 500,0 L500,80 L0,80 Z"></path>
+    </svg>
+  </div>
+
+  <!-- 5. Línea de Tiempo (Nuestra Historia) - Disposición Horizontal -->
+  <section class="timeline">
+    <h2>Nuestra Historia</h2>
+    <div class="timeline-container">
+      <div class="timeline-event">
+        <div class="timeline-content">
+          <h3>2000</h3>
+          <p>Fundación de Pandora, un sueño de lujo.</p>
+        </div>
+      </div>
+      <div class="timeline-event">
+        <div class="timeline-content">
+          <h3>2005</h3>
+          <p>Primeras colecciones internacionales.</p>
+        </div>
+      </div>
+      <div class="timeline-event">
+        <div class="timeline-content">
+          <h3>2015</h3>
+          <p>Innovación en diseño y técnicas artesanales.</p>
+        </div>
+      </div>
+      <div class="timeline-event">
+        <div class="timeline-content">
+          <h3>2020</h3>
+          <p>Expansión global y reconocimiento mundial.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Divisor -->
+  <div class="divider">
+    <svg viewBox="0 0 500 80" preserveAspectRatio="none">
+      <path class="shape-fill" d="M0,0 C200,100 300,-50 500,0 L500,80 L0,80 Z"></path>
+    </svg>
+  </div>
+
+  <!-- 6. Galería de Arte - Disposición Horizontal -->
+  <section class="gallery">
+    <h2>Galería de Arte</h2>
+    <div class="gallery-grid">
+      <img src="collares/collar6.jpg" alt="Detalle 1">
+      <img src="collares/collar1.jpg" alt="Detalle 2">
+      <img src="collares/collar3.jpg" alt="Detalle 3">
+      <img src="collares/collar4.jpg" alt="Detalle 4">
+      <img src="collares/collar5.jpg" alt="Detalle 5">
+      <img src="collares/collar6.jpg" alt="Detalle 6">
+    </div>
+  </section>
+
+  <!-- Divisor -->
+  <div class="divider">
+    <svg viewBox="0 0 500 80" preserveAspectRatio="none">
+      <path class="shape-fill" d="M0,0 C150,100 350,-50 500,0 L500,80 L0,80 Z"></path>
+    </svg>
+  </div>
+
+  <!-- 7. CTA (Llamada a la Acción) -->
+  <section class="cta">
+    <h2>Únete a la experiencia Pandora</h2>
+    <p>Suscríbete a nuestro newsletter y descubre las últimas colecciones y eventos exclusivos.</p>
+    <button>Suscríbete Ahora</button>
+  </section>
+
+  <!-- Divisor -->
+  <div class="divider">
+    <svg viewBox="0 0 500 80" preserveAspectRatio="none">
+      <path class="shape-fill" d="M0,0 C200,100 300,-50 500,0 L500,80 L0,80 Z"></path>
+    </svg>
+  </div>
+
+  <!-- 8. Redes Sociales -->
+  <section class="social-media">
+    <h2>Síguenos en Redes Sociales</h2>
+    <div class="social-icons">
+      <a href="#" aria-label="Instagram"><img src="icons/instagram.svg" alt="Instagram"></a>
+      <a href="#" aria-label="Facebook"><img src="icons/facebook.svg" alt="Facebook"></a>
+      <a href="#" aria-label="Twitter"><img src="icons/twitter.svg" alt="Twitter"></a>
+      <a href="#" aria-label="Pinterest"><img src="icons/pinterest.svg" alt="Pinterest"></a>
+    </div>
+  </section>
+
+  <!-- ===================== Script existente ===================== -->
+  <script>
+    // Función de navegación (simulación)
+    function navigateTo(page) {
+      console.log('Navegando a:', page);
+    }
+
+    // Mostrar u ocultar el menú en móviles
+    function toggleMenu() {
+      document.querySelector('.filters').classList.toggle('active');
+    }
+
+    // Configuración de submenús para móviles
+    function setupMobileSubmenus() {
+      if (window.innerWidth <= 768) {
+        var filterAnchors = document.querySelectorAll('.filter-item > a');
+        filterAnchors.forEach(function(anchor) {
+          anchor.removeEventListener('click', mobileToggleSubmenu);
+          anchor.addEventListener('click', mobileToggleSubmenu);
+        });
+      }
+    }
+
+    function mobileToggleSubmenu(e) {
+      e.preventDefault();
+      var submenu = this.nextElementSibling;
+      if (submenu) {
+        submenu.classList.toggle('active');
+      }
+    }
+
+    // Slider Principal (Hero)
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('#slider .slide');
+    const totalSlides = slides.length;
+    let slideInterval = setInterval(nextSlide, 3000);
+
+    function showSlide(index) {
+      const slider = document.getElementById('slider');
+      slider.style.transform = 'translateX(' + (-index * 100) + '%)';
+    }
+
+    function nextSlide() {
+      currentSlide = (currentSlide + 1) % totalSlides;
+      showSlide(currentSlide);
+    }
+
+    function prevSlide() {
+      currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+      showSlide(currentSlide);
+    }
+
+    // Slider de Joyería de Lujo
+    let currentJewelrySlide = 0;
+    const jewelrySlider = document.getElementById('jewelry-slider');
+    const jewelryItems = document.querySelectorAll('.jewelry-item');
+    const totalJewelrySlides = jewelryItems.length;
+
+    function showJewelrySlide(index) {
+      const slideWidth = jewelryItems[0].offsetWidth + 20; // ancho + margen (10px a cada lado)
+      jewelrySlider.style.transform = 'translateX(' + (-index * slideWidth) + 'px)';
+    }
+
+    function nextJewelrySlide() {
+      currentJewelrySlide = (currentJewelrySlide + 1) % totalJewelrySlides;
+      showJewelrySlide(currentJewelrySlide);
+    }
+
+    function prevJewelrySlide() {
+      currentJewelrySlide = (currentJewelrySlide - 1 + totalJewelrySlides) % totalJewelrySlides;
+      showJewelrySlide(currentJewelrySlide);
+    }
+
+    // Intersection Observer para animaciones
+    document.addEventListener('DOMContentLoaded', function() {
+      const observerOptions = { threshold: 0.2 };
+      const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            obs.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+
+      // Elementos a animar
+      const animateElements = document.querySelectorAll(
+        '.collection-card, .data-panel, .craftsmanship-design .overlay h2, .craftsmanship-design .overlay p, ' +
+        '.testimonial, .timeline-event, .gallery-grid img, .cta h2, .cta p, .social-media h2'
+      );
+      animateElements.forEach(el => observer.observe(el));
+
+      // Contadores
+      const counters = document.querySelectorAll('.counter');
+      const counterObserver = new IntersectionObserver((entries, obsCounter) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            startCounter(entry.target);
+            obsCounter.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 1.0 });
+      counters.forEach(counter => counterObserver.observe(counter));
+
+      function startCounter(counter) {
+        const target = +counter.getAttribute('data-target');
+        const increment = target / 200; // Velocidad de conteo
+        let current = 0;
+        const updateCounter = () => {
+          current += increment;
+          if (current < target) {
+            counter.innerText = Math.floor(current);
+            requestAnimationFrame(updateCounter);
+          } else {
+            counter.innerText = target;
+          }
+        };
+        updateCounter();
+      }
+    });
+
+    // Inicialización de submenús en móviles
+    window.addEventListener('load', setupMobileSubmenus);
+    window.addEventListener('resize', setupMobileSubmenus);
+  </script>
+
+  <!-- ================= Nuevas Funcionalidades (sin modificar lo existente) ================= -->
+
+  <!-- 1. Carga GSAP para animaciones avanzadas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script>
+    // Animación avanzada con GSAP en la sección de Categorías
+    document.addEventListener('DOMContentLoaded', function() {
+      gsap.from(".categories a", {
+        opacity: 0,
+        scale: 0.8,
+        duration: 1,
+        stagger: 0.2,
+        ease: "power2.out"
+      });
+    });
+  </script>
+
+  <!-- 2. Swipe detection para sliders (Hero y Joyería) -->
+  <script>
+    // Swipe para el slider del Hero
+    (function() {
+      const heroSlider = document.getElementById('slider');
+      let touchstartX = 0;
+      let touchendX = 0;
+      heroSlider.addEventListener('touchstart', function(e) {
+        touchstartX = e.changedTouches[0].screenX;
+      }, false);
+      heroSlider.addEventListener('touchend', function(e) {
+        touchendX = e.changedTouches[0].screenX;
+        handleGesture();
+      }, false);
+      function handleGesture() {
+        if (touchendX < touchstartX - 50) { // Swipe left
+          nextSlide();
+        }
+        if (touchendX > touchstartX + 50) { // Swipe right
+          prevSlide();
+        }
+      }
+    })();
+
+    // Swipe para el slider de Joyería
+    (function() {
+      const jewelryContainer = document.getElementById('jewelry-slider');
+      let touchstartX2 = 0;
+      let touchendX2 = 0;
+      jewelryContainer.addEventListener('touchstart', function(e) {
+        touchstartX2 = e.changedTouches[0].screenX;
+      }, false);
+      jewelryContainer.addEventListener('touchend', function(e) {
+        touchendX2 = e.changedTouches[0].screenX;
+        handleGestureJewelry();
+      }, false);
+      function handleGestureJewelry() {
+        if (touchendX2 < touchstartX2 - 50) { // Swipe left
+          nextJewelrySlide();
+        }
+        if (touchendX2 > touchstartX2 + 50) { // Swipe right
+          prevJewelrySlide();
+        }
+      }
+    })();
+  </script>
+
+  <!-- 3. Scroll Progress Indicator -->
+  <script>
+    window.addEventListener('scroll', function() {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollPercent = (scrollTop / docHeight) * 100;
+      document.getElementById('scroll-progress').style.width = scrollPercent + '%';
+    });
+  </script>
+
+  <!-- 4. Animación de Fade Continuo en Scroll -->
+  <script>
+    // Agrega la clase 'fade-scroll' a los elementos principales sin modificar el HTML existente.
+    document.addEventListener('DOMContentLoaded', function() {
+      // Seleccionamos las secciones y contenedores principales
+      const fadeElements = document.querySelectorAll('section, .categories, .luxury-jewelry, .slider, .gallery');
+      fadeElements.forEach(function(el) {
+        el.classList.add('fade-scroll');
+      });
+    });
+
+    // Ajusta la opacidad de los elementos con clase 'fade-scroll' en función de su posición en el viewport.
+    window.addEventListener('scroll', function() {
+      const fadeElements = document.querySelectorAll('.fade-scroll');
+      fadeElements.forEach(function(el) {
+        const rect = el.getBoundingClientRect();
+        const windowHeight = window.innerHeight;
+        // Calcula la distancia del centro del elemento al centro de la ventana
+        const elementCenter = (rect.top + rect.bottom) / 2;
+        const viewportCenter = windowHeight / 2;
+        // Calcula la opacidad: cuando el centro del elemento esté en el centro del viewport, opacity = 1.
+        let opacity = 1 - Math.abs(elementCenter - viewportCenter) / (windowHeight / 2);
+        opacity = Math.max(0, Math.min(1, opacity));
+        // Aplica la transición suavemente
+        el.style.transition = "opacity 0.5s ease-out";
+        el.style.opacity = opacity;
+      });
+    });
+  </script>
+</body>
+</html>
+
+
