@@ -2,10 +2,11 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Cyberpunk UI + Mini Chart + MP3 Player (Single Track)</title>
+  <title>Cyberpunk UI + Mini Chart + MP3 Player (Single Track) - Enhanced con Video de Fondo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Importar Fuente (Opcional) -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  
   <style>
     /********************************************************
      * VARIABLES CSS PARA COLORES Y TEMAS
@@ -17,7 +18,7 @@
       --background-color: #0a0a0a; /* Fondo negro */
       --text-color: #ffccaa; /* Texto claro */
     }
-
+    
     /********************************************************
      * RESETEO BÁSICO
      ********************************************************/
@@ -26,15 +27,16 @@
       padding: 0;
       box-sizing: border-box;
     }
-
+    
     /********************************************************
-     * BODY & BACKGROUND - DARK ENVIRONMENT
+     * ESTILOS GENERALES Y FUENTES
      ********************************************************/
     html, body {
       width: 100%;
       height: 100%;
-      background: var(--background-color);  /* Fondo totalmente oscuro */
-      overflow: hidden; /* simulación fullscreen */
+      /* Se deja el fondo transparente para que se note el video detrás */
+      background: transparent;
+      overflow: hidden;
       font-family: "Arial", sans-serif;
       color: var(--text-color);
       transition: opacity 0.7s ease-in-out;
@@ -43,18 +45,52 @@
     body.fade-out {
       opacity: 0;
     }
-
+    
+    /* Aseguramos que los contenedores principales tengan un fondo semitransparente */
+    .main-container,
+    .left-panels,
+    .detail-container,
+    .right-panel {
+      background: rgba(10, 10, 10, 0.5);
+    }
+    
+    /********************************************************
+     * VIDEO DE FONDO
+     ********************************************************/
+    /* El video se reproducirá automáticamente, en bucle y sin sonido */
+    #bgVideo {
+      position: fixed;
+      top: 0;
+      left: 0;
+      min-width: 100%;
+      min-height: 100%;
+      width: auto;
+      height: auto;
+      z-index: -3;
+      object-fit: cover;
+    }
+    /* Fallback: en dispositivos móviles se oculta el video y se usa una imagen de fondo */
+    @media only screen and (max-width: 768px) {
+      #bgVideo {
+        display: none;
+      }
+      body {
+        background: url('ruta/a/tu/fondo-movil.jpg') no-repeat center center fixed;
+        background-size: cover;
+      }
+    }
+    
     /********************************************************
      * SCROLL PERSONALIZADO
      ********************************************************/
     ::-webkit-scrollbar {
       width: 8px;
-      background-color: #111; /* oscuro en scrollbar */
+      background-color: #111;
     }
     ::-webkit-scrollbar-thumb {
       background: var(--primary-color);
     }
-
+    
     /********************************************************
      * BARRA SUPERIOR
      ********************************************************/
@@ -63,7 +99,7 @@
       top: 0; left: 0;
       width: 100%;
       height: 50px;
-      background: #1a1a1a; /* gris muy oscuro */
+      background: #1a1a1a;
       border-bottom: 2px solid var(--primary-color);
       display: flex;
       align-items: center;
@@ -98,7 +134,7 @@
       transition: max-height 0.3s ease-in-out;
     }
     .top-nav-item {
-      color: #ffd0dc; /* un rosa claro para texto */
+      color: #ffd0dc;
       font-size: 14px;
       text-transform: uppercase;
       transition: color 0.2s;
@@ -130,8 +166,6 @@
     .top-bar-right .stat .value {
       color: var(--primary-color);
     }
-
-    /* Botón de navegación (hamburguesa) */
     .nav-toggle {
       display: none;
       background: none;
@@ -140,7 +174,7 @@
       font-size: 24px;
       cursor: pointer;
     }
-
+    
     /********************************************************
      * CONTENEDOR PRINCIPAL (3 COLUMNAS)
      ********************************************************/
@@ -149,11 +183,10 @@
       top: 50px; left: 0; right: 0; bottom: 0;
       display: grid;
       grid-template-columns: 300px 1fr 350px;
-      background: var(--background-color); /* fondo totalmente negro */
       overflow: hidden;
       box-shadow: inset 0 0 8px var(--primary-color);
     }
-
+    
     /********************************************************
      * PANELES IZQUIERDA (PROJECTS + SIDE JOBS)
      ********************************************************/
@@ -164,8 +197,6 @@
       overflow: auto;
       box-shadow: inset 0 0 8px var(--primary-color);
     }
-
-    /* Projects */
     .project-list-container {
       border-bottom: 2px solid var(--primary-color);
       padding: 10px 0;
@@ -176,7 +207,7 @@
       font-size: 14px;
       margin: 10px 20px;
       text-shadow: 0 0 5px var(--primary-color);
-      font-family: 'Orbitron', sans-serif; /* Fuente futurista */
+      font-family: 'Orbitron', sans-serif;
     }
     .project-list {
       max-height: 150px;
@@ -192,7 +223,7 @@
       position: relative;
       transition: background 0.2s, box-shadow 0.2s;
       font-size: 13px; 
-      color: #ffd0dc; /* texto en un rosa claro */
+      color: #ffd0dc;
     }
     .project-item:hover {
       background: #2a0a0a;
@@ -213,8 +244,6 @@
       font-size: 12px; 
       color: #ffccaa;
     }
-
-    /* Side Jobs */
     .mission-list-container {
       flex: 1; 
       padding: 10px 0;
@@ -228,7 +257,7 @@
       font-size: 14px; 
       margin: 10px 20px;
       text-shadow: 0 0 5px var(--secondary-color);
-      font-family: 'Orbitron', sans-serif; /* Fuente futurista */
+      font-family: 'Orbitron', sans-serif;
     }
     .mission-list {
       flex: 1; 
@@ -282,12 +311,9 @@
       text-transform: uppercase; 
       pointer-events: none;
     }
-
-    /* Barra de Progreso de Misiones */
     .mission-progress {
       margin-top: 5px;
     }
-
     .progress-bar {
       width: 100%;
       background-color: #421111;
@@ -295,21 +321,19 @@
       overflow: hidden;
       height: 6px;
     }
-
     .progress-fill {
       height: 100%;
       background-color: var(--primary-color);
       transition: width 0.3s;
     }
-
     .progress-text {
       font-size: 10px;
       color: #ffccaa;
       margin-top: 2px;
     }
-
+    
     /********************************************************
-     * PANEL CENTRAL (DETAIL PROJECT)
+     * PANEL CENTRAL (Detalle de lo seleccionado)
      ********************************************************/
     .detail-container {
       border-right: 2px solid var(--primary-color);
@@ -319,9 +343,9 @@
       justify-content: flex-start;
       overflow-y: auto;
       box-shadow: inset 0 0 8px var(--primary-color);
-      background: rgba(10, 10, 10, 0.9); /* Fondo semi-transparente oscuro */
+      background: rgba(10, 10, 10, 0.5);
       border-radius: 8px;
-      font-family: 'Orbitron', sans-serif; /* Fuente futurista */
+      font-family: 'Orbitron', sans-serif;
     }
     .detail-title {
       color: var(--primary-color); 
@@ -343,52 +367,37 @@
       flex: 1;
       transition: opacity 0.3s;
     }
-
-    /* Estilos para la Descripción Detallada de los Proyectos */
     .detail-description strong {
-      color: var(--primary-color); /* Color neón para los títulos */
+      color: var(--primary-color);
       display: block;
       margin-top: 15px;
       margin-bottom: 5px;
       font-size: 14px;
     }
-
-    /* Estilos para Listas No Ordenadas */
     .detail-description ul {
       list-style-type: disc;
       padding-left: 20px;
       margin-bottom: 10px;
     }
-
-    /* Estilos para Elementos de Lista */
     .detail-description li {
       margin-bottom: 5px;
     }
-
-    /* Estilos para Enlaces */
     .detail-description a {
-      color: var(--accent-color); /* Azul neón para enlaces */
+      color: var(--accent-color);
       text-decoration: none;
       transition: color 0.3s, text-shadow 0.3s;
     }
-
     .detail-description a:hover {
-      color: var(--primary-color); /* Cambio de color al pasar el cursor */
+      color: var(--primary-color);
       text-shadow: 0 0 5px var(--primary-color);
     }
-
     .detail-description a:visited {
       color: var(--accent-color);
     }
-
-    /* Limpieza de flotados */
-    body::after {
-      content: "";
-      display: table;
-      clear: both;
-    }
-
-    /* Estilos para el Panel Derecho */
+    
+    /********************************************************
+     * PANEL DERECHO (Imagen / Info Extra)
+     ********************************************************/
     .right-panel {
       padding: 20px; 
       overflow-y: auto;
@@ -396,9 +405,9 @@
       position: relative;
       display: flex;
       flex-direction: column;
-      background: rgba(10, 10, 10, 0.9); /* Fondo semi-transparente oscuro */
+      background: rgba(10, 10, 10, 0.5);
       border-radius: 8px;
-      font-family: 'Orbitron', sans-serif; /* Fuente futurista */
+      font-family: 'Orbitron', sans-serif;
     }
     .right-panel-title {
       text-transform: uppercase; 
@@ -414,15 +423,18 @@
       background: var(--background-color); 
       padding: 5px;
       transition: transform 0.2s;
-      margin-bottom: 20px; /* espacio para mini chart */
+      margin-bottom: 20px;
       border-radius: 4px;
     }
     .right-panel-image:hover {
       transform: scale(1.02);
       box-shadow: 0 0 10px var(--primary-color);
     }
-
-    /* MINI-CHART */
+    .right-panel-video {
+      width: 100%;
+      height: auto;
+      margin-bottom: 20px;
+    }
     .mini-chart-container {
       width: 100%;
       height: 120px;
@@ -430,7 +442,7 @@
       box-shadow: 0 0 5px var(--primary-color);
       position: relative;
       overflow: hidden;
-      margin-bottom: 15px; /* espacio para mp3 expanded */
+      margin-bottom: 15px;
       border-radius: 4px;
       background: #1a1a1a;
     }
@@ -439,8 +451,6 @@
       height: 100%;
       display: block;
     }
-
-    /* MP3 PLAYER (Un Solo Track) */
     .mp3-player {
       width: 100%;
       background: var(--background-color);
@@ -525,8 +535,6 @@
       width: 40px;
       text-align: right;
     }
-
-    /* Volumen */
     .mp3-volume {
       display: flex;
       align-items: center;
@@ -557,7 +565,7 @@
       cursor: pointer;
       border: none;
     }
-
+    
     /********************************************************
      * FOOTER BOTONES
      ********************************************************/
@@ -582,7 +590,7 @@
       color: var(--primary-color);
       text-shadow: 0 0 5px var(--primary-color);
     }
-
+    
     /********************************************************
      * ANIMACIÓN DE APARICIÓN .fade-in
      ********************************************************/
@@ -600,7 +608,7 @@
         transform: translateY(0);
       }
     }
-
+    
     /********************************************************
      * MEDIA QUERIES PARA RESPONSIVIDAD
      ********************************************************/
@@ -616,7 +624,6 @@
         gap: 10px;
       }
     }
-
     @media (max-width: 992px) {
       .main-container {
         grid-template-columns: 1fr;
@@ -627,7 +634,6 @@
         border-bottom: 2px solid var(--primary-color);
       }
     }
-
     @media (max-width: 768px) {
       .nav-toggle {
         display: block;
@@ -644,7 +650,7 @@
         overflow: hidden;
       }
       .top-nav.active {
-        max-height: 300px; /* Ajustar según el número de elementos */
+        max-height: 300px;
         padding: 10px 20px;
       }
       .top-nav-item {
@@ -660,7 +666,6 @@
         border-bottom: 2px solid var(--primary-color);
       }
     }
-
     @media (max-width: 576px) {
       .main-container {
         grid-template-columns: 1fr;
@@ -694,22 +699,231 @@
         right: 10px;
       }
     }
-
-    /* Ajustes para la Visualización de la Imagen y Video */
-    .right-panel-image, .right-panel-video {
+    
+    /********************************************************
+     * ELEMENTOS NUEVOS: Particles, Tutorial, Voz, etc.
+     ********************************************************/
+    /* Particles Background */
+    #tsparticles {
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100%;
-      height: auto;
+      height: 100%;
+      z-index: -2;
     }
-
-  </style>                  
+    
+    /* Tutorial Overlay */
+    #tutorialOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      color: #fff;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+      text-align: center;
+    }
+    #tutorialOverlay.active {
+      display: flex;
+    }
+    #tutorialOverlay .close-btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: var(--primary-color);
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    
+    /* Botón de Comando de Voz */
+    #voiceCommandBtn {
+      position: fixed;
+      bottom: 80px;
+      left: 20px;
+      background: var(--primary-color);
+      color: #000;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      cursor: pointer;
+      z-index: 1000;
+      font-size: 24px;
+    }
+    
+    /* Botón de Pantalla Completa */
+    #fullscreenToggle {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: var(--primary-color);
+      color: #000;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      cursor: pointer;
+      z-index: 1000;
+      font-size: 24px;
+    }
+    
+    /* Botones de Redes Sociales */
+    #socialShare {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+      display: flex;
+      gap: 10px;
+    }
+    #socialShare a {
+      color: var(--primary-color);
+      font-size: 20px;
+      text-decoration: none;
+      transition: transform 0.2s;
+    }
+    #socialShare a:hover {
+      transform: scale(1.2);
+    }
+    
+    /* Dashboard de Estadísticas */
+    #dashboardStats {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(10,10,10,0.9);
+      color: #ffccaa;
+      padding: 15px;
+      border: 1px solid var(--primary-color);
+      border-radius: 8px;
+      z-index: 1000;
+      display: none;
+      font-family: 'Orbitron', sans-serif;
+    }
+    
+    /* Modal de Configuración de Tema */
+    #themeModal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(10,10,10,0.95);
+      color: #ffccaa;
+      padding: 20px;
+      border: 1px solid var(--primary-color);
+      border-radius: 8px;
+      z-index: 1000;
+      display: none;
+      width: 300px;
+      font-family: 'Orbitron', sans-serif;
+    }
+    #themeModal.active {
+      display: block;
+    }
+    #themeModal input[type="color"] {
+      width: 100%;
+      height: 40px;
+      border: none;
+      margin-bottom: 10px;
+    }
+    #themeModal .close-theme-btn {
+      background: var(--primary-color);
+      border: none;
+      padding: 8px;
+      cursor: pointer;
+      width: 100%;
+      border-radius: 4px;
+    }
+    
+    /* Modal de Logros */
+    #achievementsModal {
+      position: fixed;
+      bottom: 100px;
+      right: 20px;
+      background: rgba(10,10,10,0.95);
+      color: #ffccaa;
+      padding: 15px;
+      border: 1px solid var(--primary-color);
+      border-radius: 8px;
+      z-index: 1000;
+      display: none;
+      font-family: 'Orbitron', sans-serif;
+    }
+    #achievementsModal.active {
+      display: block;
+    }
+  </style>
+  
+  <!-- Librería tsParticles para fondo animado -->
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@1/tsparticles.min.js"></script>
+  
+  <!-- Importar Font Awesome para íconos (usado en redes sociales) -->
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body>
-  <!-- Contenido HTML iría aquí -->
-</body>
-</html>
-
-</head>
-<body>
+  <!-- Video de fondo: se reproduce en bucle sin detenerse -->
+  <video autoplay muted loop playsinline id="bgVideo">
+    <source src="src/video/Anime girl wallpaper 4k - best purple wallpaper.mp4" type="video/mp4">
+    Tu navegador no soporta el elemento de video.
+  </video>
+  
+  <!-- Fondo de Partículas (detrás de todo) -->
+  <div id="tsparticles"></div>
+  
+  <!-- Overlay de Tutorial -->
+  <div id="tutorialOverlay">
+    <div>
+      <h2>Bienvenido al Cyberpunk UI</h2>
+      <p>Explora proyectos, misiones y controla el reproductor usando atajos de teclado o comandos de voz. Utiliza los botones en pantalla para cambiar de modo, compartir y ajustar configuraciones avanzadas.</p>
+      <button class="close-btn" id="closeTutorialBtn">Entendido</button>
+    </div>
+  </div>
+  
+  <!-- Botón para Comandos de Voz -->
+  <button id="voiceCommandBtn" title="Comandos de Voz">🎤</button>
+  
+  <!-- Botón para Pantalla Completa -->
+  <button id="fullscreenToggle" title="Pantalla Completa">⛶</button>
+  
+  <!-- Botones de Redes Sociales -->
+  <div id="socialShare">
+    <a href="https://twitter.com/intent/tweet?text=¡Mira%20este%20Cyberpunk%20UI!" target="_blank" title="Compartir en Twitter"><i class="fab fa-twitter"></i></a>
+    <a href="https://www.facebook.com/sharer/sharer.php?u=YOUR_URL" target="_blank" title="Compartir en Facebook"><i class="fab fa-facebook"></i></a>
+  </div>
+  
+  <!-- Dashboard de Estadísticas (se activa con la tecla "D") -->
+  <div id="dashboardStats">
+    <p>CPU: <span id="cpuUsage">0%</span></p>
+    <p>Memoria: <span id="memoryUsage">0MB</span></p>
+  </div>
+  
+  <!-- Modal de Configuración de Tema -->
+  <div id="themeModal">
+    <h3>Ajustes de Tema</h3>
+    <label>Color Primario</label>
+    <input type="color" id="primaryColorPicker" value="#ff0040">
+    <label>Color Secundario</label>
+    <input type="color" id="secondaryColorPicker" value="#ff5588">
+    <label>Color de Acento</label>
+    <input type="color" id="accentColorPicker" value="#1e90ff">
+    <button class="close-theme-btn" id="closeThemeModalBtn">Aplicar y Cerrar</button>
+  </div>
+  
+  <!-- Modal de Logros -->
+  <div id="achievementsModal">
+    <h4>Logros</h4>
+    <ul id="achievementsList">
+      <!-- Se llenará dinámicamente -->
+    </ul>
+  </div>
+  
+  <!-- CONTENIDO EXISTENTE -->
   <!-- TOP BAR -->
   <div class="top-bar">
     <div class="top-bar-left">
@@ -723,7 +937,7 @@
           <span class="value">10</span>
         </div>
       </div>
-      <button class="nav-toggle" id="navToggle">&#9776;</button> <!-- Botón de hamburguesa -->
+      <button class="nav-toggle" id="navToggle">&#9776;</button>
       <div class="top-nav" id="topNav">
         <a href="main.html" class="top-nav-item">Inicio</a>
         <a href="herramientas.html" class="top-nav-item">Herramientas</a>
@@ -739,20 +953,19 @@
         <span class="label">E$</span>
         <span class="value">5457</span>
       </div>
+      <!-- Botón para abrir el modal de configuración de tema -->
+      <button id="themeToggle" title="Cambiar Tema" style="background:none; border: 1px solid var(--primary-color); color: #ffd0dc; padding: 5px; cursor: pointer;">Modo Oscuro</button>
     </div>
   </div>
-
+  
   <!-- MAIN CONTAINER (3 columnas) -->
   <div class="main-container fade-in">
-    
     <!-- PANELES IZQUIERDA (Projects + Side Jobs) -->
     <div class="left-panels">
-      
       <!-- PANEL DE PROYECTOS -->
       <div class="project-list-container">
         <div class="project-list-title">Projects</div>
         <div class="project-list" id="projectList">
-          <!-- Ejemplos de proyectos -->
           <div class="project-item selected" data-id="neonui">
             <div class="project-name">Neon UI</div>
             <div class="project-summary">Futuristic neon interface concept.</div>
@@ -767,16 +980,15 @@
           </div>
         </div>
       </div>
-
-      <!-- PANEL DE MISIONS (SIDE JOBS) -->
+      <!-- PANEL DE MISIONES (SIDE JOBS) -->
       <div class="mission-list-container">
         <div class="mission-list-title">Side Jobs</div>
         <div class="mission-list" id="missionList">
-          <!-- Las misiones se generarán dinámicamente mediante JavaScript -->
+          <!-- Se generarán dinámicamente -->
         </div>
       </div>
     </div>
-
+  
     <!-- PANEL CENTRAL (Detalle de lo seleccionado) -->
     <div class="detail-container">
       <h2 class="detail-title" id="detailTitle">Neon UI</h2>
@@ -788,39 +1000,25 @@
         Neon UI es un concepto de interfaz futurista diseñado para aplicaciones web modernas que buscan una estética ciberpunk...
       </div>
     </div>
-
+  
     <!-- PANEL DERECHO (Imagen / Info Extra) -->
     <div class="right-panel">
       <div class="right-panel-title" id="rightPanelTitle">Epistrophy: Badlands</div>
-      <img class="right-panel-image" id="rightPanelImage" src="src/img/seguridad.jpg" alt="Epistrophy: Badlands">
-        
-      <!-- VIDEO (Opcional) -->
+      <img class="right-panel-image" id="rightPanelImage" src="src/img/celestial.jpg" alt="Epistrophy: Badlands">
       <video class="right-panel-video" id="rightPanelVideo" autoplay muted loop>
         <source src="src/video/videoplayback (2).mp4" type="video/mp4">
-        Tu navegador no soporta la etiqueta de video.
+        Tu navegador no soporta el elemento de video.
       </video>
-
-      <!-- MINI-CHART -->
       <div class="mini-chart-container" id="miniChartContainer">
         <canvas id="miniChart" width="300" height="120"></canvas>
       </div>
-
-      <!-- AUDIO VISUALIZER -->
       <canvas id="audioVisualizer" width="300" height="100" class="audio-visualizer"></canvas>
-
-      <!-- MP3 PLAYER (UN SOLO TRACK) -->
       <div class="mp3-player" id="mp3Player">
-        <!-- Portada -->
         <div class="mp3-album-cover">
-          <img id="albumCoverIm" 
-               src="src/img/seguridad.jpg" 
-               alt="Album Cover">
+          <img id="albumCoverIm" src="src/img/celestial.jpg" alt="Album Cover">
         </div>
-
         <div class="mp3-player-header">Now Playing</div>
         <div id="trackTitle">Ambient Cyberpunk</div>
-
-        <!-- Controles de un solo track -->
         <div class="mp3-player-controls">
           <button class="mp3-btn tooltip" id="playBtn">
             Play
@@ -831,27 +1029,21 @@
             <span class="tooltiptext">Pausar Música</span>
           </button>
         </div>
-
-        <!-- Barra de Progreso / Tiempo -->
         <div class="mp3-player-controls" style="margin-top:6px;">
           <div class="mp3-progress" id="mp3Progress">
             <div class="mp3-progress-fill" id="mp3ProgressFill"></div>
           </div>
           <div class="mp3-time" id="mp3Time">0:00</div>
         </div>
-
-        <!-- Slider de Volumen -->
         <div class="mp3-volume">
           <span class="mp3-volume-label">Vol</span>
           <input type="range" id="volumeRange" min="0" max="1" step="0.01" value="1">
         </div>
-
-        <!-- Audio Element (Un solo track) -->
         <audio id="audioPlayer" src="src/Audio/Future セルフ - Ambient Cyberpunk.mp3"></audio>
       </div>
     </div>
   </div>
-
+  
   <!-- FOOTER BOTONES -->
   <div class="footer-buttons">
     <div class="footer-btn">
@@ -864,47 +1056,248 @@
       <span>[ Esc ]</span> Close
     </div>
   </div>
-
-  <!-- Importar Iconos de Font Awesome (Opcional) -->
-  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-
+  
+  <!-- SCRIPTS Y FUNCIONALIDADES -->
   <script>
     /************************************************************
-     * DATOS DE PROYECTOS / MISIONES
+     * Inicializaciones y Funciones de Nuevas Características
      ************************************************************/
+    
+    // --- Particles Background ---
+    tsParticles.load("tsparticles", {
+      "particles": {
+        "number": { "value": 80 },
+        "color": { "value": ["#ff0040", "#ff5588", "#1e90ff"] },
+        "shape": { "type": "circle" },
+        "opacity": { "value": 0.5 },
+        "size": { "value": 3 },
+        "move": { "enable": true, "speed": 2 }
+      },
+      "interactivity": {
+        "events": {
+          "onhover": { "enable": true, "mode": "repulse" }
+        }
+      }
+    });
+    
+    // --- Parallax para el Video de Fondo ---
+    document.addEventListener('mousemove', (e) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 20;
+      const y = (e.clientY / window.innerHeight - 0.5) * 20;
+      document.getElementById('bgVideo').style.transform = `translate(${x}px, ${y}px)`;
+    });
+    
+    // --- Keyboard Shortcuts ---
+    let currentProjectIndex = 0;
+    function initializeKeyboardShortcuts() {
+      const projectItems = Array.from(document.querySelectorAll('.project-item'));
+      document.addEventListener('keydown', (e) => {
+        if (e.target.tagName.toLowerCase() === 'input') return;
+        switch(e.key) {
+          case 'ArrowDown':
+            currentProjectIndex = (currentProjectIndex + 1) % projectItems.length;
+            projectItems[currentProjectIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            projectItems.forEach(item => item.classList.remove('selected'));
+            projectItems[currentProjectIndex].classList.add('selected');
+            projectItems[currentProjectIndex].click();
+            navigator.vibrate && navigator.vibrate(50);
+            break;
+          case 'ArrowUp':
+            currentProjectIndex = (currentProjectIndex - 1 + projectItems.length) % projectItems.length;
+            projectItems[currentProjectIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            projectItems.forEach(item => item.classList.remove('selected'));
+            projectItems[currentProjectIndex].classList.add('selected');
+            projectItems[currentProjectIndex].click();
+            navigator.vibrate && navigator.vibrate(50);
+            break;
+          case 'e':
+          case 'E':
+            projectItems[currentProjectIndex].click();
+            navigator.vibrate && navigator.vibrate(50);
+            break;
+          case 'r':
+          case 'R':
+            showNotification('Track Objective activated');
+            navigator.vibrate && navigator.vibrate(50);
+            break;
+          case 'Escape':
+            document.getElementById('topNav').classList.remove('active');
+            break;
+          case 'd':
+          case 'D':
+            const dashboard = document.getElementById('dashboardStats');
+            dashboard.style.display = (dashboard.style.display === 'block') ? 'none' : 'block';
+            break;
+          case 'v':
+          case 'V':
+            document.getElementById('voiceCommandBtn').click();
+            break;
+        }
+      });
+    }
+    initializeKeyboardShortcuts();
+    
+    // --- Voice Commands ---
+    let recognition;
+    function initializeVoiceCommands() {
+      const voiceBtn = document.getElementById('voiceCommandBtn');
+      if (!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)) {
+        voiceBtn.style.display = 'none';
+        return;
+      }
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.lang = 'es-ES';
+      recognition.interimResults = false;
+      recognition.onresult = function(event) {
+        const command = event.results[0][0].transcript.toLowerCase();
+        showNotification(`Comando de voz: ${command}`);
+        if (command.includes("play")) {
+          document.getElementById('playBtn').click();
+        } else if (command.includes("pause")) {
+          document.getElementById('pauseBtn').click();
+        } else if (command.includes("fullscreen")) {
+          toggleFullscreen();
+        } else if (command.includes("theme")) {
+          document.getElementById('themeToggle').click();
+        }
+      };
+      recognition.onerror = function(event) {
+        showNotification(`Error en reconocimiento de voz: ${event.error}`);
+      };
+      voiceBtn.addEventListener('click', () => {
+        recognition.start();
+        showNotification("Escuchando comandos de voz...");
+        navigator.vibrate && navigator.vibrate(50);
+      });
+    }
+    initializeVoiceCommands();
+    
+    // --- Tutorial Overlay ---
+    function initializeTutorial() {
+      const tutorialShown = localStorage.getItem('tutorialShown');
+      const tutorialOverlay = document.getElementById('tutorialOverlay');
+      if (!tutorialShown) {
+        tutorialOverlay.classList.add('active');
+      }
+      document.getElementById('closeTutorialBtn').addEventListener('click', () => {
+        tutorialOverlay.classList.remove('active');
+        localStorage.setItem('tutorialShown', 'true');
+      });
+    }
+    initializeTutorial();
+    
+    // --- Fullscreen Toggle ---
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+    document.getElementById('fullscreenToggle').addEventListener('click', toggleFullscreen);
+    
+    // --- Dashboard Stats (Datos simulados) ---
+    function initializeDashboardStats() {
+      function updateStats() {
+        document.getElementById('cpuUsage').textContent = Math.floor(Math.random() * 100) + '%';
+        document.getElementById('memoryUsage').textContent = Math.floor(Math.random() * 2000) + 'MB';
+      }
+      setInterval(updateStats, 1000);
+    }
+    initializeDashboardStats();
+    
+    // --- Theme Settings Modal ---
+    const themeModal = document.getElementById('themeModal');
+    const themeToggle = document.getElementById('themeToggle');
+    themeToggle.addEventListener('click', () => {
+      themeModal.classList.toggle('active');
+      navigator.vibrate && navigator.vibrate(50);
+    });
+    document.getElementById('closeThemeModalBtn').addEventListener('click', () => {
+      document.documentElement.style.setProperty('--primary-color', document.getElementById('primaryColorPicker').value);
+      document.documentElement.style.setProperty('--secondary-color', document.getElementById('secondaryColorPicker').value);
+      document.documentElement.style.setProperty('--accent-color', document.getElementById('accentColorPicker').value);
+      themeModal.classList.remove('active');
+      showNotification('Tema actualizado');
+      navigator.vibrate && navigator.vibrate(50);
+    });
+    
+    // --- Achievements System ---
+    let achievements = JSON.parse(localStorage.getItem('achievements')) || [];
+    function addAchievement(title) {
+      if (!achievements.includes(title)) {
+        achievements.push(title);
+        localStorage.setItem('achievements', JSON.stringify(achievements));
+        updateAchievementsModal();
+        showNotification(`Logro desbloqueado: ${title}`);
+        navigator.vibrate && navigator.vibrate([100, 50, 100]);
+      }
+    }
+    function updateAchievementsModal() {
+      const list = document.getElementById('achievementsList');
+      list.innerHTML = '';
+      achievements.forEach(ach => {
+        const li = document.createElement('li');
+        li.textContent = ach;
+        list.appendChild(li);
+      });
+    }
+    updateAchievementsModal();
+    
+    // --- Funciones Existentes de Notificaciones y Sonidos ---
+    function showNotification(message) {
+      let notificationContainer = document.getElementById('notificationContainer');
+      if (!notificationContainer) {
+        notificationContainer = document.createElement('div');
+        notificationContainer.id = 'notificationContainer';
+        notificationContainer.classList.add('notification-container');
+        document.body.appendChild(notificationContainer);
+      }
+      const notification = document.createElement('div');
+      notification.classList.add('notification');
+      notification.textContent = message;
+      notificationContainer.appendChild(notification);
+      setTimeout(() => { notification.remove(); }, 4000);
+    }
+    
+    const clickSound = new Audio('path/to/click-sound.mp3');
+    const notificationSound = new Audio('path/to/notification-sound.mp3');
+    
+    function playClickSound() {
+      clickSound.currentTime = 0;
+      clickSound.play();
+    }
+    function playNotificationSound() {
+      notificationSound.currentTime = 0;
+      notificationSound.play();
+    }
+    
+    // --- Lógica de Proyectos y Misiones ---
     const projectData = {
       neonui: {
         title: "Neon UI",
         subtitle: "Futuristic neon interface concept.",
-        description: `
+        description: ` 
           <strong>Descripción:</strong><br>
-          Neon UI es un concepto de interfaz futurista diseñado para aplicaciones web modernas que buscan una estética ciberpunk. Este prototipo explora esquemas de colores neón vibrantes, efectos de glitch y superposiciones de escaneo para emular un entorno tecnológico avanzado. La interfaz incluye animaciones avanzadas como transiciones de morphing y es compatible con interacciones basadas en Interfaces Cerebro-Computadora (BCI).
-    
+          Neon UI es un concepto de interfaz futurista diseñado para aplicaciones web modernas que buscan una estética ciberpunk.  
           <strong>Características Principales:</strong>
           <ul>
-            <li><strong>Esquemas de Colores Neón:</strong> Utiliza paletas de colores brillantes y contrastantes para resaltar elementos clave.</li>
-            <li><strong>Efectos de Glitch:</strong> Implementa efectos visuales que simulan fallos electrónicos, añadiendo dinamismo a la interfaz.</li>
-            <li><strong>Animaciones CSS Avanzadas:</strong> Transiciones suaves y morphing para una experiencia de usuario fluida.</li>
-            <li><strong>Compatibilidad con BCI:</strong> Integración experimental para controlar la interfaz mediante señales neuronales.</li>
+            <li>Esquemas de Colores Neón</li>
+            <li>Efectos de Glitch</li>
+            <li>Animaciones CSS Avanzadas</li>
+            <li>Compatibilidad con BCI</li>
           </ul>
-    
           <strong>Tecnologías Utilizadas:</strong>
           <ul>
-            <li>HTML5</li>
-            <li>CSS3 (Flexbox, Animaciones, Transiciones)</li>
-            <li>JavaScript (ES6)</li>
-            <li>APIs de BCI (Interfaz Cerebro-Computadora)</li>
-          </ul>
-    
-          <strong>Enlaces Relevantes:</strong>
-          <ul>
-            <li><a href="https://github.com/1inmortal/githubpagetest" target="_blank">Repositorio en GitHub</a></li>
-            <li><a href="https://codepen.io/INM0RTAl" target="_blank">Demostración en CodePen</a></li>
-            <li><a href="https://tusitio.com/neonui" target="_blank">Demostración en Vivo</a></li>
+            <li>HTML5, CSS3, JavaScript (ES6)</li>
           </ul>
         `,
-        link: "https://tusitio.com/neonui", // Reemplaza con el enlace real de tu proyecto
-        image: "https://via.placeholder.com/600x400?text=Neon+UI", // Reemplaza con la URL real de tu imagen
+        link: "https://tusitio.com/neonui",
+        image: "src/img/celestial.jpg",
         github: "https://github.com/1inmortal/githubpagetest",
         codepen: "https://codepen.io/INM0RTAl",
         liveDemo: "https://tusitio.com/neonui"
@@ -912,36 +1305,19 @@
       hackingpanel: {
         title: "Hacking Panel",
         subtitle: "Immersive hacking mini-game mechanics.",
-        description: `
+        description: ` 
           <strong>Descripción:</strong><br>
-          Hacking Panel es un mini-juego inmersivo diseñado para simular técnicas de intrusión y seguridad informática dentro de un marco ciberpunk. El juego se centra en secuencias de rompecabezas tipo netrunner, ofreciendo a los jugadores una experiencia de hacking interactiva y atractiva. Los usuarios deben resolver desafíos que imitan vulnerabilidades reales y aplicar estrategias para penetrar sistemas virtuales.
-    
+          Hacking Panel es un mini-juego inmersivo que simula técnicas de intrusión.  
           <strong>Características Principales:</strong>
           <ul>
-            <li><strong>Secuencias de Rompecabezas Netrunner:</strong> Desafíos que requieren pensamiento crítico y estrategias de resolución de problemas.</li>
-            <li><strong>Interfaz Inmersiva:</strong> Diseño visual que sumerge al jugador en un entorno ciberpunk.</li>
-            <li><strong>Integración de WebSockets:</strong> Comunicación en tiempo real para funcionalidades multijugador.</li>
-            <li><strong>Progresión de Niveles:</strong> Aumenta la dificultad y complejidad a medida que el jugador avanza.</li>
-          </ul>
-    
-          <strong>Tecnologías Utilizadas:</strong>
-          <ul>
-            <li>HTML5</li>
-            <li>CSS3 (Grid, Animaciones)</li>
-            <li>JavaScript (ES6)</li>
-            <li>WebSockets (Socket.io)</li>
-            <li>Backend con Node.js</li>
-          </ul>
-    
-          <strong>Enlaces Relevantes:</strong>
-          <ul>
-            <li><a href="https://github.com/1inmortal/githubpagetest" target="_blank">Repositorio en GitHub</a></li>
-            <li><a href="https://codepen.io/INM0RTAl" target="_blank">Demostración en CodePen</a></li>
-            <li><a href="https://tusitio.com/hackingpanel" target="_blank">Jugar Ahora</a></li>
+            <li>Secuencias de Rompecabezas Netrunner</li>
+            <li>Interfaz Inmersiva</li>
+            <li>Integración de WebSockets</li>
+            <li>Progresión de Niveles</li>
           </ul>
         `,
-        link: "https://tusitio.com/hackingpanel", // Reemplaza con el enlace real de tu proyecto
-        image: "https://via.placeholder.com/600x400?text=Hacking+Panel", // Reemplaza con la URL real de tu imagen
+        link: "https://tusitio.com/hackingpanel",
+        image: "https://i.pinimg.com/736x/5f/05/21/5f0521673937e41576b3e8e68071acdd.jpg",
         github: "https://github.com/1inmortal/githubpagetest",
         codepen: "https://codepen.io/INM0RTAl",
         liveDemo: "https://tusitio.com/hackingpanel"
@@ -949,36 +1325,19 @@
       braininterface: {
         title: "Brain Interface",
         subtitle: "BCI-based user interactions (prototype).",
-        description: `
+        description: ` 
           <strong>Descripción:</strong><br>
-          Brain Interface es un prototipo innovador que permite controlar interfaces de usuario mediante señales neuronales, aprovechando la tecnología de Interfaces Cerebro-Computadora (BCI). Este proyecto tiene como objetivo facilitar interacciones fluidas e intuitivas, eliminando la necesidad de dispositivos de entrada tradicionales como teclados o ratones.
-    
+          Brain Interface es un prototipo que permite controlar interfaces mediante señales neuronales.  
           <strong>Características Principales:</strong>
           <ul>
-            <li><strong>Control por Señales Neuronales:</strong> Interfaz que responde a las ondas cerebrales del usuario para ejecutar comandos.</li>
-            <li><strong>Interfaz Adaptativa:</strong> Aprende y se adapta a las señales específicas de cada usuario para mejorar la precisión.</li>
-            <li><strong>Integración con Aplicaciones Web:</strong> Puede ser implementado en diversas plataformas web para mejorar la accesibilidad.</li>
-            <li><strong>Feedback en Tiempo Real:</strong> Proporciona retroalimentación inmediata al usuario sobre las acciones realizadas.</li>
-          </ul>
-    
-          <strong>Tecnologías Utilizadas:</strong>
-          <ul>
-            <li>HTML5</li>
-            <li>CSS3 (Responsive Design)</li>
-            <li>JavaScript (ES6)</li>
-            <li>APIs de BCI (por ejemplo, OpenBCI)</li>
-            <li>Machine Learning para el reconocimiento de patrones neuronales</li>
-          </ul>
-    
-          <strong>Enlaces Relevantes:</strong>
-          <ul>
-            <li><a href="https://github.com/1inmortal/githubpagetest" target="_blank">Repositorio en GitHub</a></li>
-            <li><a href="https://codepen.io/INM0RTAl" target="_blank">Demostración en CodePen</a></li>
-            <li><a href="https://tusitio.com/braininterface" target="_blank">Prototipo en Vivo</a></li>
+            <li>Control por Señales Neuronales</li>
+            <li>Interfaz Adaptativa</li>
+            <li>Integración con Aplicaciones Web</li>
+            <li>Feedback en Tiempo Real</li>
           </ul>
         `,
-        link: "https://tusitio.com/braininterface", // Reemplaza con el enlace real de tu proyecto
-        image: "https://via.placeholder.com/600x400?text=Brain+Interface", // Reemplaza con la URL real de tu imagen
+        link: "https://tusitio.com/braininterface",
+        image: "https://via.placeholder.com/600x400?text=Brain+Interface",
         github: "https://github.com/1inmortal/githubpagetest",
         codepen: "https://codepen.io/INM0RTAl",
         liveDemo: "https://tusitio.com/braininterface"
@@ -988,110 +1347,50 @@
     const missionData = {
       badlands: {
         title: "Epistrophy: Badlands",
-        image: "src/img/seguridad.jpg",
+        image: "src/img/chica red.jpg",
         danger: "Danger: High",
         newFlag: true,
-        progress: 100 // Progreso en porcentaje
+        progress: 100
       },
       "the-glen": {
         title: "Epistrophy: The Glen",
-        image: "src/img/seguridad.jpg",
+        image: "src/img/chica red 2.jpg",
         danger: "Danger: High",
         newFlag: true,
         progress: 50
       },
       northside: {
         title: "Epistrophy: Northside",
-        image: "src/img/seguridad.jpg",
+        image: "src/img/gotic.jpg",
         danger: "Danger: High",
         newFlag: true,
         progress: 75
       },
       rancho: {
         title: "Epistrophy: Rancho Coronado",
-        image: "src/img/seguridad.jpg",
+        image: "src/img/blanca como la nieve.jpg",
         danger: "Danger: High",
         newFlag: true,
         progress: 40
       }
     };
     
-    /************************************************************
-     * DEFINIR EL CONTENEDOR DE NOTIFICACIONES
-     ************************************************************/
-    const notificationContainer = document.createElement('div');
-    notificationContainer.id = 'notificationContainer';
-    notificationContainer.classList.add('notification-container');
-    document.body.appendChild(notificationContainer);
-    
-    /************************************************************
-     * FUNCIÓN PARA MOSTRAR NOTIFICACIONES
-     ************************************************************/
-    function showNotification(message) {
-      const notification = document.createElement('div');
-      notification.classList.add('notification');
-      notification.textContent = message;
-      
-      notificationContainer.appendChild(notification);
-      
-      // Eliminar la notificación después de la animación
-      setTimeout(() => {
-        notification.remove();
-      }, 4000); // Debe coincidir con la duración de la animación CSS
-    }
-    
-    /************************************************************
-     * FUNCIÓN PARA REPRODUCIR SONIDOS
-     ************************************************************/
-    const clickSound = document.getElementById('clickSound');
-    const notificationSound = document.getElementById('notificationSound');
-    
-    function playClickSound() {
-      clickSound.currentTime = 0;
-      clickSound.play();
-    }
-    
-    function playNotificationSound() {
-      notificationSound.currentTime = 0;
-      notificationSound.play();
-    }
-    
-    /************************************************************
-     * GENERAR MISIONS DINÁMICAMENTE
-     ************************************************************/
-    const missionList = document.getElementById('missionList');
-    const rightPanelTitle = document.getElementById("rightPanelTitle");
-    const rightPanelImage = document.getElementById("rightPanelImage");
-    
-    /**
-     * Función para crear un ítem de misión
-     */
     function createMissionItem(id, data, isSelected = false) {
       const missionItem = document.createElement('div');
       missionItem.classList.add('mission-item');
-      if (isSelected) {
-        missionItem.classList.add('selected');
-      }
+      if (isSelected) { missionItem.classList.add('selected'); }
       missionItem.setAttribute('data-id', id);
-    
-      // Icono de la misión
       const missionIcon = document.createElement('div');
       missionIcon.classList.add('mission-icon');
       missionItem.appendChild(missionIcon);
-    
-      // Nombre de la misión
       const missionName = document.createElement('div');
       missionName.classList.add('mission-name');
       missionName.textContent = data.title;
       missionItem.appendChild(missionName);
-    
-      // Nivel de peligro
       const missionDanger = document.createElement('div');
       missionDanger.classList.add('mission-danger');
       missionDanger.textContent = data.danger;
       missionItem.appendChild(missionDanger);
-    
-      // Barra de progreso
       const missionProgress = document.createElement('div');
       missionProgress.classList.add('mission-progress');
       missionProgress.innerHTML = `
@@ -1101,72 +1400,46 @@
         <span class="progress-text">${data.progress}% Completado</span>
       `;
       missionItem.appendChild(missionProgress);
-    
-      // Bandera de nuevo (si aplica)
       if (data.newFlag) {
         const newFlag = document.createElement('div');
         newFlag.classList.add('new-flag');
         newFlag.textContent = 'New';
         missionItem.appendChild(newFlag);
       }
-    
-      // Event Listener para selección de misión
       missionItem.addEventListener('click', () => {
-        // Remover 'selected' de todas las misiones
-        const allMissions = document.querySelectorAll('.mission-item');
-        allMissions.forEach(m => m.classList.remove('selected'));
-        // Añadir 'selected' a la misión clickeada
+        document.querySelectorAll('.mission-item').forEach(m => m.classList.remove('selected'));
         missionItem.classList.add('selected');
-    
-        // Actualizar el panel derecho con la información de la misión seleccionada
-        rightPanelTitle.textContent = data.title;
-        rightPanelImage.src = data.image;
-    
-        // Mostrar notificación de misión seleccionada
+        document.getElementById("rightPanelTitle").textContent = data.title;
+        document.getElementById("rightPanelImage").src = data.image;
         showNotification(`Misión seleccionada: ${data.title}`);
         playClickSound();
         playNotificationSound();
-    
-        // Guardar la misión seleccionada en localStorage
         localStorage.setItem('selectedMission', id);
+        addAchievement(`Misión completada: ${data.title}`);
       });
-    
       return missionItem;
     }
     
-    /**
-     * Función para inicializar la lista de misiones
-     */
     function initializeMissions() {
-      let isFirst = true; // Para seleccionar la primera misión por defecto
+      let isFirst = true;
       for (const [id, data] of Object.entries(missionData)) {
         const missionItem = createMissionItem(id, data, isFirst);
-        missionList.appendChild(missionItem);
+        document.getElementById('missionList').appendChild(missionItem);
         isFirst = false;
       }
     }
+    initializeMissions();
     
-    /**
-     * Función para cargar la selección previa de misión
-     */
     function loadSelectedMission() {
       const selectedMission = localStorage.getItem('selectedMission');
       if (selectedMission) {
         const item = document.querySelector(`.mission-item[data-id="${selectedMission}"]`);
-        if (item) {
-          item.click();
-        }
+        if (item) { item.click(); }
       }
     }
-    
-    initializeMissions();
     loadSelectedMission();
     
-    /************************************************************
-     * LÓGICA DE PROYECTOS
-     ************************************************************/
     const projectItems = document.querySelectorAll(".project-item");
-    
     const detailTitle = document.getElementById("detailTitle");
     const detailSubtitle = document.getElementById("detailSubtitle");
     const detailDescription = document.getElementById("detailDescription");
@@ -1174,117 +1447,78 @@
     
     projectItems.forEach(item => {
       item.addEventListener("click", () => {
-        // Remover 'selected' de todos los proyectos
         projectItems.forEach(i => i.classList.remove("selected"));
-        // Añadir 'selected' al proyecto clicado
         item.classList.add("selected");
-    
-        // Obtener el ID del proyecto seleccionado
         const pid = item.getAttribute("data-id");
         const data = projectData[pid];
-    
-        // Animación de desvanecimiento
         detailContainer.classList.add('hidden');
-    
-        // Esperar a que termine la animación antes de actualizar el contenido
         setTimeout(() => {
-          // Actualizar el título y subtítulo
           detailTitle.textContent = data.title;
           detailSubtitle.textContent = data.subtitle;
-    
-          // Actualizar la descripción con HTML
-          detailDescription.innerHTML = data.description;
-    
-          // Quitar la clase 'hidden' para mostrar el nuevo contenido
+          // Se actualiza la descripción para incluir los enlaces
+          detailDescription.innerHTML = data.description +
+            `<br><br><strong>Enlaces:</strong>
+            <ul>
+              <li><a href="${data.link}" target="_blank">Sitio Web</a></li>
+              <li><a href="${data.github}" target="_blank">GitHub</a></li>
+              <li><a href="${data.codepen}" target="_blank">CodePen</a></li>
+              <li><a href="${data.liveDemo}" target="_blank">Demo en Vivo</a></li>
+            </ul>`;
           detailContainer.classList.remove('hidden');
-    
-          // Guardar en localStorage
           localStorage.setItem('selectedProject', pid);
-    
-          // Mostrar notificación
           showNotification(`Proyecto seleccionado: ${data.title}`);
           playClickSound();
           playNotificationSound();
-        }, 500); // Debe coincidir con la duración de la animación CSS
-    
-        // Actualizar la portada del reproductor MP3 (si corresponde)
-        const albumCoverImg = document.getElementById('albumCoverImg');
-        if (albumCoverImg && data.image) {
-          albumCoverImg.src = data.image;
-        }
-    
-        // Actualizar el título del track (si corresponde)
-        if (trackTitle && data.title) {
-          trackTitle.textContent = `${data.title} - Ambient Cyberpunk`;
-        }
+          addAchievement(`Proyecto: ${data.title}`);
+        }, 500);
       });
     });
     
-    /**
-     * Función para cargar la selección previa de proyecto
-     */
     function loadSelectedProject() {
       const selectedProject = localStorage.getItem('selectedProject');
       if (selectedProject) {
         const item = document.querySelector(`.project-item[data-id="${selectedProject}"]`);
-        if (item) {
-          item.click();
-        }
+        if (item) { item.click(); }
       }
     }
-    
-    // Llamar a la función después de inicializar proyectos
     loadSelectedProject();
     
-    /************************************************************
-     * MINI CHART (Animación Onda)
-     ************************************************************/
+    // --- Mini Chart Animation ---
     const miniChartCanvas = document.getElementById('miniChart');
     const miniChartCtx = miniChartCanvas.getContext('2d');
     let waveOffset = 0;
-    const miniChartWidth = miniChartCanvas.width;
-    const miniChartHeight = miniChartCanvas.height;
-    
     function drawMiniChart(){
-      miniChartCtx.clearRect(0, 0, miniChartWidth, miniChartHeight);
+      miniChartCtx.clearRect(0, 0, miniChartCanvas.width, miniChartCanvas.height);
       miniChartCtx.strokeStyle = '#ff0040';
       miniChartCtx.lineWidth = 2;
-    
       miniChartCtx.beginPath();
-      for(let x=0; x<miniChartWidth; x++){
-        const y = Math.sin((x + waveOffset)*0.05)*20 + (miniChartHeight/2);
-        if(x===0){
-          miniChartCtx.moveTo(x, y);
-        } else {
-          miniChartCtx.lineTo(x, y);
-        }
+      for(let x=0; x<miniChartCanvas.width; x++){
+        const y = Math.sin((x + waveOffset)*0.05)*20 + (miniChartCanvas.height/2);
+        if(x===0){ miniChartCtx.moveTo(x, y); }
+        else { miniChartCtx.lineTo(x, y); }
       }
       miniChartCtx.stroke();
-    
       waveOffset += 2;
       requestAnimationFrame(drawMiniChart);
     }
     drawMiniChart();
     
-    /************************************************************
-     * MP3 PLAYER (Un Solo Track)
-     ************************************************************/
+    // --- MP3 Player ---
     const audioPlayer = document.getElementById('audioPlayer');
     const playBtn = document.getElementById('playBtn');
     const pauseBtn = document.getElementById('pauseBtn');
     const volumeRange = document.getElementById('volumeRange');
-    
     const mp3Progress = document.getElementById('mp3Progress');
     const mp3ProgressFill = document.getElementById('mp3ProgressFill');
     const mp3Time = document.getElementById('mp3Time');
     const trackTitle = document.getElementById('trackTitle');
     
-    // Reproducir/Pausar
     playBtn.addEventListener('click', () => {
       audioPlayer.play();
       showNotification(`Reproduciendo: ${trackTitle.textContent}`);
       playClickSound();
       playNotificationSound();
+      addAchievement('Música reproducida');
     });
     pauseBtn.addEventListener('click', () => {
       audioPlayer.pause();
@@ -1292,14 +1526,11 @@
       playClickSound();
       playNotificationSound();
     });
-    
-    // Barra de progreso
     audioPlayer.addEventListener('timeupdate', () => {
       const current = audioPlayer.currentTime;
       const duration = audioPlayer.duration || 0;
       const percent = (current / duration)*100;
       mp3ProgressFill.style.width = percent + '%';
-      // actualizar tiempo (m:ss)
       const m = Math.floor(current/60);
       const s = Math.floor(current%60);
       mp3Time.textContent = `${m}:${s<10?'0'+s:s}`;
@@ -1308,121 +1539,75 @@
       mp3ProgressFill.style.width = '0%';
       mp3Time.textContent = '0:00';
     });
-    
-    // Slider de volumen
     volumeRange.addEventListener('input', () => {
       audioPlayer.volume = volumeRange.value;
     });
-    volumeRange.value = 1; // volumen max por defecto
+    volumeRange.value = 1;
     
-    /************************************************************
-     * AUDIO VISUALIZER
-     ************************************************************/
+    // --- Audio Visualizer ---
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const analyser = audioCtx.createAnalyser();
     const source = audioCtx.createMediaElementSource(audioPlayer);
     source.connect(analyser);
     analyser.connect(audioCtx.destination);
     analyser.fftSize = 256;
-    
     const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
-    
     const audioVisualizerCanvas = document.getElementById('audioVisualizer');
     const audioVisualizerCtx = audioVisualizerCanvas.getContext('2d');
     
     function drawAudioVisualizer() {
       requestAnimationFrame(drawAudioVisualizer);
-    
       analyser.getByteFrequencyData(dataArray);
-    
       audioVisualizerCtx.fillStyle = '#1a1a1a';
       audioVisualizerCtx.fillRect(0, 0, audioVisualizerCanvas.width, audioVisualizerCanvas.height);
-    
       const barWidth = (audioVisualizerCanvas.width / bufferLength) * 2.5;
-      let barHeight;
       let x = 0;
-    
       for(let i = 0; i < bufferLength; i++) {
-        barHeight = dataArray[i];
-    
+        let barHeight = dataArray[i];
         audioVisualizerCtx.fillStyle = `rgb(${barHeight + 100},50,50)`;
         audioVisualizerCtx.fillRect(x, audioVisualizerCanvas.height - barHeight / 2, barWidth, barHeight / 2);
-    
         x += barWidth + 1;
       }
     }
-    
     audioPlayer.addEventListener('play', () => {
-      audioCtx.resume().then(() => {
-        drawAudioVisualizer();
-      });
+      audioCtx.resume().then(() => { drawAudioVisualizer(); });
     });
     
-    /************************************************************
-     * MENÚ RESPONSIVO
-     ************************************************************/
+    // --- Responsive Navigation ---
     const navToggle = document.getElementById('navToggle');
     const topNav = document.getElementById('topNav');
-    
     navToggle.addEventListener('click', (e) => {
-      e.stopPropagation(); // Evitar que el clic se propague
+      e.stopPropagation();
       topNav.classList.toggle('active');
     });
-    
-    // Cerrar el menú cuando se hace clic fuera
     document.addEventListener('click', (e) => {
       if (!topNav.contains(e.target) && !navToggle.contains(e.target)) {
         topNav.classList.remove('active');
       }
     });
     
-    
-    
-    /************************************************************
-     * DRAG-AND-DROP PARA REORGANIZAR PROYECTOS
-     ************************************************************/
-    importSortable();
-    
-    /**
-     * Función para importar SortableJS
-     */
+    // --- Drag-and-Drop (SortableJS) ---
     function importSortable() {
       const script = document.createElement('script');
       script.src = 'https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js';
-      script.onload = () => {
-        initializeSortable();
-      };
+      script.onload = () => { initializeSortable(); };
       document.head.appendChild(script);
     }
-    
-    /**
-     * Función para inicializar SortableJS en la lista de proyectos
-     */
     function initializeSortable() {
       Sortable.create(document.getElementById('projectList'), {
         animation: 150,
         onEnd: function (evt) {
-          const itemEl = evt.item; // Elemento que se movió
-    
-          // Guardar el nuevo orden en localStorage
           const newOrder = Array.from(document.querySelectorAll('.project-item')).map(item => item.getAttribute('data-id'));
           localStorage.setItem('projectOrder', JSON.stringify(newOrder));
-    
-          // Mostrar notificación de cambio de orden
           showNotification('Orden de proyectos actualizado');
           playClickSound();
           playNotificationSound();
+          addAchievement('Orden de proyectos actualizado');
         },
       });
-    
-      // Cargar el orden de proyectos desde localStorage
       loadProjectOrder();
     }
-    
-    /**
-     * Función para cargar el orden de proyectos desde localStorage
-     */
     function loadProjectOrder() {
       const storedOrder = localStorage.getItem('projectOrder');
       if (storedOrder) {
@@ -1430,69 +1615,28 @@
         const projectList = document.getElementById('projectList');
         order.forEach(pid => {
           const item = document.querySelector(`.project-item[data-id="${pid}"]`);
-          if (item) {
-            projectList.appendChild(item);
-          }
+          if (item) { projectList.appendChild(item); }
         });
       }
     }
-    
-    /************************************************************
-     * MODO OSCURO/LUMOS ALTERNATIVO Y AUTOMÁTICO
-     ************************************************************/
-    const themeToggle = document.getElementById('themeToggle');
-    
-    // Estado inicial basado en localStorage o hora del día
-    const currentTheme = localStorage.getItem('theme');
-    if (currentTheme === 'light') {
-      document.body.classList.add('light-mode');
-      themeToggle.textContent = 'Modo Oscuro';
-    } else if (currentTheme === 'dark') {
-      document.body.classList.remove('light-mode');
-      themeToggle.textContent = 'Modo Claro';
-    } else {
-      // Si no hay preferencia guardada, establecer basado en la hora
-      setThemeBasedOnTime();
-    }
-    
-    function setThemeBasedOnTime() {
-      const hour = new Date().getHours();
-      if (hour >= 18 || hour < 6) { // De 6 PM a 6 AM es modo oscuro
-        document.body.classList.remove('light-mode');
-        themeToggle.textContent = 'Modo Claro';
-        localStorage.setItem('theme', 'dark');
-      } else { // De 6 AM a 6 PM es modo claro
-        document.body.classList.add('light-mode');
-        themeToggle.textContent = 'Modo Oscuro';
-        localStorage.setItem('theme', 'light');
-      }
-    }
-    
-    // Event listener para el botón de alternancia de tema
-    themeToggle.addEventListener('click', () => {
-      document.body.classList.toggle('light-mode');
-      
-      // Actualizar el texto del botón
-      if (document.body.classList.contains('light-mode')) {
-        themeToggle.textContent = 'Modo Oscuro';
-        localStorage.setItem('theme', 'light');
-      } else {
-        themeToggle.textContent = 'Modo Claro';
-        localStorage.setItem('theme', 'dark');
-      }
-    
-      // Reproducir sonido de clic
-      playClickSound();
+    importSortable();
+  </script>
+  
+  <!-- Parallax effect para el Video de Fondo -->
+  <script>
+    document.addEventListener('mousemove', (e) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 20;
+      const y = (e.clientY / window.innerHeight - 0.5) * 20;
+      document.getElementById('bgVideo').style.transform = `translate(${x}px, ${y}px)`;
     });
-    
-    /************************************************************
-     * ANIMACIONES SUAVES Y TRANSICIONES
-     ************************************************************/
-    detailContainer.classList.add('fade-in');
-    </script>
-    
+  </script>
 </body>
 </html>
+
+
+
+
+
 
 
 
