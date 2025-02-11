@@ -26,7 +26,15 @@
       --font-heading: 'Orbitron', sans-serif;
       --transition-speed: 0.3s;
     }
-    
+    /* Modo claro */
+    [data-theme="light"] {
+      --bg-color: #f0f0f0;
+      --text-color: #333333;
+      --muted-color: #555555;
+      --primary-color: #ff2d95;
+      --secondary-color: #00aaff;
+    }
+
     /* Reset y tipografía */
     * {
       margin: 0;
@@ -41,13 +49,14 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      transition: background-color var(--transition-speed), color var(--transition-speed);
     }
 
     /* --- Pantalla de Carga --- */
     .loader-overlay {
       position: fixed;
-      top:0; left:0;
-      width:100vw; height:100vh;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
       background: var(--bg-color);
       display: flex;
       flex-direction: column;
@@ -100,7 +109,6 @@
       white-space: pre-wrap;
       font-size: 1rem;
       margin-bottom: 10px;
-      /* Para feedback visual (fondo parpadeante) */
       transition: background-color 0.3s ease;
     }
     .terminal-output.feedback {
@@ -115,6 +123,7 @@
     .terminal-prompt {
       margin-right: 10px;
       color: var(--primary-color);
+      font-family: var(--font-heading);
     }
     .terminal-input {
       flex: 1;
@@ -158,6 +167,10 @@
       padding: 20px;
       margin-bottom: 20px;
       transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+    }
+    [data-theme="light"] .card {
+      background-color: #e8e8e8;
+      border-color: var(--primary-color);
     }
     .card:hover {
       transform: translateY(-10px);
@@ -204,6 +217,9 @@
       border-top: 2px solid var(--primary-color);
       font-size: 0.9rem;
     }
+    [data-theme="light"] .footer {
+      background-color: #dfdfdf;
+    }
     .footer .social-icons a {
       color: var(--muted-color);
       margin: 0 10px;
@@ -229,7 +245,7 @@
       position: absolute;
       width: 3px;
       height: 3px;
-      background: rgba(255, 45, 149, 0.8); /* tono rojo intenso */
+      background: rgba(255, 45, 149, 0.8);
       border-radius: 50%;
       opacity: 0.8;
       animation: moveParticle 12s linear infinite;
@@ -248,6 +264,74 @@
         opacity: 0;
       }
     }
+    /* Variaciones de color y tamaño en partículas */
+    .particle:nth-child(odd) {
+      background: rgba(255, 45, 149, 0.6);
+      width: 4px;
+      height: 4px;
+    }
+    .particle:nth-child(even) {
+      background: rgba(255, 20, 100, 0.9);
+    }
+
+    /* --- Caja de Sugerencias (Autocompletado) --- */
+    .suggestions-box {
+      position: absolute;
+      bottom: 60px; /* Ajuste según el alto de la terminal y el input */
+      left: 20px;
+      background: var(--bg-color);
+      border: 1px solid var(--primary-color);
+      border-radius: 5px;
+      max-height: 200px;
+      width: 220px;
+      overflow-y: auto;
+      display: none;
+      z-index: 2;
+    }
+    .suggestions-box ul {
+      list-style: none;
+    }
+    .suggestions-box li {
+      padding: 5px 10px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .suggestions-box li:hover {
+      background-color: var(--primary-color);
+      color: var(--bg-color);
+    }
+
+    /* --- Notificaciones (Alerta/Toast) --- */
+    .notifications-container {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 99999;
+    }
+    .notification {
+      background-color: #333;
+      color: #fff;
+      padding: 10px 15px;
+      border-radius: 5px;
+      border-left: 4px solid var(--primary-color);
+      min-width: 200px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      animation: fadeInOut 5s forwards;
+      font-size: 0.95rem;
+    }
+    .notification.info { border-left-color: var(--secondary-color); }
+    .notification.error { border-left-color: red; }
+    .notification.success { border-left-color: green; }
+
+    @keyframes fadeInOut {
+      0%   { opacity: 0; transform: translateX(30px); }
+      10%  { opacity: 1; transform: translateX(0); }
+      90%  { opacity: 1; }
+      100% { opacity: 0; transform: translateX(30px); }
+    }
   </style>
 </head>
 <body>
@@ -262,9 +346,7 @@
   </div>
 
   <!-- Contenedor de Partículas (Fondo Cenil Rojo) -->
-  <div class="particles" id="particlesContainer">
-    <!-- Las partículas se generarán mediante JavaScript -->
-  </div>
+  <div class="particles" id="particlesContainer"></div>
 
   <!-- Contenedor Principal del Terminal -->
   <div class="terminal-container" id="terminalContainer">
@@ -275,6 +357,10 @@ Escribe <span style="color: var(--primary-color)">help</span> para ver los coman
     <div class="terminal-input-container">
       <span class="terminal-prompt">user@cybertools:~$</span>
       <input type="text" class="terminal-input" id="terminalInput" autofocus autocomplete="off">
+      <!-- Caja de sugerencias (autocompletado) -->
+      <div class="suggestions-box" id="suggestionsBox">
+        <ul id="suggestionsList"></ul>
+      </div>
     </div>
   </div>
 
@@ -284,6 +370,7 @@ Escribe <span style="color: var(--primary-color)">help</span> para ver los coman
     <section id="inicio" class="section active">
       <h2>Inicio</h2>
       <p>Explora nuestras herramientas de hacking ético diseñadas para mejorar la seguridad de tus sistemas.</p>
+      <p><strong>Nota:</strong> El uso inadecuado de estas herramientas puede tener consecuencias legales. Úsalas sólo con autorización y fines éticos.</p>
     </section>
 
     <!-- Sección: seguridad -->
@@ -356,6 +443,13 @@ Escribe <span style="color: var(--primary-color)">help</span> para ver los coman
       </ul>
     </section>
 
+    <!-- Sección: estadisticas -->
+    <section id="estadisticas" class="section">
+      <h2>Estadísticas</h2>
+      <p>Aquí se muestran estadísticas de ejemplo sobre vulnerabilidades detectadas por mes.</p>
+      <canvas id="statsChart" width="400" height="200" style="max-width: 100%;"></canvas>
+    </section>
+
     <!-- Sección: acerca -->
     <section id="acerca" class="section">
       <h2>Acerca de</h2>
@@ -364,7 +458,10 @@ Escribe <span style="color: var(--primary-color)">help</span> para ver los coman
     </section>
   </div>
 
-  <!-- Audio de fondo (se reproducirá tras la primera interacción) -->
+  <!-- Contenedor de notificaciones -->
+  <div class="notifications-container" id="notificationsContainer"></div>
+
+  <!-- Audio de fondo -->
   <audio id="background-audio" loop>
     <source src="src/Audio/Programming%20%20Coding%20%20Hacking%20music%20vol.mp3" type="audio/mpeg">
     Tu navegador no soporta el elemento de audio.
@@ -378,7 +475,7 @@ Escribe <span style="color: var(--primary-color)">help</span> para ver los coman
     <source src="src/Audio/error.mp3" type="audio/mpeg">
   </audio>
 
-  <!-- Chart.js CDN (opcional) -->
+  <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <script>
@@ -390,6 +487,7 @@ Escribe <span style="color: var(--primary-color)">help</span> para ver los coman
     const loaderBar = document.getElementById('loaderBar');
     const loaderPercentage = document.getElementById('loaderPercentage');
     const simulateLoading = setInterval(() => {
+      // Incremento aleatorio de progreso
       progress += Math.random() * 5;
       if (progress >= 100) progress = 100;
       loaderBar.style.width = progress + '%';
@@ -405,7 +503,7 @@ Escribe <span style="color: var(--primary-color)">help</span> para ver los coman
     }, 100);
 
     /* ------------------------------
-       Generar partículas de fondo (Cenil Rojo)
+       Generar partículas de fondo
     ------------------------------ */
     const particlesContainer = document.getElementById('particlesContainer');
     const particleCount = 100;
@@ -430,42 +528,37 @@ Escribe <span style="color: var(--primary-color)">help</span> para ver los coman
     }, {once:true});
 
     /* ------------------------------
-       Función de Efecto de Tipeo (Idea 5)
-    ------------------------------ */
-    function typeOutput(text, callback) {
-      let index = 0;
-      function typeChar() {
-        if (index < text.length) {
-          terminalOutput.innerHTML += text.charAt(index);
-          index++;
-          setTimeout(typeChar, 20); // Velocidad de tipeo (ajustable)
-        } else if(callback) {
-          callback();
-        }
-      }
-      typeChar();
-    }
-
-    /* ------------------------------
-       Función para Feedback Visual (Idea 9)
-    ------------------------------ */
-    function flashOutput(success = true) {
-      terminalOutput.classList.add('feedback');
-      setTimeout(() => {
-        terminalOutput.classList.remove('feedback');
-      }, 150);
-    }
-
-    /* ------------------------------
-       Terminal: manejo de comandos, ayuda contextual y feedback avanzado
+       Variables y Estados Globales
     ------------------------------ */
     const terminalInput = document.getElementById('terminalInput');
     const terminalOutput = document.getElementById('terminalOutput');
     const sectionsContainer = document.getElementById('sections');
-    
-    // Sonidos para feedback
+    const suggestionsBox = document.getElementById('suggestionsBox');
+    const suggestionsList = document.getElementById('suggestionsList');
+    const notificationsContainer = document.getElementById('notificationsContainer');
+
+    // Modo experto/básico
+    let expertMode = false;
+
+    // Sonidos
     const commandSound = document.getElementById('command-sound');
     const errorSound = document.getElementById('error-sound');
+
+    // Para el gráfico (sección estadísticas)
+    let statsChartInstance = null;
+
+    // Citas para comando "quote"
+    const hackingQuotes = [
+      "La seguridad es un proceso, no un producto. — Bruce Schneier",
+      "El secreto de la creatividad es saber cómo esconder tus fuentes. — Albert Einstein",
+      "La mejor forma de mantener un secreto es no tenerlo. — Lord Henry",
+      "Los sistemas más seguros son aquellos que no se usan. — Gene Spafford",
+      "No hay sistema que no pueda ser hackeado, solo tiempo insuficiente para hacerlo."
+    ];
+
+    /* ------------------------------
+       Funciones de Apoyo
+    ------------------------------ */
     function playCommandSound() {
       if(commandSound) {
         commandSound.currentTime = 0;
@@ -478,34 +571,174 @@ Escribe <span style="color: var(--primary-color)">help</span> para ver los coman
         errorSound.play().catch(() => {});
       }
     }
-
-    // Función para crear enlaces clicables en el terminal (Idea 6)
-    function createClickableSectionLink(sectionId) {
-      return `<a href="#" style="color: var(--primary-color); text-decoration: underline;" onclick="handleOpenCommand('${sectionId}'); return false;">${sectionId}</a>`;
+    function flashOutput(success = true) {
+      terminalOutput.classList.add('feedback');
+      setTimeout(() => {
+        terminalOutput.classList.remove('feedback');
+      }, 150);
+    }
+    function typeOutput(text, callback) {
+      let index = 0;
+      function typeChar() {
+        if (index < text.length) {
+          terminalOutput.innerHTML += text.charAt(index);
+          index++;
+          setTimeout(typeChar, 20);
+        } else if(callback) {
+          callback();
+        }
+      }
+      typeChar();
+    }
+    // Notificaciones
+    function showNotification(type, message) {
+      const notif = document.createElement('div');
+      notif.className = `notification ${type}`;
+      notif.textContent = message;
+      notificationsContainer.appendChild(notif);
+      // Se elimina solo tras la animación
+      setTimeout(() => {
+        if(notificationsContainer.contains(notif)) {
+          notificationsContainer.removeChild(notif);
+        }
+      }, 5200); // 5s de animación + extra
     }
 
-    // Comandos disponibles y sus funciones, incluyendo ayuda contextual (Idea 4)
+    // Crear enlaces clicables para "ls" (abrir secciones)
+    function createClickableSectionLink(sectionId) {
+      return `<a href="#" style="color: var(--primary-color); text-decoration: underline;" 
+                onclick="handleOpenCommand('${sectionId}'); return false;">${sectionId}</a>`;
+    }
+
+    // Dibuja el gráfico (estadísticas)
+    function drawStatsChart() {
+      const ctx = document.getElementById('statsChart').getContext('2d');
+      if(statsChartInstance) {
+        statsChartInstance.destroy();
+      }
+      statsChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'],
+          datasets: [{
+            label: 'Vulnerabilidades',
+            data: [12, 19, 7, 15, 22, 9],
+            backgroundColor: 'rgba(255, 45, 149, 0.6)',
+            borderColor: 'rgba(255, 45, 149, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    /* ------------------------------
+       Ayuda Contextual Inteligente
+    ------------------------------ */
+    const contextTips = {
+      nmap: "Tip: Nmap escanea puertos y descubre hosts. Uso básico: nmap <ip>.",
+      wireshark: "Tip: Wireshark analiza tráfico en vivo. Abre capturas pcap para investigar.",
+      metasploit: "Tip: Metasploit Framework para exploits. Comando: msfconsole.",
+      burp: "Tip: Burp Suite audita aplicaciones web; intercepta y modifica requests.",
+      aircrack: "Tip: Aircrack-ng audita redes Wi-Fi, permite romper contraseñas WEP/WPA."
+      // Agrega más según necesites
+    };
+
+    // Mostrar tips si se detectan palabras clave
+    function checkContextTip(userInput) {
+      for(const key in contextTips) {
+        if(userInput.toLowerCase().includes(key)) {
+          showNotification('info', contextTips[key]);
+          break;
+        }
+      }
+    }
+
+    /* ------------------------------
+       BANNER PERSONALIZADO (Hook de modo experto) (15)
+    ------------------------------ */
+    function getExpertBanner() {
+      return `\n
+*************************************************
+*                                               *
+*          BIENVENIDO A MODO EXPERTO            *
+*   ¡Poder ilimitado conlleva gran responsabilidad! 
+*                                               *
+*************************************************
+      `;
+    }
+
+    /* ------------------------------
+       Panel de Estado del Sistema (sysinfo) (11)
+       Sólo en modo experto
+    ------------------------------ */
+    function getSystemInfo() {
+      // Muchos datos se pueden “simular”. Aquí ejemplos reales del navegador:
+      const ua = navigator.userAgent || "N/A";
+      const now = new Date().toLocaleString();
+      // Uso de memoria (puede no estar soportado en todos los navegadores):
+      let memText = "No soportado por este navegador.";
+      if(performance && performance.memory) {
+        const usedMB = (performance.memory.usedJSHeapSize / 1048576).toFixed(2);
+        const totalMB = (performance.memory.totalJSHeapSize / 1048576).toFixed(2);
+        memText = `${usedMB} MB / ${totalMB} MB (used / total JS Heap)`;
+      }
+      // Screen
+      const screenRes = `${window.screen.width}x${window.screen.height}`;
+      // Retornamos en forma de string multilinea
+      return `
+Fecha/Hora Local:  ${now}
+User-Agent:        ${ua}
+Memoria (JS Heap): ${memText}
+Resolución Pant:   ${screenRes}
+      `;
+    }
+
+    /* ------------------------------
+       Lista de Comandos y Visibilidad según modo
+    ------------------------------ */
+    const allCommands = [
+      "help", "ls", "open", "info", "clear", "cls", "exit",
+      "ascii", "quote", "theme", "mode", "sysinfo"
+    ];
+    const expertCommands = ["ascii", "quote", "theme", "sysinfo"];
+
+    function isCommandVisible(cmdName) {
+      if(!expertMode && expertCommands.includes(cmdName)) {
+        return false;
+      }
+      return true;
+    }
+
     const commands = {
       help: function(args) {
         if(args.length === 0) {
-          return `Comandos disponibles:
-  help                      Muestra esta ayuda
-  help <comando>            Muestra ayuda detallada para el comando especificado
-  ls                        Lista las secciones disponibles
-  open <sección>            Abre una sección (ej: open inicio)
-  info <sección>            Muestra información adicional sobre la sección
-  clear                     Limpia la pantalla
-  exit                      Reinicia la terminal`;
+          let visibleCmds = allCommands.filter(isCommandVisible);
+          let helpText = "Comandos disponibles:\n";
+          for(let cmd of visibleCmds) {
+            helpText += "  " + cmd + "\n";
+          }
+          helpText += "\nEscribe 'help <comando>' para más detalles.";
+          return helpText;
         } else {
           const cmd = args[0].toLowerCase();
           const helpDetails = {
-            open: "open <sección>: Abre la sección especificada. Ejemplo: open inicio",
-            info: "info <sección>: Muestra información adicional sobre la sección. Ejemplo: info seguridad",
-            ls: "ls: Lista todas las secciones disponibles. Los nombres se muestran como enlaces clicables.",
-            clear: "clear: Limpia la pantalla de la terminal.",
-            exit: "exit: Reinicia la terminal borrando la salida."
+            open: "open <sección>: Abre la sección especificada (ej: open inicio).",
+            info: "info <sección>: Muestra detalles sobre la sección (ej: info seguridad).",
+            ls: "ls: Lista todas las secciones disponibles.",
+            clear: "clear/cls: Limpia la pantalla de la terminal.",
+            exit: "exit: Reinicia la terminal.",
+            ascii: "ascii: Muestra un arte ASCII de estilo hacker (modo experto).",
+            quote: "quote: Cita aleatoria de ciberseguridad (modo experto).",
+            theme: "theme <dark|light|toggle>: Cambia el tema (modo experto).",
+            mode: "mode <basic|expert>: Cambia entre modo básico y experto.",
+            sysinfo: "Muestra información del sistema/navegador (modo experto)."
           };
-          return helpDetails[cmd] || "No hay información adicional para el comando: " + cmd;
+          return helpDetails[cmd] || "No hay información para el comando: " + cmd;
         }
       },
       ls: function() {
@@ -524,9 +757,13 @@ Escribe <span style="color: var(--primary-color)">help</span> para ver los coman
         const target = args[0].toLowerCase();
         const allSections = sectionsContainer.querySelectorAll('.section');
         allSections.forEach(sec => sec.classList.remove('active'));
+
         const sectionToOpen = sectionsContainer.querySelector('#' + target);
         if(sectionToOpen) {
           sectionToOpen.classList.add('active');
+          if(target === 'estadisticas') {
+            drawStatsChart();
+          }
           flashOutput(true);
           return 'Abriendo sección: ' + target + '\n\n' + sectionToOpen.innerText;
         } else {
@@ -544,10 +781,11 @@ Escribe <span style="color: var(--primary-color)">help</span> para ver los coman
         const target = args[0].toLowerCase();
         const infoMap = {
           inicio: 'La sección de inicio da la bienvenida y explica la funcionalidad básica.',
-          seguridad: 'Aquí se detallan las mejores prácticas para mantener tus sistemas seguros.',
+          seguridad: 'Se detallan las mejores prácticas para mantener sistemas seguros.',
           herramientas: 'Se muestran las herramientas disponibles, con enlaces de descarga.',
           descargas: 'Lista de enlaces para descargar herramientas de hacking ético.',
-          acerca: 'Información sobre CyberTools, la misión y cómo colaborar.'
+          estadisticas: 'Gráfica de ejemplo con datos de vulnerabilidades mensuales.',
+          acerca: 'Información sobre CyberTools, nuestra misión y cómo colaborar.'
         };
         if(infoMap[target]) {
           flashOutput(true);
@@ -562,36 +800,163 @@ Escribe <span style="color: var(--primary-color)">help</span> para ver los coman
         terminalOutput.innerHTML = '';
         return '';
       },
+      cls: function() {
+        return commands.clear();
+      },
       exit: function() {
         terminalOutput.innerHTML = '';
         return 'Terminal reiniciada.';
+      },
+      ascii: function() {
+        if(!expertMode) {
+          playErrorSound();
+          return "Este comando está disponible sólo en modo experto. Usa 'mode expert'.";
+        }
+        flashOutput(true);
+        return `
+  _________  __   ____  ______  _______ 
+ / ____/   |/_/  / __ \\/  _/  |/  / __ \\
+/ /   / /| | /  / / / // // /|_/ / / / /
+/ /___/ ___ |   / /_/ // // /  / / /_/ / 
+\\____/_/  |_|  /_____/___/_/  /_/\\____/  
+      H A C K   T H E   P L A N E T
+        `;
+      },
+      quote: function() {
+        if(!expertMode) {
+          playErrorSound();
+          return "Este comando está disponible sólo en modo experto. Usa 'mode expert'.";
+        }
+        flashOutput(true);
+        const randomIndex = Math.floor(Math.random() * hackingQuotes.length);
+        return hackingQuotes[randomIndex];
+      },
+      theme: function(args) {
+        if(!expertMode) {
+          playErrorSound();
+          return "Este comando está disponible sólo en modo experto. Usa 'mode expert'.";
+        }
+        const htmlEl = document.documentElement;
+        const currentTheme = htmlEl.getAttribute('data-theme');
+        if(!args[0]) {
+          return "Uso: theme <dark|light|toggle>";
+        }
+        const choice = args[0].toLowerCase();
+        if(choice === 'dark') {
+          htmlEl.setAttribute('data-theme', 'dark');
+          flashOutput(true);
+          return 'Tema cambiado a modo oscuro.';
+        } else if(choice === 'light') {
+          htmlEl.setAttribute('data-theme', 'light');
+          flashOutput(true);
+          return 'Tema cambiado a modo claro.';
+        } else if(choice === 'toggle') {
+          const newTheme = (currentTheme === 'dark') ? 'light' : 'dark';
+          htmlEl.setAttribute('data-theme', newTheme);
+          flashOutput(true);
+          return `Tema alternado a: ${newTheme}`;
+        } else {
+          playErrorSound();
+          flashOutput(false);
+          return 'Opción no válida. Usa: theme <dark|light|toggle>';
+        }
+      },
+      // Nuevo comando sysinfo (modo experto)
+      sysinfo: function() {
+        if(!expertMode) {
+          playErrorSound();
+          return "Este comando está disponible sólo en modo experto. Usa 'mode expert'.";
+        }
+        flashOutput(true);
+        return getSystemInfo();
+      },
+      // Cambiar modo
+      mode: function(args) {
+        if(!args[0]) {
+          return "Uso: mode <basic|expert>";
+        }
+        const choice = args[0].toLowerCase();
+        if(choice === 'basic') {
+          expertMode = false;
+          showNotification('info', 'Modo Básico activado');
+          return 'Modo Básico activado. Algunos comandos avanzados se ocultan.';
+        } else if(choice === 'expert') {
+          expertMode = true;
+          showNotification('info', 'Modo Experto activado');
+          // Añadimos un pequeño “banner/hook” al entrar en modo experto
+          return 'Modo Experto activado.' + getExpertBanner() + 
+                 '\nAhora puedes usar todos los comandos avanzados.';
+        } else {
+          playErrorSound();
+          return 'Opción no válida. Usa: mode <basic|expert>';
+        }
       }
     };
 
-    // Función para manejar comando "open" desde enlaces clicables (Idea 6)
+    /* ------------------------------
+       Función para abrir sección desde enlace clickable
+    ------------------------------ */
     function handleOpenCommand(sectionId) {
       terminalOutput.innerHTML += "\nuser@cybertools:~$ open " + sectionId;
       const result = commands.open([sectionId]);
-      // Usar efecto de tipeo para mostrar el resultado
       typeOutput("\n" + result, function() {
         terminalOutput.scrollTop = terminalOutput.scrollHeight;
       });
       playCommandSound();
     }
 
-    // Manejo de envío de comando y efecto de tipeo (Idea 5)
+    /* ------------------------------
+       Autocompletado de Comandos
+    ------------------------------ */
+    function showSuggestions(userInput) {
+      const filteredCommands = allCommands.filter(cmd => {
+        // Comprobamos si está permitido en el modo actual
+        if(!isCommandVisible(cmd)) return false;
+        // Comprobamos si coincide con lo que el usuario ha tecleado
+        return cmd.startsWith(userInput.toLowerCase());
+      });
+
+      if(userInput.length === 0 || filteredCommands.length === 0) {
+        suggestionsBox.style.display = 'none';
+        return;
+      }
+      suggestionsList.innerHTML = '';
+      filteredCommands.forEach(cmd => {
+        const li = document.createElement('li');
+        li.textContent = cmd;
+        li.addEventListener('click', () => {
+          terminalInput.value = cmd;
+          suggestionsBox.style.display = 'none';
+          terminalInput.focus();
+        });
+        suggestionsList.appendChild(li);
+      });
+      suggestionsBox.style.display = 'block';
+    }
+
+    /* ------------------------------
+       Manejador de la Terminal
+    ------------------------------ */
+    terminalInput.addEventListener('input', function() {
+      const inputVal = terminalInput.value.trim();
+      showSuggestions(inputVal);          // Autocompletar
+      checkContextTip(inputVal);          // Ayuda contextual
+    });
+
     terminalInput.addEventListener('keydown', function(e) {
       if(e.key === 'Enter') {
+        suggestionsBox.style.display = 'none';
+
         const inputText = terminalInput.value.trim();
         terminalOutput.innerHTML += "\nuser@cybertools:~$ " + inputText;
         terminalInput.value = '';
         const parts = inputText.split(' ');
         const cmd = parts[0].toLowerCase();
         const args = parts.slice(1);
+
         if(commands[cmd]) {
           playCommandSound();
           const result = commands[cmd](args);
-          // Imprimir el resultado con efecto de tipeo
           typeOutput("\n" + result, function() {
             terminalOutput.scrollTop = terminalOutput.scrollHeight;
           });
@@ -601,6 +966,10 @@ Escribe <span style="color: var(--primary-color)">help</span> para ver los coman
             terminalOutput.scrollTop = terminalOutput.scrollHeight;
           });
         }
+      }
+      // Con la tecla ESC se oculta la caja de sugerencias
+      if(e.key === 'Escape') {
+        suggestionsBox.style.display = 'none';
       }
     });
   </script>
