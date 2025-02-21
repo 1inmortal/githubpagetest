@@ -2,878 +2,467 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Cyberpunk UI + Mini Chart + MP3 Player (Single Track) - Enhanced con Video de Fondo</title>
+  <title>Cyberpunk UI + Mini Chart + MP3 Player - Enhanced con Paneles Dinámicos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Importar Fuente (Opcional) -->
+  <!-- Fuente -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
   
   <style>
-    /********************************************************
-     * VARIABLES CSS PARA COLORES Y TEMAS
-     ********************************************************/
+    /* VARIABLES CSS */
     :root {
-      --primary-color: #ff0040; /* Rojo neón */
-      --secondary-color: #ff5588; /* Rosa neón */
-      --accent-color: #1e90ff; /* Azul neón */
-      --background-color: #0a0a0a; /* Fondo negro */
-      --text-color: #ffccaa; /* Texto claro */
+      --primary-color: #ff0040;
+      --secondary-color: #ff5588;
+      --accent-color: #1e90ff;
+      --background-color: #0a0a0a;
+      --text-color: #ffccaa;
+    }
+    /* MODO DE ALTO CONTRASTE */
+    .high-contrast {
+      --primary-color: #ffff00;
+      --secondary-color: #ff00ff;
+      --accent-color: #00ffff;
+      --background-color: #000;
+      --text-color: #ffffff;
     }
     
-    /********************************************************
-     * RESETEO BÁSICO
-     ********************************************************/
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    /********************************************************
-     * ESTILOS GENERALES Y FUENTES
-     ********************************************************/
+    /* RESETEO Y ESTILOS GENERALES */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body {
-      width: 100%;
-      height: 100%;
-      /* Se deja el fondo transparente para que se note el video detrás */
+      width: 100%; height: 100%;
       background: transparent;
       overflow: hidden;
-      font-family: "Arial", sans-serif;
+      font-family: Arial, sans-serif;
       color: var(--text-color);
       transition: opacity 0.7s ease-in-out;
       opacity: 1;
     }
-    body.fade-out {
-      opacity: 0;
+    body.fade-out { opacity: 0; }
+    
+    /* Fondos semitransparentes en contenedores */
+    .main-container, .left-panels, .detail-container, .right-panel {
+      background: rgba(10,10,10,0.5);
     }
     
-    /* Aseguramos que los contenedores principales tengan un fondo semitransparente */
-    .main-container,
-    .left-panels,
-    .detail-container,
-    .right-panel {
-      background: rgba(10, 10, 10, 0.5);
-    }
-    
-    /********************************************************
-     * VIDEO DE FONDO
-     ********************************************************/
-    /* El video se reproducirá automáticamente, en bucle y sin sonido */
+    /* VIDEO DE FONDO */
     #bgVideo {
-      position: fixed;
-      top: 0;
-      left: 0;
-      min-width: 100%;
-      min-height: 100%;
-      width: auto;
-      height: auto;
-      z-index: -3;
-      object-fit: cover;
+      position: fixed; top: 0; left: 0;
+      min-width: 100%; min-height: 100%;
+      width: auto; height: auto;
+      z-index: -3; object-fit: cover;
     }
-    /* Fallback: en dispositivos móviles se oculta el video y se usa una imagen de fondo */
-    @media only screen and (max-width: 768px) {
-      #bgVideo {
-        display: none;
-      }
-      body {
-        background: url('ruta/a/tu/fondo-movil.jpg') no-repeat center center fixed;
-        background-size: cover;
-      }
+    @media only screen and (max-width:768px) {
+      #bgVideo { display: none; }
+      body { background: url('ruta/a/tu/fondo-movil.jpg') no-repeat center center fixed; background-size: cover; }
     }
     
-    /********************************************************
-     * SCROLL PERSONALIZADO
-     ********************************************************/
-    ::-webkit-scrollbar {
-      width: 8px;
-      background-color: #111;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: var(--primary-color);
-    }
+    /* SCROLL */
+    ::-webkit-scrollbar { width: 8px; background-color: #111; }
+    ::-webkit-scrollbar-thumb { background: var(--primary-color); }
     
-    /********************************************************
-     * BARRA SUPERIOR
-     ********************************************************/
+    /* BARRA SUPERIOR */
     .top-bar {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%;
-      height: 50px;
-      background: #1a1a1a;
-      border-bottom: 2px solid var(--primary-color);
-      display: flex;
-      align-items: center;
-      padding: 0 20px;
-      z-index: 999;
+      position: fixed; top: 0; left: 0; width: 100%; height: 50px;
+      background: #1a1a1a; border-bottom: 2px solid var(--primary-color);
+      display: flex; align-items: center; padding: 0 20px; z-index: 999;
       box-shadow: 0 0 10px var(--primary-color);
     }
-    .top-bar-left {
-      display: flex;
-      align-items: center;
-      gap: 40px;
-      flex-wrap: wrap;
-    }
-    .level-cred {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      font-size: 14px;
-    }
-    .level-cred .label {
-      color: var(--secondary-color);
-      margin-right: 5px;
-    }
-    .level-cred .value {
-      color: var(--primary-color);
-    }
+    .top-bar-left { display: flex; align-items: center; gap: 40px; flex-wrap: wrap; }
+    .level-cred { display: flex; align-items: center; gap: 20px; font-size: 14px; }
+    .level-cred .label { color: var(--secondary-color); margin-right: 5px; }
+    .level-cred .value { color: var(--primary-color); }
     .top-nav {
-      display: flex;
-      align-items: center;
-      gap: 30px;
-      margin-left: 40px;
+      display: flex; align-items: center; gap: 30px; margin-left: 40px;
       transition: max-height 0.3s ease-in-out;
     }
     .top-nav-item {
-      color: #ffd0dc;
-      font-size: 14px;
-      text-transform: uppercase;
-      transition: color 0.2s;
-      cursor: pointer;
-      text-decoration: none;
+      color: #ffd0dc; font-size: 14px; text-transform: uppercase;
+      transition: color 0.2s; cursor: pointer; text-decoration: none;
     }
-    .top-nav-item:hover {
-      color: #ffffff;
-    }
-    .top-nav-item.active {
-      color: var(--primary-color);
-      text-shadow: 0 0 5px var(--primary-color);
-    }
+    .top-nav-item:hover { color: #fff; }
+    .top-nav-item.active { color: var(--primary-color); text-shadow: 0 0 5px var(--primary-color); }
     .top-bar-right {
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      gap: 30px;
-      font-size: 14px;
+      margin-left: auto; display: flex; align-items: center; gap: 30px; font-size: 14px;
     }
-    .top-bar-right .stat {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    .top-bar-right .stat .label {
-      color: var(--secondary-color);
-    }
-    .top-bar-right .stat .value {
-      color: var(--primary-color);
-    }
+    .top-bar-right .stat { display: flex; align-items: center; gap: 5px; }
+    .top-bar-right .stat .label { color: var(--secondary-color); }
+    .top-bar-right .stat .value { color: var(--primary-color); }
     .nav-toggle {
-      display: none;
-      background: none;
-      border: none;
-      color: #ffd0dc;
-      font-size: 24px;
-      cursor: pointer;
+      display: none; background: none; border: none;
+      color: #ffd0dc; font-size: 24px; cursor: pointer;
     }
     
-    /********************************************************
-     * CONTENEDOR PRINCIPAL (3 COLUMNAS)
-     ********************************************************/
+    /* CONTENEDOR PRINCIPAL (3 COLUMNAS) */
     .main-container {
-      position: absolute;
-      top: 50px; left: 0; right: 0; bottom: 0;
-      display: grid;
-      grid-template-columns: 300px 1fr 350px;
-      overflow: hidden;
+      position: absolute; top: 50px; left: 0; right: 0; bottom: 0;
+      display: grid; grid-template-columns: 300px 1fr 350px; overflow: hidden;
       box-shadow: inset 0 0 8px var(--primary-color);
     }
     
-    /********************************************************
-     * PANELES IZQUIERDA (PROJECTS + SIDE JOBS)
-     ********************************************************/
+    /* PANEL IZQUIERDO */
     .left-panels {
       border-right: 2px solid var(--primary-color);
-      display: flex; 
-      flex-direction: column;
-      overflow: auto;
-      box-shadow: inset 0 0 8px var(--primary-color);
+      display: flex; flex-direction: column; overflow: auto;
+      box-shadow: inset 0 0 8px var(--primary-color); padding: 10px;
     }
-    .project-list-container {
-      border-bottom: 2px solid var(--primary-color);
-      padding: 10px 0;
+    .left-panels .search-container { margin-bottom: 10px; }
+    .left-panels input[type="text"] {
+      width: 100%; padding: 6px 8px; border: 1px solid var(--primary-color);
+      border-radius: 4px; background: #1a1a1a; color: var(--text-color);
     }
-    .project-list-title {
-      color: var(--primary-color);
-      text-transform: uppercase;
-      font-size: 14px;
-      margin: 10px 20px;
-      text-shadow: 0 0 5px var(--primary-color);
+    .project-list-container, .mission-list-container { margin-top: 10px; }
+    .project-list-title, .mission-list-title {
+      color: var(--primary-color); text-transform: uppercase; font-size: 14px;
+      margin: 10px 0; text-shadow: 0 0 5px var(--primary-color);
       font-family: 'Orbitron', sans-serif;
     }
-    .project-list {
-      max-height: 150px;
-      overflow-y: auto; 
-      padding: 0 5px;
+    .project-list, .mission-list {
+      max-height: 150px; overflow-y: auto; padding: 0 5px;
     }
-    .project-item {
-      display: flex; 
-      flex-direction: column;
-      padding: 8px 15px; 
-      border-bottom: 1px solid #421111;
-      cursor: pointer; 
-      position: relative;
-      transition: background 0.2s, box-shadow 0.2s;
-      font-size: 13px; 
-      color: #ffd0dc;
+    .project-item, .mission-item {
+      display: flex; flex-direction: column; padding: 8px 15px;
+      border-bottom: 1px solid #421111; cursor: pointer; position: relative;
+      transition: background 0.2s, box-shadow 0.2s; font-size: 13px; color: #ffd0dc;
     }
-    .project-item:hover {
-      background: #2a0a0a;
-      box-shadow: 0 0 10px var(--primary-color);
+    .project-item:hover, .mission-item:hover {
+      background: #2a0a0a; box-shadow: 0 0 10px var(--primary-color);
     }
-    .project-item.selected {
-      background: var(--primary-color); 
-      color: #ffffff;
+    .project-item.selected, .mission-item.selected {
+      background: var(--primary-color); color: #fff;
       box-shadow: inset 0 0 10px var(--primary-color);
     }
-    .project-name {
-      font-weight: bold;
-      text-transform: uppercase;
-      margin-bottom: 3px;
+    .project-name, .mission-name {
+      font-weight: bold; text-transform: uppercase; margin-bottom: 3px;
       color: #ffbfc6;
     }
-    .project-summary {
-      font-size: 12px; 
-      color: #ffccaa;
-    }
-    .mission-list-container {
-      flex: 1; 
-      padding: 10px 0;
-      display: flex; 
-      flex-direction: column; 
-      overflow: auto;
-    }
-    .mission-list-title {
-      color: var(--secondary-color);
-      text-transform: uppercase; 
-      font-size: 14px; 
-      margin: 10px 20px;
-      text-shadow: 0 0 5px var(--secondary-color);
-      font-family: 'Orbitron', sans-serif;
-    }
-    .mission-list {
-      flex: 1; 
-      overflow-y: auto; 
-      padding: 0 5px;
-    }
-    .mission-item {
-      display: flex; 
-      flex-direction: column;
-      padding: 10px 15px; 
-      border-bottom: 1px solid #421111;
-      cursor: pointer; 
-      position: relative;
-      transition: background 0.2s, box-shadow 0.2s;
-    }
-    .mission-item:hover {
-      background: #2a0a0a;
-      box-shadow: 0 0 10px var(--secondary-color);
-    }
-    .mission-item.selected {
-      background: var(--primary-color); 
-      color: #fff;
-      box-shadow: inset 0 0 10px var(--primary-color);
-    }
-    .mission-icon {
-      width: 32px; 
-      height: 32px; 
-      background: var(--secondary-color); 
-      border-radius: 4px;
-      margin-bottom: 5px;
-    }
-    .mission-name {
-      font-size: 14px; 
-      color: #ffbfc6; 
-      margin-bottom: 3px;
-      text-transform: uppercase;
-    }
-    .mission-danger {
-      font-size: 12px; 
-      color: #ff9900;
-    }
+    .project-summary { font-size: 12px; color: #ffccaa; }
+    .mission-danger { font-size: 12px; color: #ff9900; }
     .new-flag {
-      position: absolute; 
-      right: 10px; 
-      top: 10px;
-      font-size: 10px;
-      background: var(--primary-color); 
-      color: #000;
-      padding: 2px 5px; 
-      border-radius: 2px;
-      text-transform: uppercase; 
-      pointer-events: none;
+      position: absolute; right: 10px; top: 10px; font-size: 10px;
+      background: var(--primary-color); color: #000; padding: 2px 5px;
+      border-radius: 2px; text-transform: uppercase; pointer-events: none;
     }
-    .mission-progress {
-      margin-top: 5px;
-    }
+    .mission-progress { margin-top: 5px; }
     .progress-bar {
-      width: 100%;
-      background-color: #421111;
-      border-radius: 3px;
-      overflow: hidden;
-      height: 6px;
+      width: 100%; background-color: #421111; border-radius: 3px;
+      overflow: hidden; height: 6px;
     }
     .progress-fill {
-      height: 100%;
-      background-color: var(--primary-color);
+      height: 100%; background-color: var(--primary-color);
       transition: width 0.3s;
     }
     .progress-text {
-      font-size: 10px;
-      color: #ffccaa;
-      margin-top: 2px;
+      font-size: 10px; color: #ffccaa; margin-top: 2px;
     }
     
-    /********************************************************
-     * PANEL CENTRAL (Detalle de lo seleccionado)
-     ********************************************************/
+    /* PANEL CENTRAL (Detalle) */
     .detail-container {
-      border-right: 2px solid var(--primary-color);
-      padding: 20px; 
-      display: flex; 
-      flex-direction: column; 
-      justify-content: flex-start;
-      overflow-y: auto;
-      box-shadow: inset 0 0 8px var(--primary-color);
-      background: rgba(10, 10, 10, 0.5);
-      border-radius: 8px;
+      border-right: 2px solid var(--primary-color); padding: 20px;
+      display: flex; flex-direction: column; justify-content: flex-start;
+      overflow-y: auto; box-shadow: inset 0 0 8px var(--primary-color);
+      background: rgba(10,10,10,0.5); border-radius: 8px;
       font-family: 'Orbitron', sans-serif;
     }
     .detail-title {
-      color: var(--primary-color); 
-      text-transform: uppercase; 
-      font-size: 24px; 
-      margin-bottom: 10px;
+      color: var(--primary-color); text-transform: uppercase;
+      font-size: 24px; margin-bottom: 10px;
       text-shadow: 0 0 5px var(--primary-color);
     }
     .detail-subtitle {
-      color: var(--secondary-color); 
-      font-size: 16px; 
-      margin-bottom: 15px;
-      text-shadow: 0 0 3px var(--secondary-color);
+      color: var(--secondary-color); font-size: 16px;
+      margin-bottom: 15px; text-shadow: 0 0 3px var(--secondary-color);
     }
     .detail-description {
-      color: #ffccaa; 
-      font-size: 13px; 
-      line-height: 1.6; 
-      flex: 1;
-      transition: opacity 0.3s;
+      color: #ffccaa; font-size: 13px; line-height: 1.6;
+      flex: 1; transition: opacity 0.3s;
     }
     .detail-description strong {
-      color: var(--primary-color);
-      display: block;
-      margin-top: 15px;
-      margin-bottom: 5px;
-      font-size: 14px;
+      color: var(--primary-color); display: block;
+      margin-top: 15px; margin-bottom: 5px; font-size: 14px;
     }
     .detail-description ul {
-      list-style-type: disc;
-      padding-left: 20px;
-      margin-bottom: 10px;
+      list-style-type: disc; padding-left: 20px; margin-bottom: 10px;
     }
-    .detail-description li {
-      margin-bottom: 5px;
-    }
+    .detail-description li { margin-bottom: 5px; }
     .detail-description a {
-      color: var(--accent-color);
-      text-decoration: none;
+      color: var(--accent-color); text-decoration: none;
       transition: color 0.3s, text-shadow 0.3s;
     }
     .detail-description a:hover {
       color: var(--primary-color);
       text-shadow: 0 0 5px var(--primary-color);
     }
-    .detail-description a:visited {
-      color: var(--accent-color);
-    }
+    .detail-description a:visited { color: var(--accent-color); }
     
-    /********************************************************
-     * PANEL DERECHO (Imagen / Info Extra)
-     ********************************************************/
+    /* PANEL DERECHO CON FILTRO DESPLEGABLE */
     .right-panel {
-      padding: 20px; 
-      overflow-y: auto;
+      padding: 20px; overflow-y: auto;
       box-shadow: inset 0 0 8px var(--secondary-color);
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      background: rgba(10, 10, 10, 0.5);
-      border-radius: 8px;
+      position: relative; display: flex; flex-direction: column;
+      background: rgba(10,10,10,0.5); border-radius: 8px;
       font-family: 'Orbitron', sans-serif;
     }
-    .right-panel-title {
-      text-transform: uppercase; 
-      color: var(--primary-color); 
-      font-size: 14px; 
-      margin-bottom: 10px;
-      text-shadow: 0 0 5px var(--primary-color);
+    /* Botón de Filtro (Dropdown) */
+    .filter-menu-container {
+      position: relative; display: inline-block; margin-bottom: 10px;
     }
+    .filter-button {
+      background: var(--primary-color); color: #fff; border: none;
+      padding: 8px 12px; cursor: pointer; border-radius: 4px;
+      font-size: 12px;
+    }
+    .filter-dropdown {
+      display: none; position: absolute; top: 100%; left: 0;
+      background: var(--background-color); border: 1px solid var(--primary-color);
+      border-radius: 4px; z-index: 10; min-width: 120px;
+    }
+    .filter-menu-container:hover .filter-dropdown { display: block; }
+    .filter-item {
+      padding: 8px 12px; cursor: pointer; color: var(--text-color);
+    }
+    .filter-item:hover {
+      background: var(--primary-color); color: #fff;
+    }
+    /* Contenido de cada sección */
+    .tab-content { display: none; animation: fadeIn 0.5s forwards; }
+    .tab-content.active { display: block; }
+    
+    /* Elementos internos del panel derecho */
     .right-panel-image {
-      width: 100%; 
-      height: auto; 
-      border: 2px solid var(--primary-color);
-      background: var(--background-color); 
-      padding: 5px;
-      transition: transform 0.2s;
-      margin-bottom: 20px;
-      border-radius: 4px;
+      width: 100%; height: auto; border: 2px solid var(--primary-color);
+      background: var(--background-color); padding: 5px;
+      transition: transform 0.2s; margin-bottom: 20px; border-radius: 4px;
     }
     .right-panel-image:hover {
       transform: scale(1.02);
       box-shadow: 0 0 10px var(--primary-color);
     }
-    .right-panel-video {
-      width: 100%;
-      height: auto;
-      margin-bottom: 20px;
-    }
+    .right-panel-video { width: 100%; height: auto; margin-bottom: 20px; }
     .mini-chart-container {
-      width: 100%;
-      height: 120px;
-      border: 1px solid var(--primary-color);
-      box-shadow: 0 0 5px var(--primary-color);
-      position: relative;
-      overflow: hidden;
-      margin-bottom: 15px;
-      border-radius: 4px;
+      width: 100%; height: 120px; border: 1px solid var(--primary-color);
+      box-shadow: 0 0 5px var(--primary-color); position: relative;
+      overflow: hidden; margin-bottom: 15px; border-radius: 4px;
       background: #1a1a1a;
     }
-    #miniChart {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
+    #miniChart { width: 100%; height: 100%; display: block; }
     .mp3-player {
-      width: 100%;
-      background: var(--background-color);
-      border: 1px solid var(--primary-color);
-      box-shadow: 0 0 5px var(--primary-color);
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      color: #ffccaa;
-      border-radius: 4px;
+      width: 100%; background: var(--background-color);
+      border: 1px solid var(--primary-color); box-shadow: 0 0 5px var(--primary-color);
+      padding: 10px; display: flex; flex-direction: column; gap: 6px;
+      color: #ffccaa; border-radius: 4px;
     }
     .mp3-album-cover {
-      width: 100px;
-      height: 100px;
-      margin: 0 auto;
-      border: 1px solid var(--primary-color);
-      box-shadow: 0 0 4px var(--primary-color);
-      margin-bottom: 6px;
-      border-radius: 4px;
-      overflow: hidden;
+      width: 100px; height: 100px; margin: 0 auto;
+      border: 1px solid var(--primary-color); box-shadow: 0 0 4px var(--primary-color);
+      margin-bottom: 6px; border-radius: 4px; overflow: hidden;
     }
     .mp3-album-cover img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
+      width: 100%; height: 100%; object-fit: cover; display: block;
     }
     .mp3-player-header {
-      font-size: 12px;
-      text-transform: uppercase;
-      color: var(--primary-color);
-      margin-bottom: 3px;
-      text-align: center;
-      text-shadow: 0 0 3px var(--primary-color);
+      font-size: 12px; text-transform: uppercase; color: var(--primary-color);
+      margin-bottom: 3px; text-align: center; text-shadow: 0 0 3px var(--primary-color);
     }
     #trackTitle {
-      font-size: 13px;
-      text-align: center;
-      margin-bottom: 8px;
-      color: #ffbfc6;
+      font-size: 13px; text-align: center; margin-bottom: 8px; color: #ffbfc6;
     }
     .mp3-player-controls {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-      justify-content: center;
+      display: flex; gap: 6px; align-items: center; justify-content: center;
     }
     .mp3-btn {
-      background: var(--primary-color);
-      border: none;
-      color: #000;
-      padding: 4px 8px;
-      cursor: pointer;
-      text-transform: uppercase;
-      font-size: 11px;
-      transition: background 0.2s;
-      border-radius: 4px;
+      background: var(--primary-color); border: none; color: #000;
+      padding: 4px 8px; cursor: pointer; text-transform: uppercase;
+      font-size: 11px; transition: background 0.2s; border-radius: 4px;
     }
-    .mp3-btn:hover {
-      background: var(--secondary-color);
-    }
+    .mp3-btn:hover { background: var(--secondary-color); }
     .mp3-progress {
-      flex: 1;
-      height: 6px;
-      background: #421111;
-      border: 1px solid var(--primary-color);
-      position: relative;
-      margin: 0 6px;
-      border-radius: 3px;
+      flex: 1; height: 6px; background: #421111;
+      border: 1px solid var(--primary-color); position: relative;
+      margin: 0 6px; border-radius: 3px;
     }
     .mp3-progress-fill {
-      position: absolute;
-      left: 0; top: 0; bottom: 0;
-      width: 0%;
-      background: var(--primary-color);
-      border-radius: 3px;
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: 0%; background: var(--primary-color); border-radius: 3px;
     }
     .mp3-time {
-      font-size: 10px; 
-      color: #ffccaa;
-      width: 40px;
-      text-align: right;
+      font-size: 10px; color: #ffccaa; width: 40px; text-align: right;
     }
     .mp3-volume {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      margin-top: 5px;
+      display: flex; align-items: center; gap: 4px; margin-top: 5px;
       justify-content: center;
     }
     .mp3-volume-label {
-      font-size: 10px; 
-      color: var(--secondary-color);
-      text-transform: uppercase;
+      font-size: 10px; color: var(--secondary-color); text-transform: uppercase;
     }
     .mp3-volume input[type="range"] {
-      width: 80px;
-      -webkit-appearance: none;
-      background: #421111;
-      border: 1px solid var(--primary-color);
-      height: 6px;
-      cursor: pointer;
-      border-radius: 3px;
+      width: 80px; -webkit-appearance: none; background: #421111;
+      border: 1px solid var(--primary-color); height: 6px;
+      cursor: pointer; border-radius: 3px;
     }
     .mp3-volume input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 12px; 
-      height: 12px;
-      background: var(--primary-color);
-      border-radius: 50%;
-      cursor: pointer;
-      border: none;
+      -webkit-appearance: none; width: 12px; height: 12px;
+      background: var(--primary-color); border-radius: 50%;
+      cursor: pointer; border: none;
     }
     
-    /********************************************************
-     * FOOTER BOTONES
-     ********************************************************/
+    /* FOOTER */
     .footer-buttons {
-      position: absolute;
-      bottom: 10px; 
-      right: 20px;
-      display: flex; 
-      gap: 20px;
+      position: absolute; bottom: 10px; right: 20px;
+      display: flex; gap: 20px;
     }
     .footer-btn {
-      color: #fff; 
-      font-size: 12px; 
-      text-transform: uppercase;
-      display: flex; 
-      align-items: center; 
-      gap: 5px;
-      cursor: pointer;
+      color: #fff; font-size: 12px; text-transform: uppercase;
+      display: flex; align-items: center; gap: 5px; cursor: pointer;
       transition: color 0.2s, text-shadow 0.3s;
     }
     .footer-btn:hover {
-      color: var(--primary-color);
-      text-shadow: 0 0 5px var(--primary-color);
+      color: var(--primary-color); text-shadow: 0 0 5px var(--primary-color);
     }
     
-    /********************************************************
-     * ANIMACIÓN DE APARICIÓN .fade-in
-     ********************************************************/
+    /* ANIMACIONES */
     .fade-in {
-      opacity: 0;
-      animation: fadeIn 0.8s forwards;
+      opacity: 0; animation: fadeIn 0.8s forwards;
     }
     @keyframes fadeIn {
-      0% {
-        opacity: 0; 
-        transform: translateY(10px);
-      }
-      100% {
-        opacity: 1; 
-        transform: translateY(0);
-      }
+      0% { opacity: 0; transform: translateY(10px); }
+      100% { opacity: 1; transform: translateY(0); }
     }
     
-    /********************************************************
-     * MEDIA QUERIES PARA RESPONSIVIDAD
-     ********************************************************/
-    @media (max-width: 1200px) {
-      .main-container {
-        grid-template-columns: 250px 1fr 300px;
-      }
-      .top-nav {
-        margin-left: 15px;
-        gap: 10px;
-      }
-      .level-cred {
-        gap: 10px;
-      }
+    /* RESPONSIVIDAD */
+    @media (max-width:1200px) {
+      .main-container { grid-template-columns: 250px 1fr 300px; }
+      .top-nav { margin-left: 15px; gap: 10px; }
+      .level-cred { gap: 10px; }
     }
-    @media (max-width: 992px) {
+    @media (max-width:992px) {
       .main-container {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr;
+        grid-template-columns: 1fr; grid-template-rows: auto 1fr;
       }
       .left-panels, .right-panel, .detail-container {
-        border-right: none;
-        border-bottom: 2px solid var(--primary-color);
+        border-right: none; border-bottom: 2px solid var(--primary-color);
       }
     }
-    @media (max-width: 768px) {
-      .nav-toggle {
-        display: block;
-      }
+    @media (max-width:768px) {
+      .nav-toggle { display: block; }
       .top-nav {
-        position: absolute;
-        top: 50px;
-        left: 0;
-        right: 0;
-        background: #1a1a1a;
-        flex-direction: column;
-        align-items: flex-start;
-        max-height: 0;
-        overflow: hidden;
+        position: absolute; top: 50px; left: 0; right: 0;
+        background: #1a1a1a; flex-direction: column; align-items: flex-start;
+        max-height: 0; overflow: hidden;
       }
-      .top-nav.active {
-        max-height: 300px;
-        padding: 10px 20px;
-      }
-      .top-nav-item {
-        padding: 10px 0;
-        width: 100%;
-      }
+      .top-nav.active { max-height: 300px; padding: 10px 20px; }
+      .top-nav-item { padding: 10px 0; width: 100%; }
       .main-container {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr;
+        grid-template-columns: 1fr; grid-template-rows: auto 1fr;
       }
       .left-panels, .right-panel, .detail-container {
-        border-right: none;
-        border-bottom: 2px solid var(--primary-color);
+        border-right: none; border-bottom: 2px solid var(--primary-color);
       }
     }
-    @media (max-width: 576px) {
+    @media (max-width:576px) {
       .main-container {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr;
+        grid-template-columns: 1fr; grid-template-rows: auto 1fr;
       }
-      .project-list-container, .mission-list-container {
-        padding: 5px 0;
-      }
-      .project-list-title, .mission-list-title {
-        margin: 5px 10px;
-      }
-      .project-item, .mission-item {
-        padding: 8px 10px;
-      }
-      .detail-container, .right-panel {
-        padding: 15px;
-      }
-      .mp3-album-cover {
-        width: 80px;
-        height: 80px;
-      }
-      .mp3-player-controls {
-        gap: 4px;
-      }
-      .mp3-volume input[type="range"] {
-        width: 60px;
-      }
-      .footer-buttons {
-        flex-direction: column;
-        gap: 10px;
-        right: 10px;
-      }
+      .project-list-container, .mission-list-container { padding: 5px 0; }
+      .project-list-title, .mission-list-title { margin: 5px 10px; }
+      .project-item, .mission-item { padding: 8px 10px; }
+      .detail-container, .right-panel { padding: 15px; }
+      .mp3-album-cover { width: 80px; height: 80px; }
+      .mp3-player-controls { gap: 4px; }
+      .mp3-volume input[type="range"] { width: 60px; }
+      .footer-buttons { flex-direction: column; gap: 10px; right: 10px; }
     }
     
-    /********************************************************
-     * ELEMENTOS NUEVOS: Particles, Tutorial, Voz, etc.
-     ********************************************************/
-    /* Particles Background */
+    /* ELEMENTOS ADICIONALES */
     #tsparticles {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       z-index: -2;
     }
-    
-    /* Tutorial Overlay */
     #tutorialOverlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.8);
-      color: #fff;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      padding: 20px;
-      text-align: center;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8); color: #fff; display: none;
+      align-items: center; justify-content: center; z-index: 1000;
+      padding: 20px; text-align: center;
     }
-    #tutorialOverlay.active {
-      display: flex;
-    }
+    #tutorialOverlay.active { display: flex; }
     #tutorialOverlay .close-btn {
-      margin-top: 20px;
-      padding: 10px 20px;
-      background: var(--primary-color);
-      border: none;
-      cursor: pointer;
-      border-radius: 4px;
+      margin-top: 20px; padding: 10px 20px;
+      background: var(--primary-color); border: none;
+      cursor: pointer; border-radius: 4px;
     }
-    
-    /* Botón de Comando de Voz */
     #voiceCommandBtn {
-      position: fixed;
-      bottom: 80px;
-      left: 20px;
-      background: var(--primary-color);
-      color: #000;
-      border: none;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      cursor: pointer;
-      z-index: 1000;
-      font-size: 24px;
+      position: fixed; bottom: 80px; left: 20px;
+      background: var(--primary-color); color: #000;
+      border: none; border-radius: 50%; width: 50px; height: 50px;
+      cursor: pointer; z-index: 1000; font-size: 24px;
     }
-    
-    /* Botón de Pantalla Completa */
     #fullscreenToggle {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      background: var(--primary-color);
-      color: #000;
-      border: none;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      cursor: pointer;
-      z-index: 1000;
-      font-size: 24px;
+      position: fixed; bottom: 20px; left: 20px;
+      background: var(--primary-color); color: #000;
+      border: none; border-radius: 50%; width: 50px; height: 50px;
+      cursor: pointer; z-index: 1000; font-size: 24px;
     }
-    
-    /* Botones de Redes Sociales */
     #socialShare {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 1000;
-      display: flex;
-      gap: 10px;
+      position: fixed; bottom: 20px; right: 20px;
+      z-index: 1000; display: flex; gap: 10px;
     }
     #socialShare a {
-      color: var(--primary-color);
-      font-size: 20px;
-      text-decoration: none;
-      transition: transform 0.2s;
+      color: var(--primary-color); font-size: 20px;
+      text-decoration: none; transition: transform 0.2s;
     }
-    #socialShare a:hover {
-      transform: scale(1.2);
-    }
-    
-    /* Dashboard de Estadísticas */
+    #socialShare a:hover { transform: scale(1.2); }
     #dashboardStats {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: rgba(10,10,10,0.9);
-      color: #ffccaa;
-      padding: 15px;
-      border: 1px solid var(--primary-color);
-      border-radius: 8px;
-      z-index: 1000;
-      display: none;
+      position: fixed; top: 20px; right: 20px;
+      background: rgba(10,10,10,0.9); color: #ffccaa;
+      padding: 15px; border: 1px solid var(--primary-color);
+      border-radius: 8px; z-index: 1000; display: none;
       font-family: 'Orbitron', sans-serif;
     }
-    
-    /* Modal de Configuración de Tema */
     #themeModal {
-      position: fixed;
-      top: 50%;
-      left: 50%;
+      position: fixed; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      background: rgba(10,10,10,0.95);
-      color: #ffccaa;
-      padding: 20px;
-      border: 1px solid var(--primary-color);
-      border-radius: 8px;
-      z-index: 1000;
-      display: none;
-      width: 300px;
-      font-family: 'Orbitron', sans-serif;
+      background: rgba(10,10,10,0.95); color: #ffccaa;
+      padding: 20px; border: 1px solid var(--primary-color);
+      border-radius: 8px; z-index: 1000; display: none;
+      width: 300px; font-family: 'Orbitron', sans-serif;
     }
-    #themeModal.active {
-      display: block;
-    }
+    #themeModal.active { display: block; }
     #themeModal input[type="color"] {
-      width: 100%;
-      height: 40px;
-      border: none;
-      margin-bottom: 10px;
+      width: 100%; height: 40px; border: none; margin-bottom: 10px;
     }
     #themeModal .close-theme-btn {
-      background: var(--primary-color);
-      border: none;
-      padding: 8px;
-      cursor: pointer;
-      width: 100%;
+      background: var(--primary-color); border: none;
+      padding: 8px; cursor: pointer; width: 100%;
       border-radius: 4px;
     }
-    
-    /* Modal de Logros */
     #achievementsModal {
-      position: fixed;
-      bottom: 100px;
-      right: 20px;
-      background: rgba(10,10,10,0.95);
-      color: #ffccaa;
-      padding: 15px;
-      border: 1px solid var(--primary-color);
-      border-radius: 8px;
-      z-index: 1000;
-      display: none;
+      position: fixed; bottom: 100px; right: 20px;
+      background: rgba(10,10,10,0.95); color: #ffccaa;
+      padding: 15px; border: 1px solid var(--primary-color);
+      border-radius: 8px; z-index: 1000; display: none;
       font-family: 'Orbitron', sans-serif;
     }
-    #achievementsModal.active {
-      display: block;
-    }
+    #achievementsModal.active { display: block; }
+    
+    /* Lazy loading */
+    img[loading="lazy"] { opacity: 0; transition: opacity 0.5s ease-in; }
+    img.loaded { opacity: 1; }
   </style>
   
-  <!-- Librería tsParticles para fondo animado -->
-  <script src="https://cdn.jsdelivr.net/npm/tsparticles@1/tsparticles.min.js"></script>
-  
-  <!-- Importar Font Awesome para íconos (usado en redes sociales) -->
-  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<!-- tsParticles -->
+<script src="https://cdn.jsdelivr.net/npm/tsparticles@1/tsparticles.min.js"></script>
+<!-- Socket.IO (Cliente) - Asegúrate de reemplazar la URL por la de tu servidor remoto -->
+<script src="https://tu-servidor.herokuapp.com/socket.io/socket.io.js"></script>
+<!-- Font Awesome -->
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
 </head>
 <body>
-  <!-- Video de fondo: se reproduce en bucle sin detenerse -->
-  <video autoplay muted loop playsinline id="bgVideo">
+  <!-- Video de fondo -->
+  <video autoplay muted loop playsinline id="bgVideo" preload="auto">
     <source src="src/video/Anime girl wallpaper 4k - best purple wallpaper.mp4" type="video/mp4">
     Tu navegador no soporta el elemento de video.
   </video>
   
-  <!-- Fondo de Partículas (detrás de todo) -->
+  <!-- Fondo de Partículas -->
   <div id="tsparticles"></div>
   
   <!-- Overlay de Tutorial -->
@@ -885,25 +474,21 @@
     </div>
   </div>
   
-  <!-- Botón para Comandos de Voz -->
+  <!-- Botones Globales -->
   <button id="voiceCommandBtn" title="Comandos de Voz">🎤</button>
-  
-  <!-- Botón para Pantalla Completa -->
   <button id="fullscreenToggle" title="Pantalla Completa">⛶</button>
-  
-  <!-- Botones de Redes Sociales -->
   <div id="socialShare">
-    <a href="https://twitter.com/intent/tweet?text=¡Mira%20este%20Cyberpunk%20UI!" target="_blank" title="Compartir en Twitter"><i class="fab fa-twitter"></i></a>
-    <a href="https://www.facebook.com/sharer/sharer.php?u=YOUR_URL" target="_blank" title="Compartir en Facebook"><i class="fab fa-facebook"></i></a>
+    <a href="https://twitter.com/intent/tweet?text=¡Mira%20este%20Cyberpunk%20UI!" target="_blank" title="Compartir en Twitter">
+      <i class="fab fa-twitter"></i>
+    </a>
+    <a href="https://www.facebook.com/sharer/sharer.php?u=YOUR_URL" target="_blank" title="Compartir en Facebook">
+      <i class="fab fa-facebook"></i>
+    </a>
   </div>
-  
-  <!-- Dashboard de Estadísticas (se activa con la tecla "D") -->
   <div id="dashboardStats">
     <p>CPU: <span id="cpuUsage">0%</span></p>
     <p>Memoria: <span id="memoryUsage">0MB</span></p>
   </div>
-  
-  <!-- Modal de Configuración de Tema -->
   <div id="themeModal">
     <h3>Ajustes de Tema</h3>
     <label>Color Primario</label>
@@ -914,8 +499,6 @@
     <input type="color" id="accentColorPicker" value="#1e90ff">
     <button class="close-theme-btn" id="closeThemeModalBtn">Aplicar y Cerrar</button>
   </div>
-  
-  <!-- Modal de Logros -->
   <div id="achievementsModal">
     <h4>Logros</h4>
     <ul id="achievementsList">
@@ -923,9 +506,8 @@
     </ul>
   </div>
   
-  <!-- CONTENIDO EXISTENTE -->
-  <!-- TOP BAR -->
-  <div class="top-bar">
+  <!-- HEADER -->
+  <header class="top-bar">
     <div class="top-bar-left">
       <div class="level-cred">
         <div>
@@ -938,11 +520,11 @@
         </div>
       </div>
       <button class="nav-toggle" id="navToggle">&#9776;</button>
-      <div class="top-nav" id="topNav">
+      <nav class="top-nav" id="topNav">
         <a href="main.html" class="top-nav-item">Inicio</a>
         <a href="herramientas.html" class="top-nav-item">Herramientas</a>
         <a href="logros y certificados.html" class="top-nav-item">Logros</a>
-      </div>
+      </nav>
     </div>
     <div class="top-bar-right">
       <div class="stat">
@@ -953,17 +535,20 @@
         <span class="label">E$</span>
         <span class="value">5457</span>
       </div>
-      <!-- Botón para abrir el modal de configuración de tema -->
-      <button id="themeToggle" title="Cambiar Tema" style="background:none; border: 1px solid var(--primary-color); color: #ffd0dc; padding: 5px; cursor: pointer;">Modo Oscuro</button>
+      <button id="themeToggle" title="Cambiar Tema" style="background:none; border: 1px solid var(--primary-color); color: #ffd0dc; padding: 5px; cursor: pointer;">
+        Modo Oscuro
+      </button>
     </div>
-  </div>
+  </header>
   
-  <!-- MAIN CONTAINER (3 columnas) -->
-  <div class="main-container fade-in">
-    <!-- PANELES IZQUIERDA (Projects + Side Jobs) -->
-    <div class="left-panels">
-      <!-- PANEL DE PROYECTOS -->
-      <div class="project-list-container">
+  <!-- MAIN -->
+  <main class="main-container fade-in">
+    <!-- PANEL IZQUIERDO -->
+    <aside class="left-panels">
+      <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Buscar...">
+      </div>
+      <section class="project-list-container">
         <div class="project-list-title">Projects</div>
         <div class="project-list" id="projectList">
           <div class="project-item selected" data-id="neonui">
@@ -979,18 +564,17 @@
             <div class="project-summary">BCI-based user interactions (prototype).</div>
           </div>
         </div>
-      </div>
-      <!-- PANEL DE MISIONES (SIDE JOBS) -->
-      <div class="mission-list-container">
+      </section>
+      <section class="mission-list-container">
         <div class="mission-list-title">Side Jobs</div>
         <div class="mission-list" id="missionList">
           <!-- Se generarán dinámicamente -->
         </div>
-      </div>
-    </div>
-  
-    <!-- PANEL CENTRAL (Detalle de lo seleccionado) -->
-    <div class="detail-container">
+      </section>
+    </aside>
+    
+    <!-- PANEL CENTRAL -->
+    <article class="detail-container">
       <h2 class="detail-title" id="detailTitle">Neon UI</h2>
       <div class="detail-subtitle" id="detailSubtitle">
         Futuristic neon interface concept.
@@ -999,71 +583,187 @@
         <strong>Descripción:</strong><br>
         Neon UI es un concepto de interfaz futurista diseñado para aplicaciones web modernas que buscan una estética ciberpunk...
       </div>
-    </div>
-  
-    <!-- PANEL DERECHO (Imagen / Info Extra) -->
-    <div class="right-panel">
-      <div class="right-panel-title" id="rightPanelTitle">Epistrophy: Badlands</div>
-      <img class="right-panel-image" id="rightPanelImage" src="src/img/celestial.jpg" alt="Epistrophy: Badlands">
-      <video class="right-panel-video" id="rightPanelVideo" autoplay muted loop>
-        <source src="src/video/videoplayback (2).mp4" type="video/mp4">
-        Tu navegador no soporta el elemento de video.
-      </video>
-      <div class="mini-chart-container" id="miniChartContainer">
-        <canvas id="miniChart" width="300" height="120"></canvas>
+    </article>
+    
+    <!-- PANEL DERECHO CON FILTRO DESPLEGABLE -->
+    <aside class="right-panel">
+      <div class="filter-menu-container">
+        <button class="filter-button">Filtros</button>
+        <div class="filter-dropdown">
+          <div class="filter-item" data-tab="tab-general">Visión General</div>
+          <div class="filter-item" data-tab="tab-stats">Estadísticas</div>
+          <div class="filter-item" data-tab="tab-history">Historial</div>
+          <div class="filter-item" data-tab="tab-chat">Chat</div>
+          <div class="filter-item" data-tab="tab-integraciones">Integraciones</div>
+          <div class="filter-item" data-tab="tab-settings">Configuración</div>
+        </div>
       </div>
-      <canvas id="audioVisualizer" width="300" height="100" class="audio-visualizer"></canvas>
-      <div class="mp3-player" id="mp3Player">
-        <div class="mp3-album-cover">
-          <img id="albumCoverIm" src="src/img/celestial.jpg" alt="Album Cover">
+      
+      <!-- Contenido de cada sección -->
+      <div class="tab-content active" id="tab-general">
+        <div class="right-panel-title" id="rightPanelTitle">Epistrophy: Badlands</div>
+        <img class="right-panel-image loaded" id="rightPanelImage" src="src/img/celestial.jpg" alt="Epistrophy: Badlands" loading="lazy">
+        <video class="right-panel-video" id="rightPanelVideo" autoplay muted loop preload="auto">
+          <source src="src/video/videoplayback (2).mp4" type="video/mp4">
+          Tu navegador no soporta el elemento de video.
+        </video>
+        <div class="mini-chart-container" id="miniChartContainer">
+          <canvas id="miniChart" width="300" height="120"></canvas>
         </div>
-        <div class="mp3-player-header">Now Playing</div>
-        <div id="trackTitle">Ambient Cyberpunk</div>
-        <div class="mp3-player-controls">
-          <button class="mp3-btn tooltip" id="playBtn">
-            Play
-            <span class="tooltiptext">Reproducir Música</span>
-          </button>
-          <button class="mp3-btn tooltip" id="pauseBtn">
-            Pause
-            <span class="tooltiptext">Pausar Música</span>
-          </button>
-        </div>
-        <div class="mp3-player-controls" style="margin-top:6px;">
-          <div class="mp3-progress" id="mp3Progress">
-            <div class="mp3-progress-fill" id="mp3ProgressFill"></div>
+        <canvas id="audioVisualizer" width="300" height="100" class="audio-visualizer"></canvas>
+        <div class="mp3-player" id="mp3Player">
+          <div class="mp3-album-cover">
+            <img id="albumCoverIm" src="src/img/celestial.jpg" alt="Album Cover" loading="lazy">
           </div>
-          <div class="mp3-time" id="mp3Time">0:00</div>
+          <div class="mp3-player-header">Now Playing</div>
+          <div id="trackTitle">Ambient Cyberpunk</div>
+          <div class="mp3-player-controls">
+            <button class="mp3-btn tooltip" id="playBtn">
+              Play
+              <span class="tooltiptext">Reproducir Música</span>
+            </button>
+            <button class="mp3-btn tooltip" id="pauseBtn">
+              Pause
+              <span class="tooltiptext">Pausar Música</span>
+            </button>
+          </div>
+          <div class="mp3-player-controls" style="margin-top:6px;">
+            <div class="mp3-progress" id="mp3Progress">
+              <div class="mp3-progress-fill" id="mp3ProgressFill"></div>
+            </div>
+            <div class="mp3-time" id="mp3Time">0:00</div>
+          </div>
+          <div class="mp3-volume">
+            <span class="mp3-volume-label">Vol</span>
+            <input type="range" id="volumeRange" min="0" max="1" step="0.01" value="1">
+          </div>
+          <audio id="audioPlayer"></audio>
         </div>
-        <div class="mp3-volume">
-          <span class="mp3-volume-label">Vol</span>
-          <input type="range" id="volumeRange" min="0" max="1" step="0.01" value="1">
-        </div>
-        <audio id="audioPlayer" src="src/Audio/Future セルフ - Ambient Cyberpunk.mp3"></audio>
       </div>
-    </div>
-  </div>
+      
+      <div class="tab-content" id="tab-stats">
+        <h3 class="right-panel-title">Estadísticas en Tiempo Real</h3>
+        <p>Aquí se mostrarán gráficos interactivos y KPI del sistema.</p>
+        <canvas id="statsChart" width="300" height="150"></canvas>
+      </div>
+      
+      <div class="tab-content" id="tab-history">
+        <h3 class="right-panel-title">Historial de Actividades</h3>
+        <input type="text" id="historySearch" placeholder="Buscar en el historial..." style="width:100%; padding:4px; margin-bottom:10px; border:1px solid var(--primary-color); background:#1a1a1a; color:var(--text-color);">
+        <ul id="historyList" style="list-style:none; max-height:200px; overflow-y:auto;">
+          <li>2025-02-20: Proyecto Neon UI actualizado.</li>
+          <li>2025-02-20: Misión "Epistrophy: Badlands" completada.</li>
+        </ul>
+      </div>
+      
+      <div class="tab-content" id="tab-chat">
+        <h3 class="right-panel-title">Chat en Tiempo Real</h3>
+        <div id="chatWindow" style="background:#1a1a1a; padding:10px; border:1px solid var(--primary-color); height:150px; overflow-y:auto; margin-bottom:10px;">
+          <!-- Los mensajes del chat se mostrarán aquí -->
+        </div>
+        <input type="text" id="chatInput" placeholder="Escribe tu mensaje..." style="width:100%; padding:6px; border:1px solid var(--primary-color); background:#1a1a1a; color:var(--text-color);">
+        <button id="chatSend" style="margin-top:5px; padding:6px 10px; background:var(--primary-color); border:none; cursor:pointer; color:#000; border-radius:4px;">Enviar</button>
+      </div>
+      
+      <div class="tab-content" id="tab-integraciones">
+        <h3 class="right-panel-title">Integraciones Externas</h3>
+        <p>Aquí se mostrarán feeds de noticias y actualizaciones de redes sociales.</p>
+        <ul style="list-style:none; max-height:150px; overflow-y:auto;">
+          <li><strong>Tech News:</strong> Nuevo lanzamiento de API en ciberseguridad.</li>
+          <li><strong>Red Social:</strong> Actualización de tendencias en diseño UI.</li>
+        </ul>
+      </div>
+      
+      <div class="tab-content" id="tab-settings">
+        <h3 class="right-panel-title">Configuración Avanzada</h3>
+        <p>Aquí puedes personalizar opciones adicionales:</p>
+        <label>
+          <input type="checkbox" id="toggleAnimations" checked>
+          Activar Animaciones
+        </label><br>
+        <label for="animationSpeed">Velocidad de Animación:</label>
+        <input type="range" id="animationSpeed" min="0.5" max="2" step="0.1" value="1">
+        <span id="animationSpeedValue">1x</span><br>
+        <label>
+          <input type="checkbox" id="toggleNotifications" checked>
+          Activar Notificaciones
+        </label><br>
+        <label>
+          <input type="checkbox" id="toggleSoundNotifications" checked>
+          Activar Notificaciones Sonoras
+        </label><br>
+        <label>
+          <input type="checkbox" id="toggleVibration" checked>
+          Activar Vibración
+        </label><br>
+        <label>
+          <input type="checkbox" id="toggleHighContrast">
+          Activar Modo de Alto Contraste
+        </label><br>
+        <label>
+          <input type="checkbox" id="toggleLayout" checked>
+          Layout Personalizable (drag &amp; drop habilitado)
+        </label>
+        <p style="margin-top:10px; font-size:12px; color:var(--accent-color);">
+          Puedes reordenar los proyectos en el panel izquierdo y guardar tu configuración.
+        </p>
+      </div>
+    </aside>
+  </main>
   
-  <!-- FOOTER BOTONES -->
-  <div class="footer-buttons">
-    <div class="footer-btn">
-      <span>[ E ]</span> Select
-    </div>
-    <div class="footer-btn">
-      <span>[ R ]</span> Track Objective
-    </div>
-    <div class="footer-btn">
-      <span>[ Esc ]</span> Close
-    </div>
-  </div>
+  <!-- FOOTER -->
+  <footer class="footer-buttons">
+    <div class="footer-btn"><span>[ E ]</span> Select</div>
+    <div class="footer-btn"><span>[ R ]</span> Track Objective</div>
+    <div class="footer-btn"><span>[ Esc ]</span> Close</div>
+  </footer>
   
   <!-- SCRIPTS Y FUNCIONALIDADES -->
   <script>
     /************************************************************
-     * Inicializaciones y Funciones de Nuevas Características
+     * Funcionalidades integrales: Playlist, lazy loading, tsParticles,
+     * parallax, atajos de teclado, comandos de voz, búsqueda, tabs, chat, etc.
      ************************************************************/
     
-    // --- Particles Background ---
+    // Playlist para el MP3 Player
+    const playlist = [
+      { title: "Ambient Cyberpunk", src: "src/Audio/Future セルフ - Ambient Cyberpunk.mp3", cover: "src/img/celestial.jpg" },
+      { title: "Second Track", src: "src/Audio/second-track.mp3", cover: "src/img/cover2.jpg" }
+    ];
+    let currentTrack = 0;
+    const audioPlayer = document.getElementById('audioPlayer');
+    const trackTitle = document.getElementById('trackTitle');
+    const albumCover = document.getElementById('albumCoverIm');
+    function loadTrack(index) {
+      const track = playlist[index];
+      trackTitle.textContent = track.title;
+      albumCover.src = track.cover;
+      audioPlayer.src = track.src;
+    }
+    loadTrack(currentTrack);
+    document.getElementById('playBtn').addEventListener('click', () => { audioPlayer.play(); });
+    document.getElementById('pauseBtn').addEventListener('click', () => { audioPlayer.pause(); });
+    audioPlayer.addEventListener('ended', () => {
+      currentTrack = (currentTrack + 1) % playlist.length;
+      loadTrack(currentTrack);
+      audioPlayer.play();
+    });
+    
+    // Lazy loading con IntersectionObserver
+    if ('IntersectionObserver' in window) {
+      const lazyImages = document.querySelectorAll('img[loading="lazy"]');
+      const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('loaded');
+            obs.unobserve(entry.target);
+          }
+        });
+      });
+      lazyImages.forEach(img => observer.observe(img));
+    }
+    
+    // tsParticles
     tsParticles.load("tsparticles", {
       "particles": {
         "number": { "value": 80 },
@@ -1074,20 +774,18 @@
         "move": { "enable": true, "speed": 2 }
       },
       "interactivity": {
-        "events": {
-          "onhover": { "enable": true, "mode": "repulse" }
-        }
+        "events": { "onhover": { "enable": true, "mode": "repulse" } }
       }
     });
     
-    // --- Parallax para el Video de Fondo ---
+    // Parallax para Video de Fondo
     document.addEventListener('mousemove', (e) => {
       const x = (e.clientX / window.innerWidth - 0.5) * 20;
       const y = (e.clientY / window.innerHeight - 0.5) * 20;
       document.getElementById('bgVideo').style.transform = `translate(${x}px, ${y}px)`;
     });
     
-    // --- Keyboard Shortcuts ---
+    // Atajos de Teclado
     let currentProjectIndex = 0;
     function initializeKeyboardShortcuts() {
       const projectItems = Array.from(document.querySelectorAll('.project-item'));
@@ -1100,7 +798,7 @@
             projectItems.forEach(item => item.classList.remove('selected'));
             projectItems[currentProjectIndex].classList.add('selected');
             projectItems[currentProjectIndex].click();
-            navigator.vibrate && navigator.vibrate(50);
+            if(window.vibrationEnabled) navigator.vibrate(50);
             break;
           case 'ArrowUp':
             currentProjectIndex = (currentProjectIndex - 1 + projectItems.length) % projectItems.length;
@@ -1108,28 +806,24 @@
             projectItems.forEach(item => item.classList.remove('selected'));
             projectItems[currentProjectIndex].classList.add('selected');
             projectItems[currentProjectIndex].click();
-            navigator.vibrate && navigator.vibrate(50);
+            if(window.vibrationEnabled) navigator.vibrate(50);
             break;
-          case 'e':
-          case 'E':
+          case 'e': case 'E':
             projectItems[currentProjectIndex].click();
-            navigator.vibrate && navigator.vibrate(50);
+            if(window.vibrationEnabled) navigator.vibrate(50);
             break;
-          case 'r':
-          case 'R':
+          case 'r': case 'R':
             showNotification('Track Objective activated');
-            navigator.vibrate && navigator.vibrate(50);
+            if(window.vibrationEnabled) navigator.vibrate(50);
             break;
           case 'Escape':
             document.getElementById('topNav').classList.remove('active');
             break;
-          case 'd':
-          case 'D':
+          case 'd': case 'D':
             const dashboard = document.getElementById('dashboardStats');
             dashboard.style.display = (dashboard.style.display === 'block') ? 'none' : 'block';
             break;
-          case 'v':
-          case 'V':
+          case 'v': case 'V':
             document.getElementById('voiceCommandBtn').click();
             break;
         }
@@ -1137,7 +831,7 @@
     }
     initializeKeyboardShortcuts();
     
-    // --- Voice Commands ---
+    // Comandos de Voz
     let recognition;
     function initializeVoiceCommands() {
       const voiceBtn = document.getElementById('voiceCommandBtn');
@@ -1153,15 +847,10 @@
       recognition.onresult = function(event) {
         const command = event.results[0][0].transcript.toLowerCase();
         showNotification(`Comando de voz: ${command}`);
-        if (command.includes("play")) {
-          document.getElementById('playBtn').click();
-        } else if (command.includes("pause")) {
-          document.getElementById('pauseBtn').click();
-        } else if (command.includes("fullscreen")) {
-          toggleFullscreen();
-        } else if (command.includes("theme")) {
-          document.getElementById('themeToggle').click();
-        }
+        if (command.includes("play")) { document.getElementById('playBtn').click(); }
+        else if (command.includes("pause")) { document.getElementById('pauseBtn').click(); }
+        else if (command.includes("fullscreen")) { toggleFullscreen(); }
+        else if (command.includes("theme")) { document.getElementById('themeToggle').click(); }
       };
       recognition.onerror = function(event) {
         showNotification(`Error en reconocimiento de voz: ${event.error}`);
@@ -1169,18 +858,16 @@
       voiceBtn.addEventListener('click', () => {
         recognition.start();
         showNotification("Escuchando comandos de voz...");
-        navigator.vibrate && navigator.vibrate(50);
+        if(window.vibrationEnabled) navigator.vibrate(50);
       });
     }
     initializeVoiceCommands();
     
-    // --- Tutorial Overlay ---
+    // Tutorial Overlay
     function initializeTutorial() {
       const tutorialShown = localStorage.getItem('tutorialShown');
       const tutorialOverlay = document.getElementById('tutorialOverlay');
-      if (!tutorialShown) {
-        tutorialOverlay.classList.add('active');
-      }
+      if (!tutorialShown) { tutorialOverlay.classList.add('active'); }
       document.getElementById('closeTutorialBtn').addEventListener('click', () => {
         tutorialOverlay.classList.remove('active');
         localStorage.setItem('tutorialShown', 'true');
@@ -1188,19 +875,14 @@
     }
     initializeTutorial();
     
-    // --- Fullscreen Toggle ---
+    // Pantalla Completa
     function toggleFullscreen() {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
-      } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        }
-      }
+      if (!document.fullscreenElement) { document.documentElement.requestFullscreen(); }
+      else { if (document.exitFullscreen) { document.exitFullscreen(); } }
     }
     document.getElementById('fullscreenToggle').addEventListener('click', toggleFullscreen);
     
-    // --- Dashboard Stats (Datos simulados) ---
+    // Dashboard Stats (simulados)
     function initializeDashboardStats() {
       function updateStats() {
         document.getElementById('cpuUsage').textContent = Math.floor(Math.random() * 100) + '%';
@@ -1210,12 +892,12 @@
     }
     initializeDashboardStats();
     
-    // --- Theme Settings Modal ---
+    // Configuración de Tema
     const themeModal = document.getElementById('themeModal');
     const themeToggle = document.getElementById('themeToggle');
     themeToggle.addEventListener('click', () => {
       themeModal.classList.toggle('active');
-      navigator.vibrate && navigator.vibrate(50);
+      if(window.vibrationEnabled) navigator.vibrate(50);
     });
     document.getElementById('closeThemeModalBtn').addEventListener('click', () => {
       document.documentElement.style.setProperty('--primary-color', document.getElementById('primaryColorPicker').value);
@@ -1223,10 +905,29 @@
       document.documentElement.style.setProperty('--accent-color', document.getElementById('accentColorPicker').value);
       themeModal.classList.remove('active');
       showNotification('Tema actualizado');
-      navigator.vibrate && navigator.vibrate(50);
+      if(window.vibrationEnabled) navigator.vibrate(50);
     });
     
-    // --- Achievements System ---
+    // Configuración Avanzada: nuevas opciones
+    document.getElementById('animationSpeed').addEventListener('input', function() {
+      const speed = this.value;
+      document.getElementById('animationSpeedValue').textContent = speed + "x";
+      window.animationSpeedFactor = speed;
+    });
+    let soundNotificationsEnabled = document.getElementById('toggleSoundNotifications').checked;
+    document.getElementById('toggleSoundNotifications').addEventListener('change', function() {
+      soundNotificationsEnabled = this.checked;
+    });
+    window.vibrationEnabled = document.getElementById('toggleVibration').checked;
+    document.getElementById('toggleVibration').addEventListener('change', function() {
+      window.vibrationEnabled = this.checked;
+    });
+    document.getElementById('toggleHighContrast').addEventListener('change', function() {
+      if (this.checked) { document.body.classList.add('high-contrast'); }
+      else { document.body.classList.remove('high-contrast'); }
+    });
+    
+    // Sistema de Logros
     let achievements = JSON.parse(localStorage.getItem('achievements')) || [];
     function addAchievement(title) {
       if (!achievements.includes(title)) {
@@ -1234,7 +935,7 @@
         localStorage.setItem('achievements', JSON.stringify(achievements));
         updateAchievementsModal();
         showNotification(`Logro desbloqueado: ${title}`);
-        navigator.vibrate && navigator.vibrate([100, 50, 100]);
+        if(window.vibrationEnabled) navigator.vibrate([100,50,100]);
       }
     }
     function updateAchievementsModal() {
@@ -1248,7 +949,7 @@
     }
     updateAchievementsModal();
     
-    // --- Funciones Existentes de Notificaciones y Sonidos ---
+    // Notificaciones y Sonidos
     function showNotification(message) {
       let notificationContainer = document.getElementById('notificationContainer');
       if (!notificationContainer) {
@@ -1263,27 +964,19 @@
       notificationContainer.appendChild(notification);
       setTimeout(() => { notification.remove(); }, 4000);
     }
-    
     const clickSound = new Audio('path/to/click-sound.mp3');
     const notificationSound = new Audio('path/to/notification-sound.mp3');
+    function playClickSound() { clickSound.currentTime = 0; clickSound.play(); }
+    function playNotificationSound() { notificationSound.currentTime = 0; notificationSound.play(); }
     
-    function playClickSound() {
-      clickSound.currentTime = 0;
-      clickSound.play();
-    }
-    function playNotificationSound() {
-      notificationSound.currentTime = 0;
-      notificationSound.play();
-    }
-    
-    // --- Lógica de Proyectos y Misiones ---
+    // Lógica de Proyectos y Misiones
     const projectData = {
       neonui: {
         title: "Neon UI",
         subtitle: "Futuristic neon interface concept.",
-        description: ` 
+        description: `
           <strong>Descripción:</strong><br>
-          Neon UI es un concepto de interfaz futurista diseñado para aplicaciones web modernas que buscan una estética ciberpunk.  
+          Neon UI es un concepto de interfaz futurista diseñado para aplicaciones web modernas que buscan una estética ciberpunk.
           <strong>Características Principales:</strong>
           <ul>
             <li>Esquemas de Colores Neón</li>
@@ -1305,9 +998,9 @@
       hackingpanel: {
         title: "Hacking Panel",
         subtitle: "Immersive hacking mini-game mechanics.",
-        description: ` 
+        description: `
           <strong>Descripción:</strong><br>
-          Hacking Panel es un mini-juego inmersivo que simula técnicas de intrusión.  
+          Hacking Panel es un mini-juego inmersivo que simula técnicas de intrusión.
           <strong>Características Principales:</strong>
           <ul>
             <li>Secuencias de Rompecabezas Netrunner</li>
@@ -1325,9 +1018,9 @@
       braininterface: {
         title: "Brain Interface",
         subtitle: "BCI-based user interactions (prototype).",
-        description: ` 
+        description: `
           <strong>Descripción:</strong><br>
-          Brain Interface es un prototipo que permite controlar interfaces mediante señales neuronales.  
+          Brain Interface es un prototipo que permite controlar interfaces mediante señales neuronales.
           <strong>Características Principales:</strong>
           <ul>
             <li>Control por Señales Neuronales</li>
@@ -1343,7 +1036,6 @@
         liveDemo: "https://tusitio.com/braininterface"
       }
     };
-    
     const missionData = {
       badlands: {
         title: "Epistrophy: Badlands",
@@ -1374,7 +1066,6 @@
         progress: 40
       }
     };
-    
     function createMissionItem(id, data, isSelected = false) {
       const missionItem = document.createElement('div');
       missionItem.classList.add('mission-item');
@@ -1419,7 +1110,6 @@
       });
       return missionItem;
     }
-    
     function initializeMissions() {
       let isFirst = true;
       for (const [id, data] of Object.entries(missionData)) {
@@ -1429,7 +1119,6 @@
       }
     }
     initializeMissions();
-    
     function loadSelectedMission() {
       const selectedMission = localStorage.getItem('selectedMission');
       if (selectedMission) {
@@ -1444,7 +1133,6 @@
     const detailSubtitle = document.getElementById("detailSubtitle");
     const detailDescription = document.getElementById("detailDescription");
     const detailContainer = document.querySelector('.detail-container');
-    
     projectItems.forEach(item => {
       item.addEventListener("click", () => {
         projectItems.forEach(i => i.classList.remove("selected"));
@@ -1455,7 +1143,6 @@
         setTimeout(() => {
           detailTitle.textContent = data.title;
           detailSubtitle.textContent = data.subtitle;
-          // Se actualiza la descripción para incluir los enlaces
           detailDescription.innerHTML = data.description +
             `<br><br><strong>Enlaces:</strong>
             <ul>
@@ -1473,7 +1160,6 @@
         }, 500);
       });
     });
-    
     function loadSelectedProject() {
       const selectedProject = localStorage.getItem('selectedProject');
       if (selectedProject) {
@@ -1483,68 +1169,28 @@
     }
     loadSelectedProject();
     
-    // --- Mini Chart Animation ---
+    // Mini Chart Animation
     const miniChartCanvas = document.getElementById('miniChart');
     const miniChartCtx = miniChartCanvas.getContext('2d');
     let waveOffset = 0;
+    window.animationSpeedFactor = 1;
     function drawMiniChart(){
       miniChartCtx.clearRect(0, 0, miniChartCanvas.width, miniChartCanvas.height);
       miniChartCtx.strokeStyle = '#ff0040';
       miniChartCtx.lineWidth = 2;
       miniChartCtx.beginPath();
-      for(let x=0; x<miniChartCanvas.width; x++){
-        const y = Math.sin((x + waveOffset)*0.05)*20 + (miniChartCanvas.height/2);
-        if(x===0){ miniChartCtx.moveTo(x, y); }
+      for(let x = 0; x < miniChartCanvas.width; x++){
+        const y = Math.sin((x + waveOffset) * 0.05) * 20 + (miniChartCanvas.height / 2);
+        if(x === 0) { miniChartCtx.moveTo(x, y); }
         else { miniChartCtx.lineTo(x, y); }
       }
       miniChartCtx.stroke();
-      waveOffset += 2;
+      waveOffset += 2 * window.animationSpeedFactor;
       requestAnimationFrame(drawMiniChart);
     }
     drawMiniChart();
     
-    // --- MP3 Player ---
-    const audioPlayer = document.getElementById('audioPlayer');
-    const playBtn = document.getElementById('playBtn');
-    const pauseBtn = document.getElementById('pauseBtn');
-    const volumeRange = document.getElementById('volumeRange');
-    const mp3Progress = document.getElementById('mp3Progress');
-    const mp3ProgressFill = document.getElementById('mp3ProgressFill');
-    const mp3Time = document.getElementById('mp3Time');
-    const trackTitle = document.getElementById('trackTitle');
-    
-    playBtn.addEventListener('click', () => {
-      audioPlayer.play();
-      showNotification(`Reproduciendo: ${trackTitle.textContent}`);
-      playClickSound();
-      playNotificationSound();
-      addAchievement('Música reproducida');
-    });
-    pauseBtn.addEventListener('click', () => {
-      audioPlayer.pause();
-      showNotification('Música pausada');
-      playClickSound();
-      playNotificationSound();
-    });
-    audioPlayer.addEventListener('timeupdate', () => {
-      const current = audioPlayer.currentTime;
-      const duration = audioPlayer.duration || 0;
-      const percent = (current / duration)*100;
-      mp3ProgressFill.style.width = percent + '%';
-      const m = Math.floor(current/60);
-      const s = Math.floor(current%60);
-      mp3Time.textContent = `${m}:${s<10?'0'+s:s}`;
-    });
-    audioPlayer.addEventListener('ended', () => {
-      mp3ProgressFill.style.width = '0%';
-      mp3Time.textContent = '0:00';
-    });
-    volumeRange.addEventListener('input', () => {
-      audioPlayer.volume = volumeRange.value;
-    });
-    volumeRange.value = 1;
-    
-    // --- Audio Visualizer ---
+    // Audio Visualizer
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const analyser = audioCtx.createAnalyser();
     const source = audioCtx.createMediaElementSource(audioPlayer);
@@ -1555,7 +1201,6 @@
     const dataArray = new Uint8Array(bufferLength);
     const audioVisualizerCanvas = document.getElementById('audioVisualizer');
     const audioVisualizerCtx = audioVisualizerCanvas.getContext('2d');
-    
     function drawAudioVisualizer() {
       requestAnimationFrame(drawAudioVisualizer);
       analyser.getByteFrequencyData(dataArray);
@@ -1574,7 +1219,7 @@
       audioCtx.resume().then(() => { drawAudioVisualizer(); });
     });
     
-    // --- Responsive Navigation ---
+    // Responsive Navigation
     const navToggle = document.getElementById('navToggle');
     const topNav = document.getElementById('topNav');
     navToggle.addEventListener('click', (e) => {
@@ -1587,7 +1232,7 @@
       }
     });
     
-    // --- Drag-and-Drop (SortableJS) ---
+    // Drag-and-Drop (SortableJS) en el panel izquierdo
     function importSortable() {
       const script = document.createElement('script');
       script.src = 'https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js';
@@ -1620,9 +1265,64 @@
       }
     }
     importSortable();
+    
+    // Manejo del Filtro Desplegable en el Panel Derecho
+    const filterItems = document.querySelectorAll('.filter-item');
+    const tabContents = document.querySelectorAll('.tab-content');
+    filterItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const targetTab = item.getAttribute('data-tab');
+        tabContents.forEach(content => content.classList.remove('active'));
+        document.getElementById(targetTab).classList.add('active');
+      });
+    });
+    
+    // Búsqueda en el Panel Izquierdo
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', () => {
+      const filter = searchInput.value.toLowerCase();
+      const projectItems = document.querySelectorAll('.project-item');
+      const missionItems = document.querySelectorAll('.mission-item');
+      projectItems.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.style.display = text.includes(filter) ? 'flex' : 'none';
+      });
+      missionItems.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.style.display = text.includes(filter) ? 'flex' : 'none';
+      });
+    });
+    
+    // Chat en Tiempo Real con Socket.IO
+    const socket = io('https://tu-servidor.herokuapp.com');
+
+    const chatInput = document.getElementById('chatInput');
+    const chatSend = document.getElementById('chatSend');
+    const chatWindow = document.getElementById('chatWindow');
+    chatSend.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') { sendMessage(); }
+    });
+    function sendMessage() {
+      const message = chatInput.value.trim();
+      if (message !== "") {
+        socket.emit('chat message', message);
+        chatInput.value = "";
+      }
+    }
+    socket.on('chat message', (msg) => {
+      const p = document.createElement('p');
+      p.textContent = msg;
+      chatWindow.appendChild(p);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+    });
+    
+    // Placeholder para el gráfico en la pestaña Estadísticas
+    const statsChart = document.getElementById('statsChart').getContext('2d');
+    // Aquí se puede integrar Chart.js o D3.js para gráficos interactivos.
   </script>
   
-  <!-- Parallax effect para el Video de Fondo -->
+  <!-- Parallax para el Video de Fondo -->
   <script>
     document.addEventListener('mousemove', (e) => {
       const x = (e.clientX / window.innerWidth - 0.5) * 20;
@@ -1632,6 +1332,9 @@
   </script>
 </body>
 </html>
+
+
+
 
 
 
