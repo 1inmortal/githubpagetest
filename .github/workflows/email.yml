@@ -1,0 +1,27 @@
+name: Enviar Email de Actualización
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  send-email:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Necesario para obtener historia de commits
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Enviar email
+        env:
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
+          DESTINATARIO: ${{ secrets.DESTINATARIO }}
+        run: |
+          python send_email.py
