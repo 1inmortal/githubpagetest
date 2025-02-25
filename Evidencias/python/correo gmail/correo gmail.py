@@ -16,7 +16,7 @@ def email_alert(subject, body, to, html_content=None):
     msg['Subject'] = subject
     msg['To'] = to
     msg['From'] = "jarmando2965@gmail.com"  # Reemplaza con tu dirección de Gmail
-    user = "jarmando2965@gmail.com"
+    user = " jarmando2965@gmail.com"
 
     # **IMPORTANTE: Usar contraseñas de aplicaciones si tienes habilitado 2FA en tu cuenta de Google.**
     password = "lcyg ltuv iiig wank"  # Utiliza una contraseña de aplicación en lugar de tu contraseña de Gmail principal
@@ -47,272 +47,160 @@ if __name__ == "__main__":
     cuerpo_html = """
     <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="x-apple-disable-message-reformatting">
+    <title>Portfolio Dev - [Tu Nombre]</title>
     <style>
-      body {
-        font-family: 'Segoe UI', Arial, sans-serif;
-        background: linear-gradient(135deg, #0a192f 0%, #1a365d 100%);
-        color: #ffffff;
-        margin: 0;
-        padding: 20px 0;
-        line-height: 1.5;
-      }
-
-      .container {
-        max-width: 680px;
-        margin: 0 auto;
-        background: rgba(16, 24, 39, 0.95);
-        border-radius: 16px;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 40px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-      }
-
-      h1 {
-        color: #00f3ff;
-        text-align: center;
-        font-size: 2.4em;
-        margin-bottom: 30px;
-        text-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
-      }
-
-      h2 {
-        color: #7b61ff;
-        text-align: center;
-        font-size: 2em;
-        margin-bottom: 25px;
-      }
-
-      h3, p {
-        color: #ffffff;
-      }
-
-      .cta-button {
-        background: linear-gradient(135deg, #7b61ff 0%, #00f3ff 100%);
-        color: #ffffff;
-        padding: 14px 32px;
-        border-radius: 8px;
-        font-weight: bold;
-        text-align: center;
-        display: inline-block;
-        margin: 25px 0;
-        text-decoration: none;
-        box-shadow: 0 4px 15px rgba(123, 97, 255, 0.3);
-        transition: transform 0.3s ease;
-      }
-
-      .cta-button:hover {
-        transform: translateY(-2px);
-      }
-
-      .project-card {
-        background: rgba(255, 255, 255, 0.05);
-        padding: 20px;
-        border-radius: 12px;
-        margin-bottom: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 4px 12px rgba(0, 243, 255, 0.2);
-      }
-
-      .project-card h3 {
-        color: #00f3ff;
-        margin-bottom: 10px;
-      }
-
-      .project-card p {
-        margin-bottom: 10px;
-      }
-
-      .tech-stack {
-        display: flex;
-        justify-content: center;
-        gap: 25px;
-        margin: 30px 0;
-      }
-
-      .tech-icon {
-        width: 50px;
-        filter: drop-shadow(0 0 8px rgba(0, 243, 255, 0.3));
-      }
-
-      .social-links {
-        text-align: center;
-        margin-top: 40px;
-        padding-top: 30px;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-      }
-
-      .social-button {
-        background: linear-gradient(135deg, #7b61ff 0%, #00f3ff 100%);
-        color: #ffffff;
-        padding: 12px 28px;
-        margin: 10px;
-        border-radius: 8px;
-        font-weight: bold;
-        display: inline-block;
-        text-decoration: none;
-        transition: transform 0.3s ease;
-      }
-
-      .social-button:hover {
-        transform: translateY(-4px);
-      }
-
-      .timeline {
-        border-left: 3px solid #7b61ff;
-        padding-left: 25px;
-        margin: 30px 0;
-      }
-
-      .timeline-item {
-        margin: 20px 0;
-        position: relative;
-      }
-
-      .timeline-item:before {
-        content: "";
-        position: absolute;
-        left: -30px;
-        top: 5px;
-        width: 12px;
-        height: 12px;
-        background: #00f3ff;
-        border-radius: 50%;
-      }
-
-      ul {
-        color: #ffffff;
-        margin-left: 20px;
-        padding-left: 10px;
-      }
-
-      li {
-        margin-bottom: 8px;
-        line-height: 1.6;
-      }
+        /* Reset y Estilos Base */
+        body { margin: 0; padding: 0; -webkit-text-size-adjust: 100%; 
+               font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.6;
+               background: #0f172a; color:rgb(71, 109, 148); }
+        
+        .container { max-width: 680px; margin: 0 auto; padding: 30px; }
+        
+        /* Componentes Reutilizables */
+        .section-card { background: #1e293b; border-radius: 12px; padding: 25px; margin: 20px 0; }
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; }
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        
+        /* Encabezado */
+        .profile-header { text-align: center; margin-bottom: 30px; }
+        .avatar { width: 120px; height: 120px; border-radius: 50%; border: 3px solid #3b82f6; }
+        
+        /* GitHub Spotlight */
+        .github-section { background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); }
+        .commit-feed { border-left: 2px solid #3b82f6; padding-left: 20px; }
+        
+        /* Habilidades Técnicas */
+        .skill-meter { height: 8px; background: #334155; border-radius: 4px; margin: 10px 0; }
+        .skill-progress { height: 100%; background: linear-gradient(90deg, #3b82f6, #6366f1); border-radius: 4px; }
+        
+        /* Responsive */
+        @media (max-width: 600px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .container { padding: 15px; }
+        }
     </style>
-  </head>
-  <body>
+</head>
+
+<body>
     <div class="container">
-      <h1>🚀 Resumen del Proyecto: QuantumCode</h1>
-      
-      <!-- Sección Línea Temporal Cuántica -->
-      <h2>⏳ Línea Temporal Cuántica</h2>
-      <div class="project-card">
-        <h3>⚡ Hitos de Desarrollo</h3>
-        <div class="timeline">
-          <div class="timeline-item">
-            <p><strong>2025-Q3:</strong> Integración con computación cuántica de IBM</p>
-          </div>
-          <div class="timeline-item">
-            <p><strong>2026-Q1:</strong> Lanzamiento del SDK para desarrolladores</p>
-          </div>
-          <div class="timeline-item">
-            <p><strong>2026-Q4:</strong> Implementación de algoritmos post-cuánticos</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sección Colaboraciones Galácticas -->
-      <h2>🌌 Colaboraciones Galácticas</h2>
-      <div class="project-card">
-        <h3>🔗 Alianzas Interdimensionales</h3>
-        <p>Proyectos conjuntos con organizaciones pioneras en tecnología cuántica:</p>
-        <ul>
-          <li>NASA Quantum Lab - Optimización de trayectorias espaciales</li>
-          <li>CERN Q-Network - Simulación de partículas subatómicas</li>
-        </ul>
-        <a href="#" class="cta-button">Ver Alianzas</a>
-      </div>
-
-      <!-- Sección Innovaciones Disruptivas -->
-      <h2>🧠 Innovaciones Disruptivas</h2>
-      <div class="project-card">
-        <h3>🤖 Neuro-Interfaces Cuánticas</h3>
-        <p>Desarrollo de interfaces cerebro-computadora utilizando:</p>
-        <div class="tech-stack">
-          <img src="https://cdn-icons-png.flaticon.com/512/2587/2587902.png" class="tech-icon" alt="NeuroTech">
-          <img src="https://cdn-icons-png.flaticon.com/512/2332/2332498.png" class="tech-icon" alt="Quantum Processor">
-        </div>
-        <p>Latencia reducida a 0.5ns - Compatibilidad con implantes neurales</p>
-      </div>
-
-      <!-- Sección Realidad Holográfica -->
-      <h2>🌀 Realidad Holográfica</h2>
-      <div class="project-card">
-        <h3>📡 Proyecto HoloCore</h3>
-        <p>Sistema de renderizado holográfico en tiempo real usando:</p>
-        <div class="tech-stack">
-          <img src="https://cdn-icons-png.flaticon.com/512/3522/3522669.png" class="tech-icon" alt="Photonics">
-          <img src="https://cdn-icons-png.flaticon.com/512/1260/1260667.png" class="tech-icon" alt="AI Rendering">
-        </div>
-        <p>Resolución 8K holográfica - Soporte para multi-usuario</p>
-        <a href="#" class="cta-button">Demo Interactiva</a>
-      </div>
-
-      <!-- Sección Seguridad Cuántica -->
-      <h2>🔐 Seguridad Cuántica</h2>
-      <div class="project-card">
-        <h3>🛡️ Q-Shield Protocol</h3>
-        <p>Criptografía post-cuántica con:</p>
-        <ul>
-          <li>Encriptación lattice-based</li>
-          <li>Autenticación biométrica cuántica</li>
-          <li>Protección contra ataques Q-Day</li>
-        </ul>
-        <div class="tech-stack">
-          <img src="https://cdn-icons-png.flaticon.com/512/2092/2092663.png" class="tech-icon" alt="Cryptography">
-        </div>
-      </div>
-
-      <!-- Secciones Originales -->
-      <h2>Proyectos en GitHub</h2>
-      <div class="project-card">
-        <h3>✨ Proyecto: QuantumAI</h3>
-        <p><strong>Descripción:</strong> Desarrollo de un sistema de inteligencia artificial para la predicción cuántica.</p>
-        <p><strong>Estado:</strong> Finalizado, versión 1.0 desplegada.</p>
-        <a href="https://github.com/1inmortal/quantum-ai" class="cta-button">Ver Proyecto</a>
-      </div>
-
-      <div class="project-card">
-        <h3>🛠 Proyecto: QuantumCloud</h3>
-        <p><strong>Descripción:</strong> Integración de tecnologías cuánticas con la nube de AWS.</p>
-        <p><strong>Estado:</strong> En desarrollo, versión 0.9.</p>
-        <a href="https://github.com/1inmortal/quantum-cloud" class="cta-button">Ver Proyecto</a>
-      </div>
-
-      <div class="tech-stack">
-        <img src="https://cdn-icons-png.flaticon.com/512/5968/5968350.png" class="tech-icon" alt="Python">
-        <img src="https://cdn-icons-png.flaticon.com/512/6132/6132222.png" class="tech-icon" alt="C++">
-        <img src="https://cdn-icons-png.flaticon.com/512/1260/1260667.png" class="tech-icon" alt="AI">
-      </div>
-
-      <center>
-        <a href="https://github.com/1inmortal" class="cta-button">Explorar Repositorio</a>
-      </center>
-
-      <div class="social-links">
-        <a href="https://github.com/1inmortal" class="social-button">GitHub</a>
-        <a href="https://www.linkedin.com/in/1inmortal/" class="social-button">LinkedIn</a>
-        <a href="https://twitter.com/1inmortal" class="social-button">Twitter</a>
-        <a href="https://gitlab.com/1inmortal" class="social-button">GitLab</a>
-      </div>
-
-      <p style="text-align: center; color: #7b61ff; margin-top: 25px;">
-        ✉️ Contacto: equipo@quantumcode.dev | 🌐 www.quantumcode.dev
-      </p>
+        <!-- Encabezado del Perfil -->
+       <header class="profile-header">
+    <img src="https://media.licdn.com/dms/image/v2/D4E03AQFZu3kCTJa-8Q/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1731334107436?e=1746057600&v=beta&t=OE0H1br-2Zuwokl07q6wq9whzxH8cHm8bCs4-m1A6Ak" class="avatar" alt="José Armando">
+    
+    <h1 style="color: #3b82f6; margin: 15px 0;">Espinosa Martinez Jose Armando</h1>
+    
+    <div style="margin: 15px 0;">
+        <a href="https://github.com/1inmortal" target="_blank">
+            <img src="https://cdn-icons-png.flaticon.com/512/25/25231.png" alt="GitHub" style="width: 28px; margin: 0 10px;">
+        </a>
+        <a href="https://www.linkedin.com/in/jos%C3%A9-armando-espinosa-25b615337/" target="_blank">
+            <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="LinkedIn" style="width: 28px;">
+        </a>
     </div>
-  </body>
+    
+    <p style="color: #94a3b8;">Full Stack Developer | Especialista en React & Python</p>
+</header>
+
+        <!-- Spotlight de GitHub -->
+        <section class="section-card github-section">
+            <div class="grid-2">
+                <div>
+                    <h2 style="color: #3b82f6; margin-top: 0;">⚡ Actividad GitHub</h2>
+                    <div style="margin-bottom: 20px;">
+                        <p><img src="https://cdn-icons-png.flaticon.com/512/2103/2103633.png" style="width: 20px; vertical-align: middle;"> 
+                           <strong>45</strong> Repositorios públicos</p>
+                        <p><img src="https://cdn-icons-png.flaticon.com/512/1828/1828884.png" style="width: 20px; vertical-align: middle;"> 
+                           <strong>1.2k</strong> Estrellas obtenidas</p>
+                    </div>
+                    <img src="https://i.pinimg.com/originals/75/87/df/7587df77ef521cf98057d0028ee983f1.gif" alt="Contribuciones" style="width: 100%;">
+                </div>
+                <!-- Mantener misma estructura para commits -->
+            </div>
+        </section>
+
+        <!-- Stack Tecnológico -->
+        <section class="section-card">
+            <h2 style="color: #3b82f6; margin-top: 0;">🛠 Stack Principal</h2>
+            <div class="grid-2">
+                <div>
+                    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                        <img src="https://cdn-icons-png.flaticon.com/512/5968/5968350.png" alt="Frontend" style="width: 40px; margin-right: 15px;">
+                        <h3 style="margin: 0;">Frontend</h3>
+                    </div>
+                    <!-- Mantener barras de progreso -->
+                </div>
+                <div>
+                    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                        <img src="https://cdn-icons-png.flaticon.com/512/6132/6132222.png" alt="Backend" style="width: 40px; margin-right: 15px;">
+                        <h3 style="margin: 0;">Backend</h3>
+                        <span class="badge" style="background: #f59e0b; margin-left: 10px;">En Progreso</span>
+                    </div>
+                    <!-- Mantener barras de progreso -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Proyectos Destacados -->
+        <section class="section-card">
+            <h2 style="color: #3b82f6; margin-top: 0;">🚀 Proyectos Recientes</h2>
+            <div class="grid-2">
+                <div>
+                    <img src="https://i.pinimg.com/originals/28/30/75/283075280f79736a42f4faab23668110.gif" alt="Dashboard" style="width: 100%; border-radius: 8px;">
+                    <!-- Mantener contenido de proyecto -->
+                </div>
+                <div>
+                    <img src="https://i.pinimg.com/originals/fc/f8/d3/fcf8d352ade303f7070f269d8fd7e33a.gif" alt="API" style="width: 100%; border-radius: 8px;">
+                    <!-- Mantener contenido de proyecto -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Contribuciones Open Source -->
+        <section class="section-card">
+            <h2 style="color: #3b82f6; margin-top: 0;">👥 Contribuciones Destacadas</h2>
+            <div style="background: #0f172a; padding: 20px; border-radius: 8px; margin-top: 15px;">
+                <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                    <img src="https://cdn-icons-png.flaticon.com/512/1183/1183672.png" alt="React" style="width: 40px; margin-right: 15px;">
+                    <!-- Mantener contenido React -->
+                </div>
+                <!-- Mantener código de ejemplo -->
+            </div>
+        </section>
+
+        <!-- Secciones restantes (mantener estructura) -->
+        
+        <!-- Certificaciones -->
+        <section class="section-card">
+            <h2 style="color: #3b82f6; margin-top: 0;">🏆 Certificaciones</h2>
+            <div class="grid-2" style="margin-top: 20px;">
+                <img src="https://media.licdn.com/dms/image/v2/D4E22AQEeYjdNgtE-9w/feedshare-shrink_800/B4EZSkfy2ZGwAg-/0/1737926586903?e=1743638400&v=beta&t=QMRJDDnq_0VwOLNuskRuX00YnP9AmW5F48wyC8LV658" alt="AWS" style="width: 100%; border-radius: 8px;">
+                <img src="https://example.com/certificaciones/react-certified.png" alt="React" style="width: 100%; border-radius: 8px;">
+            </div>
+        </section>
+
+        <!-- Blog Técnico -->
+        <section class="section-card">
+            <h2 style="color: #3b82f6; margin-top: 0;">✍️ Último Artículo</h2>
+            <div class="grid-2" style="align-items: center; margin-top: 15px;">
+                <img src="https://i.pinimg.com/736x/bb/3d/5e/bb3d5ead3434e17ac956be6b4183238f.jpg" alt="Blog" style="width: 100%; border-radius: 8px;">
+                <!-- Mantener contenido del artículo -->
+            </div>
+        </section>
+
+        <!-- Footer (mantener mismo contenido) -->
+    </div>
+</body>
 </html>
 """
     # Llama a la función para enviar el correo
     email_alert(
         subject="Resumen de Proyectos QuantumCode",
         body="Este es el cuerpo del correo en texto plano.  Por favor, ve la versión HTML para una mejor experiencia.",
-        to="jarmando2965@gmail.com",
+        to="juangamer140@gmail.com",
         html_content=cuerpo_html  # Usa el contenido HTML definido arriba
     )
 
