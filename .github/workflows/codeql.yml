@@ -2,7 +2,7 @@ name: "CodeQL Analysis"
 
 on:
   push:
-    branches: [ "main", "develop" ]  # Modifica según tu flujo de trabajo
+    branches: [ "main", "develop" ]
   pull_request:
     branches: [ "main", "develop" ]
   schedule:
@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ "javascript", "typescript", "python" ]  # Agregamos Python
+        language: [ "javascript", "typescript", "python" ]
 
     steps:
       - name: "Checkout repository"
@@ -42,6 +42,10 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
+          source-root: "src"
+          build-mode: "manual"
 
       - name: "Perform CodeQL Analysis"
         uses: github/codeql-action/analyze@v3
+        env:
+          CODEQL_EXTRACTOR_PYTHON_EXTRACT_STDLIB: true
