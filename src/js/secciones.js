@@ -121,13 +121,9 @@ skillFills.forEach(el => skillsObserver.observe(el));
 // ================================
 // FAQ INTERACTIVO
 // ================================
-// Seleccionar todos los contenedores de FAQ
 const faqItems = document.querySelectorAll('.faq-item');
-
 faqItems.forEach(item => {
   const question = item.querySelector('.faq-question');
-  
-  // Al hacer clic en la pregunta, alternar la clase "open"
   question.addEventListener('click', () => {
     item.classList.toggle('open');
   });
@@ -158,19 +154,16 @@ lazyImages.forEach(el => {
 // ANIMACIÓN DE SCRAMBLE EN ENLACES DEL MENÚ DEL FILTRO
 // ================================
 const menuLinks = document.querySelectorAll('.nav-link');
-
 menuLinks.forEach(link => {
   let originalText = link.textContent;
   let scrambling = false;
   let scrambleInterval;
-
   link.addEventListener('mouseenter', () => {
     if (scrambling) return;
     scrambling = true;
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let iteration = 0;
     const totalIterations = 20;
-
     scrambleInterval = setInterval(() => {
       link.textContent = originalText.split('').map((char, index) => {
         if(index < iteration){
@@ -186,7 +179,6 @@ menuLinks.forEach(link => {
       }
     }, 50);
   });
-
   link.addEventListener('mouseleave', () => {
     if(scrambling){
       clearInterval(scrambleInterval);
@@ -202,10 +194,32 @@ menuLinks.forEach(link => {
 const filterLinks = document.querySelectorAll('.filter-panel .nav-link');
 const hoverAudio = document.getElementById('hoverSound');
 hoverAudio.volume = 0.5; // Ajusta el volumen si es necesario
-
 filterLinks.forEach(link => {
   link.addEventListener('mouseenter', () => {
     hoverAudio.currentTime = 0; // Reiniciar el audio
     hoverAudio.play();
   });
 });
+
+// ================================
+// FUNCIONES PARA MODALES DE CERTIFICADOS
+// ================================
+function openModal(modalId) {
+  document.getElementById(modalId).style.display = "block";
+}
+
+function closeModal(modalId) {
+  document.getElementById(modalId).style.display = "none";
+}
+
+// Cerrar el modal al hacer clic fuera del contenido
+window.onclick = function(event) {
+  const modals = document.getElementsByClassName('modal');
+  for (let modal of modals) {
+    if (event.target === modal) {
+      modal.style.display = "none";
+    }
+  }
+};
+
+

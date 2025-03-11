@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Moda Premium - SPA Completa</title>
+
+  <!-- Bootstrap CSS -->
+  <link 
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <!-- Animate.css (para animaciones generales) -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+  />
+  <!-- VanillaTilt (para 3D Tilt en sección Colección) -->
+  <script 
+    src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.7.0/dist/vanilla-tilt.min.js">
+  </script>
+
+  <style>
+    /************************************************
+     * VARIABLES DE COLOR Y ESTÉTICA
+    *************************************************/
+    :root {
+      --color-fondo: #000; 
+      --color-secundario: #333;
+      --color-texto: #D4AF37;       /* Dorado */
+      --color-boton: #D4AF37;
+      --color-boton-hover: #b5922e; /* Dorado más oscuro */
+      --color-overlay: rgba(0, 0, 0, 0.6);
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--color-fondo);
+      color: var(--color-texto);
+      font-family: Arial, sans-serif;
+      overflow-x: hidden; /* Evita scroll lateral */
+    }
+
+    a, .nav-link {
+      color: var(--color-texto) !important;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    a:hover, .nav-link:hover {
+      color: var(--color-boton-hover) !important;
+    }
+
+    /************************************************
+     * NAVBAR SUPERIOR
+    *************************************************/
+    .navbar {
+      background-color: var(--color-secundario) !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+      z-index: 999;
+    }
+    .navbar-brand {
+      font-size: 1.8rem;
+      font-weight: bold;
+    }
+    .navbar-toggler-icon {
+      filter: invert(1);
+    }
+
+    /************************************************
+     * LOGO FLOTANTE (ESQUINA SUPERIOR IZQUIERDA)
+    *************************************************/
+    .floating-logo {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      overflow: hidden;
+      z-index: 9999;
+      border: 2px solid var(--color-boton);
+    }
+    .floating-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /************************************************
+     * SECCIONES (SPA)
+    *************************************************/
+    section {
+      min-height: 100vh;
+      padding: 80px 15px;
+      display: none; /* Ocultas por defecto, se muestra la "active" */
+      position: relative;
+      z-index: 1;
+    }
+    section.active {
+      display: block;
+    }
+
+    /* FadeOut animación de salida */
+    .fadeOut {
+      animation: fadeOut 0.5s forwards;
+    }
+    @keyframes fadeOut {
+      to { opacity: 0; }
+    }
+
+    /* Botones con estilo dorado */
+    .btn-custom {
+      background-color: var(--color-boton);
+      color: #000; /* Texto negro sobre dorado */
+      border: none;
+      transition: background-color 0.3s ease;
+    }
+    .btn-custom:hover {
+      background-color: var(--color-boton-hover);
+      color: #000;
+    }
+
+    /* HOME SECTION CSS */
+/* Hero Home */
+.hero-home {
+  background: url("img/1-darck.jpg") center center / cover no-repeat fixed;
+  padding: 150px 15px 100px;
+  text-align: center;
+  margin-bottom: 50px;
+  position: relative;
+}
+.hero-home::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+}
+.hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 700px;
+  margin: 0 auto;
+}
+.hero-home h1 {
+  font-size: 3rem;
+  margin-bottom: 20px;
+}
+.hero-home p {
+  font-size: 1.3rem;
+  margin-bottom: 30px;
+  line-height: 1.5;
+}
+
+/* Flecha de scroll */
+.scroll-indicator {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: pointer;
+  animation: bounceArrow 2s infinite;
+  z-index: 2;
+}
+.scroll-indicator img {
+  width: 40px;
+  height: auto;
+  filter: invert(80%) sepia(80%) hue-rotate(10deg) brightness(1.2) contrast(1.2);
+}
+@keyframes bounceArrow {
+  0%, 100% { transform: translate(-50%, 0); }
+  50% { transform: translate(-50%, 10px); }
+}
+
+/* Acerca de */
+.about-section {
+  margin-top: 50px;
+  position: relative;
+}
+.about-text {
+  max-width: 700px;
+  margin: 0 auto;
+  text-align: center;
+}
+.about-text h2 {
+  border-bottom: 2px solid #D4AF37;
+  display: inline-block;
+  padding-bottom: 8px;
+  margin-bottom: 20px;
+  font-size: 2rem;
+}
+.about-text p {
+  line-height: 1.6;
+}
+.about-img {
+  width: 320px;
+  border: 4px solid #D4AF37;
+  border-radius: 8px;
+  position: absolute;
+  top: -80px;
+  right: 10%;
+  transform: rotate(3deg);
+  display: none;
+}
+@media (min-width: 992px) {
+  .about-img {
+    display: block;
+  }
+}
+
+/* Servicios / Destacados */
+.services-section {
+  margin-top: 100px;
+}
+.service-box {
+  text-align: center;
+  padding: 20px;
+  border: 2px solid #D4AF37;
+  border-radius: 8px;
+  transition: transform 0.3s ease;
+}
+.service-box:hover {
+  transform: scale(1.05);
+}
+.service-box h4 {
+  margin-bottom: 15px;
+  font-size: 1.4rem;
+  border-bottom: 1px solid #D4AF37;
+  display: inline-block;
+  padding-bottom: 5px;
+}
+
+/* Valores de Marca */
+.brand-values-section {
+  margin-top: 60px;
+  margin-bottom: 40px;
+}
+.brand-values-title {
+  text-align: center;
+  margin-bottom: 30px;
+}
+.brand-value-box {
+  text-align: center;
+  padding: 20px;
+  border: 2px solid #D4AF37;
+  border-radius: 8px;
+  transition: transform 0.3s;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.brand-value-box:hover {
+  transform: scale(1.03);
+}
+.brand-value-box img {
+  width: 60px;
+  margin-bottom: 15px;
+  filter: invert(80%) sepia(30%) saturate(200%) hue-rotate(10deg);
+}
+.brand-value-box h5 {
+  margin-bottom: 8px;
+  font-size: 1.2rem;
+  border-bottom: 1px solid #D4AF37;
+  display: inline-block;
+  padding-bottom: 3px;
+}
+.brand-value-box p {
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+/* Extra Imágenes */
+.extra-images-section {
+  margin-top: 60px;
+}
+.extra-images-title {
+  text-align: center;
+  margin-bottom: 30px;
+}
+.extra-images-title h2 {
+  border-bottom: 2px solid #D4AF37;
+  display: inline-block;
+  padding-bottom: 8px;
+  font-size: 2rem;
+}
+.extra-images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+.extra-image-box {
+  border: 3px solid #D4AF37;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+  text-align: center;
+}
+.extra-image-box:hover {
+  transform: scale(1.02);
+}
+.extra-image-box img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.extra-image-text {
+  padding: 10px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  background-color: var(--color-secundario);
+}
+
+/* Testimonios */
+.testimonios-section {
+  margin-top: 80px;
+  text-align: center;
+}
+.testimonios-section h3 {
+  border-bottom: 2px solid #D4AF37;
+  display: inline-block;
+  padding-bottom: 8px;
+  margin-bottom: 30px;
+  font-size: 2rem;
+}
+.testimonio-card {
+  background-color: var(--color-secundario);
+  border-radius: 8px;
+  padding: 20px;
+  margin: 15px;
+  transition: transform 0.3s;
+  border: 2px solid #D4AF37;
+}
+.testimonio-card:hover {
+  transform: translateY(-5px);
+}
+.testimonio-card p {
+  font-style: italic;
+  margin-bottom: 10px;
+}
+.testimonio-card .author {
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+/* Sección VIP / Suscripción */
+.vip-section {
+  margin-top: 60px;
+  margin-bottom: 60px;
+  text-align: center;
+}
+.vip-section h4 {
+  font-size: 1.8rem;
+  border-bottom: 2px solid #D4AF37;
+  display: inline-block;
+  padding-bottom: 6px;
+  margin-bottom: 20px;
+}
+.vip-section p {
+  max-width: 600px;
+  margin: 0 auto 20px auto;
+  line-height: 1.5;
+}
+.vip-form {
+  max-width: 500px;
+  margin: 0 auto;
+}
+.vip-form input {
+  margin-bottom: 10px;
+}
+
+
+    /* === EJEMPLO: Nueva sección “Valores de Marca” (opcional) ===
+       .brand-values-section { ... } 
+       .brand-value-box { ... }
+       etc.
+       (Si quisieras agregarla, podrías hacerlo aquí) */
+
+    /* === EJEMPLO: Sección “Suscripción VIP” (opcional) ===
+       .vip-section { ... }
+       .vip-form { ... }
+       etc. 
+       (Lo mismo, podrías insertarla sin cambiar el resto) */
+
+    /************************************************
+     * COLECCIÓN (Diseño Avanzado) (SIN CAMBIOS)
+    *************************************************/
+    .hero-coleccion {
+      position: relative;
+      background: url("img/2-red.jpg")
+                  center center / cover no-repeat fixed;
+      height: 75vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      margin-bottom: 50px;
+    }
+    .hero-coleccion::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1;
+    }
+    .hero-coleccion .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 700px;
+      padding: 0 15px;
+    }
+    .hero-coleccion h2 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+    .hero-coleccion p {
+      font-size: 1.2rem;
+      line-height: 1.4;
+    }
+    .coleccion-section {
+      padding: 60px 15px;
+    }
+    .coleccion-title {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+    .coleccion-title h3 {
+      font-size: 2rem;
+      border-bottom: 2px solid var(--color-boton);
+      display: inline-block;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+    }
+    .coleccion-title p {
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+    .coleccion-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px;
+      border: 3px solid var(--color-boton);
+      transition: transform 0.3s ease;
+      will-change: transform; /* Para VanillaTilt */
+    }
+    .coleccion-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .coleccion-card:hover {
+      transform: scale(1.01);
+    }
+    .overlay-info {
+      position: absolute;
+      top: 100%;
+      left: 0; right: 0; bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      background-color: var(--color-overlay);
+      color: #fff;
+      opacity: 0;
+      transition: all 0.4s ease;
+      text-align: center;
+      padding: 15px;
+    }
+    .coleccion-card:hover .overlay-info {
+      top: 0;
+      opacity: 1;
+    }
+    .stagger-fade {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.6s ease;
+    }
+    .stagger-fade.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /************************************************
+     * HISTORIAS (SIN CAMBIOS)
+    *************************************************/
+    .historias-container {
+      margin-top: 40px;
+    }
+    .historia-block {
+      margin-bottom: 40px;
+      padding: 20px;
+      border-left: 5px solid var(--color-boton);
+      position: relative;
+    }
+    .historia-block img {
+      float: right;
+      width: 240px;
+      margin-left: 20px;
+      border: 3px solid var(--color-boton);
+      border-radius: 8px;
+    }
+    .historia-block h4 {
+      margin-bottom: 10px;
+      font-size: 1.8rem;
+    }
+    .historia-block p {
+      text-align: justify;
+      line-height: 1.5;
+    }
+
+    /************************************************
+     * GALERÍA (SIN CAMBIOS)
+    *************************************************/
+    .slider {
+      position: relative;
+      overflow: hidden;
+      max-width: 80%;
+      margin: 40px auto;
+      border: 2px solid var(--color-boton);
+      border-radius: 10px;
+    }
+    .slider-container {
+      display: flex;
+      transition: transform 0.5s ease-in-out;
+    }
+    .slider-container img {
+      width: 300px;
+      height: auto;
+    }
+    @media (max-width: 768px) {
+      .slider-container img {
+        width: 250px;
+      }
+    }
+    @media (max-width: 576px) {
+      .slider-container img {
+        width: 200px;
+      }
+    }
+
+    /************************************************
+     * CONTACTO (SIN CAMBIOS)
+    *************************************************/
+    .contacto-container {
+      margin-top: 40px;
+    }
+    .contacto-container .form-label {
+      color: var(--color-texto);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- LOGO FLOTANTE -->
+  <div class="floating-logo">
+    <img src="img/logo.jpg" alt="Logo" />
+  </div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="#">Moda Premium</a>
+      <button 
+        class="navbar-toggler" 
+        type="button" 
+        data-bs-toggle="collapse" 
+        data-bs-target="#navbarNav"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" data-section="home">Inicio</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-section="coleccion">Colección</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-section="historias">Historias</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-section="galeria">Galería</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-section="contacto">Contacto</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- =======================
+       SECCIÓN HOME (CAMBIADA)
+       ======================= -->
+       <section id="home" class="active animate__animated animate__fadeIn">
+        <!-- Hero Home -->
+        <div class="hero-home">
+          <div class="hero-content reveal-on-scroll">
+            <h1 class="animate__animated animate__fadeInDown">El Futuro de la Moda</h1>
+            <p class="animate__animated animate__fadeInUp">
+              Negro, Oro y Metal: una fusión que redefine la elegancia
+            </p>
+            <!-- Doble CTA -->
+            <div class="mb-3">
+              <button
+                class="btn btn-custom btn-lg animate__animated animate__zoomIn me-2"
+                onclick="navigateTo('coleccion')"
+              >
+                Explora la Colección
+              </button>
+              <button
+                class="btn btn-custom btn-lg animate__animated animate__zoomIn"
+                style="animation-delay: 0.2s;"
+                onclick="navigateTo('historias')"
+              >
+                Conoce Nuestra Historia
+              </button>
+            </div>
+          </div>
+          <!-- Flecha de Scroll -->
+          <div class="scroll-indicator" onclick="scrollDownHome()">
+            <img 
+              src="https://cdn-icons-png.flaticon.com/512/32/32195.png" 
+              alt="Flecha Scroll" 
+            />
+          </div>
+        </div>
+      
+        <!-- Acerca de -->
+        <div class="about-section container reveal-on-scroll">
+          <img src="img/4-black.jpg" alt="Moda Lujosa" class="about-img" />
+          <div class="about-text">
+            <h2>Acerca de Nuestra Casa de Moda</h2>
+            <p>
+              Somos un equipo apasionado que combina la maestría artesanal con la innovación moderna. Creemos en la fuerza atemporal del negro y en la sofisticación del oro para crear prendas únicas. Desde nuestros inicios, nos hemos enfocado en realzar la belleza de cada persona, convirtiendo la moda en arte.
+            </p>
+          </div>
+        </div>
+      
+        <!-- Servicios / Destacados -->
+        <div class="services-section container reveal-on-scroll">
+          <div class="row">
+            <div class="col-md-4 mb-4">
+              <div class="service-box">
+                <h4>Diseño Exclusivo</h4>
+                <p>
+                  Piezas pensadas para destacar cada detalle, inspiradas en tendencias globales y elementos culturales.
+                </p>
+              </div>
+            </div>
+            <div class="col-md-4 mb-4">
+              <div class="service-box">
+                <h4>Materiales de Lujo</h4>
+                <p>
+                  Desde sedas finas hasta tejidos tecnológicos, nuestra gama de materiales se elige cuidadosamente por su calidad y resistencia.
+                </p>
+              </div>
+            </div>
+            <div class="col-md-4 mb-4">
+              <div class="service-box">
+                <h4>Atención Personalizada</h4>
+                <p>
+                  Asesores expertos guían a cada cliente para encontrar la prenda perfecta, reflejando su estilo y personalidad.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      
+        <!-- Sección de Valores de Marca -->
+        <div class="brand-values-section container reveal-on-scroll">
+          <div class="brand-values-title">
+            <h2>Lo Que Nos Define</h2>
+            <p class="lead">Cuatro pilares que guían cada puntada que damos</p>
+          </div>
+          <div class="row g-4">
+            <div class="col-md-3">
+              <div class="brand-value-box">
+                <img src="https://cdn-icons-png.flaticon.com/512/2913/2913465.png" alt="Artesanía" />
+                <h5>Artesanía</h5>
+                <p>Nos apoyamos en la tradición y el trabajo manual, perfeccionado con técnica moderna.</p>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="brand-value-box">
+                <img src="https://cdn-icons-png.flaticon.com/512/2913/2913511.png" alt="Sostenibilidad" />
+                <h5>Sostenibilidad</h5>
+                <p>Elegimos materiales de bajo impacto y procesos responsables con el entorno.</p>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="brand-value-box">
+                <img src="https://cdn-icons-png.flaticon.com/512/527/527489.png" alt="Innovación" />
+                <h5>Innovación</h5>
+                <p>Investigamos y aplicamos nuevas tecnologías para crear prendas únicas y funcionales.</p>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="brand-value-box">
+                <img src="https://cdn-icons-png.flaticon.com/512/2913/2913479.png" alt="Exclusividad" />
+                <h5>Exclusividad</h5>
+                <p>Colecciones limitadas y personalización para asegurar la unicidad de cada prenda.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      
+        <!-- Imágenes Extras en Home -->
+        <div class="extra-images-section container reveal-on-scroll">
+          <div class="extra-images-title">
+            <h2>Nuevas Inspiraciones</h2>
+            <p class="lead">
+              Explora nuestras últimas creaciones y proyectos de diseño
+            </p>
+          </div>
+          <div class="extra-images-grid">
+            <div class="extra-image-box">
+              <img src="img/2-red.jpg" alt="Inspiración 1" />
+              <div class="extra-image-text">
+                Vestido con cortes asimétricos y acentos dorados
+              </div>
+            </div>
+            <div class="extra-image-box">
+              <img src="img/2-red-1.jpg" alt="Inspiración 2" />
+              <div class="extra-image-text">
+                Conjunto urbano con costuras metálicas
+              </div>
+            </div>
+            <div class="extra-image-box">
+              <img src="img/3-black.jpg" alt="Inspiración 3" />
+              <div class="extra-image-text">
+                Piezas en negro total con detalles de encaje dorado
+              </div>
+            </div>
+            <div class="extra-image-box">
+              <img src="img/2-red-2.jpg" alt="Inspiración 4" />
+              <div class="extra-image-text">
+                Chaqueta con inspiración militar y botones dorados
+              </div>
+            </div>
+            <div class="extra-image-box">
+              <img src="img/1-darck.jpg" alt="Inspiración 5" />
+              <div class="extra-image-text">
+                Traje de noche con brillos sutiles y bordados a mano
+              </div>
+            </div>
+            <div class="extra-image-box">
+              <img src="img/4-black.jpg" alt="Inspiración 6" />
+              <div class="extra-image-text">
+                Mezcla de texturas en negro y dorado
+              </div>
+            </div>
+          </div>
+        </div>
+      
+        <!-- Testimonios -->
+        <div class="testimonios-section container reveal-on-scroll">
+          <h3>Testimonios de Nuestros Clientes</h3>
+          <div class="row justify-content-center">
+            <div class="col-md-4">
+              <div class="testimonio-card">
+                <p>
+                  “Nunca había encontrado prendas que mezclaran tan bien la elegancia con la comodidad. ¡Increíble servicio!”
+                </p>
+                <span class="author">- Alex G.</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="testimonio-card">
+                <p>
+                  “El negro y el dorado se han convertido en mi sello personal, cada diseño es una obra de arte.”
+                </p>
+                <span class="author">- Sofía M.</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="testimonio-card">
+                <p>
+                  “La atención personalizada hizo toda la diferencia. Saben destacar lo mejor de cada persona.”
+                </p>
+                <span class="author">- Daniel R.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      
+        <!-- Sección Suscripción / Club VIP -->
+        <div class="vip-section container reveal-on-scroll">
+          <h4>¡Únete al Club VIP!</h4>
+          <p>
+            Recibe antes que nadie nuestras novedades, lanzamientos exclusivos y ofertas especiales. Forma parte de la élite de la moda negra y dorada.
+          </p>
+          <div class="vip-form">
+            <input type="email" class="form-control" placeholder="Tu correo electrónico" />
+            <button class="btn btn-custom mt-2">Suscribirme</button>
+          </div>
+        </div>
+      </section>
+      
+
+
+  <!-- ===================================
+       SECCIÓN COLECCIÓN (SIN CAMBIOS)
+       =================================== -->
+  <section id="coleccion" class="animate__animated">
+    <div class="hero-coleccion">
+      <div class="hero-content">
+        <h2 class="reveal-on-scroll">Colección Primavera-Verano</h2>
+        <p class="reveal-on-scroll" style="transition-delay:0.1s;">
+          Descubre diseños únicos inspirados en la fusión del negro,<br/>
+          dorado y detalles metálicos.
+        </p>
+      </div>
+    </div>
+
+    <div class="coleccion-section container">
+      <div class="coleccion-title">
+        <h3 class="stagger-fade">Nuestras Piezas Estelares</h3>
+        <p class="stagger-fade" style="transition-delay: 0.1s;">
+          Piezas cuidadosamente diseñadas, agrupadas en temáticas que reflejan
+          nuestro ADN de elegancia, innovación y calidad artesanal.
+        </p>
+      </div>
+
+      <!-- Bloque Temático 1 -->
+      <div class="mb-5">
+        <h4 class="stagger-fade" style="transition-delay: 0.2s;">
+          Minimalismo Dorado
+        </h4>
+        <div class="row g-4 mt-3">
+          <div 
+            class="col-sm-6 col-md-4 col-lg-3 stagger-fade" 
+            style="transition-delay: 0.3s;"
+            data-tilt data-tilt-max="7" data-tilt-speed="400"
+          >
+            <div class="coleccion-card">
+              <img src="img/2-red.jpg" alt="Prenda 1"/>
+              <div class="overlay-info">
+                <h5>Vestido Minimal 2023</h5>
+                <p>Diseño simple con acentos dorados y silueta relajada.</p>
+              </div>
+            </div>
+          </div>
+          <div 
+            class="col-sm-6 col-md-4 col-lg-3 stagger-fade" 
+            style="transition-delay: 0.4s;"
+            data-tilt data-tilt-max="7" data-tilt-speed="400"
+          >
+            <div class="coleccion-card">
+              <img src="img/2-red-1.jpg" alt="Prenda 2"/>
+              <div class="overlay-info">
+                <h5>Camisa con Ribetes Oro</h5>
+                <p>Toques sutiles, algodón premium y detalles metálicos.</p>
+              </div>
+            </div>
+          </div>
+          <div 
+            class="col-sm-6 col-md-4 col-lg-3 stagger-fade" 
+            style="transition-delay: 0.5s;"
+            data-tilt data-tilt-max="7" data-tilt-speed="400"
+          >
+            <div class="coleccion-card">
+              <img src="img/3-black.jpg" alt="Prenda 3"/>
+              <div class="overlay-info">
+                <h5>Blazer Urbano</h5>
+                <p>Look sofisticado con detalles en oro mate en solapas.</p>
+              </div>
+            </div>
+          </div>
+          <div 
+            class="col-sm-6 col-md-4 col-lg-3 stagger-fade" 
+            style="transition-delay: 0.6s;"
+            data-tilt data-tilt-max="7" data-tilt-speed="400"
+          >
+            <div class="coleccion-card">
+              <img src="img/4-black.jpg" alt="Prenda 4"/>
+              <div class="overlay-info">
+                <h5>Pantalón Estructurado</h5>
+                <p>Tejidos ligeros con terminaciones doradas en los bolsillos.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bloque Temático 2 -->
+      <div class="mb-5">
+        <h4 class="stagger-fade" style="transition-delay: 0.2s;">Militar Urbano</h4>
+        <div class="row g-4 mt-3">
+          <div 
+            class="col-sm-6 col-md-4 col-lg-3 stagger-fade"
+            style="transition-delay: 0.3s;"
+            data-tilt data-tilt-max="7" data-tilt-speed="400"
+          >
+            <div class="coleccion-card">
+              <img src="img/2-red-2.jpg" alt="Prenda 1"/>
+              <div class="overlay-info">
+                <h5>Chaqueta Militar</h5>
+                <p>Botones dorados y corte entallado para estilo imponente.</p>
+              </div>
+            </div>
+          </div>
+          <div 
+            class="col-sm-6 col-md-4 col-lg-3 stagger-fade" 
+            style="transition-delay: 0.4s;"
+            data-tilt data-tilt-max="7" data-tilt-speed="400"
+          >
+            <div class="coleccion-card">
+              <img src="img/1-darck.jpg" alt="Prenda 2"/>
+              <div class="overlay-info">
+                <h5>Falda Tactical</h5>
+                <p>Inspiración militar con bolsillos y cierres metálicos.</p>
+              </div>
+            </div>
+          </div>
+          <div 
+            class="col-sm-6 col-md-4 col-lg-3 stagger-fade" 
+            style="transition-delay: 0.5s;"
+            data-tilt data-tilt-max="7" data-tilt-speed="400"
+          >
+            <div class="coleccion-card">
+              <img src="img/black-sudadera.jpg" alt="Prenda 3"/>
+              <div class="overlay-info">
+                <h5>Mono Urbano</h5>
+                <p>Diseño en negro con cremalleras doradas, corte ajustado.</p>
+              </div>
+            </div>
+          </div>
+          <div 
+            class="col-sm-6 col-md-4 col-lg-3 stagger-fade" 
+            style="transition-delay: 0.6s;"
+            data-tilt data-tilt-max="7" data-tilt-speed="400"
+          >
+            <div class="coleccion-card">
+              <img src="img/black-with.jpg" alt="Prenda 4"/>
+              <div class="overlay-info">
+                <h5>Bomber Jacket</h5>
+                <p>Con ribetes dorados en puños y cintura.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bloque Temático 3 -->
+      <div>
+        <h4 class="stagger-fade" style="transition-delay: 0.2s;">Fantasía Metálica</h4>
+        <div class="row g-4 mt-3">
+          <div 
+            class="col-sm-6 col-md-4 col-lg-3 stagger-fade"
+            style="transition-delay: 0.3s;"
+            data-tilt data-tilt-max="7" data-tilt-speed="400"
+          >
+            <div class="coleccion-card">
+              <img src="img/blanco.jpg" alt="Prenda 1"/>
+              <div class="overlay-info">
+                <h5>Vestido de Noche</h5>
+                <p>Brillos sutiles y paneles metálicos estratégicos.</p>
+              </div>
+            </div>
+          </div>
+          <div 
+            class="col-sm-6 col-md-4 col-lg-3 stagger-fade"
+            style="transition-delay: 0.4s;"
+            data-tilt data-tilt-max="7" data-tilt-speed="400"
+          >
+            <div class="coleccion-card">
+              <img src="img/fame.jpg" alt="Prenda 2"/>
+              <div class="overlay-info">
+                <h5>Capa Iridiscente</h5>
+                <p>Tejido con reflejos dorados para looks de gala.</p>
+              </div>
+            </div>
+          </div>
+          <div 
+            class="col-sm-6 col-md-4 col-lg-3 stagger-fade"
+            style="transition-delay: 0.5s;"
+            data-tilt data-tilt-max="7" data-tilt-speed="400"
+          >
+            <div class="coleccion-card">
+              <img src="img/grupo.jpg" alt="Prenda 3"/>
+              <div class="overlay-info">
+                <h5>Blusa con Hilo Metálico</h5>
+                <p>Fibras brillantes tejidas para destellos elegantes.</p>
+              </div>
+            </div>
+          </div>
+          <div 
+            class="col-sm-6 col-md-4 col-lg-3 stagger-fade"
+            style="transition-delay: 0.6s;"
+            data-tilt data-tilt-max="7" data-tilt-speed="400"
+          >
+            <div class="coleccion-card">
+              <img src="img/hombre.jpg" alt="Prenda 4"/>
+              <div class="overlay-info">
+                <h5>Leggings Metalizados</h5>
+                <p>Comodidad y estilismo futurista con terminado espejo.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA para ir a Historias -->
+      <div class="text-center mt-5">
+        <button class="btn btn-custom" onclick="navigateTo('historias')">
+          Conoce Nuestras Historias
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN HISTORIAS (SIN CAMBIOS) -->
+  <section id="historias" class="animate__animated">
+    <div class="container">
+      <h2 class="text-center reveal-on-scroll">
+        Historias Detrás de Cada Puntada
+      </h2>
+      <p class="text-center lead reveal-on-scroll">
+        Acompáñanos en un viaje por nuestros orígenes y aprendizajes.
+      </p>
+
+      <div class="historias-container">
+        <!-- Historia 1 -->
+        <div class="historia-block reveal-on-scroll">
+          <h4>1. El Legado Familiar</h4>
+          <img 
+            src="img/2-red-1.jpg" 
+            alt="Historia 1" 
+          />
+          <p>
+            Nuestra aventura inició en un taller pequeño, donde la atención al
+            detalle y el amor por la costura se transmitieron de generación en
+            generación. Cada prenda es un tributo a esa dedicación artesanal.
+          </p>
+        </div>
+        <!-- Historia 2 -->
+        <div class="historia-block reveal-on-scroll">
+          <h4>2. La Búsqueda del Dorado Perfecto</h4>
+          <img 
+            src="img/3-black.jpg" 
+            alt="Historia 2" 
+          />
+          <p>
+            Nos fascinó la forma en que el oro captura la luz y exalta la
+            belleza de los tejidos oscuros. Con el tiempo, perfeccionamos
+            técnicas para integrar detalles dorados sin perder la sutileza.
+          </p>
+        </div>
+        <!-- Historia 3 -->
+        <div class="historia-block reveal-on-scroll">
+          <h4>3. Evolución e Innovación</h4>
+          <img 
+            src="img/4-black.jpg" 
+            alt="Historia 3" 
+          />
+          <p>
+            Incorporamos nuevos materiales y procesos de producción
+            sostenibles, sin sacrificar la elegancia y el ADN que nos hace
+            únicos. Cada prenda cuenta una historia de crecimiento y
+            compromiso con la calidad.
+          </p>
+        </div>
+      </div>
+
+      <div class="text-center">
+        <button class="btn btn-custom" onclick="navigateTo('galeria')">
+          Explora la Galería
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN GALERÍA (SIN CAMBIOS) -->
+  <section id="galeria" class="animate__animated">
+    <div class="container text-center">
+      <h2 class="mb-4 reveal-on-scroll">Galería de Lujo</h2>
+      <p class="lead reveal-on-scroll">
+        Descubre en un vistazo lo que nos define: modernidad, elegancia y
+        pasión por los detalles.
+      </p>
+
+      <div class="slider reveal-on-scroll" id="imageSlider">
+        <div class="slider-container">
+          <!-- 10 imágenes (repetimos algunas) -->
+          <img src="img/black-sudadera.jpg" alt="Imagen 1" />
+          <img src="img/4-black.jpg" alt="Imagen 2" />
+          <img src="img/3-black.jpg" alt="Imagen 3" />
+          <img src="img/2-red-2.jpg" alt="Imagen 4" />
+          <img src="img/1-darck.jpg" alt="Imagen 5" />
+          <img src="img/2-red.jpg" alt="Imagen 6" />
+          <img src="img/2-red-1.jpg" alt="Imagen 7" />
+          <img src="img/4-black.jpg" alt="Imagen 8" />
+          <img src="img/1-darck.jpg" alt="Imagen 9" />
+          <img src="img/3-black.jpg" alt="Imagen 10" />
+        </div>
+      </div>
+
+      <div class="text-center mt-3">
+        <button class="btn btn-custom me-2" id="prevSlide">Anterior</button>
+        <button class="btn btn-custom" id="nextSlide">Siguiente</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN CONTACTO (SIN CAMBIOS) -->
+  <section id="contacto" class="animate__animated">
+    <div class="container">
+      <h2 class="text-center reveal-on-scroll">Ponte en Contacto</h2>
+      <p class="text-center lead reveal-on-scroll">
+        ¿Deseas más información o asesoría personalizada?
+      </p>
+      <div class="row align-items-center contacto-container">
+        <div class="col-md-6 reveal-on-scroll">
+          <p>
+            Nuestro equipo está listo para guiarte y responder cualquier duda
+            sobre materiales, diseños o pedidos especiales. Queremos que tu
+            experiencia sea excepcional.
+          </p>
+          <form>
+            <div class="mb-3">
+              <label for="nombre" class="form-label">Nombre</label>
+              <input
+                type="text"
+                class="form-control"
+                id="nombre"
+                placeholder="Tu nombre"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="email" class="form-label">Correo electrónico</label>
+              <input
+                type="email"
+                class="form-control"
+                id="email"
+                placeholder="nombre@ejemplo.com"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="mensaje" class="form-label">Mensaje</label>
+              <textarea
+                class="form-control"
+                id="mensaje"
+                rows="3"
+                placeholder="Tu mensaje"
+              ></textarea>
+            </div>
+            <button type="submit" class="btn btn-custom">Enviar</button>
+          </form>
+        </div>
+        <div class="col-md-6 reveal-on-scroll">
+          <img
+            src="https://via.placeholder.com/500x350?text=Contacto+Premium"
+            class="img-fluid rounded"
+            alt="Contacto"
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bootstrap JS -->
+  <script 
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
+  </script>
+
+  <script>
+    /************************************************
+     * 1) NAVEGACIÓN SPA
+    *************************************************/
+    function navigateTo(targetId) {
+      const currentSection = document.querySelector("section.active");
+      const targetSection = document.getElementById(targetId);
+
+      if (currentSection.id === targetId) return; // Evita reiniciar si ya estás
+
+      // Animación de salida
+      currentSection.classList.add("fadeOut");
+      
+      // Después de 0.5s, ocultamos la actual y activamos la nueva
+      setTimeout(() => {
+        currentSection.classList.remove("active", "fadeOut", "animate__fadeIn");
+        targetSection.classList.add("active", "animate__fadeIn");
+      }, 500);
+    }
+
+    // Evento de click en los enlaces
+    const navLinks = document.querySelectorAll(".nav-link");
+    navLinks.forEach((link) => {
+      link.addEventListener("click", () => {
+        const target = link.getAttribute("data-section");
+        navigateTo(target);
+      });
+    });
+
+    /************************************************
+     * 2) SLIDER (GALERÍA) con reinicio cíclico
+    *************************************************/
+    const sliderContainer = document.querySelector(".slider-container");
+    const slides = document.querySelectorAll(".slider-container img");
+    let currentIndex = 0;
+
+    function updateSlider() {
+      if (!slides.length) return;
+      const slideWidth = slides[0].clientWidth;
+      sliderContainer.style.transform =
+        "translateX(" + -currentIndex * slideWidth + "px)";
+    }
+
+    const nextBtn = document.getElementById("nextSlide");
+    const prevBtn = document.getElementById("prevSlide");
+    if (nextBtn && prevBtn) {
+      nextBtn.addEventListener("click", () => {
+        currentIndex = (currentIndex + 1) % slides.length;
+        updateSlider();
+      });
+      prevBtn.addEventListener("click", () => {
+        currentIndex = (currentIndex - 1 + slides.length) % slides.length;
+        updateSlider();
+      });
+    }
+
+    window.addEventListener("resize", updateSlider);
+
+    /************************************************
+     * 3) INTERSECTION OBSERVER: "reveal-on-scroll"
+     *    Y STAGGER-FADE
+    *************************************************/
+    const revealElements = document.querySelectorAll(".reveal-on-scroll");
+    const staggerItems = document.querySelectorAll(".stagger-fade");
+
+    // Para elementos con .reveal-on-scroll (simple fadeInUp)
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("animate__animated", "animate__fadeInUp");
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    revealElements.forEach((elem) => revealObserver.observe(elem));
+
+    // Para elementos con .stagger-fade (aparecen con retardo)
+    const staggerObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          staggerObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    staggerItems.forEach((item) => staggerObserver.observe(item));
+
+    /************************************************
+     * 4) VANILLATILT (3D TILT) para tarjetas en Colección
+    *************************************************/
+    VanillaTilt.init(document.querySelectorAll("[data-tilt]"), {
+      max: 7,        
+      speed: 400,    
+      glare: false,  
+    });
+
+    /************************************************
+     * 5) FLECHA DE SCROLL (Hero Home)
+    *************************************************/
+    function scrollToAbout() {
+      // Hace scroll suave hasta la sección "about-section" en Home
+      document.querySelector(".about-section").scrollIntoView({ behavior: "smooth" });
+    }
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
