@@ -1,0 +1,1998 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CyberLab Dashboard – Fondo Aurora Pixelada</title>
+  <!-- Importación de fuentes -->
+  <link href="https://fonts.googleapis.com/css?family=Share+Tech+Mono|VT323" rel="stylesheet">
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    /* --------------------------------------------------
+       VARIABLES GLOBALES Y RESET
+    -------------------------------------------------- */
+    :root {
+      /* Fuentes y colores generales */
+      --font-main: 'Share Tech Mono', monospace;
+      --font-heading: 'VT323', monospace;
+      --color-bg: #000; /* Fondo negro */
+      --color-text: #ffffff;
+      --color-accent: #0aff99;
+      --color-accent2: #ff00aa;
+      --color-red: #ff1919; /* Tono rojo para las partículas */
+      --color-muted: #aaaaaa;
+      --hover-shadow: 0 4px 15px rgba(255, 25, 25, 0.6);
+      /* Transiciones y breakpoint */
+      --transition-fast: 0.3s;
+      --mobile-break: 768px;
+    }
+    
+    /* RESET Y BASE */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-family: var(--font-main);
+      overflow-x: hidden;
+      position: relative;
+    }
+    
+    /* --------------------------------------------------
+       PANTALLA DE BIENVENIDA (NUEVO)
+    -------------------------------------------------- */
+    .welcome-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 11000;
+      backdrop-filter: blur(5px);
+    }
+    .welcome-panel {
+      background: rgba(10,255,153,0.1);
+      border: 2px solid var(--color-accent);
+      padding: 2rem;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .welcome-panel h1 {
+      font-family: var(--font-heading);
+      font-size: 2.5rem;
+      color: var(--color-accent);
+      margin-bottom: 1rem;
+    }
+    .welcome-panel p {
+      font-size: 1.2rem;
+      margin-bottom: 1.5rem;
+    }
+    .welcome-panel button {
+      background: var(--color-accent);
+      color: var(--color-bg);
+      border: none;
+      padding: 0.8rem 2rem;
+      font-size: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background var(--transition-fast);
+    }
+    .welcome-panel button:hover {
+      background: var(--color-accent2);
+    }
+    
+    /* --------------------------------------------------
+       FONDO: AURORA CON PARTICULAS GLITCHEADAS
+    -------------------------------------------------- */
+    .background-aurora {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: var(--color-bg);
+      z-index: -10;
+      overflow: hidden;
+    }
+    
+    .particles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    
+    .particle {
+      position: absolute;
+      /* Partículas más grandes */
+      width: 3px;
+      height: 3px;
+      background: var(--color-red);
+      opacity: 0.8;
+      /* Nueva animación con glitch */
+      animation: glitchParticle 5s linear infinite;
+    }
+    
+    /* 
+       KEYFRAMES con pequeñas sacudidas (shifts) 
+       para simular un efecto glitch mientras se mueven.
+    */
+    @keyframes glitchParticle {
+      0% {
+        transform: translateY(100vh) translateX(0);
+        opacity: 0;
+      }
+      10% {
+        transform: translateY(90vh) translateX(5px) scale(1.2);
+        opacity: 0.6;
+      }
+      12% {
+        transform: translateY(88vh) translateX(-3px) scale(1.0);
+        opacity: 1;
+      }
+      25% {
+        transform: translateY(60vh) translateX(0);
+        opacity: 1;
+      }
+      30% {
+        transform: translateY(58vh) translateX(-4px) scale(1.1);
+      }
+      40% {
+        transform: translateY(50vh) translateX(2px) scale(0.9);
+      }
+      50% {
+        transform: translateY(40vh) translateX(0) scale(1.2);
+      }
+      55% {
+        transform: translateY(35vh) translateX(3px) scale(1.0);
+      }
+      70% {
+        transform: translateY(20vh) translateX(-2px) scale(1.1);
+      }
+      80% {
+        transform: translateY(10vh) translateX(4px) scale(0.8);
+      }
+      100% {
+        transform: translateY(-10px) translateX(-3px) scale(1);
+        opacity: 0;
+      }
+    }
+    
+    /* --------------------------------------------------
+       ESTILOS GENERALES PARA ENLACES, BOTONES, IMÁGENES Y TABLAS
+    -------------------------------------------------- */
+    a, button {
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+    }
+    img {
+      max-width: 100%;
+      display: block;
+    }
+    ul, li {
+      list-style: none;
+    }
+    
+    /* --------------------------------------------------
+       CURSOR PERSONALIZADO (opcional)
+    -------------------------------------------------- */
+    body.custom-cursor { cursor: none; }
+    .cursor-dot, .cursor-dot-expanded {
+      position: fixed;
+      pointer-events: none;
+      mix-blend-mode: exclusion;
+      z-index: 9999;
+      transform: translate(-50%,-50%);
+    }
+    .cursor-dot {
+      width: 12px;
+      height: 12px;
+      background-color: var(--color-accent2);
+      border-radius: 50%;
+      transition: background-color 0.2s;
+    }
+    .cursor-dot-expanded {
+      width: 50px;
+      height: 50px;
+      border: 2px solid var(--color-accent2);
+      border-radius: 50%;
+      opacity: 0.5;
+      transition: width 0.3s, height 0.3s, border 0.3s, opacity 0.3s;
+    }
+    
+    /* --------------------------------------------------
+       NAVBAR CYBERPUNK + BOOTSTRAP
+    -------------------------------------------------- */
+    /* Se mantiene el estilo personalizado y se agregan clases de Bootstrap */
+    nav.cyber-nav {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70%;
+      max-height: 50px;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(5px);
+      border: 2px solid var(--color-accent);
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(10,255,153,0.3);
+      padding: 0.5rem 1rem;
+      z-index: 9999;
+      opacity: 0;
+      animation: navbarEnter 1.2s ease forwards;
+    }
+    @keyframes navbarEnter {
+      0% { transform: translate(-50%, -60px); opacity: 0; }
+      100% { transform: translate(-50%, 0); opacity: 1; }
+    }
+    /* Estructura del Navbar con Bootstrap */
+    .navbar-nav {
+      flex-direction: row;
+    }
+    .navbar-nav .nav-item {
+      margin-left: 1rem;
+    }
+    nav.cyber-nav a.nav-brand {
+      font-family: var(--font-heading);
+      font-size: 1.5rem;
+      color: var(--color-accent);
+      margin-right: 2rem;
+      text-shadow: 0 0 5px var(--color-accent);
+    }
+    nav.cyber-nav a.nav-brand:hover {
+      text-shadow: 0 0 15px var(--color-accent);
+      transition: 0.3s;
+    }
+    nav.cyber-nav .nav-link {
+      font-family: var(--font-main);
+      color: var(--color-text);
+      font-size: 1rem;
+      text-transform: uppercase;
+      padding: 0.5rem 1rem;
+      transition: color var(--transition-fast), text-shadow var(--transition-fast);
+    }
+    nav.cyber-nav .nav-link:hover {
+      color: var(--color-accent);
+      text-shadow: 0 0 5px var(--color-accent);
+    }
+    
+    /* --------------------------------------------------
+       BARRAS DE PROGRESO
+    -------------------------------------------------- */
+    .progress-bar {
+      width: 100%;
+      height: 10px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 5px;
+      margin: 0.5rem 0;
+      overflow: hidden;
+    }
+    .progress {
+      height: 100%;
+      width: 0%;
+      background: var(--color-accent);
+      transition: width 0.1s;
+    }
+    
+    /* --------------------------------------------------
+       DASHBOARD Y PANELES
+    -------------------------------------------------- */
+    .dashboard-container {
+      margin-top: 80px;
+      padding: 2rem;
+    }
+    .panel {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--color-accent);
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 0 15px rgba(10,255,153,0.2);
+      position: relative;
+      overflow: hidden;
+    }
+    .panel-title {
+      font-family: var(--font-heading);
+      font-size: 2rem;
+      color: var(--color-accent);
+      text-align: center;
+      margin-bottom: 1rem;
+      text-shadow: 0 0 5px var(--color-accent);
+    }
+    
+    /* --------------------------------------------------
+       GRID DE PROYECTOS
+    -------------------------------------------------- */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .project-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--color-accent);
+      border-radius: 5px;
+      padding: 1rem;
+      text-align: center;
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: pointer;
+      position: relative;
+    }
+    .project-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 15px rgba(10,255,153,0.3);
+    }
+    .project-card h3 {
+      margin-bottom: 0.5rem;
+      color: var(--color-accent);
+      font-family: var(--font-heading);
+    }
+    .project-card p {
+      font-size: 0.9rem;
+      color: var(--color-text);
+      margin-bottom: 0.5rem;
+    }
+    
+    /* --------------------------------------------------
+       TABLAS Y GRÁFICOS – ANÁLISIS
+    -------------------------------------------------- */
+    .analytics-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: space-around;
+    }
+    .data-table {
+      width: 300px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--color-accent);
+      border-radius: 5px;
+      padding: 1rem;
+      margin-top: 1rem;
+      cursor: pointer;
+    }
+    .data-table table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .data-table th, .data-table td {
+      padding: 0.5rem;
+      text-align: left;
+      font-size: 0.9rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      color: var(--color-text);
+    }
+    
+    /* --------------------------------------------------
+       DATOS DEL SISTEMA
+    -------------------------------------------------- */
+    .system-data {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      justify-content: center;
+    }
+    .data-panel {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--color-accent);
+      border-radius: 5px;
+      padding: 1rem;
+      min-width: 250px;
+      text-align: center;
+    }
+    .system-graph {
+      width: 300px;
+      height: 300px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--color-accent);
+      border-radius: 5px;
+      padding: 1rem;
+    }
+    
+    /* --------------------------------------------------
+       PANEL DE BETA TESTING
+    -------------------------------------------------- */
+    .beta-testing {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .beta-project {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--color-accent);
+      border-radius: 5px;
+      padding: 1rem;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .beta-project:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 0 10px rgba(10,255,153,0.3);
+    }
+    
+    /* --------------------------------------------------
+       MODAL PARA DETALLE DE PROYECTOS CON TABS
+    -------------------------------------------------- */
+    .modal-proyecto {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      animation: fadeIn 0.5s ease;
+    }
+    .modal-content {
+      background: var(--color-bg);
+      border: 2px solid var(--color-accent);
+      border-radius: 10px;
+      padding: 1rem;
+      width: 95%;
+      max-width: 1000px;
+      max-height: 90vh;
+      overflow: hidden;
+      position: relative;
+      animation: slideIn 0.5s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .close-modal {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-size: 2rem;
+      color: var(--color-accent);
+      cursor: pointer;
+    }
+    /* --------------------------------------------------
+       TABS DE MODAL
+    -------------------------------------------------- */
+    .modal-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--color-accent);
+      margin-bottom: 1rem;
+    }
+    .modal-tabs button {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 0.8rem;
+      font-family: var(--font-heading);
+      font-size: 1rem;
+      color: var(--color-text);
+      cursor: pointer;
+      transition: background var(--transition-fast);
+    }
+    .modal-tabs button.active,
+    .modal-tabs button:hover {
+      background: rgba(10,255,153,0.2);
+    }
+    .tab-content {
+      overflow-y: auto;
+      height: calc(100% - 60px);
+      padding: 1rem;
+    }
+    .tab-pane {
+      display: none;
+    }
+    .tab-pane.active {
+      display: block;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateY(-50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    /* --------------------------------------------------
+       RESPONSIVIDAD
+    -------------------------------------------------- */
+    @media (max-width: var(--mobile-break)) {
+      .panel-title { font-size: 1.8rem; }
+      nav.cyber-nav {
+        width: 90%;
+        top: 10px;
+        max-height: 45px;
+      }
+    }
+    
+    /* --------------------------------------------------
+       NUEVO: ESTILOS PARA EL EFECTO GLITCH (3 segundos)
+    -------------------------------------------------- */
+    @keyframes glitchEffect {
+      0% {
+        transform: translate(0);
+        opacity: 1;
+      }
+      20% {
+        transform: translate(-2px, 2px);
+        opacity: 0.8;
+      }
+      40% {
+        transform: translate(2px, -2px);
+        opacity: 0.9;
+      }
+      60% {
+        transform: translate(-2px, -2px);
+        opacity: 0.7;
+      }
+      80% {
+        transform: translate(2px, 2px);
+        opacity: 0.85;
+      }
+      100% {
+        transform: translate(0);
+        opacity: 1;
+      }
+    }
+    .glitch {
+      animation: glitchEffect 3s ease-out;
+    }
+  </style>
+</head>
+<body>
+  <!-- PANTALLA DE BIENVENIDA INICIAL (NUEVO) -->
+  <div id="welcomeOverlay" class="welcome-overlay">
+    <div class="welcome-panel">
+      <h1>Bienvenido a CyberLab</h1>
+      <p>Al hacer clic en "Aceptar", la experiencia cambiará a un mundo cyberpunk interactivo.</p>
+      <button id="welcomeAccept">Aceptar</button>
+    </div>
+  </div>
+  
+  <!-- AUDIO DE ANUNCIO RÁPIDO PARA LA BIENVENIDA (NUEVO) -->
+  <audio id="welcomeSound">
+    <source src="audio/anuncios/Sonido para Clicks.wav" type="audio/mp3">
+    Tu navegador no soporta este audio.
+  </audio>
+  
+  <!-- AUDIO DE MÚSICA DE FONDO (NUEVO) -->
+  <audio id="bgMusic" loop>
+    <source src="audio/general/sound.flac" type="audio/mp3">
+    Tu navegador no soporta este audio.
+  </audio>
+  
+  <!-- ==================================================
+       FONDO CON AURORA NEGRA Y PARTICULAS ROJAS
+  ================================================== -->
+  <div class="background-aurora">
+    <div class="particles"></div>
+  </div>
+  
+  <!-- ==================================================
+       NAVBAR DE NAVEGACIÓN CON BOOTSTRAP
+  ================================================== -->
+  <nav class="cyber-nav navbar navbar-expand-lg">
+    <a class="nav-brand navbar-brand" href="../Menu.html">CyberLab</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarContent" 
+      aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item"><a class="nav-link" href="#panel1">Proyectos</a></li>
+        <li class="nav-item"><a class="nav-link" href="#panel2">Análisis</a></li>
+        <li class="nav-item"><a class="nav-link" href="#panel3">Sistema</a></li>
+        <li class="nav-item"><a class="nav-link" href="#panel4">Beta Testing</a></li>
+      </ul>
+    </div>
+  </nav>
+  
+  <!-- ==================================================
+       CONTENEDOR PRINCIPAL DEL DASHBOARD
+  ================================================== -->
+  <div class="dashboard-container">
+    <!-- PANEL 1: Proyectos en Progreso -->
+    <section id="panel1" class="panel">
+      <h2 class="panel-title">Proyectos en Progreso</h2>
+      <div class="projects-grid">
+        <!-- Cada tarjeta contiene un data-project con su ID o nombre -->
+        <div class="project-card" data-project="Proyecto 1">
+          <h3>Proyecto 1</h3>
+          <p>Estado: 45% completado</p>
+          <div class="progress-bar"><div class="progress" style="width:45%;"></div></div>
+        </div>
+        <div class="project-card" data-project="Proyecto 2">
+          <h3>Proyecto 2</h3>
+          <p>Estado: 60% completado</p>
+          <div class="progress-bar"><div class="progress" style="width:60%;"></div></div>
+        </div>
+        <div class="project-card" data-project="Proyecto 3">
+          <h3>Proyecto 3</h3>
+          <p>Estado: 30% completado</p>
+          <div class="progress-bar"><div class="progress" style="width:30%;"></div></div>
+        </div>
+        <div class="project-card" data-project="Proyecto 4">
+          <h3>Proyecto 4</h3>
+          <p>Estado: 80% completado</p>
+          <div class="progress-bar"><div class="progress" style="width:80%;"></div></div>
+        </div>
+        <div class="project-card" data-project="Proyecto 5">
+          <h3>Proyecto 5</h3>
+          <p>Estado: 50% completado</p>
+          <div class="progress-bar"><div class="progress" style="width:50%;"></div></div>
+        </div>
+        <div class="project-card" data-project="Proyecto 6">
+          <h3>Proyecto 6</h3>
+          <p>Estado: 70% completado</p>
+          <div class="progress-bar"><div class="progress" style="width:70%;"></div></div>
+        </div>
+        <div class="project-card" data-project="Proyecto 7">
+          <h3>Proyecto 7</h3>
+          <p>Estado: 40% completado</p>
+          <div class="progress-bar"><div class="progress" style="width:40%;"></div></div>
+        </div>
+        <div class="project-card" data-project="Proyecto 8">
+          <h3>Proyecto 8</h3>
+          <p>Estado: 55% completado</p>
+          <div class="progress-bar"><div class="progress" style="width:55%;"></div></div>
+        </div>
+        <div class="project-card" data-project="Proyecto 9">
+          <h3>Proyecto 9</h3>
+          <p>Estado: 85% completado</p>
+          <div class="progress-bar"><div class="progress" style="width:85%;"></div></div>
+        </div>
+        <div class="project-card" data-project="Proyecto 10">
+          <h3>Proyecto 10</h3>
+          <p>Estado: 95% completado</p>
+          <div class="progress-bar"><div class="progress" style="width:95%;"></div></div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- PANEL 2: Análisis y Gráficos -->
+    <section id="panel2" class="panel">
+      <h2 class="panel-title">Análisis y Gráficos</h2>
+      <div class="analytics-container">
+        <div style="position: relative; width: 400px; height: 250px; cursor:pointer;">
+          <canvas id="chart1"></canvas>
+        </div>
+        <div class="data-table" style="cursor:pointer;">
+          <table>
+            <thead>
+              <tr>
+                <th>Parámetro</th>
+                <th>Valor</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Carga del Sistema</td>
+                <td>68%</td>
+              </tr>
+              <tr>
+                <td>Velocidad</td>
+                <td>1200ms</td>
+              </tr>
+              <tr>
+                <td>Proyectos Activos</td>
+                <td>10</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+    
+    <!-- PANEL 3: Datos del Sistema -->
+    <section id="panel3" class="panel">
+      <h2 class="panel-title">Datos del Sistema</h2>
+      <div class="system-data">
+        <div class="data-panel">
+          <p>Memoria: 8GB / 16GB</p>
+          <p>CPU: 4.2 GHz</p>
+          <p>Almacenamiento: 500GB / 1TB</p>
+        </div>
+        <div class="system-graph">
+          <canvas id="systemChart"></canvas>
+        </div>
+      </div>
+    </section>
+    
+    <!-- PANEL 4: Beta Testing -->
+    <section id="panel4" class="panel">
+      <h2 class="panel-title">Panel de Beta Testing</h2>
+      <div class="beta-testing">
+        <!-- Tarjetas para Beta Proyectos (datos únicos se cargarán al hacer clic) -->
+        <div class="beta-project" data-project="Beta Proyecto A">
+          <h3>Beta Proyecto A</h3>
+          <p>Progreso: 75%</p>
+          <div class="progress-bar"><div class="progress" style="width:75%;"></div></div>
+        </div>
+        <div class="beta-project" data-project="Beta Proyecto B">
+          <h3>Beta Proyecto B</h3>
+          <p>Progreso: 60%</p>
+          <div class="progress-bar"><div class="progress" style="width:60%;"></div></div>
+        </div>
+        <div class="beta-project" data-project="Beta Proyecto C">
+          <h3>Beta Proyecto C</h3>
+          <p>Progreso: 30%</p>
+          <div class="progress-bar"><div class="progress" style="width:30%;"></div></div>
+        </div>
+        <div class="beta-project" data-project="Beta Proyecto D">
+          <h3>Beta Proyecto D</h3>
+          <p>Progreso: 90%</p>
+          <div class="progress-bar"><div class="progress" style="width:90%;"></div></div>
+        </div>
+        <div class="beta-project" data-project="Beta Proyecto E">
+          <h3>Beta Proyecto E</h3>
+          <p>Progreso: 50%</p>
+          <div class="progress-bar"><div class="progress" style="width:50%;"></div></div>
+        </div>
+      </div>
+    </section>
+  </div>
+  
+  <!-- ==================================================
+       MODAL PARA DETALLE DE PROYECTOS CON TABS
+       (Se carga la información única según el proyecto o beta proyecto seleccionado)
+  ================================================== -->
+  <div id="modalProyecto" class="modal-proyecto">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <!-- Navegación de Tabs -->
+      <div class="modal-tabs">
+        <button class="tab-link active" data-tab="tab-descripcion">Descripción</button>
+        <button class="tab-link" data-tab="tab-estadisticas">Estadísticas</button>
+        <button class="tab-link" data-tab="tab-historial">Historial</button>
+        <button class="tab-link" data-tab="tab-comentarios">Comentarios</button>
+        <button class="tab-link" data-tab="tab-documentacion">Documentación</button>
+        <button class="tab-link" data-tab="tab-tareas">Tareas</button>
+        <button class="tab-link" data-tab="tab-integraciones">Integraciones</button>
+        <button class="tab-link" data-tab="tab-prototipo">Prototipo</button>
+        <button class="tab-link" data-tab="tab-seguridad">Seguridad</button>
+        <button class="tab-link" data-tab="tab-finanzas">Finanzas</button>
+      </div>
+      <!-- Contenedor de contenido de Tabs -->
+      <div class="tab-content">
+        <!-- Tab: Descripción -->
+        <div class="tab-pane active" id="tab-descripcion">
+          <h2 id="modalTitle">Detalle - Proyecto</h2>
+          <section>
+            <h3>Descripción General</h3>
+            <p id="descTexto"></p>
+            <p>
+              <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" style="color: var(--color-accent);">
+                Ver video de demostración
+              </a>
+            </p>
+            <!-- Recursos Multimedia Adicionales -->
+            <div style="margin-top:1rem; border-top: 1px solid var(--color-accent); padding-top:1rem;">
+              <h4>Recursos Multimedia</h4>
+              <ul id="descRecursos"></ul>
+            </div>
+          </section>
+        </div>
+        <!-- Tab: Estadísticas -->
+        <div class="tab-pane" id="tab-estadisticas">
+          <section>
+            <h3>Estadísticas y Análisis</h3>
+            <p id="statsTexto"></p>
+            <canvas id="chartProyecto" style="max-height:200px;"></canvas>
+            <!-- Opciones Avanzadas en Estadísticas -->
+            <div style="margin-top:1rem; border-top: 1px solid var(--color-accent); padding-top:1rem;">
+              <h4>Opciones Avanzadas</h4>
+              <ul id="statsOpciones"></ul>
+            </div>
+          </section>
+        </div>
+        <!-- Tab: Historial -->
+        <div class="tab-pane" id="tab-historial">
+          <section>
+            <h3>Línea de Tiempo e Historial</h3>
+            <p id="histTexto"></p>
+            <ul id="histLista"></ul>
+            <!-- Interactividad y Filtros en Historial -->
+            <div style="margin-top:1rem; border-top: 1px solid var(--color-accent); padding-top:1rem;">
+              <h4>Interactividad y Filtros</h4>
+              <ul id="histFiltros"></ul>
+            </div>
+          </section>
+        </div>
+        <!-- Tab: Comentarios -->
+        <div class="tab-pane" id="tab-comentarios">
+          <section>
+            <h3>Comentarios y Colaboración</h3>
+            <p id="comTexto"></p>
+            <textarea id="comInput" placeholder="Deja tu comentario..." style="width:100%; height:80px; background: #222; color: #fff; border: 1px solid var(--color-accent); border-radius: 5px; padding: 0.5rem;"></textarea>
+            <button style="margin-top:10px; background: var(--color-accent); border:none; padding:0.5rem 1rem; cursor:pointer;">Enviar</button>
+            <!-- Funciones Extras en Comentarios -->
+            <div style="margin-top:1rem; border-top: 1px solid var(--color-accent); padding-top:1rem;">
+              <h4>Funciones Extras</h4>
+              <ul id="comExtras"></ul>
+            </div>
+          </section>
+        </div>
+        <!-- Tab: Documentación -->
+        <div class="tab-pane" id="tab-documentacion">
+          <section>
+            <h3>Documentación y Recursos Técnicos</h3>
+            <p id="docTexto"></p>
+            <ul id="docLista"></ul>
+            <!-- Características Avanzadas en Documentación -->
+            <div style="margin-top:1rem; border-top: 1px solid var(--color-accent); padding-top:1rem;">
+              <h4>Características Avanzadas</h4>
+              <ul id="docAvanzadas"></ul>
+            </div>
+          </section>
+        </div>
+        <!-- Tab: Tareas -->
+        <div class="tab-pane" id="tab-tareas">
+          <section>
+            <h3>Tareas y Cronograma</h3>
+            <p id="tarTexto"></p>
+            <ul id="tarLista"></ul>
+            <!-- Mejoras y Funcionalidades en Tareas -->
+            <div style="margin-top:1rem; border-top: 1px solid var(--color-accent); padding-top:1rem;">
+              <h4>Mejoras y Funcionalidades</h4>
+              <ul id="tarOpciones"></ul>
+            </div>
+          </section>
+        </div>
+        <!-- Tab: Integraciones -->
+        <div class="tab-pane" id="tab-integraciones">
+          <section>
+            <h3>Integraciones y API</h3>
+            <p id="intTexto"></p>
+            <ul id="intLista"></ul>
+            <!-- Herramientas de Prueba en Integraciones -->
+            <div style="margin-top:1rem; border-top: 1px solid var(--color-accent); padding-top:1rem;">
+              <h4>Herramientas de Prueba</h4>
+              <ul id="intOpciones"></ul>
+            </div>
+          </section>
+        </div>
+        <!-- Tab: Prototipo -->
+        <div class="tab-pane" id="tab-prototipo">
+          <section>
+            <h3>Prototipo Interactivo</h3>
+            <p id="proTexto"></p>
+            <iframe id="proIframe" src="about:blank" style="width:100%; height:250px; border:1px solid var(--color-accent); border-radius:5px;"></iframe>
+            <!-- Opciones de Interacción en Prototipo -->
+            <div style="margin-top:1rem; border-top: 1px solid var(--color-accent); padding-top:1rem;">
+              <h4>Opciones de Interacción</h4>
+              <ul id="proOpciones"></ul>
+            </div>
+          </section>
+        </div>
+        <!-- Tab: Seguridad -->
+        <div class="tab-pane" id="tab-seguridad">
+          <section>
+            <h3>Seguridad y Auditoría</h3>
+            <p id="segTexto"></p>
+            <ul id="segLista"></ul>
+            <!-- Monitoreo y Alertas en Seguridad -->
+            <div style="margin-top:1rem; border-top: 1px solid var(--color-accent); padding-top:1rem;">
+              <h4>Monitoreo y Alertas</h4>
+              <ul id="segOpciones"></ul>
+            </div>
+          </section>
+        </div>
+        <!-- Tab: Finanzas -->
+        <div class="tab-pane" id="tab-finanzas">
+          <section>
+            <h3>Finanzas y Presupuestos</h3>
+            <p id="finTexto"></p>
+            <ul id="finLista"></ul>
+            <!-- Análisis Financiero en Finanzas -->
+            <div style="margin-top:1rem; border-top: 1px solid var(--color-accent); padding-top:1rem;">
+              <h4>Análisis Financiero</h4>
+              <ul id="finOpciones"></ul>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- ==================================================
+       AUDIO PARA INTERACCIONES Y ANIMACIONES
+       (Sección de Archivos de Sonido)
+  ================================================== -->
+  <!-- Sonido para Clicks -->
+  <audio id="clickSound">
+    <source src="audio/click/Sonido para Clicks.wav" type="audio/mp3">
+    Tu navegador no soporta este audio.
+  </audio>
+  <!-- Sonido para Cambio de Pestañas -->
+  <audio id="tabSound">
+    <source src="audio/pestaña/Pestañas.wav" type="audio/mp3">
+    Tu navegador no soporta este audio.
+  </audio>
+  <!-- Sonido para Animaciones -->
+  <audio id="animSound">
+    <source src="audio/animacion/Animaciones.wav" type="audio/mp3">
+    Tu navegador no soporta este audio.
+  </audio>
+  
+  <!-- ==================================================
+       INCLUYENDO CHART.JS DESDE CDN PARA LOS GRÁFICOS
+  ================================================== -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Bootstrap JS, Popper.js y jQuery -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  
+  <!-- ==================================================
+       SCRIPT DE INTERACCIONES, ANIMACIONES, TABS Y PARTICULAS
+       (Carga de datos únicos según el proyecto seleccionado)
+  ================================================== -->
+  <script>
+    // Objeto con datos únicos para cada proyecto y beta proyecto
+    const proyectos = {
+      "Proyecto 1": {
+        descripcion: {
+          texto: "El Proyecto 1 se centra en el desarrollo de una plataforma innovadora para la gestión de datos en tiempo real.",
+          recursos: ["Video introductorio", "Galería de imágenes", "Diagrama de flujo"]
+        },
+        estadisticas: {
+          texto: "Métricas de rendimiento, análisis predictivo y KPIs para el Proyecto 1.",
+          opciones: ["Filtro de fecha", "Actualización en tiempo real", "Comparativa histórica"],
+          datos: [20, 40, 60]
+        },
+        historial: {
+          texto: "Registro de versiones y actualizaciones del Proyecto 1.",
+          eventos: ["[01/02/2025] Versión 1.0 lanzada", "[15/02/2025] Parche de seguridad", "[01/03/2025] Nueva funcionalidad incorporada"],
+          filtros: ["Búsqueda por fecha", "Exportar en PDF"]
+        },
+        comentarios: {
+          texto: "Comentarios y feedback de los usuarios del Proyecto 1.",
+          extras: ["Adjuntar archivos", "Reacciones", "Hilos de respuesta"]
+        },
+        documentacion: {
+          texto: "Documentación técnica, guías y tutoriales del Proyecto 1.",
+          enlaces: ["Guía de instalación", "API Documentation", "Repositorio GitHub"],
+          avanzadas: ["Editor de código embebido", "Secciones colapsables", "Buscador interno"]
+        },
+        tareas: {
+          texto: "Tareas pendientes y cronograma del Proyecto 1.",
+          lista: ["[ ] Implementar búsqueda", "[x] Actualizar documentación", "[ ] Revisión de seguridad"],
+          opciones: ["Arrastrar y soltar", "Etiquetas de prioridad", "Sincronización con Trello"]
+        },
+        integraciones: {
+          texto: "Integraciones con servicios externos y pruebas de API para el Proyecto 1.",
+          lista: ["Google Analytics: Conectado", "Stripe: En configuración", "Slack: Integrado"],
+          opciones: ["Sandbox interactivo", "Visualización de logs", "Simulación de llamadas"]
+        },
+        prototipo: {
+          texto: "Demo interactiva y modo presentación del Proyecto 1.",
+          iframeSrc: "https://www.example.com/demo1",
+          opciones: ["Activar simulaciones", "Modo presentación", "Feedback inmediato"]
+        },
+        seguridad: {
+          texto: "Auditoría y seguridad en el Proyecto 1.",
+          lista: ["Última auditoría: 01/03/2025", "Alertas: Ninguna"],
+          opciones: ["Monitoreo de accesos", "Configuración de alertas", "Registro de incidentes"]
+        },
+        finanzas: {
+          texto: "Control de costos y análisis financiero del Proyecto 1.",
+          lista: ["Presupuesto: $50,000", "Gastos: $30,000", "ROI proyectado: 150%"],
+          opciones: ["Gráficos comparativos", "Filtros por categoría", "Exportación de datos"]
+        }
+      },
+      "Proyecto 2": {
+        descripcion: {
+          texto: "El Proyecto 2 está enfocado en la optimización de procesos empresariales mediante el uso de inteligencia artificial.",
+          recursos: ["Video explicativo", "Galería de prototipos", "Infografías del proceso"]
+        },
+        estadisticas: {
+          texto: "KPIs y análisis en tiempo real para el Proyecto 2.",
+          opciones: ["Filtro por trimestre", "Datos en vivo", "Comparativa con metas"],
+          datos: [30, 50, 70]
+        },
+        historial: {
+          texto: "Historial de versiones y cambios realizados en el Proyecto 2.",
+          eventos: ["[05/03/2025] Versión beta lanzada", "[20/03/2025] Optimización de algoritmos", "[10/04/2025] Versión final estable"],
+          filtros: ["Búsqueda avanzada", "Exportar historial"]
+        },
+        comentarios: {
+          texto: "Espacio para feedback y discusión sobre el Proyecto 2.",
+          extras: ["Subida de archivos", "Votación de comentarios", "Respuestas en hilos"]
+        },
+        documentacion: {
+          texto: "Recursos técnicos y documentación del Proyecto 2.",
+          enlaces: ["Manual de usuario", "API Docs", "Repositorio GitHub"],
+          avanzadas: ["Editor interactivo", "Buscador de temas", "Contenido colapsable"]
+        },
+        tareas: {
+          texto: "Listado de tareas y planificación para el Proyecto 2.",
+          lista: ["[ ] Revisión de algoritmos", "[x] Actualización de sistema", "[ ] Pruebas de integración"],
+          opciones: ["Organización Kanban", "Etiquetado avanzado", "Integración con Jira"]
+        },
+        integraciones: {
+          texto: "Estado y pruebas de integraciones para el Proyecto 2.",
+          lista: ["Google Analytics: En revisión", "Stripe: Conectado", "Slack: Integrado"],
+          opciones: ["Sandbox de pruebas", "Simulación de API", "Logs en tiempo real"]
+        },
+        prototipo: {
+          texto: "Demo interactiva y prototipo funcional del Proyecto 2.",
+          iframeSrc: "https://www.example.com/demo2",
+          opciones: ["Simulación en vivo", "Modo presentación", "Feedback instantáneo"]
+        },
+        seguridad: {
+          texto: "Controles y auditoría de seguridad para el Proyecto 2.",
+          lista: ["Última auditoría: 15/04/2025", "Alertas: Ninguna"],
+          opciones: ["Monitoreo avanzado", "Alertas personalizadas", "Registro detallado"]
+        },
+        finanzas: {
+          texto: "Información financiera y análisis de costos del Proyecto 2.",
+          lista: ["Presupuesto: $75,000", "Gastos: $45,000", "ROI proyectado: 170%"],
+          opciones: ["Análisis comparativo", "Filtros dinámicos", "Exportar en CSV y PDF"]
+        }
+      },
+      "Proyecto 3": {
+        descripcion: {
+          texto: "El Proyecto 3 se centra en la automatización de procesos de manufactura utilizando IoT y análisis de datos.",
+          recursos: ["Video Demo", "Capturas de pantalla", "Diagrama de flujo"]
+        },
+        estadisticas: {
+          texto: "KPIs y métricas de rendimiento para el Proyecto 3, con análisis en tiempo real.",
+          opciones: ["Filtro por fecha", "Actualización en vivo", "Comparativa mensual"],
+          datos: [25, 45, 65]
+        },
+        historial: {
+          texto: "Registro de cambios y versiones del Proyecto 3.",
+          eventos: ["[03/03/2025] Versión 1.0 lanzada", "[10/03/2025] Ajustes de rendimiento", "[20/03/2025] Versión 1.1 actualizada"],
+          filtros: ["Búsqueda por fecha", "Exportar historial"]
+        },
+        comentarios: {
+          texto: "Comentarios y feedback específico para el Proyecto 3.",
+          extras: ["Adjuntar archivos", "Reacciones", "Hilos de discusión"]
+        },
+        documentacion: {
+          texto: "Documentación técnica, guías de usuario y API para el Proyecto 3.",
+          enlaces: ["Guía de instalación", "API Documentation", "Repositorio GitHub"],
+          avanzadas: ["Editor de código embebido", "Secciones colapsables", "Buscador interno"]
+        },
+        tareas: {
+          texto: "Listado de tareas y cronograma del Proyecto 3.",
+          lista: ["[ ] Configurar sensores IoT", "[x] Integrar base de datos", "[ ] Pruebas de integración"],
+          opciones: ["Arrastrar y soltar", "Etiquetas de prioridad", "Sincronización con Trello"]
+        },
+        integraciones: {
+          texto: "Integraciones con dispositivos IoT y servicios en la nube para el Proyecto 3.",
+          lista: ["Plataforma IoT: Conectada", "AWS: En configuración", "Slack: Integrado"],
+          opciones: ["Sandbox interactivo", "Simulación de llamadas", "Visualización de logs"]
+        },
+        prototipo: {
+          texto: "Demo interactiva y prototipo funcional del Proyecto 3.",
+          iframeSrc: "https://www.example.com/demo3",
+          opciones: ["Activar simulaciones", "Modo presentación", "Feedback inmediato"]
+        },
+        seguridad: {
+          texto: "Controles y auditoría de seguridad del Proyecto 3.",
+          lista: ["Última auditoría: 05/03/2025", "Alertas: Ninguna"],
+          opciones: ["Monitoreo de accesos", "Configuración de alertas", "Registro de incidentes"]
+        },
+        finanzas: {
+          texto: "Análisis financiero y control de costos del Proyecto 3.",
+          lista: ["Presupuesto: $60,000", "Gastos: $35,000", "ROI proyectado: 160%"],
+          opciones: ["Gráficos comparativos", "Filtros por categoría", "Exportación de datos"]
+        }
+      },
+      "Proyecto 4": {
+        descripcion: {
+          texto: "El Proyecto 4 busca optimizar la logística y distribución a través de soluciones digitales.",
+          recursos: ["Video explicativo", "Galería de rutas", "Infografías logísticas"]
+        },
+        estadisticas: {
+          texto: "Indicadores clave y análisis de datos para el Proyecto 4.",
+          opciones: ["Filtro trimestral", "Actualización en tiempo real", "Comparativa anual"],
+          datos: [30, 50, 70]
+        },
+        historial: {
+          texto: "Historial de versiones y mejoras en el Proyecto 4.",
+          eventos: ["[05/03/2025] Lanzamiento inicial", "[18/03/2025] Optimización de rutas", "[25/03/2025] Versión 2.0 actualizada"],
+          filtros: ["Búsqueda avanzada", "Exportar historial"]
+        },
+        comentarios: {
+          texto: "Feedback y comentarios sobre el Proyecto 4.",
+          extras: ["Adjuntar imágenes", "Reacciones con emojis", "Respuestas en hilos"]
+        },
+        documentacion: {
+          texto: "Documentación, manuales y tutoriales del Proyecto 4.",
+          enlaces: ["Manual de usuario", "API Docs", "Repositorio GitHub"],
+          avanzadas: ["Editor de código", "Secciones colapsables", "Buscador de temas"]
+        },
+        tareas: {
+          texto: "Planificación y tareas pendientes del Proyecto 4.",
+          lista: ["[ ] Optimizar rutas", "[x] Actualizar sistema", "[ ] Pruebas de distribución"],
+          opciones: ["Tablero Kanban", "Etiquetas de prioridad", "Integración con Jira"]
+        },
+        integraciones: {
+          texto: "Conexión con sistemas logísticos y análisis de datos para el Proyecto 4.",
+          lista: ["Sistema de seguimiento: Conectado", "API de Google Maps: En revisión", "Slack: Integrado"],
+          opciones: ["Sandbox de pruebas", "Simulación de API", "Visualización de logs"]
+        },
+        prototipo: {
+          texto: "Demo interactiva y prototipo del Proyecto 4.",
+          iframeSrc: "https://www.example.com/demo4",
+          opciones: ["Activar simulaciones", "Modo presentación", "Feedback inmediato"]
+        },
+        seguridad: {
+          texto: "Medidas y auditoría de seguridad en el Proyecto 4.",
+          lista: ["Última auditoría: 10/03/2025", "Alertas: Ninguna"],
+          opciones: ["Monitoreo de accesos", "Configuración de alertas", "Registro de incidentes"]
+        },
+        finanzas: {
+          texto: "Control financiero y análisis de costos del Proyecto 4.",
+          lista: ["Presupuesto: $80,000", "Gastos: $45,000", "ROI proyectado: 155%"],
+          opciones: ["Análisis comparativo", "Filtros por categoría", "Exportación de datos"]
+        }
+      },
+      "Proyecto 5": {
+        descripcion: {
+          texto: "El Proyecto 5 se orienta al desarrollo de una aplicación móvil para servicios financieros.",
+          recursos: ["Video demo", "Galería de interfaces", "Infografías del proceso"]
+        },
+        estadisticas: {
+          texto: "Estadísticas y análisis de uso para el Proyecto 5.",
+          opciones: ["Filtro por usuario", "Datos en vivo", "Comparativa de uso"],
+          datos: [35, 55, 75]
+        },
+        historial: {
+          texto: "Historial de versiones y actualizaciones del Proyecto 5.",
+          eventos: ["[08/03/2025] Versión preliminar lanzada", "[22/03/2025] Corrección de bugs", "[05/04/2025] Versión estable actualizada"],
+          filtros: ["Búsqueda por usuario", "Exportar historial"]
+        },
+        comentarios: {
+          texto: "Retroalimentación y comentarios de usuarios sobre el Proyecto 5.",
+          extras: ["Adjuntar capturas", "Reacciones", "Foros de discusión"]
+        },
+        documentacion: {
+          texto: "Documentación técnica y recursos para el Proyecto 5.",
+          enlaces: ["Guía de inicio", "API Docs", "Repositorio GitHub"],
+          avanzadas: ["Editor de código", "Contenido colapsable", "Buscador interno"]
+        },
+        tareas: {
+          texto: "Planificación y tareas asignadas en el Proyecto 5.",
+          lista: ["[ ] Integrar pasarela de pago", "[x] Diseñar interfaz", "[ ] Pruebas de rendimiento"],
+          opciones: ["Arrastrar y soltar", "Etiquetas de prioridad", "Sincronización con Trello"]
+        },
+        integraciones: {
+          texto: "Integraciones con sistemas de pago y análisis de datos para el Proyecto 5.",
+          lista: ["Stripe: Conectado", "Google Analytics: En revisión", "Slack: Integrado"],
+          opciones: ["Sandbox interactivo", "Simulación de API", "Visualización de logs"]
+        },
+        prototipo: {
+          texto: "Demo interactiva y presentación del Proyecto 5.",
+          iframeSrc: "https://www.example.com/demo5",
+          opciones: ["Simulación en vivo", "Modo presentación", "Feedback instantáneo"]
+        },
+        seguridad: {
+          texto: "Auditoría y controles de seguridad en el Proyecto 5.",
+          lista: ["Última auditoría: 12/03/2025", "Alertas: Ninguna"],
+          opciones: ["Monitoreo en vivo", "Alertas personalizadas", "Registro detallado"]
+        },
+        finanzas: {
+          texto: "Análisis financiero y control de costos del Proyecto 5.",
+          lista: ["Presupuesto: $70,000", "Gastos: $40,000", "ROI proyectado: 165%"],
+          opciones: ["Gráficos comparativos", "Filtros por categoría", "Exportación de informes"]
+        }
+      },
+      "Proyecto 6": {
+        descripcion: {
+          texto: "El Proyecto 6 se enfoca en soluciones de realidad aumentada para marketing digital.",
+          recursos: ["Video demostrativo", "Capturas de experiencias AR", "Infografías de implementación"]
+        },
+        estadisticas: {
+          texto: "Indicadores y análisis de interacción en el Proyecto 6.",
+          opciones: ["Filtro por campaña", "Datos en tiempo real", "Comparativa de interacciones"],
+          datos: [40, 60, 80]
+        },
+        historial: {
+          texto: "Historial de versiones, mejoras y eventos del Proyecto 6.",
+          eventos: ["[10/03/2025] Versión AR inicial lanzada", "[18/03/2025] Actualización de contenido", "[28/03/2025] Versión mejorada actualizada"],
+          filtros: ["Filtro por campaña", "Exportar historial"]
+        },
+        comentarios: {
+          texto: "Comentarios y feedback sobre la experiencia de realidad aumentada en el Proyecto 6.",
+          extras: ["Adjuntar videos", "Reacciones", "Hilos de discusión"]
+        },
+        documentacion: {
+          texto: "Documentación técnica, guías de usuario y tutoriales del Proyecto 6.",
+          enlaces: ["Manual AR", "API Docs", "Repositorio GitHub"],
+          avanzadas: ["Editor interactivo", "Secciones colapsables", "Buscador interno"]
+        },
+        tareas: {
+          texto: "Listado de tareas y planificación para el Proyecto 6.",
+          lista: ["[ ] Crear contenido AR", "[x] Integrar SDK", "[ ] Pruebas de usuario"],
+          opciones: ["Tablero Kanban", "Etiquetas", "Sincronización con herramientas"]
+        },
+        integraciones: {
+          texto: "Integraciones con plataformas de AR y análisis para el Proyecto 6.",
+          lista: ["Plataforma AR: Conectada", "Google Analytics: Conectado", "Slack: Integrado"],
+          opciones: ["Sandbox de pruebas", "Simulación de API", "Visualización de logs"]
+        },
+        prototipo: {
+          texto: "Demo interactiva y prototipo de realidad aumentada para el Proyecto 6.",
+          iframeSrc: "https://www.example.com/demo6",
+          opciones: ["Activar simulaciones", "Modo presentación", "Feedback inmediato"]
+        },
+        seguridad: {
+          texto: "Controles y auditoría de seguridad para el Proyecto 6.",
+          lista: ["Última auditoría: 15/03/2025", "Alertas: Ninguna"],
+          opciones: ["Monitoreo en tiempo real", "Alertas personalizadas", "Registro de incidentes"]
+        },
+        finanzas: {
+          texto: "Análisis financiero y control de costos del Proyecto 6.",
+          lista: ["Presupuesto: $90,000", "Gastos: $50,000", "ROI proyectado: 150%"],
+          opciones: ["Análisis comparativo", "Filtros dinámicos", "Exportación de datos"]
+        }
+      },
+      "Proyecto 7": {
+        descripcion: {
+          texto: "El Proyecto 7 se centra en soluciones de e-commerce con optimización de conversión.",
+          recursos: ["Video de lanzamiento", "Galería de interfaces", "Infografías de conversión"]
+        },
+        estadisticas: {
+          texto: "Métricas de conversión, tráfico y rendimiento para el Proyecto 7.",
+          opciones: ["Filtro por segmento", "Actualización en vivo", "Comparativa semanal"],
+          datos: [45, 65, 85]
+        },
+        historial: {
+          texto: "Registro de versiones y eventos en el Proyecto 7.",
+          eventos: ["[12/03/2025] Versión 1.0 lanzada", "[20/03/2025] Actualización de UI", "[30/03/2025] Versión 1.1 optimizada"],
+          filtros: ["Filtro por segmento", "Exportar historial"]
+        },
+        comentarios: {
+          texto: "Feedback y comentarios de usuarios sobre el Proyecto 7.",
+          extras: ["Adjuntar capturas", "Reacciones", "Hilos de discusión"]
+        },
+        documentacion: {
+          texto: "Documentación, manuales y recursos técnicos del Proyecto 7.",
+          enlaces: ["Guía de usuario", "API Documentation", "Repositorio GitHub"],
+          avanzadas: ["Editor de código", "Secciones colapsables", "Buscador interno"]
+        },
+        tareas: {
+          texto: "Tareas y cronograma del Proyecto 7.",
+          lista: ["[ ] Mejorar proceso de checkout", "[x] Actualizar catálogo", "[ ] Pruebas de A/B"],
+          opciones: ["Arrastrar y soltar", "Etiquetas de prioridad", "Integración con herramientas"]
+        },
+        integraciones: {
+          texto: "Integraciones con plataformas de pago y análisis para el Proyecto 7.",
+          lista: ["Stripe: Conectado", "Google Analytics: Conectado", "Slack: Integrado"],
+          opciones: ["Sandbox interactivo", "Simulación de API", "Visualización de logs"]
+        },
+        prototipo: {
+          texto: "Demo interactiva y presentación del Proyecto 7.",
+          iframeSrc: "https://www.example.com/demo7",
+          opciones: ["Activar simulaciones", "Modo presentación", "Feedback instantáneo"]
+        },
+        seguridad: {
+          texto: "Controles de seguridad y auditoría del Proyecto 7.",
+          lista: ["Última auditoría: 18/03/2025", "Alertas: Ninguna"],
+          opciones: ["Monitoreo de accesos", "Alertas personalizadas", "Registro de incidentes"]
+        },
+        finanzas: {
+          texto: "Control de costos y análisis financiero del Proyecto 7.",
+          lista: ["Presupuesto: $65,000", "Gastos: $40,000", "ROI proyectado: 155%"],
+          opciones: ["Gráficos comparativos", "Filtros por categoría", "Exportación de datos"]
+        }
+      },
+      "Proyecto 8": {
+        descripcion: {
+          texto: "El Proyecto 8 se dedica a la creación de un sistema de gestión de inventario inteligente.",
+          recursos: ["Video demostrativo", "Galería de interfaces", "Infografías del sistema"]
+        },
+        estadisticas: {
+          texto: "Métricas de inventario, rendimiento y análisis para el Proyecto 8.",
+          opciones: ["Filtro mensual", "Datos en vivo", "Comparativa histórica"],
+          datos: [50, 70, 90]
+        },
+        historial: {
+          texto: "Historial de actualizaciones y versiones del Proyecto 8.",
+          eventos: ["[15/03/2025] Versión inicial lanzada", "[25/03/2025] Actualización de módulos", "[05/04/2025] Versión optimizada"],
+          filtros: ["Búsqueda por fecha", "Exportar historial"]
+        },
+        comentarios: {
+          texto: "Espacio para comentarios y feedback sobre el Proyecto 8.",
+          extras: ["Adjuntar archivos", "Reacciones", "Organización de hilos"]
+        },
+        documentacion: {
+          texto: "Documentación técnica y manuales del Proyecto 8.",
+          enlaces: ["Manual de inventario", "API Documentation", "Repositorio GitHub"],
+          avanzadas: ["Editor de código", "Secciones colapsables", "Buscador interno"]
+        },
+        tareas: {
+          texto: "Listado de tareas y cronograma del Proyecto 8.",
+          lista: ["[ ] Optimizar sistema de inventario", "[x] Integrar sensores", "[ ] Pruebas de rendimiento"],
+          opciones: ["Arrastrar y soltar", "Etiquetas de prioridad", "Sincronización con Trello"]
+        },
+        integraciones: {
+          texto: "Integraciones con plataformas de gestión y análisis para el Proyecto 8.",
+          lista: ["Sistema ERP: Conectado", "Google Analytics: En revisión", "Slack: Integrado"],
+          opciones: ["Sandbox interactivo", "Simulación de API", "Visualización de logs"]
+        },
+        prototipo: {
+          texto: "Demo interactiva y prototipo funcional del Proyecto 8.",
+          iframeSrc: "https://www.example.com/demo8",
+          opciones: ["Activar simulaciones", "Modo presentación", "Feedback instantáneo"]
+        },
+        seguridad: {
+          texto: "Auditoría y seguridad para el Proyecto 8.",
+          lista: ["Última auditoría: 20/03/2025", "Alertas: Ninguna"],
+          opciones: ["Monitoreo de accesos", "Configuración de alertas", "Registro de incidentes"]
+        },
+        finanzas: {
+          texto: "Análisis financiero y control de costos del Proyecto 8.",
+          lista: ["Presupuesto: $85,000", "Gastos: $55,000", "ROI proyectado: 150%"],
+          opciones: ["Análisis comparativo", "Filtros por categoría", "Exportación de datos"]
+        }
+      },
+      "Proyecto 9": {
+        descripcion: {
+          texto: "El Proyecto 9 se orienta a desarrollar soluciones de inteligencia artificial para la atención al cliente.",
+          recursos: ["Video de demostración", "Galería de interfaces", "Infografías de IA"]
+        },
+        estadisticas: {
+          texto: "Indicadores de rendimiento, análisis y KPIs para el Proyecto 9.",
+          opciones: ["Filtro por segmento", "Actualización en vivo", "Comparativa de resultados"],
+          datos: [55, 75, 95]
+        },
+        historial: {
+          texto: "Registro de versiones y cambios en el Proyecto 9.",
+          eventos: ["[18/03/2025] Versión 1.0 lanzada", "[28/03/2025] Actualización de IA", "[08/04/2025] Versión 1.1 mejorada"],
+          filtros: ["Búsqueda por segmento", "Exportar historial"]
+        },
+        comentarios: {
+          texto: "Comentarios y feedback específicos para el Proyecto 9.",
+          extras: ["Adjuntar archivos", "Reacciones", "Organización de hilos"]
+        },
+        documentacion: {
+          texto: "Documentación técnica, guías y recursos para el Proyecto 9.",
+          enlaces: ["Guía de usuario", "API Docs", "Repositorio GitHub"],
+          avanzadas: ["Editor de código", "Secciones colapsables", "Buscador interno"]
+        },
+        tareas: {
+          texto: "Listado de tareas y cronograma del Proyecto 9.",
+          lista: ["[ ] Implementar chatbot", "[x] Actualizar base de datos", "[ ] Pruebas de integración"],
+          opciones: ["Arrastrar y soltar", "Etiquetas de prioridad", "Integración con herramientas"]
+        },
+        integraciones: {
+          texto: "Integraciones con sistemas de atención y análisis para el Proyecto 9.",
+          lista: ["Chatbot API: Conectado", "Google Analytics: Conectado", "Slack: Integrado"],
+          opciones: ["Sandbox interactivo", "Simulación de llamadas", "Visualización de logs"]
+        },
+        prototipo: {
+          texto: "Demo interactiva y prototipo funcional del Proyecto 9.",
+          iframeSrc: "https://www.example.com/demo9",
+          opciones: ["Activar simulaciones", "Modo presentación", "Feedback inmediato"]
+        },
+        seguridad: {
+          texto: "Controles de seguridad y auditoría para el Proyecto 9.",
+          lista: ["Última auditoría: 22/03/2025", "Alertas: Ninguna"],
+          opciones: ["Monitoreo en tiempo real", "Alertas personalizadas", "Registro de incidentes"]
+        },
+        finanzas: {
+          texto: "Análisis financiero y control de costos del Proyecto 9.",
+          lista: ["Presupuesto: $95,000", "Gastos: $60,000", "ROI proyectado: 145%"],
+          opciones: ["Análisis comparativo", "Filtros por categoría", "Exportación de informes"]
+        }
+      },
+      "Proyecto 10": {
+        descripcion: {
+          texto: "El Proyecto 10 está diseñado para ofrecer soluciones de transformación digital integral en empresas.",
+          recursos: ["Video introductorio", "Galería de casos de éxito", "Diagramas de procesos"]
+        },
+        estadisticas: {
+          texto: "Métricas de transformación, análisis de rendimiento y KPIs para el Proyecto 10.",
+          opciones: ["Filtro anual", "Datos en tiempo real", "Comparativa de resultados"],
+          datos: [60, 80, 100]
+        },
+        historial: {
+          texto: "Historial de versiones y actualizaciones del Proyecto 10.",
+          eventos: ["[20/03/2025] Lanzamiento inicial", "[30/03/2025] Actualización de funcionalidades", "[10/04/2025] Versión 2.0 lanzada"],
+          filtros: ["Búsqueda por fecha", "Exportar historial"]
+        },
+        comentarios: {
+          texto: "Espacio para feedback y comentarios sobre el Proyecto 10.",
+          extras: ["Adjuntar archivos", "Reacciones", "Hilos de discusión"]
+        },
+        documentacion: {
+          texto: "Documentación técnica, manuales y recursos para el Proyecto 10.",
+          enlaces: ["Manual de usuario", "API Documentation", "Repositorio GitHub"],
+          avanzadas: ["Editor de código embebido", "Secciones colapsables", "Buscador interno"]
+        },
+        tareas: {
+          texto: "Listado de tareas y planificación para el Proyecto 10.",
+          lista: ["[ ] Diseñar interfaz", "[x] Implementar backend", "[ ] Pruebas de integración"],
+          opciones: ["Arrastrar y soltar", "Etiquetas de prioridad", "Sincronización con herramientas"]
+        },
+        integraciones: {
+          texto: "Integraciones con servicios de TI y plataformas de análisis para el Proyecto 10.",
+          lista: ["Google Analytics: Conectado", "Stripe: En configuración", "Slack: Integrado"],
+          opciones: ["Sandbox interactivo", "Simulación de API", "Visualización de logs"]
+        },
+        prototipo: {
+          texto: "Demo interactiva y presentación del Proyecto 10.",
+          iframeSrc: "https://www.example.com/demo10",
+          opciones: ["Activar simulaciones", "Modo presentación", "Feedback inmediato"]
+        },
+        seguridad: {
+          texto: "Controles de seguridad y auditoría para el Proyecto 10.",
+          lista: ["Última auditoría: 25/03/2025", "Alertas: Ninguna"],
+          opciones: ["Monitoreo de accesos", "Alertas personalizadas", "Registro de incidentes"]
+        },
+        finanzas: {
+          texto: "Control de costos y análisis financiero del Proyecto 10.",
+          lista: ["Presupuesto: $100,000", "Gastos: $65,000", "ROI proyectado: 140%"],
+          opciones: ["Análisis comparativo", "Filtros dinámicos", "Exportación de datos"]
+        }
+      },
+      // Datos únicos para el Panel de Beta Testing:
+      "Beta Proyecto A": {
+        descripcion: {
+          texto: "Beta Proyecto A: Fase de pruebas para la nueva funcionalidad de optimización de procesos.",
+          recursos: ["Video beta introductorio", "Capturas de pantalla beta", "Diagrama beta"]
+        },
+        estadisticas: {
+          texto: "KPIs y métricas específicas para Beta Proyecto A.",
+          opciones: ["Filtro de pruebas", "Datos en vivo", "Comparativa beta"],
+          datos: [10, 20, 30]
+        },
+        historial: {
+          texto: "Historial de pruebas y feedback para Beta Proyecto A.",
+          eventos: ["[01/04/2025] Lanzamiento beta", "[05/04/2025] Feedback inicial recibido"],
+          filtros: ["Búsqueda por pruebas", "Exportar historial"]
+        },
+        comentarios: {
+          texto: "Feedback de testers para Beta Proyecto A.",
+          extras: ["Adjuntar capturas", "Reacciones", "Hilos de discusión"]
+        },
+        documentacion: {
+          texto: "Documentación preliminar y guías de uso para Beta Proyecto A.",
+          enlaces: ["Guía beta", "API Docs Beta", "Repositorio Beta"],
+          avanzadas: ["Editor interactivo", "Secciones colapsables", "Buscador interno"]
+        },
+        tareas: {
+          texto: "Tareas y cronograma de pruebas para Beta Proyecto A.",
+          lista: ["[ ] Configurar ambiente de pruebas", "[x] Recoger feedback", "[ ] Ajustar funcionalidad"],
+          opciones: ["Arrastrar y soltar", "Etiquetas de prioridad", "Integración con herramientas"]
+        },
+        integraciones: {
+          texto: "Integraciones en fase beta para Beta Proyecto A.",
+          lista: ["Sistema de monitoreo: Conectado", "API de pruebas: En revisión"],
+          opciones: ["Sandbox interactivo", "Simulación de API", "Visualización de logs"]
+        },
+        prototipo: {
+          texto: "Demo interactiva en fase beta para Beta Proyecto A.",
+          iframeSrc: "https://www.example.com/beta-demoA",
+          opciones: ["Activar simulaciones", "Modo presentación", "Feedback inmediato"]
+        },
+        seguridad: {
+          texto: "Medidas de seguridad y auditoría en fase beta para Beta Proyecto A.",
+          lista: ["Última auditoría: 02/04/2025", "Alertas: Ninguna"],
+          opciones: ["Monitoreo de accesos", "Configuración de alertas", "Registro de incidentes"]
+        },
+        finanzas: {
+          texto: "Análisis preliminar de costos para Beta Proyecto A.",
+          lista: ["Presupuesto: $20,000", "Gastos: $10,000", "ROI proyectado: 120%"],
+          opciones: ["Gráficos comparativos", "Filtros por categoría", "Exportación de datos"]
+        }
+      },
+      "Beta Proyecto B": {
+        descripcion: {
+          texto: "Beta Proyecto B: Pruebas para validar la interfaz de usuario en condiciones reales.",
+          recursos: ["Video demo beta", "Capturas de UI beta", "Mockups"]
+        },
+        estadisticas: {
+          texto: "Análisis y métricas de interacción para Beta Proyecto B.",
+          opciones: ["Filtro de usuarios", "Datos en vivo", "Comparativa beta"],
+          datos: [15, 25, 35]
+        },
+        historial: {
+          texto: "Registro de pruebas y feedback para Beta Proyecto B.",
+          eventos: ["[03/04/2025] Lanzamiento beta", "[07/04/2025] Ajustes de UI"],
+          filtros: ["Búsqueda por fecha", "Exportar historial"]
+        },
+        comentarios: {
+          texto: "Feedback de testers para Beta Proyecto B.",
+          extras: ["Adjuntar capturas", "Reacciones", "Hilos de discusión"]
+        },
+        documentacion: {
+          texto: "Guías y documentación preliminar para Beta Proyecto B.",
+          enlaces: ["Guía beta UI", "API Docs Beta", "Repositorio Beta"],
+          avanzadas: ["Editor interactivo", "Contenido colapsable", "Buscador interno"]
+        },
+        tareas: {
+          texto: "Listado de tareas para la fase beta de Beta Proyecto B.",
+          lista: ["[ ] Evaluar usabilidad", "[x] Ajustar diseño", "[ ] Pruebas de rendimiento"],
+          opciones: ["Arrastrar y soltar", "Etiquetas de prioridad", "Integración con herramientas"]
+        },
+        integraciones: {
+          texto: "Pruebas de integración para Beta Proyecto B.",
+          lista: ["Sistema de monitoreo: Conectado", "API de pruebas: En revisión"],
+          opciones: ["Sandbox interactivo", "Simulación de API", "Visualización de logs"]
+        },
+        prototipo: {
+          texto: "Prototipo beta interactivo para Beta Proyecto B.",
+          iframeSrc: "https://www.example.com/beta-demoB",
+          opciones: ["Activar simulaciones", "Modo presentación", "Feedback inmediato"]
+        },
+        seguridad: {
+          texto: "Controles y auditoría en fase beta para Beta Proyecto B.",
+          lista: ["Última auditoría: 04/04/2025", "Alertas: Ninguna"],
+          opciones: ["Monitoreo de accesos", "Alertas personalizadas", "Registro de incidentes"]
+        },
+        finanzas: {
+          texto: "Datos financieros preliminares para Beta Proyecto B.",
+          lista: ["Presupuesto: $25,000", "Gastos: $12,000", "ROI proyectado: 130%"],
+          opciones: ["Gráficos comparativos", "Filtros por categoría", "Exportación de datos"]
+        }
+      },
+      "Beta Proyecto C": {
+        descripcion: {
+          texto: "Beta Proyecto C: Evaluación de nuevas funcionalidades en fase beta.",
+          recursos: ["Video introductorio beta", "Capturas funcionales", "Diagrama conceptual"]
+        },
+        estadisticas: {
+          texto: "Métricas y análisis para la fase beta de Beta Proyecto C.",
+          opciones: ["Filtro funcional", "Datos en vivo", "Comparativa beta"],
+          datos: [12, 22, 32]
+        },
+        historial: {
+          texto: "Historial de pruebas y cambios en Beta Proyecto C.",
+          eventos: ["[05/04/2025] Versión beta lanzada", "[09/04/2025] Primer feedback recibido"],
+          filtros: ["Búsqueda por función", "Exportar historial"]
+        },
+        comentarios: {
+          texto: "Feedback de testers y usuarios para Beta Proyecto C.",
+          extras: ["Adjuntar archivos", "Reacciones", "Hilos de discusión"]
+        },
+        documentacion: {
+          texto: "Documentación preliminar y guías para Beta Proyecto C.",
+          enlaces: ["Guía beta funcional", "API Docs Beta", "Repositorio Beta"],
+          avanzadas: ["Editor interactivo", "Secciones colapsables", "Buscador interno"]
+        },
+        tareas: {
+          texto: "Tareas de prueba y cronograma para Beta Proyecto C.",
+          lista: ["[ ] Configurar ambiente de prueba", "[x] Recoger feedback", "[ ] Ajustar funcionalidades"],
+          opciones: ["Arrastrar y soltar", "Etiquetas de prioridad", "Integración con herramientas"]
+        },
+        integraciones: {
+          texto: "Integraciones de prueba para Beta Proyecto C.",
+          lista: ["Sistema de monitoreo: Conectado", "API de pruebas: En revisión"],
+          opciones: ["Sandbox interactivo", "Simulación de API", "Visualización de logs"]
+        },
+        prototipo: {
+          texto: "Prototipo beta interactivo para Beta Proyecto C.",
+          iframeSrc: "https://www.example.com/beta-demoC",
+          opciones: ["Activar simulaciones", "Modo presentación", "Feedback inmediato"]
+        },
+        seguridad: {
+          texto: "Controles de seguridad en fase beta para Beta Proyecto C.",
+          lista: ["Última auditoría: 06/04/2025", "Alertas: Ninguna"],
+          opciones: ["Monitoreo de accesos", "Alertas personalizadas", "Registro de incidentes"]
+        },
+        finanzas: {
+          texto: "Análisis preliminar de costos para Beta Proyecto C.",
+          lista: ["Presupuesto: $22,000", "Gastos: $11,000", "ROI proyectado: 125%"],
+          opciones: ["Gráficos comparativos", "Filtros por categoría", "Exportación de datos"]
+        }
+      },
+      "Beta Proyecto D": {
+        descripcion: {
+          texto: "Beta Proyecto D: Fase beta para validar mejoras en la experiencia de usuario.",
+          recursos: ["Video beta demostrativo", "Capturas de UI beta", "Mockups de interacción"]
+        },
+        estadisticas: {
+          texto: "Métricas específicas y análisis para Beta Proyecto D.",
+          opciones: ["Filtro de usuario", "Datos en vivo", "Comparativa beta"],
+          datos: [18, 28, 38]
+        },
+        historial: {
+          texto: "Registro de cambios y pruebas para Beta Proyecto D.",
+          eventos: ["[07/04/2025] Lanzamiento beta", "[11/04/2025] Ajustes de interfaz"],
+          filtros: ["Búsqueda por fecha", "Exportar historial"]
+        },
+        comentarios: {
+          texto: "Feedback de testers para Beta Proyecto D.",
+          extras: ["Adjuntar capturas", "Reacciones", "Organización de hilos"]
+        },
+        documentacion: {
+          texto: "Documentación preliminar para Beta Proyecto D.",
+          enlaces: ["Guía beta UI", "API Docs Beta", "Repositorio Beta"],
+          avanzadas: ["Editor interactivo", "Secciones colapsables", "Buscador interno"]
+        },
+        tareas: {
+          texto: "Tareas y cronograma de pruebas para Beta Proyecto D.",
+          lista: ["[ ] Evaluar usabilidad", "[x] Ajustar diseño", "[ ] Pruebas de rendimiento"],
+          opciones: ["Arrastrar y soltar", "Etiquetas de prioridad", "Integración con herramientas"]
+        },
+        integraciones: {
+          texto: "Pruebas de integración para Beta Proyecto D.",
+          lista: ["Sistema de monitoreo: Conectado", "API de pruebas: En revisión"],
+          opciones: ["Sandbox interactivo", "Simulación de API", "Visualización de logs"]
+        },
+        prototipo: {
+          texto: "Demo beta interactiva para Beta Proyecto D.",
+          iframeSrc: "https://www.example.com/beta-demoD",
+          opciones: ["Activar simulaciones", "Modo presentación", "Feedback inmediato"]
+        },
+        seguridad: {
+          texto: "Controles y auditoría en fase beta para Beta Proyecto D.",
+          lista: ["Última auditoría: 08/04/2025", "Alertas: Ninguna"],
+          opciones: ["Monitoreo de accesos", "Alertas personalizadas", "Registro de incidentes"]
+        },
+        finanzas: {
+          texto: "Análisis preliminar de costos para Beta Proyecto D.",
+          lista: ["Presupuesto: $28,000", "Gastos: $14,000", "ROI proyectado: 135%"],
+          opciones: ["Gráficos comparativos", "Filtros por categoría", "Exportación de datos"]
+        }
+      },
+      "Beta Proyecto E": {
+        descripcion: {
+          texto: "Beta Proyecto E: Fase de validación de nuevas funcionalidades en el entorno beta.",
+          recursos: ["Video beta introductorio", "Capturas de pantalla beta", "Diagramas beta"]
+        },
+        estadisticas: {
+          texto: "Métricas y análisis para Beta Proyecto E.",
+          opciones: ["Filtro por funcionalidad", "Datos en vivo", "Comparativa beta"],
+          datos: [20, 30, 40]
+        },
+        historial: {
+          texto: "Historial de pruebas y feedback para Beta Proyecto E.",
+          eventos: ["[09/04/2025] Versión beta lanzada", "[13/04/2025] Feedback recibido"],
+          filtros: ["Búsqueda por función", "Exportar historial"]
+        },
+        comentarios: {
+          texto: "Feedback de testers para Beta Proyecto E.",
+          extras: ["Adjuntar archivos", "Reacciones", "Hilos de discusión"]
+        },
+        documentacion: {
+          texto: "Documentación preliminar y guías de uso para Beta Proyecto E.",
+          enlaces: ["Guía beta", "API Docs Beta", "Repositorio Beta"],
+          avanzadas: ["Editor interactivo", "Secciones colapsables", "Buscador interno"]
+        },
+        tareas: {
+          texto: "Tareas y cronograma de pruebas para Beta Proyecto E.",
+          lista: ["[ ] Configurar entorno de pruebas", "[x] Recoger feedback", "[ ] Ajustar funcionalidades"],
+          opciones: ["Arrastrar y soltar", "Etiquetas de prioridad", "Integración con herramientas"]
+        },
+        integraciones: {
+          texto: "Integraciones en fase beta para Beta Proyecto E.",
+          lista: ["Sistema de monitoreo: Conectado", "API de pruebas: En revisión"],
+          opciones: ["Sandbox interactivo", "Simulación de API", "Visualización de logs"]
+        },
+        prototipo: {
+          texto: "Demo interactiva en fase beta para Beta Proyecto E.",
+          iframeSrc: "https://www.example.com/beta-demoE",
+          opciones: ["Activar simulaciones", "Modo presentación", "Feedback inmediato"]
+        },
+        seguridad: {
+          texto: "Controles y auditoría en fase beta para Beta Proyecto E.",
+          lista: ["Última auditoría: 10/04/2025", "Alertas: Ninguna"],
+          opciones: ["Monitoreo de accesos", "Alertas personalizadas", "Registro de incidentes"]
+        },
+        finanzas: {
+          texto: "Análisis preliminar de costos para Beta Proyecto E.",
+          lista: ["Presupuesto: $30,000", "Gastos: $15,000", "ROI proyectado: 140%"],
+          opciones: ["Gráficos comparativos", "Filtros por categoría", "Exportación de datos"]
+        }
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Reproducir sonido de bienvenida rápido
+      const welcomeSound = document.getElementById('welcomeSound');
+      welcomeSound.currentTime = 0;
+      welcomeSound.play();
+
+      // Mostrar la pantalla de bienvenida hasta que el usuario haga clic en "Aceptar"
+      const welcomeOverlay = document.getElementById('welcomeOverlay');
+      const welcomeAccept = document.getElementById('welcomeAccept');
+      welcomeAccept.addEventListener('click', function() {
+        // Reproducir sonido de anuncio al aceptar
+        playClickSound();
+        // Ocultar el overlay
+        welcomeOverlay.style.display = 'none';
+        // Iniciar la música de fondo
+        const bgMusic = document.getElementById('bgMusic');
+        bgMusic.currentTime = 0;
+        bgMusic.play();
+      });
+
+      // Generar partículas en el fondo
+      const particlesContainer = document.querySelector('.particles');
+      const numParticles = 300;
+      for (let i = 0; i < numParticles; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        particle.style.left = Math.random() * 100 + 'vw';
+        particle.style.top = Math.random() * 100 + 'vh';
+        particle.style.animationDelay = Math.random() * 5 + 's';
+        particle.style.animationDuration = 5 + Math.random() * 5 + 's';
+        particlesContainer.appendChild(particle);
+      }
+      
+      // Funciones para reproducir sonidos
+      function playClickSound() {
+        const sound = document.getElementById('clickSound');
+        sound.currentTime = 0;
+        sound.play();
+      }
+      function playTabSound() {
+        const sound = document.getElementById('tabSound');
+        sound.currentTime = 0;
+        sound.play();
+      }
+      function playAnimSound() {
+        const sound = document.getElementById('animSound');
+        sound.currentTime = 0;
+        sound.play();
+      }
+      
+      // Agregar evento click a elementos interactivos
+      const clickableElements = document.querySelectorAll('.project-card, .beta-project, .data-table, canvas, .nav-link');
+      clickableElements.forEach(elem => elem.addEventListener('click', playClickSound));
+      
+      // Animar las barras de progreso
+      const progressBars = document.querySelectorAll('.progress');
+      progressBars.forEach(bar => {
+        let width = 0;
+        const target = parseInt(bar.style.width);
+        const interval = setInterval(() => {
+          if (width >= target) clearInterval(interval);
+          else { width++; bar.style.width = width + '%'; }
+        }, 10);
+      });
+      
+      // Gráfico 1: Progreso de Proyectos (línea)
+      const ctx = document.getElementById('chart1').getContext('2d');
+      const chart1 = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+          datasets: [{
+            label: 'Progreso de Proyectos',
+            data: [30, 45, 60, 50, 80, 90],
+            backgroundColor: 'rgba(10,255,153,0.2)',
+            borderColor: 'rgba(10,255,153,1)',
+            borderWidth: 2,
+            tension: 0.3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: { y: { beginAtZero: true, max: 100 } }
+        }
+      });
+      
+      // Gráfico 2: Datos del Sistema (dona)
+      const ctxSys = document.getElementById('systemChart').getContext('2d');
+      const systemChart = new Chart(ctxSys, {
+        type: 'doughnut',
+        data: {
+          labels: ['Usado', 'Libre'],
+          datasets: [{
+            data: [50, 50],
+            backgroundColor: ['rgba(10,255,153,0.8)','rgba(255,25,25,0.6)']
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+      
+      // Función para cargar datos específicos del proyecto o beta proyecto
+      function cargarContenidoProyecto(nombreProyecto) {
+        const datos = proyectos[nombreProyecto];
+        if (!datos) return;
+        // Actualizar Descripción
+        document.getElementById('modalTitle').textContent = 'Detalle - ' + nombreProyecto;
+        document.getElementById('descTexto').textContent = datos.descripcion.texto;
+        const recList = document.getElementById('descRecursos');
+        recList.innerHTML = "";
+        datos.descripcion.recursos.forEach(item => {
+          const li = document.createElement('li');
+          li.textContent = item;
+          recList.appendChild(li);
+        });
+        // Actualizar Estadísticas
+        document.getElementById('statsTexto').textContent = datos.estadisticas.texto;
+        const statsOpc = document.getElementById('statsOpciones');
+        statsOpc.innerHTML = "";
+        datos.estadisticas.opciones.forEach(item => {
+          const li = document.createElement('li');
+          li.textContent = item;
+          statsOpc.appendChild(li);
+        });
+        // Actualizar Historial
+        document.getElementById('histTexto').textContent = datos.historial.texto;
+        const histList = document.getElementById('histLista');
+        histList.innerHTML = "";
+        datos.historial.eventos.forEach(evento => {
+          const li = document.createElement('li');
+          li.textContent = evento;
+          histList.appendChild(li);
+        });
+        const histFiltros = document.getElementById('histFiltros');
+        histFiltros.innerHTML = "";
+        datos.historial.filtros.forEach(item => {
+          const li = document.createElement('li');
+          li.textContent = item;
+          histFiltros.appendChild(li);
+        });
+        // Actualizar Comentarios
+        document.getElementById('comTexto').textContent = datos.comentarios.texto;
+        const comExtras = document.getElementById('comExtras');
+        comExtras.innerHTML = "";
+        datos.comentarios.extras.forEach(item => {
+          const li = document.createElement('li');
+          li.textContent = item;
+          comExtras.appendChild(li);
+        });
+        // Actualizar Documentación
+        document.getElementById('docTexto').textContent = datos.documentacion.texto;
+        const docLista = document.getElementById('docLista');
+        docLista.innerHTML = "";
+        datos.documentacion.enlaces.forEach(item => {
+          const li = document.createElement('li');
+          li.innerHTML = `<a href="#" style="color: var(--color-accent);">${item}</a>`;
+          docLista.appendChild(li);
+        });
+        const docAvanzadas = document.getElementById('docAvanzadas');
+        docAvanzadas.innerHTML = "";
+        datos.documentacion.avanzadas.forEach(item => {
+          const li = document.createElement('li');
+          li.textContent = item;
+          docAvanzadas.appendChild(li);
+        });
+        // Actualizar Tareas
+        document.getElementById('tarTexto').textContent = datos.tareas.texto;
+        const tarLista = document.getElementById('tarLista');
+        tarLista.innerHTML = "";
+        datos.tareas.lista.forEach(item => {
+          const li = document.createElement('li');
+          li.textContent = item;
+          tarLista.appendChild(li);
+        });
+        const tarOpciones = document.getElementById('tarOpciones');
+        tarOpciones.innerHTML = "";
+        datos.tareas.opciones.forEach(item => {
+          const li = document.createElement('li');
+          li.textContent = item;
+          tarOpciones.appendChild(li);
+        });
+        // Actualizar Integraciones
+        document.getElementById('intTexto').textContent = datos.integraciones.texto;
+        const intLista = document.getElementById('intLista');
+        intLista.innerHTML = "";
+        datos.integraciones.lista.forEach(item => {
+          const li = document.createElement('li');
+          li.textContent = item;
+          intLista.appendChild(li);
+        });
+        const intOpciones = document.getElementById('intOpciones');
+        intOpciones.innerHTML = "";
+        datos.integraciones.opciones.forEach(item => {
+          const li = document.createElement('li');
+          li.textContent = item;
+          intOpciones.appendChild(li);
+        });
+        // Actualizar Prototipo
+        document.getElementById('proTexto').textContent = datos.prototipo.texto;
+        document.getElementById('proIframe').src = datos.prototipo.iframeSrc;
+        const proOpciones = document.getElementById('proOpciones');
+        proOpciones.innerHTML = "";
+        datos.prototipo.opciones.forEach(item => {
+          const li = document.createElement('li');
+          li.textContent = item;
+          proOpciones.appendChild(li);
+        });
+        // Actualizar Seguridad
+        document.getElementById('segTexto').textContent = datos.seguridad.texto;
+        const segLista = document.getElementById('segLista');
+        segLista.innerHTML = "";
+        datos.seguridad.lista.forEach(item => {
+          const li = document.createElement('li');
+          li.textContent = item;
+          segLista.appendChild(li);
+        });
+        const segOpciones = document.getElementById('segOpciones');
+        segOpciones.innerHTML = "";
+        datos.seguridad.opciones.forEach(item => {
+          const li = document.createElement('li');
+          li.textContent = item;
+          segOpciones.appendChild(li);
+        });
+        // Actualizar Finanzas
+        document.getElementById('finTexto').textContent = datos.finanzas.texto;
+        const finLista = document.getElementById('finLista');
+        finLista.innerHTML = "";
+        datos.finanzas.lista.forEach(item => {
+          const li = document.createElement('li');
+          li.textContent = item;
+          finLista.appendChild(li);
+        });
+        const finOpciones = document.getElementById('finOpciones');
+        finOpciones.innerHTML = "";
+        datos.finanzas.opciones.forEach(item => {
+          const li = document.createElement('li');
+          li.textContent = item;
+          finOpciones.appendChild(li);
+        });
+      }
+      
+      // Abrir modal al hacer click en tarjetas de proyectos o beta proyectos
+      document.querySelectorAll('.project-card, .beta-project').forEach(card => {
+        card.addEventListener('click', function() {
+          const nombreProyecto = this.getAttribute('data-project');
+          cargarContenidoProyecto(nombreProyecto);
+          document.getElementById('modalProyecto').style.display = 'flex';
+          playAnimSound(); // Sonido al abrir el modal
+        });
+      });
+      
+      // Cerrar modal al hacer click en la X o fuera del contenido
+      document.querySelector('.close-modal').addEventListener('click', function() {
+        document.getElementById('modalProyecto').style.display = 'none';
+        playClickSound();
+      });
+      window.addEventListener('click', function(event) {
+        if (event.target === document.getElementById('modalProyecto')) {
+          document.getElementById('modalProyecto').style.display = 'none';
+          playClickSound();
+        }
+      });
+      
+      // Manejo de cambio de pestañas con sonido
+      const tabLinks = document.querySelectorAll('.tab-link');
+      const tabPanes = document.querySelectorAll('.tab-pane');
+      tabLinks.forEach(link => {
+        link.addEventListener('click', function() {
+          playTabSound();
+          tabLinks.forEach(btn => btn.classList.remove('active'));
+          tabPanes.forEach(pane => pane.classList.remove('active'));
+          this.classList.add('active');
+          const tabId = this.getAttribute('data-tab');
+          document.getElementById(tabId).classList.add('active');
+        });
+      });
+      
+      // Ejemplo: Inicializar gráfico en el tab de Estadísticas del modal
+      const ctxProyecto = document.getElementById('chartProyecto').getContext('2d');
+      const chartProyecto = new Chart(ctxProyecto, {
+        type: 'bar',
+        data: {
+          labels: ['Metric 1', 'Metric 2', 'Metric 3'],
+          datasets: [{
+            label: 'Datos del Proyecto',
+            data: [20, 35, 50],
+            backgroundColor: 'rgba(10,255,153,0.5)',
+            borderColor: 'rgba(10,255,153,1)',
+            borderWidth: 1
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+    });
+  </script>
+</body>
+</html>
+
+
+
+
