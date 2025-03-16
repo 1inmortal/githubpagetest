@@ -416,6 +416,7 @@
       padding: 1rem;
       cursor: pointer;
       transition: transform 0.3s, box-shadow 0.3s;
+      position: relative;
     }
     .beta-project:hover {
       transform: translateY(-3px);
@@ -549,6 +550,106 @@
     .glitch {
       animation: glitchEffect 3s ease-out;
     }
+    
+    /* --------------------------------------------------
+       NUEVO: Estilos para Iluminación y Sombras Dinámicas
+    -------------------------------------------------- */
+    .iluminar {
+      transition: box-shadow 0.3s ease, transform 0.3s ease;
+    }
+    .iluminar:hover {
+      box-shadow: 0 0 20px var(--color-accent);
+      transform: scale(1.02);
+    }
+    
+    /* --------------------------------------------------
+       NUEVO: Efectos de Glitch y Pixelado para textos
+    -------------------------------------------------- */
+    .glitch-text {
+      position: relative;
+      color: var(--color-text);
+    }
+    .glitch-text::before,
+    .glitch-text::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      overflow: hidden;
+      clip: rect(0, 900px, 0, 0);
+    }
+    .glitch-text::before {
+      animation: glitch-anim 2s infinite linear alternate-reverse;
+      color: var(--color-accent);
+      z-index: -1;
+    }
+    .glitch-text::after {
+      animation: glitch-anim2 2s infinite linear alternate-reverse;
+      color: var(--color-accent2);
+      z-index: -2;
+    }
+    @keyframes glitch-anim {
+      0% { clip: rect(42px, 9999px, 44px, 0); transform: translate(2px, -2px); }
+      20% { clip: rect(12px, 9999px, 18px, 0); transform: translate(-2px, 0); }
+      40% { clip: rect(82px, 9999px, 90px, 0); transform: translate(2px, 2px); }
+      60% { clip: rect(32px, 9999px, 40px, 0); transform: translate(-2px, -2px); }
+      80% { clip: rect(22px, 9999px, 30px, 0); transform: translate(2px, 0); }
+      100% { clip: rect(52px, 9999px, 60px, 0); transform: translate(-2px, 2px); }
+    }
+    @keyframes glitch-anim2 {
+      0% { clip: rect(12px, 9999px, 20px, 0); transform: translate(-2px, 2px); }
+      20% { clip: rect(32px, 9999px, 40px, 0); transform: translate(2px, 0); }
+      40% { clip: rect(72px, 9999px, 80px, 0); transform: translate(-2px, -2px); }
+      60% { clip: rect(42px, 9999px, 50px, 0); transform: translate(2px, 2px); }
+      80% { clip: rect(22px, 9999px, 30px, 0); transform: translate(-2px, 0); }
+      100% { clip: rect(62px, 9999px, 70px, 0); transform: translate(2px, -2px); }
+    }
+    
+    /* --------------------------------------------------
+       NUEVO: Estilos para la imagen de fondo en las tarjetas
+    -------------------------------------------------- */
+    .project-image-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: 0;
+    }
+    .project-image-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .project-card > *:not(.project-image-container),
+    .beta-project > *:not(.project-image-container) {
+      position: relative;
+      z-index: 1;
+    }
+    
+    /* --------------------------------------------------
+       NUEVO: Mejoras Visuales para "Estado Visual del Repositorio"
+    -------------------------------------------------- */
+    /* Aplicar iluminación a la cabecera */
+    .repo-header.iluminar {
+      transition: box-shadow 0.3s ease, transform 0.3s ease;
+    }
+    .repo-header.iluminar:hover {
+      box-shadow: 0 0 20px var(--color-accent);
+      transform: scale(1.02);
+    }
+    /* Fondo gradiente en métricas */
+    .repo-metrics {
+      background: linear-gradient(135deg, rgba(10,255,153,0.1), rgba(255,25,25,0.1));
+      padding: 1rem;
+      border-radius: 10px;
+      transition: transform 0.3s ease;
+    }
+    .repo-metrics:hover {
+      transform: scale(1.02);
+    }
   </style>
 </head>
 <body>
@@ -605,55 +706,95 @@
   <div class="dashboard-container">
     <!-- PANEL 1: Proyectos en Progreso -->
     <section id="panel1" class="panel">
-      <h2 class="panel-title">Proyectos en Progreso</h2>
+      <h2 class="panel-title glitch-text" data-text="Proyectos en Progreso">Proyectos en Progreso</h2>
       <div class="projects-grid">
         <!-- Cada tarjeta contiene un data-project con su ID o nombre -->
         <div class="project-card" data-project="Proyecto 1">
+          <div class="project-image-container">
+            <img class="project-portada" src="https://i.pinimg.com/736x/c9/3d/88/c93d88b5f29c00ee90a1f16cd8e26609.jpg" alt="Portada">
+            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Proyecto+1" alt="Gif de portada" style="display:none;">
+          </div>
           <h3>Proyecto 1</h3>
           <p>Estado: 45% completado</p>
           <div class="progress-bar"><div class="progress" style="width:45%;"></div></div>
         </div>
         <div class="project-card" data-project="Proyecto 2">
+          <div class="project-image-container">
+            <img class="project-portada" src="https://i.pinimg.com/736x/3b/05/7f/3b057f3b20c81d295cc2f4b359f695ea.jpg" alt="Portada">
+            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Proyecto+2" alt="Gif de portada" style="display:none;">
+          </div>
           <h3>Proyecto 2</h3>
           <p>Estado: 60% completado</p>
           <div class="progress-bar"><div class="progress" style="width:60%;"></div></div>
         </div>
         <div class="project-card" data-project="Proyecto 3">
+          <div class="project-image-container">
+            <img class="project-portada" src="https://i.pinimg.com/736x/ed/3a/fc/ed3afc8254a0d8c4c2c45d8db8773e6c.jpg" alt="Portada">
+            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Proyecto+3" alt="Gif de portada" style="display:none;">
+          </div>
           <h3>Proyecto 3</h3>
           <p>Estado: 30% completado</p>
           <div class="progress-bar"><div class="progress" style="width:30%;"></div></div>
         </div>
         <div class="project-card" data-project="Proyecto 4">
+          <div class="project-image-container">
+            <img class="project-portada" src="https://i.pinimg.com/736x/1e/f8/fa/1ef8fa667ab0de78c48a21951be9d99a.jpg" alt="Portada">
+            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Proyecto+4" alt="Gif de portada" style="display:none;">
+          </div>
           <h3>Proyecto 4</h3>
           <p>Estado: 80% completado</p>
           <div class="progress-bar"><div class="progress" style="width:80%;"></div></div>
         </div>
         <div class="project-card" data-project="Proyecto 5">
+          <div class="project-image-container">
+            <img class="project-portada" src="https://i.pinimg.com/736x/7d/54/f0/7d54f0f2323f539d580cf13078462648.jpg" alt="Portada">
+            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Proyecto+5" alt="Gif de portada" style="display:none;">
+          </div>
           <h3>Proyecto 5</h3>
           <p>Estado: 50% completado</p>
           <div class="progress-bar"><div class="progress" style="width:50%;"></div></div>
         </div>
         <div class="project-card" data-project="Proyecto 6">
+          <div class="project-image-container">
+            <img class="project-portada" src="https://i.pinimg.com/736x/95/fd/07/95fd07104c3665c009f97b2772caf6b7.jpg" alt="Portada">
+            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Proyecto+6" alt="Gif de portada" style="display:none;">
+          </div>
           <h3>Proyecto 6</h3>
           <p>Estado: 70% completado</p>
           <div class="progress-bar"><div class="progress" style="width:70%;"></div></div>
         </div>
         <div class="project-card" data-project="Proyecto 7">
+          <div class="project-image-container">
+            <img class="project-portada" src="https://i.pinimg.com/736x/53/a1/25/53a125f83bb386fe6343587e00915d98.jpg" alt="Portada">
+            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Proyecto+7" alt="Gif de portada" style="display:none;">
+          </div>
           <h3>Proyecto 7</h3>
           <p>Estado: 40% completado</p>
           <div class="progress-bar"><div class="progress" style="width:40%;"></div></div>
         </div>
         <div class="project-card" data-project="Proyecto 8">
+          <div class="project-image-container">
+            <img class="project-portada" src="https://i.pinimg.com/474x/d8/44/8f/d8448f7fd7e6bb2177a3f35856bcde8d.jpg" alt="Portada">
+            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Proyecto+8" alt="Gif de portada" style="display:none;">
+          </div>
           <h3>Proyecto 8</h3>
           <p>Estado: 55% completado</p>
           <div class="progress-bar"><div class="progress" style="width:55%;"></div></div>
         </div>
         <div class="project-card" data-project="Proyecto 9">
+          <div class="project-image-container">
+            <img class="project-portada" src="https://i.pinimg.com/474x/0f/2c/2c/0f2c2c06f7fdf767e5725e1f403bdf04.jpg" alt="Portada">
+            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Proyecto+9" alt="Gif de portada" style="display:none;">
+          </div>
           <h3>Proyecto 9</h3>
           <p>Estado: 85% completado</p>
           <div class="progress-bar"><div class="progress" style="width:85%;"></div></div>
         </div>
         <div class="project-card" data-project="Proyecto 10">
+          <div class="project-image-container">
+            <img class="project-portada" src="https://i.pinimg.com/474x/d0/ae/4a/d0ae4aae65a7d80f633a8113ba092844.jpg" alt="Portada">
+            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Proyecto+10" alt="Gif de portada" style="display:none;">
+          </div>
           <h3>Proyecto 10</h3>
           <p>Estado: 95% completado</p>
           <div class="progress-bar"><div class="progress" style="width:95%;"></div></div>
@@ -716,26 +857,46 @@
       <div class="beta-testing">
         <!-- Tarjetas para Beta Proyectos (datos únicos se cargarán al hacer clic) -->
         <div class="beta-project" data-project="Beta Proyecto A">
+          <div class="project-image-container">
+            <img class="project-portada" src="https://i.pinimg.com/474x/a9/0b/11/a90b11a39d73ad4ee8d5da33d7ea7371.jpg" alt="Portada">
+            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Beta+A" alt="Gif de portada" style="display:none;">
+          </div>
           <h3>Beta Proyecto A</h3>
           <p>Progreso: 75%</p>
           <div class="progress-bar"><div class="progress" style="width:75%;"></div></div>
         </div>
         <div class="beta-project" data-project="Beta Proyecto B">
+          <div class="project-image-container">
+            <img class="project-portada" src="https://i.pinimg.com/474x/45/9e/11/459e115f9fa059fbd5cb03a8d5ced2e8.jpg" alt="Portada">
+            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Beta+B" alt="Gif de portada" style="display:none;">
+          </div>
           <h3>Beta Proyecto B</h3>
           <p>Progreso: 60%</p>
           <div class="progress-bar"><div class="progress" style="width:60%;"></div></div>
         </div>
         <div class="beta-project" data-project="Beta Proyecto C">
+          <div class="project-image-container">
+            <img class="project-portada" src="https://i.pinimg.com/474x/14/6a/b4/146ab4bfcb440f105a4101ba6a3cc9a2.jpg" alt="Portada">
+            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Beta+C" alt="Gif de portada" style="display:none;">
+          </div>
           <h3>Beta Proyecto C</h3>
           <p>Progreso: 30%</p>
           <div class="progress-bar"><div class="progress" style="width:30%;"></div></div>
         </div>
         <div class="beta-project" data-project="Beta Proyecto D">
+          <div class="project-image-container">
+            <img class="project-portada" src="https://i.pinimg.com/474x/10/01/15/100115c998799729b8f1bc1e54bb3238.jpg" alt="Portada">
+            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Beta+D" alt="Gif de portada" style="display:none;">
+          </div>
           <h3>Beta Proyecto D</h3>
           <p>Progreso: 90%</p>
           <div class="progress-bar"><div class="progress" style="width:90%;"></div></div>
         </div>
         <div class="beta-project" data-project="Beta Proyecto E">
+          <div class="project-image-container">
+            <img class="project-portada" src="https://i.pinimg.com/474x/b0/38/fa/b038fa196686f9cf118e1f5b533d830b.jpg" alt="Portada">
+            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Beta+E" alt="Gif de portada" style="display:none;">
+          </div>
           <h3>Beta Proyecto E</h3>
           <p>Progreso: 50%</p>
           <div class="progress-bar"><div class="progress" style="width:50%;"></div></div>
@@ -905,6 +1066,73 @@
       </div>
     </div>
   </div>
+
+  <section id="panelGitAdvanced" class="panel">
+    <h2 class="panel-title">Estado Visual del Repositorio</h2>
+    <div class="repo-visual">
+      <!-- Encabezado con logo y título con mejoras visuales -->
+      <div class="repo-header iluminar">
+        <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub Logo" class="repo-logo">
+        <h3 class="glitch-text" data-text="1inmortal / githubpagetest">1inmortal / githubpagetest</h3>
+      </div>
+  
+      <!-- Menú de pestañas -->
+      <div class="repo-tabs">
+        <button class="tab-btn active" data-tab="estadisticas">Estadísticas</button>
+        <button class="tab-btn" data-tab="historial">Historial</button>
+        <button class="tab-btn" data-tab="issues">Issues</button>
+        <button class="tab-btn" data-tab="pulls">Pull Requests</button>
+        <button class="tab-btn" data-tab="animaciones">Animaciones</button>
+      </div>
+  
+      <!-- Contenedor de pestañas con mejoras visuales en métricas -->
+      <div class="repo-tab-content">
+        <!-- Pestaña Estadísticas -->
+        <div class="repo-tab-pane active" id="estadisticas">
+          <div class="repo-stats">
+            <canvas id="repoChart"></canvas>
+          </div>
+          <div class="repo-metrics">
+            <p id="metricEstrellas">Estrellas: Cargando...</p>
+            <p id="metricForks">Forks: Cargando...</p>
+            <p id="metricIssues">Issues Abiertos: Cargando...</p>
+            <p id="metricPulls">Pull Requests Abiertos: Cargando...</p>
+            <p id="metricColaboradores">Colaboradores: Cargando...</p>
+          </div>
+        </div>
+  
+        <!-- Pestaña Historial de Commits -->
+        <div class="repo-tab-pane" id="historial">
+          <h3>Historial de Commits</h3>
+          <ul id="commitTimeline">
+            <li>Cargando commits...</li>
+          </ul>
+        </div>
+  
+        <!-- Pestaña Issues -->
+        <div class="repo-tab-pane" id="issues">
+          <h3>Issues Abiertos</h3>
+          <ul id="issueList">
+            <li>Cargando issues...</li>
+          </ul>
+        </div>
+  
+        <!-- Pestaña Pull Requests -->
+        <div class="repo-tab-pane" id="pulls">
+          <h3>Pull Requests Abiertos</h3>
+          <ul id="pullList">
+            <li>Cargando pull requests...</li>
+          </ul>
+        </div>
+  
+        <!-- Pestaña Animaciones -->
+        <div class="repo-tab-pane" id="animaciones">
+          <h3>Animaciones</h3>
+          <img src="https://i.pinimg.com/736x/18/d0/c7/18d0c7ad15fbea69349dee94b003ce8d.jpg" alt="Animación" class="repo-gif">
+        </div>
+      </div>
+    </div>
+  </section>
   
   <!-- ==================================================
        AUDIO PARA INTERACCIONES Y ANIMACIONES
@@ -1989,9 +2217,50 @@
         options: { responsive: true, maintainAspectRatio: false }
       });
     });
+
+    // Función para inicializar la navegación de pestañas
+    function initRepoTabs() {
+      const tabBtns = document.querySelectorAll('.repo-tabs .tab-btn');
+      const tabPanes = document.querySelectorAll('.repo-tab-pane');
+      tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          // Quitar clase active de todos y agregar al seleccionado
+          tabBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const target = btn.getAttribute('data-tab');
+          tabPanes.forEach(pane => {
+            pane.classList.toggle('active', pane.id === target);
+          });
+        });
+      });
+    }
+
+    // --------------------------------------------------
+    // NUEVO: Efectos de Partículas Interactivas
+    // Las partículas se moverán ligeramente alejándose del cursor
+    document.addEventListener('mousemove', (e) => {
+      const particles = document.querySelectorAll('.particle');
+      particles.forEach(particle => {
+        const rect = particle.getBoundingClientRect();
+        const partX = rect.left + rect.width / 2;
+        const partY = rect.top + rect.height / 2;
+        const deltaX = partX - e.clientX;
+        const deltaY = partY - e.clientY;
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        if(distance < 100) {
+          const offsetX = deltaX / distance * 10;
+          const offsetY = deltaY / distance * 10;
+          particle.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+        } else {
+          particle.style.transform = 'translate(0, 0)';
+        }
+      });
+    });
   </script>
 </body>
 </html>
+
+
 
 
 
