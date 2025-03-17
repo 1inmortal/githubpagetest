@@ -1,275 +1,984 @@
 <!DOCTYPE html>
 <html lang="es" data-theme="dark">
-  <head>
-    <!-- ==================================================
-         METADATOS Y CONFIGURACIÓN
-    ================================================== -->
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no">
-    <title>Cyberpunk 2077 - Evidencias de Proyectos</title>
+<head>
+  <!-- ==================================================
+       METADATOS Y CONFIGURACIÓN
+  ================================================== -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no">
+  <title>Cyberpunk 2077 - Evidencias de Proyectos</title>
 
-    <!-- FUENTES FUTURISTAS -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link 
-      href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" 
-      rel="stylesheet"
-    >
+  <!-- FUENTES FUTURISTAS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link 
+    href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" 
+    rel="stylesheet"
+  >
 
-    <!-- BOOTSTRAP 5 -->
-    <link 
-      rel="stylesheet" 
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" 
-      integrity="sha384-ENjdO4Dr2bkBIFxQpeoJJ17I6kStSnAAp+1UHVJZ3J5z4IoZ9F7jL+Ai0KDh7jLQ2u3fN5Bcw5S1GMK0xD" 
-      crossorigin="anonymous"
-    >
+  <!-- BOOTSTRAP 5 -->
+  <link 
+    rel="stylesheet" 
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" 
+    integrity="sha384-ENjdO4Dr2bkBIFxQpeoJJ17I6kStSnAAp+1UHVJZ3J5z4IoZ9F7jL+Ai0KDh7jLQ2u3fN5Bcw5S1GMK0xD" 
+    crossorigin="anonymous"
+  >
 
-    <!-- BOOTSTRAP ICONS -->
-    <link 
-      rel="stylesheet" 
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
-    >
+  <!-- BOOTSTRAP ICONS -->
+  <link 
+    rel="stylesheet" 
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+  >
 
-    <!-- ANIMATE.CSS -->
-    <link 
-      rel="stylesheet" 
-      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" 
-      integrity="sha512-bAzp4b2UQRLZcTayphKkOhNDtXLKzMqTUKsg7CnaiaYIUDvYbYo7zeEkLy4sy0fp2kOj9jvEAPjn3Vfl5xtFOA==" 
-      crossorigin="anonymous" 
-      referrerpolicy="no-referrer"
-    />
+  <!-- ANIMATE.CSS (externo para no sobrecargar) -->
+  <link 
+    rel="stylesheet" 
+    href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" 
+    integrity="sha512-bAzp4b2UQRLZcTayphKkOhNDtXLZcMqTUKsg7CnaiaYIUDvYbYo7zeEkLy4sy0fp2kOj9jvEAPjn3Vfl5xtFOA==" 
+    crossorigin="anonymous" 
+    referrerpolicy="no-referrer"
+  />
 
-    <!-- Nuestro CSS -->
-    <link rel="stylesheet" href="style.css">
-  </head>
-  <body class="custom-cursor" id="bodyElement">
+  <!-- ESTILOS RETRO-FUTURISTAS INCRUSTADOS -->
+  <style>
+    /*********************************************
+     * VARIABLES Y BASE
+     *********************************************/
+    :root {
+      --font-heading: 'VT323', monospace;
+      --font-main: 'Share+Tech+Mono', monospace;
 
-    <!-- ==================================================
-         SECCIÓN: LOADER Y BARRA DE PROGRESO
-    ================================================== -->
-    <div class="scroll-progress-bar" id="scrollProgressBar"></div>
-    <div class="loader-overlay" id="loaderOverlay">
-      <div class="loader-text">Cargando...</div>
-      <div class="loader-bar-container">
-        <div class="loader-bar" id="loaderBar"></div>
-      </div>
-      <div class="loader-percentage" id="loaderPercentage">0%</div>
+      --color-bg: #000;
+      --color-text: #fff;
+      --color-accent: #0aff99;
+      --color-accent2: #ff00aa;
+      --color-bg-translucent: rgba(0,0,0,0.5);
+
+      --transition-slow: 1s;
+      --transition-fast: 0.3s;
+      --max-container-width: 1200px;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: var(--font-main);
+      background: var(--color-bg);
+      color: var(--color-text);
+      overflow-x: hidden;
+      position: relative;
+    }
+    a, button {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    /*********************************************
+     * LOADER (Actualizado: Minimalista, Temático y con Sonido)
+     *********************************************/
+    .loader-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.95);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease;
+    }
+    .loader-text {
+      font-family: var(--font-heading);
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: var(--color-accent);
+      /* Efecto glitch minimalista */
+      animation: glitch 1.5s infinite;
+    }
+    @keyframes glitch {
+      0% { text-shadow: 2px 2px 0 var(--color-accent), -2px -2px 0 var(--color-accent2); }
+      50% { text-shadow: -2px 2px 0 var(--color-accent2), 2px -2px 0 var(--color-accent); }
+      100% { text-shadow: 2px -2px 0 var(--color-accent), -2px 2px 0 var(--color-accent2); }
+    }
+    .loader-bar-container {
+      width: 300px;
+      height: 10px;
+      background: #444;
+      border-radius: 5px;
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+    .loader-bar {
+      width: 0%;
+      height: 100%;
+      background: var(--color-accent);
+      transition: width 0.3s;
+    }
+    .loader-percentage {
+      font-size: 1.2rem;
+      color: var(--color-accent2);
+    }
+
+    /*********************************************
+     * SCROLL PROGRESS BAR
+     *********************************************/
+    .scroll-progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 4px;
+      background: var(--color-accent);
+      width: 0%;
+      z-index: 9999;
+      transition: width 0.25s;
+    }
+
+    /*********************************************
+     * VIDEO DE FONDO
+     *********************************************/
+    #bg-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      z-index: -2;
+      transition: opacity 0.5s;
+    }
+
+    /*********************************************
+     * PARTÍCULAS
+     *********************************************/
+    .particles {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background: transparent;
+    }
+
+    /*********************************************
+     * CURSOR PERSONALIZADO
+     *********************************************/
+    .cursor-dot, .cursor-dot-expanded {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      mix-blend-mode: difference;
+      z-index: 9999;
+      transition: background 0.3s, width 0.3s, height 0.3s;
+    }
+    .cursor-dot {
+      width: 10px;
+      height: 10px;
+      background: var(--color-accent);
+    }
+    .cursor-dot-expanded {
+      width: 40px;
+      height: 40px;
+      border: 2px solid var(--color-accent2);
+      opacity: 0.5;
+    }
+
+    /*********************************************
+     * BOTÓN HAMBURGUESA
+     *********************************************/
+    .hamburger {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .hamburger .bar {
+      width: 30px;
+      height: 3px;
+      background-color: var(--color-accent);
+      transition: background-color var(--transition-fast);
+    }
+    .hamburger:hover .bar {
+      background-color: var(--color-accent2);
+    }
+
+    /*********************************************
+     * MENÚ DE NAVEGACIÓN (REDUCIDO)
+     *********************************************/
+    .cyber-nav {
+      position: fixed;
+      top: 0;
+      right: 0;
+      left: auto;
+      display: flex;
+      background: var(--color-bg-translucent);
+      padding: 0.5rem 1rem;
+      border-radius: 0 0 0 1rem;
+      border: 1px solid var(--color-accent);
+      box-shadow: -2px 2px 10px rgba(0, 0, 0, 0.4);
+      z-index: 1999;
+      transform: translateX(100%);
+      transition: transform 0.6s ease;
+    }
+    .cyber-nav.open {
+      transform: translateX(0%);
+    }
+    .cyber-nav ul {
+      list-style: none;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      margin: 0;
+    }
+    .cyber-nav li {
+      position: relative;
+    }
+    .nav-brand {
+      font-family: var(--font-heading);
+      font-size: 1.2rem;
+      color: var(--color-accent);
+      margin-right: 1rem;
+    }
+    .nav-link {
+      font-family: var(--font-main);
+      color: var(--color-text);
+      font-size: 1rem;
+      text-transform: uppercase;
+      padding: 0.5rem;
+      transition: color 0.3s;
+    }
+    .nav-link:hover {
+      color: var(--color-accent2);
+    }
+
+    /*********************************************
+     * BOTÓN DE FILTRO
+     *********************************************/
+    .btn-filter {
+      background: none;
+      border: 1px solid var(--color-accent);
+      border-radius: 4px;
+      color: var(--color-accent);
+      padding: 0.4rem 0.6rem;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .btn-filter:hover {
+      background: var(--color-accent);
+      color: var(--color-bg);
+    }
+
+    /*********************************************
+     * OVERLAY DE FILTRO
+     *********************************************/
+    .filter-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.95);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+    }
+    .filter-overlay.active {
+      display: flex;
+      animation: fadeIn var(--transition-fast) forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .filter-content ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      text-align: center;
+    }
+    .filter-content a {
+      font-family: var(--font-heading);
+      font-size: 1.5rem;
+      color: var(--color-accent);
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+    .filter-content a:hover {
+      color: var(--color-accent2);
+      text-shadow: 0 0 5px var(--color-accent2);
+    }
+    .btn-close-filter {
+      margin-top: 2rem;
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--color-accent2);
+      color: var(--color-accent2);
+      background: transparent;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .btn-close-filter:hover {
+      background: var(--color-accent2);
+      color: var(--color-bg);
+    }
+
+    /*********************************************
+     * SECCIÓN: HERO / BANNER PRINCIPAL (70vh)
+     *********************************************/
+    .hero {
+      position: relative;
+      min-height: 70vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+      overflow: hidden;
+    }
+    .hero-content {
+      max-width: 800px;
+      opacity: 0;
+      transform: translateY(50px);
+    }
+    .hero-title {
+      font-family: var(--font-heading);
+      font-size: 3rem;
+      color: var(--color-accent2);
+      margin-bottom: 1rem;
+      text-shadow: 0 0 5px var(--color-accent2);
+      /* Efecto glitch */
+      animation: glitch 2s infinite;
+    }
+    @keyframes glitch {
+      0% { text-shadow: 2px 2px 0 var(--color-accent), -2px -2px 0 var(--color-accent2); }
+      20% { text-shadow: -2px 2px 0 var(--color-accent2), 2px -2px 0 var(--color-accent); }
+      40% { text-shadow: 2px -2px 0 var(--color-accent), -2px 2px 0 var(--color-accent2); }
+      60% { text-shadow: -2px -2px 0 var(--color-accent2), 2px 2px 0 var(--color-accent); }
+      80% { text-shadow: 2px 2px 0 var(--color-accent), -2px -2px 0 var(--color-accent2); }
+      100% { text-shadow: -2px 2px 0 var(--color-accent2), 2px -2px 0 var(--color-accent); }
+    }
+    .hero-subtitle {
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+      line-height: 1.5;
+    }
+    .btn-hero {
+      background: var(--color-accent);
+      color: var(--color-bg);
+      border: none;
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      font-family: var(--font-main);
+      text-transform: uppercase;
+      transition: background var(--transition-fast), transform var(--transition-fast);
+    }
+    .btn-hero:hover {
+      background: var(--color-accent2);
+      transform: scale(1.05);
+    }
+
+    /*********************************************
+     * SECCIÓN: PROYECTO X
+     *********************************************/
+    .projectx-section {
+      max-width: var(--max-container-width);
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    .projectx-section h2 {
+      font-family: var(--font-heading);
+      text-align: center;
+      margin-bottom: 2rem;
+      color: var(--color-accent);
+      text-shadow: 0 0 5px var(--color-accent);
+    }
+    .projectx-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+    .projectx-details,
+    .projectx-visuals,
+    .projectx-video {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--color-accent);
+      border-radius: 10px;
+      padding: 1rem;
+      animation: fadeIn var(--transition-slow) forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .projectx-details h3,
+    .projectx-visuals h3,
+    .projectx-video h3 {
+      font-family: var(--font-heading);
+      color: var(--color-accent2);
+      margin-bottom: 0.5rem;
+    }
+    .projectx-details ul {
+      margin-top: 0.5rem;
+      padding-left: 1.5rem;
+    }
+    .gallery {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .gallery img {
+      max-width: calc(33.33% - 0.5rem);
+      border-radius: 5px;
+      border: 1px solid var(--color-accent2);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .gallery img:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 10px var(--color-accent2);
+    }
+    .projectx-video video {
+      width: 100%;
+      border: 1px solid var(--color-accent2);
+      border-radius: 5px;
+    }
+
+    /*********************************************
+     * MÚSICA REACTIVA
+     *********************************************/
+    .music-visualizer {
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      z-index: 3000;
+    }
+    .music-visualizer .bar {
+      width: 5px;
+      height: 10px;
+      background: var(--color-accent2);
+      animation: bounce 1.5s infinite alternate;
+    }
+    .music-visualizer .bar:nth-child(2) {
+      animation-delay: 0.3s;
+    }
+    .music-visualizer .bar:nth-child(3) {
+      animation-delay: 0.6s;
+    }
+    .music-visualizer .bar:nth-child(4) {
+      animation-delay: 0.9s;
+    }
+    .music-visualizer .bar:nth-child(5) {
+      animation-delay: 1.2s;
+    }
+    @keyframes bounce {
+      from { height: 5px; }
+      to { height: 30px; }
+    }
+
+    /*********************************************
+     * MENÚ DE PREFERENCIAS
+     *********************************************/
+    .preferences-panel {
+      position: fixed;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--color-bg-translucent);
+      border: 1px solid var(--color-accent);
+      border-radius: 1rem 0 0 1rem;
+      padding: 1rem;
+      max-width: 200px;
+      z-index: 3000;
+      transition: transform var(--transition-fast);
+    }
+    .preferences-toggle {
+      position: absolute;
+      left: -25px;
+      top: 1rem;
+      background: var(--color-accent2);
+      border: none;
+      color: #000;
+      cursor: pointer;
+      border-radius: 0.5rem;
+      width: 25px;
+      height: 25px;
+      font-size: 1rem;
+      font-weight: bold;
+      padding: 0;
+    }
+    .preferences-panel.closed {
+      transform: translateX(100%) translateY(-50%);
+    }
+    .preferences-panel h4 {
+      margin-bottom: 0.5rem;
+      font-family: var(--font-heading);
+      color: var(--color-accent);
+    }
+    .form-check {
+      margin-bottom: 0.5rem;
+    }
+    .form-check-label {
+      margin-left: 0.25rem;
+      font-size: 0.9rem;
+    }
+
+    /*********************************************
+     * FOOTER
+     *********************************************/
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background: var(--color-bg-translucent);
+      border-top: 1px solid var(--color-accent);
+    }
+    footer p {
+      font-size: 0.8rem;
+      color: #ccc;
+    }
+
+    /*********************************************
+     * EASTER EGG
+     *********************************************/
+    .easter-egg-msg {
+      position: fixed;
+      top: 10%;
+      right: 50%;
+      transform: translateX(50%);
+      background: var(--color-accent2);
+      color: var(--color-bg);
+      padding: 1rem 2rem;
+      border-radius: 10px;
+      display: none;
+      z-index: 5000;
+    }
+
+    /*********************************************
+     * MEDIA QUERY: Adaptación para dispositivos móviles
+     *********************************************/
+    @media (max-width: 768px) {
+      /* Para móviles: ocultamos el video de fondo */
+      #bg-video {
+        display: none;
+      }
+      /* Establecemos un GIF como fondo del body */
+      body {
+        background: url('asset/gifs/hacker-2.gif') no-repeat center center fixed;
+        background-size: cover;
+      }
+    }
+  </style>
+</head>
+
+<body class="custom-cursor" id="bodyElement">
+
+  <!-- ==================================================
+       SECCIÓN: LOADER Y BARRA DE PROGRESO
+  ================================================== -->
+  <div class="scroll-progress-bar" id="scrollProgressBar"></div>
+  <div class="loader-overlay" id="loaderOverlay">
+    <div class="loader-text">Cargando...</div>
+    <div class="loader-bar-container">
+      <div class="loader-bar" id="loaderBar"></div>
     </div>
+    <div class="loader-percentage" id="loaderPercentage">0%</div>
+  </div>
 
-    <!-- ==================================================
-         SECCIÓN: FONDO Y EFECTOS VISUALES
-    ================================================== -->
-    <!-- Video de fondo -->
-    <video id="bg-video" autoplay muted loop>
-      <source src="MP4/Matrix.mp4" type="video/mp4">
-      Tu navegador no soporta videos de fondo.
-    </video>
-    <!-- Partículas dinámicas -->
-    <div class="particles"></div>
+  <!-- ==================================================
+       SECCIÓN: FONDO Y EFECTOS VISUALES
+  ================================================== -->
+  <!-- Video de fondo para PC -->
+  <video id="bg-video" autoplay muted loop>
+    <source src="asset/video/hacker.mp4" type="video/mp4">
+    Tu navegador no soporta videos de fondo.
+  </video>
+  <!-- Partículas dinámicas -->
+  <div class="particles"></div>
 
-    <!-- ==================================================
-         SECCIÓN: CURSOR PERSONALIZADO
-    ================================================== -->
-    <div class="cursor-dot" id="cursor-dot"></div>
-    <div class="cursor-dot-expanded" id="cursor-dot-expanded"></div>
+  <!-- ==================================================
+       SECCIÓN: CURSOR PERSONALIZADO
+  ================================================== -->
+  <div class="cursor-dot" id="cursor-dot"></div>
+  <div class="cursor-dot-expanded" id="cursor-dot-expanded"></div>
 
-    <!-- ==================================================
-         SECCIÓN: AUDIOS PARA INTERACCIONES
-    ================================================== -->
-    <audio id="audio-hover" src="Audio/hover.mp3" preload="auto"></audio>
-    <audio id="audio-click" src="Audio/Sound-mp3/Sound.mp3" preload="auto"></audio>
-    <audio id="audio-filter-click" src="Audio/Sound-mp3/Sound.mp3" preload="auto"></audio>
-    <audio id="audio-filter-hover" src="Audio/botones/sci-fi-weapon-shoot.mp3" preload="auto"></audio>
-    <audio id="background-audio" loop>
-      <source src="Audio/Stardust_ Relaxing Ambient Sci Fi Music.mp3" type="audio/mpeg">
-      Tu navegador no soporta el elemento de audio.
-    </audio>
+  <!-- ==================================================
+       SECCIÓN: AUDIOS PARA INTERACCIONES
+  ================================================== -->
+  <audio id="audio-hover" src="Audio/hover.mp3" preload="auto"></audio>
+  <audio id="audio-click" src="Audio/Sound-mp3/Sound.mp3" preload="auto"></audio>
+  <audio id="audio-filter-click" src="Audio/Sound-mp3/Sound.mp3" preload="auto"></audio>
+  <audio id="audio-filter-hover" src="Audio/botones/sci-fi-weapon-shoot.mp3" preload="auto"></audio>
+  <audio id="background-audio" loop>
+    <source src="Audio/Stardust_ Relaxing Ambient Sci Fi Music.mp3" type="audio/mpeg">
+    Tu navegador no soporta el elemento de audio.
+  </audio>
+  <audio id="audio-loader" src="Audio/loader.mp3" preload="auto"></audio>
 
-    
-<!-- Botón Hamburguesa visible en móviles -->
-<button class="hamburger" aria-label="Menú" onclick="toggleMobileMenu()">
-  <span class="bar"></span>
-  <span class="bar"></span>
-  <span class="bar"></span>
-</button>
+  <!-- Botón Hamburguesa visible en todo momento -->
+  <button class="hamburger" aria-label="Menú" onclick="toggleMobileMenu()">
+    <span class="bar"></span>
+    <span class="bar"></span>
+    <span class="bar"></span>
+  </button>
 
-<!-- Menú de navegación para escritorio -->
-<nav class="cyber-nav" id="navbar">
-  <ul id="navLinks">
-    <li><a class="nav-brand hoverable" href="#hero" onclick="playNavSound()">Evidencias 2077</a></li>
-    <li><a class="nav-link hoverable" href="#hero" onclick="playNavSound()">Inicio</a></li>
+  <!-- ==================================================
+       SECCIÓN: MENÚ DE NAVEGACIÓN (REDUCIDO)
+  ================================================== -->
+  <nav class="cyber-nav" id="navbar">
+    <ul id="navLinks">
+      <li>
+        <a class="nav-brand" href="#hero" onclick="playNavSound()">Evidencias 2077</a>
+      </li>
+      <li>
+        <a class="nav-link" href="#hero" onclick="playNavSound()">Inicio</a>
+      </li>
+      <li>
+        <button class="btn-filter" onclick="toggleFilterOverlay()" aria-label="Filtrar">
+          <i class="bi bi-funnel-fill"></i>
+        </button>
+      </li>
+    </ul>
+  </nav>
 
-    <li>
-      <button class="btn-filter hoverable" onclick="toggleFilterOverlay()" aria-label="Filtrar">
-        <i class="bi bi-funnel-fill"></i>
-      </button>
-    </li>
-  </ul>
-</nav>
+  <!-- ==================================================
+       SECCIÓN: OVERLAY DE FILTRO (MENÚ OPCIONAL)
+  ================================================== -->
+  <div class="filter-overlay" id="filterOverlay">
+    <div class="filter-content">
+      <ul>
+        <li>
+          <a class="filter-link" data-text="DISEÑO" href="diseños/Menu.html">DISEÑO</a>
+        </li>
+        <li>
+          <a class="filter-link" data-text="PRESENTACION" href="presentacion/presentacion.html">PRESENTACIÓN</a>
+        </li>
+        <li>
+          <a class="filter-link" data-text="PROYECTO X" href="Proyecto x/main.html">PROYECTO X</a>
+        </li>
+        <li>
+          <a class="filter-link" data-text="LABORATORIO" href="laboratorio/index.html">LABORATORIO</a>
+        </li>
+      </ul>
+    </div>
+    <button class="btn-close-filter" onclick="toggleFilterOverlay()">Cerrar</button>
+  </div>
 
+  <!-- ==================================================
+       SECCIÓN: HERO / BANNER PRINCIPAL
+  ================================================== -->
+  <section class="hero" id="hero">
+    <div class="hero-content">
+      <h1 class="hero-title glitch-effect" data-text="EVIDENCIAS DE PROYECTOS">
+        EVIDENCIAS DE PROYECTOS
+      </h1>
+      <p class="hero-subtitle">
+        Bienvenido a un recorrido por mis evidencias futuristas.
+        Prepárate para sumergirte en un universo cyberpunk lleno de neon, glitch y proyectos impresionantes.
+      </p>
+      <button class="btn-hero" onclick="playClickSound()">Ver Proyectos</button>
+    </div>
+  </section>
 
-
-
-
-
-    <!-- ==================================================
-         SECCIÓN: OVERLAY DE FILTRO (MENÚ OPCIONAL)
-    ================================================== -->
-    <div class="filter-overlay" id="filterOverlay">
-      <div class="filter-content">
+  <!-- ==================================================
+       SECCIÓN: PROYECTO X 
+  ================================================== -->
+  <section class="projectx-section" id="proyectoX">
+    <h2>Proyecto X</h2>
+    <div class="projectx-container">
+      <!-- Detalles del Proyecto X -->
+      <div class="projectx-details">
+        <h3>Datos de Proyecto X</h3>
+        <p>
+          Aquí podrías describir en detalle qué hace, cómo funciona, y por qué es “X”.
+          ¡Combina glitch, transiciones épicas y un ambiente ciberpunk total!
+        </p>
         <ul>
-          <li class="hoverable">
-            <a class="filter-link scrambled" data-text="DISEÑO" href="diseños/Menu.html">DISEÑO</a>
-          </li>
-          <li class="hoverable">
-            <a class="filter-link scrambled" data-text="PRESENTACION" href="presentacion/presentacion.html">PRESENTACION</a>
-          </li>
-          <li class="hoverable">
-            <a class="filter-link scrambled" data-text="PROYECTO X" href="Proyecto x/main.html">PROYECTO X</a>
-          </li>
-          <li class="hoverable">
-            <a class="filter-link scrambled" data-text="LABORATORIO" href="laboratorio/index.html">LABORATORIO</a>
-          </li>
+          <li><strong>Característica 1:</strong> Inteligencia artificial avanzada para predicciones.</li>
+          <li><strong>Característica 2:</strong> Diseño inspirado en estética ciberpunk.</li>
+          <li><strong>Característica 3:</strong> Interfaz de usuario completamente interactiva.</li>
         </ul>
       </div>
-      <button class="btn-close-filter hoverable" onclick="toggleFilterOverlay()">Cerrar</button>
-    </div>
-
-    <!-- ==================================================
-         SECCIÓN: HERO / BANNER PRINCIPAL
-    ================================================== -->
-    <section class="hero" id="hero">
-      <div class="hero-content">
-        <h1 class="hero-title hoverable glitch-effect" data-text="EVIDENCIAS DE PROYECTOS">
-          EVIDENCIAS DE PROYECTOS
-        </h1>
-        <p class="hero-subtitle">
-          Bienvenido a un recorrido por mis evidencias futuristas. 
-          Prepárate para sumergirte en un universo cyberpunk lleno de neon, glitch y proyectos impresionantes.
-        </p>
-        <button class="btn-hero hoverable" onclick="playClickSound()">Ver Proyectos</button>
-      </div>
-    </section>
-
-
-    <!-- ==================================================
-         SECCIÓN: PROYECTO X (Detalle, Galería, Video y Gráfico)
-    ================================================== -->
-    <section class="projectx-section" id="proyectoX">
-      <h2>Proyecto X</h2>
-      <div class="projectx-container">
-        <!-- Detalles del Proyecto X -->
-        <div class="projectx-details">
-          <h3>Datos de Proyecto X</h3>
-          <p>Aquí podrías describir en detalle qué hace, cómo funciona, y por qué es “X”.</p>
-          <p>¡Combina glitch, transiciones épicas y un ambiente ciberpunk total!</p>
-          <ul>
-            <li><strong>Característica 1:</strong> Inteligencia artificial avanzada para predicciones.</li>
-            <li><strong>Característica 2:</strong> Diseño inspirado en estética ciberpunk.</li>
-            <li><strong>Característica 3:</strong> Interfaz de usuario completamente interactiva.</li>
-          </ul>
-        </div>
-        <!-- Galería Visual con mejoras para imágenes responsivas -->
-        <div class="projectx-visuals">
-          <h3>Galería Visual</h3>
-          <div class="gallery">
-            <img src="src/img/cyberpunk.jpg" alt="Representación de Proyecto X" />
-            <img src="src/img/panel2.jpg" alt="Detalles del diseño de Proyecto X" />
-            <img src="src/img/panel3.jpg" alt="Ambiente cyberpunk" />
-          </div>
-        </div>
-        <!-- Video Demo -->
-        <div class="projectx-video">
-          <h3>Video Demo</h3>
-          <video controls>
-            <source src="Proyecto x/src/video/videoplayback (2).mp4" type="video/mp4" />
-            Tu navegador no soporta videos.
-          </video>
-        </div>
-        <!-- Gráfico Interactivo -->
-        <div class="projectx-graph">
-          <h3>Progreso del Proyecto</h3>
-          <canvas id="projectxChart"></canvas>
+      <!-- Galería Visual -->
+      <div class="projectx-visuals">
+        <h3>Galería Visual</h3>
+        <div class="gallery">
+          <img src="src/img/cyberpunk.jpg" alt="Representación de Proyecto X" loading="lazy" />
+          <img src="src/img/panel2.jpg" alt="Detalles del diseño de Proyecto X" loading="lazy" />
+          <img src="src/img/panel3.jpg" alt="Ambiente cyberpunk" loading="lazy" />
         </div>
       </div>
-    </section>
-
-    <!-- ==================================================
-         SECCIÓN: TIMELINE / CRONOLÓGICO INTERACTIVO
-    ================================================== -->
-    <section class="extra-section" id="timelineSection">
-      <div class="container">
-        <h2 class="hoverable" style="font-family:var(--font-heading); color:var(--color-accent); text-align:center; margin-bottom:2rem;">
-          Cronología
-        </h2>
-        <div style="max-width:800px; margin:0 auto;">
-          <div class="timeline-item hoverable" data-year="2023" style="background:rgba(255,255,255,0.05); border:1px solid var(--color-accent); border-radius:0.5rem; padding:1rem; margin-bottom:1rem;">
-            <p>2023 - Inicio de la aventura cyberpunk</p>
-          </div>
-          <div class="timeline-item hoverable" data-year="2024" style="background:rgba(255,255,255,0.05); border:1px solid var(--color-accent); border-radius:0.5rem; padding:1rem; margin-bottom:1rem;">
-            <p>2024 - Expansión de proyectos futuristas</p>
-          </div>
-          <div class="timeline-item hoverable" data-year="2025" style="background:rgba(255,255,255,0.05); border:1px solid var(--color-accent); border-radius:0.5rem; padding:1rem;">
-            <p>2025 - Integración IA y glitch avanzado</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-
-
-    <!-- ==================================================
-         SECCIÓN: MÚSICA REACTIVA
-    ================================================== -->
-    <div class="music-visualizer" id="musicVisualizer">
-      <div class="bar"></div>
-      <div class="bar"></div>
-      <div class="bar"></div>
-      <div class="bar"></div>
-      <div class="bar"></div>
-    </div>
-
-    <!-- ==================================================
-         SECCIÓN: MENÚ DE PREFERENCIAS
-    ================================================== -->
-    <div class="preferences-panel" id="preferencesPanel">
-      <button class="preferences-toggle" onclick="togglePreferencesPanel()">&#9664;</button>
-      <h4>Preferencias</h4>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" id="particlesToggle" checked>
-        <label class="form-check-label" for="particlesToggle">Mostrar Partículas</label>
-      </div>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" id="cursorToggle" checked>
-        <label class="form-check-label" for="cursorToggle">Cursor Futurista</label>
-      </div>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" id="bgVideoToggle" checked>
-        <label class="form-check-label" for="bgVideoToggle">Video de Fondo</label>
+      <!-- Video Demo -->
+      <div class="projectx-video">
+        <h3>Video Demo</h3>
+        <video controls preload="metadata">
+          <source src="Proyecto x/src/video/videoplayback (2).mp4" type="video/mp4" />
+          Tu navegador no soporta videos.
+        </video>
       </div>
     </div>
+  </section>
 
-    <!-- ==================================================
-         SECCIÓN: FOOTER (CONTACTO Y CRÉDITOS)
-    ================================================== -->
-    <footer id="contact">
-      <p>&copy; 2025 - Cyberpunk Evidence. Todos los derechos reservados.</p>
-    </footer>
+  <!-- ==================================================
+       SECCIÓN: MÚSICA REACTIVA
+  ================================================== -->
+  <div class="music-visualizer" id="musicVisualizer">
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+  </div>
 
-    <!-- ==================================================
-         SECCIÓN: EASTER EGG (MENSAJE OCULTO)
-    ================================================== -->
-    <div class="easter-egg-msg" id="easterEggMsg">¡Descubriste un Easter Egg Secreto!</div>
+  <!-- ==================================================
+       SECCIÓN: MENÚ DE PREFERENCIAS (cerrado por defecto)
+  ================================================== -->
+  <div class="preferences-panel closed" id="preferencesPanel">
+    <button class="preferences-toggle" onclick="togglePreferencesPanel()">&#9664;</button>
+    <h4>Preferencias</h4>
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" id="particlesToggle" checked>
+      <label class="form-check-label" for="particlesToggle">Mostrar Partículas</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" id="cursorToggle" checked>
+      <label class="form-check-label" for="cursorToggle">Cursor Futurista</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" id="bgVideoToggle" checked>
+      <label class="form-check-label" for="bgVideoToggle">Video de Fondo</label>
+    </div>
+  </div>
 
-    <!-- ==================================================
-         SCRIPTS EXTERNOS Y NUESTRO ARCHIVO JS
-    ================================================== -->
-    <script 
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" 
-      integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+Ai0KDh7jLQ2u3fN5Bcw5S1GMK0xD" 
-      crossorigin="anonymous">
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="script.js"></script>
-  </body>
+  <!-- ==================================================
+       SECCIÓN: FOOTER (CONTACTO Y CRÉDITOS)
+  ================================================== -->
+  <footer id="contact">
+    <p>&copy; 2025 - Cyberpunk Evidence. Todos los derechos reservados.</p>
+  </footer>
+
+  <!-- ==================================================
+       SECCIÓN: EASTER EGG (MENSAJE OCULTO)
+  ================================================== -->
+  <div class="easter-egg-msg" id="easterEggMsg">¡Descubriste un Easter Egg Secreto!</div>
+
+  <!-- ==================================================
+       BOOTSTRAP JS Y SCRIPTS
+  ================================================== -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" 
+    integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+Ai0KDh7jLQ2u3fN5Bcw5S1GMK0xD" 
+    crossorigin="anonymous" defer>
+  </script>
+
+  <!-- ==================================================
+       SCRIPTS PERSONALIZADOS
+  ================================================== -->
+  <script defer>
+    /********************************************
+     * VARIABLES GLOBALES
+     ********************************************/
+    const loaderOverlay = document.getElementById('loaderOverlay');
+    const loaderBar = document.getElementById('loaderBar');
+    const loaderPercentage = document.getElementById('loaderPercentage');
+    const scrollProgressBar = document.getElementById('scrollProgressBar');
+    const cursorDot = document.getElementById('cursor-dot');
+    const cursorDotExpanded = document.getElementById('cursor-dot-expanded');
+
+    // Audios
+    const audioHover = document.getElementById('audio-hover');
+    const audioClick = document.getElementById('audio-click');
+    const audioFilterClick = document.getElementById('audio-filter-click');
+    const audioFilterHover = document.getElementById('audio-filter-hover');
+    const backgroundAudio = document.getElementById('background-audio');
+    const audioLoader = document.getElementById('audio-loader');
+
+    // Navbar
+    const navbar = document.getElementById('navbar');
+
+    // Preferencias
+    const preferencesPanel = document.getElementById('preferencesPanel');
+    const particlesToggle = document.getElementById('particlesToggle');
+    const cursorToggle = document.getElementById('cursorToggle');
+    const bgVideoToggle = document.getElementById('bgVideoToggle');
+    const bgVideo = document.getElementById('bg-video');
+    const particlesDiv = document.querySelector('.particles');
+
+    // Filter Overlay
+    const filterOverlay = document.getElementById('filterOverlay');
+
+    /********************************************
+     * LOADER DE PÁGINA (Carga más rápida y con sonido)
+     ********************************************/
+    let loadProgress = 0;
+    const fakeLoadingInterval = setInterval(() => {
+      loadProgress += 8; // Incremento mayor
+      if (loadProgress >= 100) {
+        loadProgress = 100;
+        clearInterval(fakeLoadingInterval);
+        // Retroalimentación auditiva al 100%
+        audioLoader.currentTime = 0;
+        audioLoader.play();
+        setTimeout(() => {
+          loaderOverlay.style.opacity = 0;
+          setTimeout(() => {
+            loaderOverlay.style.display = 'none';
+          }, 300);
+          backgroundAudio.play(); // Inicia música de fondo
+        }, 300);
+      } else if (loadProgress === 50) {
+        // Retroalimentación auditiva al 50%
+        audioLoader.currentTime = 0;
+        audioLoader.play();
+      }
+      loaderBar.style.width = loadProgress + '%';
+      loaderPercentage.textContent = loadProgress + '%';
+    }, 150);
+
+    /********************************************
+     * SCROLL PROGRESS BAR
+     ********************************************/
+    window.addEventListener('scroll', () => {
+      const scrollTop = window.pageYOffset;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollPercent = (scrollTop / docHeight) * 100;
+      scrollProgressBar.style.width = scrollPercent + '%';
+    });
+
+    /********************************************
+     * MENÚ HAMBURGUESA (TOGGLE)
+     ********************************************/
+    function toggleMobileMenu() {
+      navbar.classList.toggle('open');
+      playClickSound();
+    }
+
+    /********************************************
+     * FILTRO OVERLAY
+     ********************************************/
+    function toggleFilterOverlay() {
+      filterOverlay.classList.toggle('active');
+      audioFilterClick.play();
+    }
+
+    /********************************************
+     * CURSOR PERSONALIZADO
+     ********************************************/
+    let mouseX = 0, mouseY = 0;
+    let dotX = 0, dotY = 0;
+    let expandedX = 0, expandedY = 0;
+    const speed = 0.2;
+
+    function animateCursor() {
+      dotX += (mouseX - dotX) * speed;
+      dotY += (mouseY - dotY) * speed;
+      expandedX += (mouseX - expandedX) * speed;
+      expandedY += (mouseY - expandedY) * speed;
+
+      cursorDot.style.transform = `translate(${dotX}px, ${dotY}px)`;
+      cursorDotExpanded.style.transform = `translate(${expandedX}px, ${expandedY}px)`;
+
+      requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+
+    window.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+
+    /********************************************
+     * REPRODUCIR SONIDOS
+     ********************************************/
+    function playNavSound() {
+      audioHover.currentTime = 0;
+      audioHover.play();
+    }
+    function playClickSound() {
+      audioClick.currentTime = 0;
+      audioClick.play();
+    }
+
+    /********************************************
+     * PREFERENCIAS PANEL
+     ********************************************/
+    function togglePreferencesPanel() {
+      preferencesPanel.classList.toggle('closed');
+      playClickSound();
+    }
+
+    // Listeners de toggles
+    particlesToggle.addEventListener('change', () => {
+      particlesDiv.style.display = particlesToggle.checked ? 'block' : 'none';
+      playClickSound();
+    });
+    cursorToggle.addEventListener('change', () => {
+      if (cursorToggle.checked) {
+        cursorDot.style.display = 'block';
+        cursorDotExpanded.style.display = 'block';
+      } else {
+        cursorDot.style.display = 'none';
+        cursorDotExpanded.style.display = 'none';
+      }
+      playClickSound();
+    });
+    bgVideoToggle.addEventListener('change', () => {
+      bgVideo.style.display = bgVideoToggle.checked ? 'block' : 'none';
+      playClickSound();
+    });
+
+    /********************************************
+     * ANIMACIONES CON INTERSECTION OBSERVER
+     ********************************************/
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('animate');
+        }
+      });
+    }, { threshold: 0.2 });
+    
+    document.querySelectorAll('.hero-content, .projectx-section').forEach(el => {
+      observer.observe(el);
+    });
+
+    // Aplicar animación al mostrar (definida en CSS .animate)
+    const style = document.createElement('style');
+    style.textContent = `
+      .animate {
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+        transition: opacity 0.6s ease, transform 0.6s ease;
+      }
+    `;
+    document.head.appendChild(style);
+
+    /********************************************
+     * EASTER EGG
+     ********************************************/
+    const easterEggMsg = document.getElementById('easterEggMsg');
+    let easterClicks = 0;
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'E' && e.shiftKey) {
+        easterClicks++;
+        if (easterClicks === 3) {
+          easterEggMsg.style.display = 'block';
+          setTimeout(() => {
+            easterEggMsg.style.display = 'none';
+          }, 3000);
+          easterClicks = 0;
+        }
+      }
+    });
+  </script>
+</body>
 </html>
+
+
 
