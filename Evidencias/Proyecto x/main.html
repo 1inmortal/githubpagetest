@@ -109,6 +109,53 @@
       width: 100%; padding: 6px 8px; border: 1px solid var(--primary-color);
       border-radius: 4px; background: #1a1a1a; color: var(--text-color);
     }
+    /* Filtro avanzado para Projects */
+    .advanced-filter-nav {
+      margin: 10px 0;
+    }
+    .advanced-filter-nav ul {
+      list-style: none;
+      display: flex;
+      gap: 10px;
+      padding: 0;
+    }
+    .advanced-filter-nav li {
+      padding: 5px 10px;
+      background: var(--primary-color);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      text-transform: uppercase;
+      color: #000;
+      transition: background 0.3s;
+    }
+    .advanced-filter-nav li.active, .advanced-filter-nav li:hover {
+      background: var(--secondary-color);
+    }
+    .data-list-container {
+      margin-top: 10px;
+    }
+    .data-item {
+      display: flex;
+      flex-direction: column;
+      padding: 8px 15px;
+      border-bottom: 1px solid #421111;
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s;
+      font-size: 13px;
+      color: #ffd0dc;
+    }
+    .data-item:hover {
+      background: #2a0a0a;
+      box-shadow: 0 0 10px var(--primary-color);
+    }
+    .data-item.selected {
+      background: var(--primary-color);
+      color: #fff;
+      box-shadow: inset 0 0 10px var(--primary-color);
+    }
+    /* Se mantiene la sección original de Projects (Side Jobs se conserva) */
+    
     .project-list-container, .mission-list-container { margin-top: 10px; }
     .project-list-title, .mission-list-title {
       color: var(--primary-color); text-transform: uppercase; font-size: 14px;
@@ -201,7 +248,6 @@
       background: rgba(10,10,10,0.5); border-radius: 8px;
       font-family: 'Orbitron', sans-serif;
     }
-    /* Botón de Filtro (Dropdown) */
     .filter-menu-container {
       position: relative; display: inline-block; margin-bottom: 10px;
     }
@@ -222,7 +268,6 @@
     .filter-item:hover {
       background: var(--primary-color); color: #fff;
     }
-    /* Contenido de cada sección */
     .tab-content { display: none; animation: fadeIn 0.5s forwards; }
     .tab-content.active { display: block; }
     
@@ -447,13 +492,13 @@
     img.loaded { opacity: 1; }
   </style>
   
-<!-- tsParticles -->
-<script src="https://cdn.jsdelivr.net/npm/tsparticles@1/tsparticles.min.js"></script>
-<!-- Socket.IO (Cliente) - Asegúrate de reemplazar la URL por la de tu servidor remoto -->
-<script src="https://tu-servidor.herokuapp.com/socket.io/socket.io.js"></script>
-<!-- Font Awesome -->
-<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-
+  <!-- tsParticles -->
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@1/tsparticles.min.js"></script>
+  <!-- Socket.IO -->
+  <script src="https://tu-servidor.herokuapp.com/socket.io/socket.io.js"></script>
+  <!-- Font Awesome -->
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  
 </head>
 <body>
   <!-- Video de fondo -->
@@ -521,9 +566,8 @@
       </div>
       <button class="nav-toggle" id="navToggle">&#9776;</button>
       <nav class="top-nav" id="topNav">
-        <a href="main.html" class="top-nav-item">Inicio</a>
-        <a href="herramientas.html" class="top-nav-item">Herramientas</a>
-        <a href="logros y certificados.html" class="top-nav-item">Logros</a>
+        <a href="../Menu.html" class="top-nav-item">Inicio</a>
+        
       </nav>
     </div>
     <div class="top-bar-right">
@@ -543,28 +587,29 @@
   
   <!-- MAIN -->
   <main class="main-container fade-in">
-    <!-- PANEL IZQUIERDO -->
+    <!-- PANEL IZQUIERDO: Filtro avanzado para Projects y Side Jobs -->
     <aside class="left-panels">
       <div class="search-container">
         <input type="text" id="searchInput" placeholder="Buscar...">
       </div>
+      <!-- Filtro avanzado para Projects -->
       <section class="project-list-container">
         <div class="project-list-title">Projects</div>
-        <div class="project-list" id="projectList">
-          <div class="project-item selected" data-id="neonui">
-            <div class="project-name">Neon UI</div>
-            <div class="project-summary">Futuristic neon interface concept.</div>
-          </div>
-          <div class="project-item" data-id="hackingpanel">
-            <div class="project-name">Hacking Panel</div>
-            <div class="project-summary">Immersive hacking mini-game mechanics.</div>
-          </div>
-          <div class="project-item" data-id="braininterface">
-            <div class="project-name">Brain Interface</div>
-            <div class="project-summary">BCI-based user interactions (prototype).</div>
-          </div>
+        <nav class="advanced-filter-nav">
+          <ul>
+            <li class="filter-option active" data-filter="projects">Projects</li>
+            <li class="filter-option" data-filter="herramientas">Herramientas</li>
+            <li class="filter-option" data-filter="logros">Logros</li>
+            <li class="filter-option" data-filter="contenido">Contenido</li>
+            <li class="filter-option" data-filter="ideas">Ideas</li>
+          </ul>
+        </nav>
+        <!-- Contenedor de la lista según filtro -->
+        <div class="data-list-container" id="dataList">
+          <!-- Se renderizará la lista según el filtro seleccionado -->
         </div>
       </section>
+      <!-- Se mantiene la sección de Side Jobs en su posición original -->
       <section class="mission-list-container">
         <div class="mission-list-title">Side Jobs</div>
         <div class="mission-list" id="missionList">
@@ -1128,46 +1173,99 @@
     }
     loadSelectedMission();
     
-    const projectItems = document.querySelectorAll(".project-item");
-    const detailTitle = document.getElementById("detailTitle");
-    const detailSubtitle = document.getElementById("detailSubtitle");
-    const detailDescription = document.getElementById("detailDescription");
-    const detailContainer = document.querySelector('.detail-container');
-    projectItems.forEach(item => {
-      item.addEventListener("click", () => {
-        projectItems.forEach(i => i.classList.remove("selected"));
-        item.classList.add("selected");
-        const pid = item.getAttribute("data-id");
-        const data = projectData[pid];
-        detailContainer.classList.add('hidden');
-        setTimeout(() => {
-          detailTitle.textContent = data.title;
-          detailSubtitle.textContent = data.subtitle;
-          detailDescription.innerHTML = data.description +
-            `<br><br><strong>Enlaces:</strong>
-            <ul>
-              <li><a href="${data.link}" target="_blank">Sitio Web</a></li>
-              <li><a href="${data.github}" target="_blank">GitHub</a></li>
-              <li><a href="${data.codepen}" target="_blank">CodePen</a></li>
-              <li><a href="${data.liveDemo}" target="_blank">Demo en Vivo</a></li>
-            </ul>`;
-          detailContainer.classList.remove('hidden');
-          localStorage.setItem('selectedProject', pid);
-          showNotification(`Proyecto seleccionado: ${data.title}`);
-          playClickSound();
-          playNotificationSound();
-          addAchievement(`Proyecto: ${data.title}`);
-        }, 500);
-      });
-    });
-    function loadSelectedProject() {
-      const selectedProject = localStorage.getItem('selectedProject');
-      if (selectedProject) {
-        const item = document.querySelector(`.project-item[data-id="${selectedProject}"]`);
-        if (item) { item.click(); }
+    // Lógica del Filtro Avanzado en Projects
+    function renderDataList(filter) {
+      const dataList = document.getElementById('dataList');
+      dataList.innerHTML = '';
+      // Si se selecciona "projects", mostrar los items originales
+      if(filter === 'projects') {
+        Object.keys(projectData).forEach(pid => {
+          const proj = projectData[pid];
+          const div = document.createElement('div');
+          div.classList.add('data-item');
+          div.setAttribute('data-id', pid);
+          div.innerHTML = `<div class="project-name">${proj.title}</div>
+                           <div class="project-summary">${proj.subtitle}</div>`;
+          div.addEventListener('click', () => {
+            document.getElementById('detailTitle').textContent = proj.title;
+            document.getElementById('detailSubtitle').textContent = proj.subtitle;
+            document.getElementById('detailDescription').innerHTML = proj.description +
+              `<br><br><strong>Enlaces:</strong>
+              <ul>
+                <li><a href="${proj.link}" target="_blank">Sitio Web</a></li>
+                <li><a href="${proj.github}" target="_blank">GitHub</a></li>
+                <li><a href="${proj.codepen}" target="_blank">CodePen</a></li>
+                <li><a href="${proj.liveDemo}" target="_blank">Demo en Vivo</a></li>
+              </ul>`;
+            document.querySelectorAll('.data-item').forEach(el => el.classList.remove('selected'));
+            div.classList.add('selected');
+            localStorage.setItem('selectedProject', pid);
+            showNotification(`Proyecto seleccionado: ${proj.title}`);
+            playClickSound();
+            playNotificationSound();
+            addAchievement(`Proyecto: ${proj.title}`);
+          });
+          dataList.appendChild(div);
+        });
+      }
+      // Para otras secciones: herramientas, logros, contenido, ideas
+      else {
+        const sampleData = {
+          herramientas: [
+            { id: 'tool1', title: "Herramienta 1", subtitle: "Utilidad para análisis de datos", description: `<strong>Detalles:</strong><br>Permite gestionar y visualizar grandes volúmenes de información.` },
+            { id: 'tool2', title: "Herramienta 2", subtitle: "Editor de código avanzado", description: `<strong>Detalles:</strong><br>Ofrece integración con Git y soporte para múltiples lenguajes.` }
+          ],
+          logros: [
+            { id: 'achievement1', title: "Logro 1", subtitle: "Primer logro desbloqueado", description: `<strong>Detalles:</strong><br>Obtenido al completar el primer proyecto exitosamente.` },
+            { id: 'achievement2', title: "Logro 2", subtitle: "Segundo logro desbloqueado", description: `<strong>Detalles:</strong><br>Desbloqueado tras superar retos avanzados en seguridad.` }
+          ],
+          contenido: [
+            { id: 'content1', title: "Contenido 1", subtitle: "Tutoriales y guías", description: `<strong>Detalles:</strong><br>Artículos y vídeos para mejorar habilidades técnicas.` },
+            { id: 'content2', title: "Contenido 2", subtitle: "Recursos y referencias", description: `<strong>Detalles:</strong><br>Documentación y ejemplos de código de proyectos destacados.` }
+          ],
+          ideas: [
+            { id: 'idea1', title: "Idea 1", subtitle: "Innovación en UI", description: `<strong>Detalles:</strong><br>Propuesta para implementar micro-interacciones en la interfaz.` },
+            { id: 'idea2', title: "Idea 2", subtitle: "Optimización de procesos", description: `<strong>Detalles:</strong><br>Concepto para mejorar la eficiencia del renderizado en tiempo real.` }
+          ]
+        };
+        const items = sampleData[filter] || [];
+        items.forEach(item => {
+          const div = document.createElement('div');
+          div.classList.add('data-item');
+          div.setAttribute('data-id', item.id);
+          div.innerHTML = `<div class="project-name">${item.title}</div>
+                           <div class="project-summary">${item.subtitle}</div>`;
+          div.addEventListener('click', () => {
+            document.getElementById('detailTitle').textContent = item.title;
+            document.getElementById('detailSubtitle').textContent = item.subtitle;
+            document.getElementById('detailDescription').innerHTML = item.description;
+            document.querySelectorAll('.data-item').forEach(el => el.classList.remove('selected'));
+            div.classList.add('selected');
+            showNotification(`${item.title} seleccionado`);
+            playClickSound();
+            playNotificationSound();
+          });
+          dataList.appendChild(div);
+        });
       }
     }
-    loadSelectedProject();
+    
+    // Renderizar inicialmente la categoría "projects"
+    renderDataList('projects');
+    
+    // Manejo de la selección del filtro avanzado
+    document.querySelectorAll('.advanced-filter-nav .filter-option').forEach(option => {
+      option.addEventListener('click', function() {
+        document.querySelectorAll('.advanced-filter-nav .filter-option').forEach(el => el.classList.remove('active'));
+        this.classList.add('active');
+        const filter = this.getAttribute('data-filter');
+        renderDataList(filter);
+        // Limpiar el panel central para nueva selección
+        document.getElementById('detailTitle').textContent = '';
+        document.getElementById('detailSubtitle').textContent = '';
+        document.getElementById('detailDescription').innerHTML = '';
+      });
+    });
     
     // Mini Chart Animation
     const miniChartCanvas = document.getElementById('miniChart');
@@ -1295,7 +1393,6 @@
     
     // Chat en Tiempo Real con Socket.IO
     const socket = io('https://tu-servidor.herokuapp.com');
-
     const chatInput = document.getElementById('chatInput');
     const chatSend = document.getElementById('chatSend');
     const chatWindow = document.getElementById('chatWindow');
@@ -1332,6 +1429,7 @@
   </script>
 </body>
 </html>
+
 
 
 
