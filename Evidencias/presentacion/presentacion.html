@@ -52,6 +52,27 @@
       transition: background-color var(--transition-speed), color var(--transition-speed);
     }
 
+    /* -------- AVISO DE BETA (Nuevo) -------- */
+    .beta-warning {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background-color: #ffc107;
+      color: #000;
+      font-weight: bold;
+      padding: 10px 20px;
+      border: 2px solid #ff2d95;
+      z-index: 10000;
+      width: max-content;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+    /* ---------------------------------------- */
+
     /* --- Pantalla de Carga --- */
     .loader-overlay {
       position: fixed;
@@ -335,6 +356,13 @@
   </style>
 </head>
 <body>
+
+  <!-- AVISO DE BETA (Nuevo) -->
+  <div class="beta-warning">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    ¡Estás en una prueba BETA, pueden ocurrir muchos errores!
+  </div>
+  <!-- Fin AVISO DE BETA (Nuevo) -->
 
   <!-- Pantalla de Carga -->
   <div class="loader-overlay" id="loaderOverlay">
@@ -645,7 +673,6 @@ Escribe <span style="color: var(--primary-color)">help</span> para ver los coman
       metasploit: "Tip: Metasploit Framework para exploits. Comando: msfconsole.",
       burp: "Tip: Burp Suite audita aplicaciones web; intercepta y modifica requests.",
       aircrack: "Tip: Aircrack-ng audita redes Wi-Fi, permite romper contraseñas WEP/WPA."
-      // Agrega más según necesites
     };
 
     // Mostrar tips si se detectan palabras clave
@@ -677,19 +704,15 @@ Escribe <span style="color: var(--primary-color)">help</span> para ver los coman
        Sólo en modo experto
     ------------------------------ */
     function getSystemInfo() {
-      // Muchos datos se pueden “simular”. Aquí ejemplos reales del navegador:
       const ua = navigator.userAgent || "N/A";
       const now = new Date().toLocaleString();
-      // Uso de memoria (puede no estar soportado en todos los navegadores):
       let memText = "No soportado por este navegador.";
       if(performance && performance.memory) {
         const usedMB = (performance.memory.usedJSHeapSize / 1048576).toFixed(2);
         const totalMB = (performance.memory.totalJSHeapSize / 1048576).toFixed(2);
         memText = `${usedMB} MB / ${totalMB} MB (used / total JS Heap)`;
       }
-      // Screen
       const screenRes = `${window.screen.width}x${window.screen.height}`;
-      // Retornamos en forma de string multilinea
       return `
 Fecha/Hora Local:  ${now}
 User-Agent:        ${ua}
@@ -861,7 +884,6 @@ Resolución Pant:   ${screenRes}
           return 'Opción no válida. Usa: theme <dark|light|toggle>';
         }
       },
-      // Nuevo comando sysinfo (modo experto)
       sysinfo: function() {
         if(!expertMode) {
           playErrorSound();
@@ -870,7 +892,6 @@ Resolución Pant:   ${screenRes}
         flashOutput(true);
         return getSystemInfo();
       },
-      // Cambiar modo
       mode: function(args) {
         if(!args[0]) {
           return "Uso: mode <basic|expert>";
@@ -883,7 +904,6 @@ Resolución Pant:   ${screenRes}
         } else if(choice === 'expert') {
           expertMode = true;
           showNotification('info', 'Modo Experto activado');
-          // Añadimos un pequeño “banner/hook” al entrar en modo experto
           return 'Modo Experto activado.' + getExpertBanner() + 
                  '\nAhora puedes usar todos los comandos avanzados.';
         } else {
@@ -910,9 +930,7 @@ Resolución Pant:   ${screenRes}
     ------------------------------ */
     function showSuggestions(userInput) {
       const filteredCommands = allCommands.filter(cmd => {
-        // Comprobamos si está permitido en el modo actual
         if(!isCommandVisible(cmd)) return false;
-        // Comprobamos si coincide con lo que el usuario ha tecleado
         return cmd.startsWith(userInput.toLowerCase());
       });
 
@@ -934,13 +952,10 @@ Resolución Pant:   ${screenRes}
       suggestionsBox.style.display = 'block';
     }
 
-    /* ------------------------------
-       Manejador de la Terminal
-    ------------------------------ */
     terminalInput.addEventListener('input', function() {
       const inputVal = terminalInput.value.trim();
-      showSuggestions(inputVal);          // Autocompletar
-      checkContextTip(inputVal);          // Ayuda contextual
+      showSuggestions(inputVal);
+      checkContextTip(inputVal);
     });
 
     terminalInput.addEventListener('keydown', function(e) {
@@ -967,7 +982,6 @@ Resolución Pant:   ${screenRes}
           });
         }
       }
-      // Con la tecla ESC se oculta la caja de sugerencias
       if(e.key === 'Escape') {
         suggestionsBox.style.display = 'none';
       }
