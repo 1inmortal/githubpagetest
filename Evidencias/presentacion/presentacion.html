@@ -3,148 +3,237 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="CyberTools es una plataforma dedicada a proporcionar herramientas y recursos para el hacking ético, mejorando la seguridad informática a través de la educación y el acceso a herramientas de alta calidad.">
-  <meta name="keywords" content="hacking ético, herramientas de seguridad, ciberseguridad, auditoría de seguridad, hacking, herramientas de hacking">
-  <meta name="author" content="Tu Nombre o Empresa">
-  <title>CyberTools - Terminal de Comandos</title>
+  <meta name="description" content="CyberTools v2.0 - Una terminal web avanzada con herramientas y recursos para hacking ético, seguridad informática y más.">
+  <meta name="keywords" content="hacking ético, terminal web, ciberseguridad, herramientas de seguridad, nmap, wireshark, metasploit, javascript terminal, web cli">
+  <meta name="author" content="Tu Nombre o IA Asistente">
+  <title>CyberTools v2.0 - Terminal Avanzada</title>
 
-  <!-- Fuentes futuristas y monoespaciadas -->
+  <!-- Fuentes -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <!-- Iconos -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
+    /* --- Variables Globales y Temas --- */
     :root {
-      --bg-color: #0d0d0d;
-      --primary-color: #ff2d95;
-      --secondary-color: #00d4ff;
-      --accent-color: #ff7e5f;
-      --text-color: #ffffff;
-      --muted-color: #a0a0a0;
+      --bg-color: #0a0a0a; /* Más oscuro */
+      --primary-color: #ff2d95; /* Rosa neón */
+      --secondary-color: #00d4ff; /* Azul neón */
+      --accent-color: #f9ff45;  /* Amarillo neón */
+      --text-color: #e0e0e0; /* Blanco ligeramente grisáceo */
+      --muted-color: #888888;
+      --error-color: #ff4d4d;
+      --success-color: #4dff4d;
+      --info-color: var(--secondary-color);
+      --warning-color: #ffc107;
       --font-main: 'Roboto Mono', monospace;
       --font-heading: 'Orbitron', sans-serif;
+      --font-matrix: 'Share Tech Mono', monospace; /* Fuente para tema matrix */
       --transition-speed: 0.3s;
-    }
-    /* Modo claro */
-    [data-theme="light"] {
-      --bg-color: #f0f0f0;
-      --text-color: #333333;
-      --muted-color: #555555;
-      --primary-color: #ff2d95;
-      --secondary-color: #00aaff;
+      --scanline-opacity: 0.07;
+      --glitch-intensity: 5px;
     }
 
-    /* Reset y tipografía */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    [data-theme="light"] {
+      --bg-color: #f5f5f5;
+      --text-color: #222222;
+      --muted-color: #555555;
+      --primary-color: #e60073; /* Rosa más fuerte */
+      --secondary-color: #007acc; /* Azul más estándar */
+      --accent-color: #d9b700;
+      --error-color: #d90000;
+      --success-color: #009900;
+      --scanline-opacity: 0.04;
     }
+
+    [data-theme="matrix"] {
+      --bg-color: #000000;
+      --primary-color: #00ff41; /* Verde Matrix */
+      --secondary-color: #39ff14; /* Verde neón brillante */
+      --accent-color: #b0ff00;
+      --text-color: #00ff41;
+      --muted-color: #008F11;
+      --error-color: #ff0000;
+      --success-color: #39ff14;
+      --font-main: var(--font-matrix);
+      --font-heading: var(--font-matrix);
+      --scanline-opacity: 0.15;
+      --glitch-intensity: 8px;
+    }
+
+    /* --- Reset y Base --- */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
       font-family: var(--font-main);
       background-color: var(--bg-color);
       color: var(--text-color);
-      overflow-x: hidden;
+      overflow: hidden; /* Oculta scrollbar principal, terminal maneja el suyo */
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       transition: background-color var(--transition-speed), color var(--transition-speed);
+      position: relative; /* Para efectos de overlay */
     }
 
-    /* -------- AVISO DE BETA (Nuevo) -------- */
-    .beta-warning {
+    /* --- Efecto Scanlines Overlay --- */
+    body::after {
+      content: "";
       position: fixed;
       top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background-color: #ffc107;
-      color: #000;
-      font-weight: bold;
-      padding: 10px 20px;
-      border: 2px solid #ff2d95;
-      z-index: 10000;
-      width: max-content;
-      border-radius: 5px;
-      margin-top: 10px;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, var(--scanline-opacity)),
+        rgba(0, 0, 0, var(--scanline-opacity)) 1px,
+        transparent 1px,
+        transparent 3px /* Aumentado para líneas más separadas */
+      );
+      pointer-events: none;
+      z-index: 99999;
+      opacity: 0.7;
+      transition: opacity var(--transition-speed);
     }
-    /* ---------------------------------------- */
+    [data-theme="light"] body::after {
+       background: repeating-linear-gradient(
+        0deg,
+        rgba(255, 255, 255, var(--scanline-opacity)),
+        rgba(255, 255, 255, var(--scanline-opacity)) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+    }
 
-    /* --- Pantalla de Carga --- */
+    /* --- Efecto Glitch (sutil) --- */
+    .glitch {
+      animation: glitchAnim 0.8s infinite steps(8);
+    }
+    @keyframes glitchAnim {
+      0% { clip-path: inset(0); }
+      10% { clip-path: inset(var(--glitch-intensity) 0 calc(var(--glitch-intensity) * 2) 0); }
+      20% { clip-path: inset(calc(var(--glitch-intensity) * -1.5) 0 var(--glitch-intensity) 0); }
+      30% { clip-path: inset(calc(var(--glitch-intensity) * 0.5) 0 calc(var(--glitch-intensity) * 1.2) 0); }
+      40% { clip-path: inset(calc(var(--glitch-intensity) * -1) 0 calc(var(--glitch-intensity) * -0.5) 0); }
+      50% { clip-path: inset(var(--glitch-intensity) 0 var(--glitch-intensity) 0); }
+      60% { clip-path: inset(calc(var(--glitch-intensity) * -0.8) 0 calc(var(--glitch-intensity) * 0.8) 0); }
+      70% { clip-path: inset(calc(var(--glitch-intensity) * 1.5) 0 calc(var(--glitch-intensity) * 0.2) 0); }
+      80% { clip-path: inset(calc(var(--glitch-intensity) * -0.3) 0 var(--glitch-intensity) 0); }
+      90% { clip-path: inset(var(--glitch-intensity) 0 calc(var(--glitch-intensity) * -1.1) 0); }
+      100% { clip-path: inset(0); }
+    }
+
+    /* --- Pantalla de Carga Mejorada --- */
     .loader-overlay {
-      position: fixed;
-      top: 0; left: 0;
+      position: fixed; top: 0; left: 0;
       width: 100vw; height: 100vh;
       background: var(--bg-color);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      transition: opacity 0.5s ease;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 10000;
+      transition: opacity 0.8s ease-out, visibility 0.8s ease-out;
+      visibility: visible; opacity: 1;
+    }
+    .loader-overlay.hidden {
+      opacity: 0; visibility: hidden;
     }
     .loader-text {
-      font-family: var(--font-heading);
-      font-size: 2rem;
-      color: var(--primary-color);
-      margin-bottom: 20px;
-      text-transform: uppercase;
-      letter-spacing: 3px;
+      font-family: var(--font-heading); font-size: 2.5rem;
+      color: var(--primary-color); margin-bottom: 30px;
+      text-transform: uppercase; letter-spacing: 4px;
+      text-shadow: 0 0 10px var(--primary-color);
     }
     .loader-bar-container {
-      width: 80%;
-      background: rgba(255, 45, 149, 0.1);
+      width: 60%; max-width: 500px;
+      background: rgba(var(--primary-rgb, 255, 45, 149), 0.1);
       border: 2px solid var(--primary-color);
-      border-radius: 5px;
-      overflow: hidden;
-      margin-bottom: 15px;
+      border-radius: 5px; overflow: hidden; margin-bottom: 20px;
+      box-shadow: 0 0 15px rgba(var(--primary-rgb, 255, 45, 149), 0.5);
     }
     .loader-bar {
-      width: 0%;
-      height: 20px;
+      width: 0%; height: 25px;
       background: var(--primary-color);
-      transition: width 0.1s;
+      transition: width 0.1s linear;
+      box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.3);
     }
     .loader-percentage {
-      font-size: 1.2rem;
-      color: var(--primary-color);
-      letter-spacing: 2px;
+      font-size: 1.3rem; color: var(--primary-color);
+      letter-spacing: 2px; font-family: var(--font-main);
     }
+    /* Calcular RGB para sombra (añadido en JS) */
+    :root { --primary-rgb: 255, 45, 149; }
+    [data-theme="light"] { --primary-rgb: 230, 0, 115; }
+    [data-theme="matrix"] { --primary-rgb: 0, 255, 65; }
 
-    /* --- Contenedor Terminal --- */
+    /* --- Contenedor Principal y Terminal --- */
+    .main-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden; /* Evita doble scrollbar */
+      position: relative; /* Para posicionar elementos internos */
+      z-index: 1;
+      padding: 15px; /* Padding general */
+    }
     .terminal-container {
       flex: 1;
       display: flex;
       flex-direction: column;
-      padding: 20px;
-      overflow: auto;
-      position: relative;
-      z-index: 1;
+      border: 2px solid var(--primary-color);
+      border-radius: 8px;
+      background-color: rgba(0,0,0,0.3); /* Fondo semi-transparente */
+      padding: 10px;
+      overflow: hidden; /* Para que el output tenga su propio scroll */
+      box-shadow: 0 0 20px rgba(var(--primary-rgb, 255, 45, 149), 0.3);
     }
+    [data-theme="light"] .terminal-container {
+       background-color: rgba(255,255,255,0.5);
+       box-shadow: 0 0 15px rgba(var(--primary-rgb, 230, 0, 115), 0.2);
+    }
+     [data-theme="matrix"] .terminal-container {
+        background-color: rgba(0, 10, 0, 0.4);
+        border-color: var(--muted-color);
+        box-shadow: 0 0 25px rgba(var(--primary-rgb, 0, 255, 65), 0.4);
+     }
+
     .terminal-output {
       flex: 1;
       overflow-y: auto;
       white-space: pre-wrap;
-      font-size: 1rem;
+      word-wrap: break-word;
+      font-size: 1rem; /* Ligeramente más pequeño para encajar más */
       margin-bottom: 10px;
-      transition: background-color 0.3s ease;
+      padding-right: 10px; /* Espacio para scrollbar */
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary-color) var(--bg-color);
     }
-    .terminal-output.feedback {
-      background-color: rgba(255, 45, 149, 0.1);
-    }
-    .terminal-input-container {
+    /* Estilo scrollbar para Webkit (Chrome, Safari) */
+    .terminal-output::-webkit-scrollbar { width: 8px; }
+    .terminal-output::-webkit-scrollbar-track { background: var(--bg-color); }
+    .terminal-output::-webkit-scrollbar-thumb { background-color: var(--primary-color); border-radius: 4px; border: 1px solid var(--bg-color); }
+
+    .terminal-output span.command { color: var(--secondary-color); }
+    .terminal-output span.error { color: var(--error-color); }
+    .terminal-output span.success { color: var(--success-color); }
+    .terminal-output span.info { color: var(--info-color); }
+    .terminal-output span.warning { color: var(--warning-color); }
+    .terminal-output span.prompt { color: var(--primary-color); font-weight: bold; }
+    .terminal-output a { color: var(--accent-color); text-decoration: underline; cursor: pointer; }
+    .terminal-output a:hover { color: var(--primary-color); }
+
+    .terminal-input-line {
       display: flex;
       align-items: center;
-      border-top: 1px solid var(--primary-color);
-      padding-top: 10px;
+      border-top: 1px dashed var(--primary-color);
+      padding-top: 8px;
     }
     .terminal-prompt {
-      margin-right: 10px;
+      margin-right: 8px;
       color: var(--primary-color);
-      font-family: var(--font-heading);
+      font-weight: bold; /* Más prominente */
+      user-select: none; /* Evita seleccionarlo */
     }
     .terminal-input {
       flex: 1;
@@ -154,840 +243,1837 @@
       font-family: var(--font-main);
       color: var(--text-color);
       font-size: 1rem;
+      caret-color: var(--primary-color); /* Color del cursor de texto */
     }
-
-    /* --- Secciones de Contenido --- */
-    .section {
-      display: none;
-      animation: fadeIn 0.5s forwards;
-    }
-    .section.active {
-      display: block;
-    }
-    .section h2 {
-      font-family: var(--font-heading);
-      color: var(--secondary-color);
-      margin-bottom: 10px;
-      font-size: 2rem;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-    }
-    .section p, .section ul {
-      font-size: 1rem;
-      color: var(--muted-color);
-      margin-bottom: 15px;
-    }
-    .section ul li {
-      margin-left: 20px;
-      list-style: disc;
-    }
-    .card {
-      background-color: #1e1e1e;
-      border: 2px solid var(--primary-color);
-      border-radius: 10px;
-      padding: 20px;
-      margin-bottom: 20px;
-      transition: transform var(--transition-speed), box-shadow var(--transition-speed);
-    }
-    [data-theme="light"] .card {
-      background-color: #e8e8e8;
-      border-color: var(--primary-color);
-    }
-    .card:hover {
-      transform: translateY(-10px);
-      box-shadow: 0 0 20px var(--primary-color);
-    }
-    .card h3 {
-      font-family: var(--font-heading);
-      color: var(--primary-color);
-      margin-bottom: 10px;
-      font-size: 1.5rem;
-      letter-spacing: 1px;
-    }
-    .card p {
-      color: var(--muted-color);
-      font-size: 1rem;
-      margin-bottom: 15px;
-    }
-    .card a.download-btn {
+    /* --- Cursor Parpadeante --- */
+    .input-cursor {
       display: inline-block;
-      background-color: var(--secondary-color);
-      color: var(--bg-color);
-      padding: 10px 20px;
-      border-radius: 5px;
-      text-decoration: none;
-      font-weight: bold;
-      transition: background-color var(--transition-speed), transform var(--transition-speed);
-    }
-    .card a.download-btn:hover {
       background-color: var(--primary-color);
-      transform: scale(1.05);
+      width: 9px; /* Ancho del bloque */
+      height: 1.2em; /* Altura relativa a la fuente */
+      margin-left: 2px;
+      vertical-align: middle;
+      animation: blink 1s steps(1) infinite;
     }
+    @keyframes blink { 50% { opacity: 0; } }
+    .terminal-input:focus + .input-cursor { display: inline-block; } /* Mostrar sólo con foco */
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
 
-    /* --- Pie de Página --- */
-    .footer {
-      background-color: #1a1a1a;
-      color: var(--muted-color);
-      text-align: center;
-      padding: 20px 0;
-      border-top: 2px solid var(--primary-color);
-      font-size: 0.9rem;
-    }
-    [data-theme="light"] .footer {
-      background-color: #dfdfdf;
-    }
-    .footer .social-icons a {
-      color: var(--muted-color);
-      margin: 0 10px;
-      font-size: 1.2rem;
-      transition: color var(--transition-speed);
-    }
-    .footer .social-icons a:hover {
-      color: var(--primary-color);
-    }
-
-    /* --- Animación de Partículas en Fondo (Cenil Rojo) --- */
-    .particles {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 0;
-      pointer-events: none;
-      overflow: hidden;
-    }
-    .particle {
-      position: absolute;
-      width: 3px;
-      height: 3px;
-      background: rgba(255, 45, 149, 0.8);
-      border-radius: 50%;
-      opacity: 0.8;
-      animation: moveParticle 12s linear infinite;
-    }
-    @keyframes moveParticle {
-      0% {
-        transform: translate(0, 0) scale(1);
-        opacity: 0.8;
-      }
-      50% {
-        transform: translate(50vw, -50vh) scale(1.5);
-        opacity: 0.4;
-      }
-      100% {
-        transform: translate(100vw, -100vh) scale(1);
-        opacity: 0;
-      }
-    }
-    /* Variaciones de color y tamaño en partículas */
-    .particle:nth-child(odd) {
-      background: rgba(255, 45, 149, 0.6);
-      width: 4px;
-      height: 4px;
-    }
-    .particle:nth-child(even) {
-      background: rgba(255, 20, 100, 0.9);
-    }
-
-    /* --- Caja de Sugerencias (Autocompletado) --- */
+    /* --- Caja de Sugerencias Mejorada --- */
     .suggestions-box {
       position: absolute;
-      bottom: 60px; /* Ajuste según el alto de la terminal y el input */
-      left: 20px;
+      bottom: 45px; /* Ajustar según altura del input line */
+      left: 15px; /* Alineado con padding */
       background: var(--bg-color);
       border: 1px solid var(--primary-color);
       border-radius: 5px;
-      max-height: 200px;
-      width: 220px;
+      max-height: 180px;
+      width: auto; /* Ancho automático */
+      min-width: 200px;
       overflow-y: auto;
       display: none;
-      z-index: 2;
+      z-index: 10;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+      padding: 5px 0;
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary-color) var(--bg-color);
     }
-    .suggestions-box ul {
-      list-style: none;
-    }
+    .suggestions-box::-webkit-scrollbar { width: 5px; }
+    .suggestions-box::-webkit-scrollbar-thumb { background-color: var(--primary-color); }
+
+    .suggestions-box ul { list-style: none; }
     .suggestions-box li {
-      padding: 5px 10px;
+      padding: 6px 12px;
       cursor: pointer;
-      transition: background-color 0.2s;
+      transition: background-color 0.2s, color 0.2s;
+      white-space: nowrap; /* Evita saltos de línea */
     }
+    .suggestions-box li.selected,
     .suggestions-box li:hover {
       background-color: var(--primary-color);
       color: var(--bg-color);
     }
 
-    /* --- Notificaciones (Alerta/Toast) --- */
+    /* --- Secciones (Contenido Oculto) --- */
+    #sections { display: none; } /* Se maneja via JS */
+    .section {
+      padding: 15px;
+      border: 1px dashed var(--secondary-color);
+      margin-bottom: 20px;
+      background: rgba(0,0,0,0.1);
+      border-radius: 5px;
+      animation: fadeIn 0.5s ease-out forwards;
+    }
+     [data-theme="light"] .section { background: rgba(255,255,255,0.3); }
+     [data-theme="matrix"] .section { border-color: var(--muted-color); background: rgba(0, 20, 0, 0.2); }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+    .section h2 {
+      font-family: var(--font-heading);
+      color: var(--secondary-color);
+      margin-bottom: 15px;
+      font-size: 1.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      border-bottom: 1px solid var(--secondary-color);
+      padding-bottom: 5px;
+    }
+    .section p, .section ul, .section pre {
+      font-size: 0.95rem;
+      color: var(--muted-color);
+      margin-bottom: 15px;
+      line-height: 1.6;
+    }
+    .section strong { color: var(--text-color); font-weight: bold; }
+    .section ul { margin-left: 25px; list-style: none; }
+    .section ul li::before {
+      content: "»"; /* O un icono FontAwesome */
+      color: var(--primary-color);
+      font-weight: bold;
+      display: inline-block;
+      width: 1em;
+      margin-left: -1.2em; /* Alineación */
+    }
+    .section a { color: var(--accent-color); }
+    .section a:hover { color: var(--primary-color); }
+    .section code {
+        background-color: rgba(var(--primary-rgb, 255, 45, 149), 0.1);
+        color: var(--primary-color);
+        padding: 2px 5px;
+        border-radius: 3px;
+        font-size: 0.9em;
+    }
+    .section pre {
+      background-color: rgba(0,0,0,0.2);
+       [data-theme="light"] & { background-color: rgba(0,0,0,0.05); }
+       [data-theme="matrix"] & { background-color: rgba(0, 50, 0, 0.3); }
+      padding: 10px;
+      border-radius: 5px;
+      overflow-x: auto;
+      color: var(--text-color);
+      border: 1px solid var(--muted-color);
+    }
+
+
+    /* --- Tarjetas de Herramientas Mejoradas --- */
+    .card {
+      background-color: rgba(30, 30, 30, 0.7);
+      border: 1px solid var(--primary-color);
+      border-left: 5px solid var(--primary-color);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      transition: transform var(--transition-speed) ease-out, box-shadow var(--transition-speed) ease-out;
+      position: relative;
+      overflow: hidden; /* Para pseudo-elementos */
+    }
+     [data-theme="light"] .card { background-color: #e8e8e8; border-color: var(--primary-color); }
+     [data-theme="matrix"] .card { background-color: rgba(0, 30, 0, 0.5); border-color: var(--primary-color); }
+
+    .card::before { /* Efecto hover sutil */
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(var(--primary-rgb, 255, 45, 149), 0.1), transparent);
+      transition: left 0.5s ease-out;
+      z-index: 0;
+    }
+    .card:hover::before { left: 100%; }
+    .card:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 10px 25px rgba(var(--primary-rgb, 255, 45, 149), 0.3);
+    }
+    .card > * { position: relative; z-index: 1; } /* Contenido sobre el ::before */
+
+    .card-header { display: flex; align-items: center; margin-bottom: 10px; }
+    .card-icon { font-size: 1.8rem; color: var(--primary-color); margin-right: 15px; }
+    .card h3 {
+      font-family: var(--font-heading);
+      color: var(--primary-color);
+      font-size: 1.6rem; /* Más grande */
+      letter-spacing: 1px;
+      margin: 0; /* Reset margin */
+    }
+    .card p { color: var(--muted-color); font-size: 0.95rem; margin-bottom: 15px; line-height: 1.5; }
+    .card-tags { margin-bottom: 15px; }
+    .card-tag {
+      display: inline-block;
+      background-color: var(--secondary-color);
+      color: var(--bg-color);
+      padding: 3px 8px;
+      border-radius: 15px; /* Más redondeado */
+      font-size: 0.75rem;
+      margin-right: 5px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+     [data-theme="matrix"] .card-tag { background-color: var(--accent-color); color: #000; }
+
+    .card a.download-btn {
+      display: inline-block;
+      background-color: var(--secondary-color);
+      color: var(--bg-color); /* Color de fondo para contraste */
+      padding: 10px 18px;
+      border-radius: 5px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background-color var(--transition-speed), transform var(--transition-speed), box-shadow 0.2s;
+      border: 1px solid transparent;
+      margin-top: 5px; /* Espacio */
+    }
+     [data-theme="light"] .card a.download-btn { color: #fff; } /* Asegurar contraste */
+     [data-theme="matrix"] .card a.download-btn { background-color: var(--accent-color); color: #000; }
+
+    .card a.download-btn:hover {
+      background-color: var(--primary-color);
+      transform: scale(1.05);
+      box-shadow: 0 0 15px rgba(var(--primary-rgb, 255, 45, 149), 0.5);
+      border-color: var(--accent-color);
+    }
+
+    /* --- Gráfico de Estadísticas --- */
+    #statsChart { max-width: 100%; height: auto; }
+
+    /* --- Footer --- */
+    .footer {
+      background-color: #1a1a1a;
+      color: var(--muted-color);
+      text-align: center;
+      padding: 15px 0;
+      border-top: 2px solid var(--primary-color);
+      font-size: 0.9rem;
+      position: relative; /* Para z-index si es necesario */
+      z-index: 2; /* Por encima de scanlines si body las tiene */
+    }
+    [data-theme="light"] .footer { background-color: #dcdcdc; }
+    [data-theme="matrix"] .footer { background-color: #050505; border-top-color: var(--muted-color); }
+    .footer .social-icons a {
+      color: var(--muted-color);
+      margin: 0 12px;
+      font-size: 1.4rem;
+      transition: color var(--transition-speed), transform 0.2s;
+      display: inline-block; /* Para transform */
+    }
+    .footer .social-icons a:hover {
+      color: var(--primary-color);
+      transform: scale(1.2);
+    }
+    .footer p { margin-top: 10px; }
+
+    /* --- Notificaciones Toast --- */
     .notifications-container {
       position: fixed;
-      top: 10px;
+      bottom: 10px; /* Posición inferior */
       right: 10px;
       display: flex;
-      flex-direction: column;
+      flex-direction: column-reverse; /* Nuevas arriba */
       gap: 10px;
-      z-index: 99999;
+      z-index: 9999;
+      width: 300px; /* Ancho fijo */
     }
     .notification {
-      background-color: #333;
+      background-color: rgba(50, 50, 50, 0.9);
       color: #fff;
-      padding: 10px 15px;
-      border-radius: 5px;
-      border-left: 4px solid var(--primary-color);
-      min-width: 200px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.5);
-      animation: fadeInOut 5s forwards;
-      font-size: 0.95rem;
+      padding: 12px 18px;
+      border-radius: 6px;
+      border-left: 5px solid var(--primary-color);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      animation: slideInFadeOut 5s forwards;
+      font-size: 0.9rem;
+      word-wrap: break-word;
     }
-    .notification.info { border-left-color: var(--secondary-color); }
-    .notification.error { border-left-color: red; }
-    .notification.success { border-left-color: green; }
+    .notification.info { border-left-color: var(--info-color); }
+    .notification.error { border-left-color: var(--error-color); background-color: rgba(100, 0, 0, 0.8); }
+    .notification.success { border-left-color: var(--success-color); background-color: rgba(0, 80, 0, 0.8); }
+    .notification.warning { border-left-color: var(--warning-color); background-color: rgba(100, 80, 0, 0.8); }
 
-    @keyframes fadeInOut {
-      0%   { opacity: 0; transform: translateX(30px); }
-      10%  { opacity: 1; transform: translateX(0); }
-      90%  { opacity: 1; }
-      100% { opacity: 0; transform: translateX(30px); }
+    @keyframes slideInFadeOut {
+      0%   { opacity: 0; transform: translateX(100%); }
+      10%  { opacity: 1; transform: translateX(0); } /* Slide in */
+      90%  { opacity: 1; transform: translateX(0); } /* Stay */
+      100% { opacity: 0; transform: translateX(100%); } /* Fade out */
     }
+
+    /* --- Aviso BETA --- */
+     .beta-warning {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background-color: var(--warning-color);
+      color: #000;
+      font-weight: bold;
+      padding: 8px 15px;
+      border: 2px solid var(--primary-color);
+      z-index: 10000;
+      width: max-content;
+      border-radius: 5px;
+      font-size: 0.9rem;
+      box-shadow: 0 0 10px var(--warning-color);
+    }
+    .beta-warning i { font-size: 1.1rem; }
+
+    /* --- Accesibilidad --- */
+    *:focus-visible {
+        outline: 2px dashed var(--accent-color);
+        outline-offset: 2px;
+    }
+    .sr-only { /* Para etiquetas visualmente ocultas */
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+    }
+
+
+    /* --- Media Queries (Ejemplo básico) --- */
+    @media (max-width: 768px) {
+      .loader-text { font-size: 2rem; }
+      .terminal-output, .terminal-input { font-size: 0.9rem; }
+      .main-container { padding: 10px; }
+      .terminal-container { padding: 8px; }
+      .card { padding: 15px; }
+      .card h3 { font-size: 1.4rem; }
+      .footer { padding: 10px 0; font-size: 0.8rem; }
+      .notifications-container { width: 90%; right: 5%; bottom: 5px; }
+      .beta-warning { width: 90%; text-align: center; justify-content: center; }
+    }
+
   </style>
 </head>
 <body>
 
-  <!-- AVISO DE BETA (Nuevo) -->
+  <!-- Aviso BETA -->
   <div class="beta-warning">
-    <i class="fa-solid fa-triangle-exclamation"></i>
-    ¡Estás en una prueba BETA, pueden ocurrir muchos errores!
+    <i class="fa-solid fa-flask-vial"></i>
+    <span>CyberTools v2.0 BETA - Pueden ocurrir glitches inesperados!</span>
   </div>
-  <!-- Fin AVISO DE BETA (Nuevo) -->
 
   <!-- Pantalla de Carga -->
   <div class="loader-overlay" id="loaderOverlay">
-    <div class="loader-text">Cargando...</div>
+    <div class="loader-text glitch">CyberTools</div>
     <div class="loader-bar-container">
       <div class="loader-bar" id="loaderBar"></div>
     </div>
     <div class="loader-percentage" id="loaderPercentage">0%</div>
   </div>
 
-  <!-- Contenedor de Partículas (Fondo Cenil Rojo) -->
-  <div class="particles" id="particlesContainer"></div>
+  <!-- Contenedor de Partículas (si se activa) -->
+  <canvas id="particlesCanvas" class="particles" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: 0.6;"></canvas>
 
-  <!-- Contenedor Principal del Terminal -->
-  <div class="terminal-container" id="terminalContainer">
-    <div class="terminal-output" id="terminalOutput">
-Bienvenido a CyberTools Terminal  
-Escribe <span style="color: var(--primary-color)">help</span> para ver los comandos disponibles.
-    </div>
-    <div class="terminal-input-container">
-      <span class="terminal-prompt">user@cybertools:~$</span>
-      <input type="text" class="terminal-input" id="terminalInput" autofocus autocomplete="off">
-      <!-- Caja de sugerencias (autocompletado) -->
-      <div class="suggestions-box" id="suggestionsBox">
-        <ul id="suggestionsList"></ul>
+  <!-- Contenedor Principal -->
+  <div class="main-container">
+      <!-- Contenedor del Terminal -->
+      <div class="terminal-container" id="terminalContainer" aria-live="polite" aria-atomic="false">
+          <div class="terminal-output" id="terminalOutput" role="log">
+              <!-- El contenido se genera dinámicamente -->
+          </div>
+          <div class="terminal-input-line">
+              <label for="terminalInput" class="sr-only">Entrada de comando</label>
+              <span class="terminal-prompt" id="terminalPrompt">user@cybertools:/$</span>
+              <input type="text"
+                     class="terminal-input"
+                     id="terminalInput"
+                     autofocus
+                     autocomplete="off"
+                     aria-controls="suggestionsList"
+                     aria-autocomplete="list"
+                     spellcheck="false">
+              <span class="input-cursor"></span>
+          </div>
+          <!-- Caja de sugerencias -->
+          <div class="suggestions-box" id="suggestionsBox">
+              <ul id="suggestionsList" role="listbox"></ul>
+          </div>
       </div>
-    </div>
+
+       <!-- Secciones de Contenido Ocultas -->
+      <div id="sections" style="display: none;">
+          <!-- Inicio -->
+          <section id="inicio" class="section">
+              <h2><i class="fas fa-home"></i> Inicio</h2>
+              <p><strong>Bienvenido a CyberTools v2.0 Terminal!</strong></p>
+              <p>Esta es una interfaz de línea de comandos web interactiva diseñada para explorar recursos de ciberseguridad y hacking ético.</p>
+              <p>Escribe <code>help</code> para ver la lista de comandos disponibles. Usa <code>ls</code> para ver las secciones y <code>open &lt;seccion&gt;</code> para navegar.</p>
+              <p><strong>Recuerda:</strong> El conocimiento es poder. Úsalo de forma responsable y ética. La exploración sin autorización es ilegal.</p>
+              <p>Prueba comandos como <code>theme matrix</code>, <code>fetch</code> o <code>settings</code>.</p>
+          </section>
+
+          <!-- Seguridad -->
+          <section id="seguridad" class="section">
+              <h2><i class="fas fa-shield-alt"></i> Seguridad</h2>
+              <p>Principios clave para fortalecer la seguridad informática:</p>
+              <ul>
+                  <li><strong>Actualizaciones constantes:</strong> Mantén tu sistema operativo, navegador y aplicaciones al día.</li>
+                  <li><strong>Contraseñas robustas:</strong> Usa combinaciones largas y complejas, únicas para cada servicio. Considera un gestor de contraseñas.</li>
+                  <li><strong>Autenticación Multifactor (MFA/2FA):</strong> Habilítala siempre que sea posible (apps, SMS, llaves de seguridad).</li>
+                  <li><strong>Conciencia de Phishing:</strong> Desconfía de correos, mensajes y enlaces sospechosos. Verifica siempre la fuente.</li>
+                  <li><strong>Copias de Seguridad Regulares:</strong> Protege tus datos importantes contra ransomware o fallos.</li>
+                  <li><strong>Minimiza la Superficie de Ataque:</strong> Desinstala software innecesario y cierra puertos no utilizados.</li>
+                  <li><strong>Auditorías Periódicas:</strong> Realiza escaneos de vulnerabilidades y revisiones de configuración.</li>
+              </ul>
+              <p>Comando relacionado: <code>info seguridad</code>.</p>
+          </section>
+
+          <!-- Herramientas -->
+          <section id="herramientas" class="section">
+              <h2><i class="fas fa-tools"></i> Herramientas Destacadas</h2>
+              <p>Una selección de herramientas esenciales en ciberseguridad y hacking ético. Haz clic en los enlaces para visitar sus sitios oficiales y descargar.</p>
+
+              <div class="card">
+                  <div class="card-header">
+                      <i class="fas fa-network-wired card-icon"></i>
+                      <h3>Nmap</h3>
+                  </div>
+                  <p>Potente escáner de redes para descubrimiento de hosts, puertos y servicios. Fundamental para el reconocimiento.</p>
+                  <div class="card-tags">
+                      <span class="card-tag">Redes</span><span class="card-tag">Escáner</span><span class="card-tag">Reconocimiento</span>
+                  </div>
+                  <a href="https://nmap.org/" class="download-btn" target="_blank" rel="noopener noreferrer"><i class="fas fa-download"></i> Sitio Oficial</a>
+              </div>
+
+              <div class="card">
+                   <div class="card-header">
+                      <i class="fas fa-wifi card-icon"></i>
+                      <h3>Aircrack-ng</h3>
+                  </div>
+                  <p>Suite completa para auditoría de seguridad en redes inalámbricas (Wi-Fi). Incluye captura de paquetes, cracking WEP/WPA/WPA2.</p>
+                  <div class="card-tags">
+                      <span class="card-tag">Wireless</span><span class="card-tag">Auditoría</span><span class="card-tag">Crack</span>
+                  </div>
+                  <a href="https://www.aircrack-ng.org/" class="download-btn" target="_blank" rel="noopener noreferrer"><i class="fas fa-download"></i> Sitio Oficial</a>
+              </div>
+
+               <div class="card">
+                   <div class="card-header">
+                      <i class="fas fa-fingerprint card-icon"></i>
+                      <h3>Metasploit Framework</h3>
+                  </div>
+                  <p>Plataforma líder para desarrollar, probar y ejecutar exploits. Esencial para pruebas de penetración.</p>
+                   <div class="card-tags">
+                      <span class="card-tag">Explotación</span><span class="card-tag">Pentesting</span><span class="card-tag">Framework</span>
+                  </div>
+                  <a href="https://www.metasploit.com/" class="download-btn" target="_blank" rel="noopener noreferrer"><i class="fas fa-download"></i> Sitio Oficial</a>
+              </div>
+
+              <div class="card">
+                   <div class="card-header">
+                      <i class="fas fa-bug card-icon"></i>
+                      <h3>Burp Suite</h3>
+                  </div>
+                  <p>Herramienta indispensable para pruebas de seguridad en aplicaciones web. Proxy interceptor, escáner, y más.</p>
+                  <div class="card-tags">
+                      <span class="card-tag">Web</span><span class="card-tag">Auditoría</span><span class="card-tag">Proxy</span>
+                  </div>
+                  <a href="https://portswigger.net/burp" class="download-btn" target="_blank" rel="noopener noreferrer"><i class="fas fa-download"></i> Sitio Oficial</a>
+              </div>
+
+              <div class="card">
+                   <div class="card-header">
+                      <i class="fas fa-key card-icon"></i>
+                      <h3>John the Ripper</h3>
+                  </div>
+                  <p>Un clásico cracker de contraseñas rápido y versátil. Soporta cientos de tipos de hashes y cifrados.</p>
+                  <div class="card-tags">
+                      <span class="card-tag">Contraseñas</span><span class="card-tag">Crack</span><span class="card-tag">Offline</span>
+                  </div>
+                  <a href="https://www.openwall.com/john/" class="download-btn" target="_blank" rel="noopener noreferrer"><i class="fas fa-download"></i> Sitio Oficial</a>
+              </div>
+
+               <div class="card">
+                   <div class="card-header">
+                      <i class="fas fa-code-branch card-icon"></i>
+                      <h3>Wireshark</h3>
+                  </div>
+                  <p>El analizador de protocolos de red más popular del mundo. Permite capturar e inspeccionar tráfico en detalle.</p>
+                  <div class="card-tags">
+                      <span class="card-tag">Redes</span><span class="card-tag">Análisis</span><span class="card-tag">Protocolos</span>
+                  </div>
+                  <a href="https://www.wireshark.org/download.html" class="download-btn" target="_blank" rel="noopener noreferrer"><i class="fas fa-download"></i> Sitio Oficial</a>
+              </div>
+              <p>Usa el comando <code>info herramientas</code> para más detalles.</p>
+          </section>
+
+          <!-- Estadisticas -->
+          <section id="estadisticas" class="section">
+              <h2><i class="fas fa-chart-line"></i> Estadísticas (Simuladas)</h2>
+              <p>Visualización de datos simulados. En una aplicación real, esto podría mostrar métricas de uso, vulnerabilidades encontradas, etc.</p>
+              <p>Este gráfico muestra una simulación de vulnerabilidades detectadas por mes:</p>
+              <div style="max-width: 600px; margin: 20px auto; background: rgba(0,0,0,0.1); padding: 10px; border-radius: 5px;">
+                 <canvas id="statsChart"></canvas>
+              </div>
+               <p>Comando relacionado: <code>open estadisticas</code> para regenerar el gráfico.</p>
+          </section>
+
+          <!-- Acerca de -->
+          <section id="acerca" class="section">
+              <h2><i class="fas fa-info-circle"></i> Acerca de CyberTools</h2>
+              <p><strong>CyberTools v2.0</strong> es un proyecto conceptual de terminal web interactiva.</p>
+              <p>Objetivo: Demostrar cómo se puede crear una interfaz similar a una consola usando tecnologías web (HTML, CSS, JavaScript) y proporcionar un entorno simulado para explorar conceptos de ciberseguridad.</p>
+              <p><strong>Características clave:</strong></p>
+              <ul>
+                  <li>Interfaz estilo terminal personalizable (temas).</li>
+                  <li>Sistema de comandos interactivo con historial y autocompletado.</li>
+                  <li>Secciones de contenido navegables.</li>
+                  <li>Efectos visuales (partículas, scanlines, glitch).</li>
+                  <li>Persistencia de configuración básica (LocalStorage).</li>
+                  <li>Simulación de comandos comunes y específicos del proyecto.</li>
+              </ul>
+              <p>Desarrollado como ejercicio y demostración. Si tienes ideas o encuentras errores (¡seguro que hay!), siéntete libre de experimentar.</p>
+              <p>Puedes apoyar proyectos similares o al desarrollador conceptual en <a href="https://www.buymeacoffee.com/Inmortal" target="_blank" rel="noopener noreferrer">BuyMeACoffee</a> (ejemplo).</p>
+              <p>Comando relacionado: <code>info acerca</code>.</p>
+          </section>
+      </div>
   </div>
 
-  <!-- Secciones de Contenido (ocultas, se mostrarán mediante comandos) -->
-  <div id="sections" style="display:none;">
-    <!-- Sección: inicio -->
-    <section id="inicio" class="section active">
-      <h2>Inicio</h2>
-      <p>Explora nuestras herramientas de hacking ético diseñadas para mejorar la seguridad de tus sistemas.</p>
-      <p><strong>Nota:</strong> El uso inadecuado de estas herramientas puede tener consecuencias legales. Úsalas sólo con autorización y fines éticos.</p>
-    </section>
+  <!-- Footer Fijo -->
+   <footer class="footer">
+      <div class="social-icons">
+          <a href="https://github.com/" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><i class="fab fa-github"></i></a>
+          <a href="https://twitter.com/" target="_blank" rel="noopener noreferrer" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+          <a href="https://linkedin.com/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+          <a href="#" aria-label="Discord"><i class="fab fa-discord"></i></a>
+      </div>
+      <p>&copy; <span id="currentYear"></span> CyberTools Project. Todos los derechos reservados (conceptualmente).</p>
+  </footer>
 
-    <!-- Sección: seguridad -->
-    <section id="seguridad" class="section">
-      <h2>Seguridad</h2>
-      <p>Mantén tus sistemas seguros siguiendo las mejores prácticas:</p>
-      <ul>
-        <li>Actualiza tus programas.</li>
-        <li>Utiliza contraseñas fuertes.</li>
-        <li>Implementa autenticación de dos factores.</li>
-        <li>Realiza auditorías de seguridad.</li>
-      </ul>
-    </section>
-
-    <!-- Sección: herramientas -->
-    <section id="herramientas" class="section">
-      <h2>Herramientas</h2>
-      <div class="card">
-        <h3>Nmap</h3>
-        <p>Escáner de redes para descubrir hosts y servicios.</p>
-        <a href="https://nmap.org/download.html" class="download-btn" target="_blank">Descargar</a>
-      </div>
-      <div class="card">
-        <h3>Wireshark</h3>
-        <p>Analizador de protocolos de red para capturar tráfico en tiempo real.</p>
-        <a href="https://www.wireshark.org/download.html" class="download-btn" target="_blank">Descargar</a>
-      </div>
-      <div class="card">
-        <h3>Metasploit</h3>
-        <p>Framework para el desarrollo de exploits y pruebas de penetración.</p>
-        <a href="https://www.metasploit.com/" class="download-btn" target="_blank">Descargar</a>
-      </div>
-      <div class="card">
-        <h3>Burp Suite</h3>
-        <p>Herramienta para pruebas de seguridad en aplicaciones web.</p>
-        <a href="https://portswigger.net/burp" class="download-btn" target="_blank">Descargar</a>
-      </div>
-      <div class="card">
-        <h3>John the Ripper</h3>
-        <p>Herramienta de cracking de contraseñas.</p>
-        <a href="https://www.openwall.com/john/" class="download-btn" target="_blank">Descargar</a>
-      </div>
-      <div class="card">
-        <h3>Aircrack-ng</h3>
-        <p>Suite para auditoría de redes inalámbricas.</p>
-        <a href="https://www.aircrack-ng.org/" class="download-btn" target="_blank">Descargar</a>
-      </div>
-      <footer class="footer">
-        <div class="social-icons">
-          <a href="https://twitter.com/tuusuario" target="_blank"><i class="fab fa-twitter"></i></a>
-          <a href="https://facebook.com/tuusuario" target="_blank"><i class="fab fa-facebook-f"></i></a>
-          <a href="https://linkedin.com/in/tuusuario" target="_blank"><i class="fab fa-linkedin-in"></i></a>
-          <a href="https://github.com/tuusuario" target="_blank"><i class="fab fa-github"></i></a>
-        </div>
-        <p>&copy; 2025 CyberTools. Todos los derechos reservados.</p>
-      </footer>
-    </section>
-
-    <!-- Sección: descargas -->
-    <section id="descargas" class="section">
-      <h2>Descargas</h2>
-      <p>Enlaces para descargar las herramientas:</p>
-      <ul>
-        <li><a href="https://nmap.org/download.html" target="_blank">Descargar Nmap</a></li>
-        <li><a href="https://www.wireshark.org/download.html" target="_blank">Descargar Wireshark</a></li>
-        <li><a href="https://www.metasploit.com/" target="_blank">Descargar Metasploit</a></li>
-        <li><a href="https://portswigger.net/burp" target="_blank">Descargar Burp Suite</a></li>
-        <li><a href="https://www.openwall.com/john/" target="_blank">Descargar John the Ripper</a></li>
-        <li><a href="https://www.aircrack-ng.org/" target="_blank">Descargar Aircrack-ng</a></li>
-      </ul>
-    </section>
-
-    <!-- Sección: estadisticas -->
-    <section id="estadisticas" class="section">
-      <h2>Estadísticas</h2>
-      <p>Aquí se muestran estadísticas de ejemplo sobre vulnerabilidades detectadas por mes.</p>
-      <canvas id="statsChart" width="400" height="200" style="max-width: 100%;"></canvas>
-    </section>
-
-    <!-- Sección: acerca -->
-    <section id="acerca" class="section">
-      <h2>Acerca de</h2>
-      <p>CyberTools es una plataforma dedicada a proporcionar herramientas y recursos para el hacking ético. Nuestro objetivo es mejorar la seguridad informática a través de la educación y el acceso a herramientas de alta calidad.</p>
-      <p>Si deseas colaborar, contáctanos o visita <a href="https://www.buymeacoffee.com/Inmortal" target="_blank">BuyMeACoffee</a>.</p>
-    </section>
-  </div>
 
   <!-- Contenedor de notificaciones -->
   <div class="notifications-container" id="notificationsContainer"></div>
 
-  <!-- Audio de fondo -->
+  <!-- Elementos de Audio -->
   <audio id="background-audio" loop>
     <source src="src/Audio/Programming%20%20Coding%20%20Hacking%20music%20vol.mp3" type="audio/mpeg">
-    Tu navegador no soporta el elemento de audio.
   </audio>
+  <audio id="command-sound"> <source src="src/Audio/command.mp3" type="audio/mpeg"> </audio>
+  <audio id="error-sound"> <source src="src/Audio/error.mp3" type="audio/mpeg"> </audio>
+  <audio id="typing-sound" loop> <source src="src/Audio/typing.mp3" type="audio/mpeg"> </audio> <!-- Opcional -->
+  <audio id="boot-sound"> <source src="src/Audio/boot.mp3" type="audio/mpeg"> </audio> <!-- Opcional -->
 
-  <!-- Audio para feedback de comandos -->
-  <audio id="command-sound">
-    <source src="src/Audio/command.mp3" type="audio/mpeg">
-  </audio>
-  <audio id="error-sound">
-    <source src="src/Audio/error.mp3" type="audio/mpeg">
-  </audio>
 
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Opcional: Librería para similitud de strings (ej. Levenshtein) -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/string-similarity/compare-strings.min.js"></script> -->
+   <!-- Opcional: Librería para partículas (si se usa Canvas) -->
+   <!-- <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script> -->
 
   <script>
-    /* ------------------------------
-       Simulación de carga
-    ------------------------------ */
-    let progress = 0;
-    const loaderOverlay = document.getElementById('loaderOverlay');
-    const loaderBar = document.getElementById('loaderBar');
-    const loaderPercentage = document.getElementById('loaderPercentage');
-    const simulateLoading = setInterval(() => {
-      // Incremento aleatorio de progreso
-      progress += Math.random() * 5;
-      if (progress >= 100) progress = 100;
-      loaderBar.style.width = progress + '%';
-      loaderPercentage.textContent = Math.floor(progress) + '%';
+    // --- Polyfill para requestAnimationFrame (si es necesario) ---
+    window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame || function(f){return setTimeout(f, 1000/60)};
 
-      if (progress >= 100) {
-        clearInterval(simulateLoading);
-        loaderOverlay.style.opacity = '0';
-        setTimeout(() => {
-          loaderOverlay.style.display = 'none';
-        }, 500);
-      }
-    }, 100);
+    // --- CONSTANTES Y CONFIGURACIÓN ---
+    const VERSION = "2.0 BETA";
+    const PROMPT_SYMBOL = "$";
+    const USERNAME = "user";
+    const HOSTNAME = "cybertools";
+    const MAX_HISTORY = 50;
+    const DEBOUNCE_DELAY = 150; // ms para debounce de input
+    const TYPING_SPEED_DEFAULT = 15; // ms por caracter
+    const PARTICLES_DEFAULT_COUNT = 80;
 
-    /* ------------------------------
-       Generar partículas de fondo
-    ------------------------------ */
-    const particlesContainer = document.getElementById('particlesContainer');
-    const particleCount = 100;
-    for(let i = 0; i < particleCount; i++) {
-      const particle = document.createElement('div');
-      particle.classList.add('particle');
-      particle.style.left = Math.random() * 100 + 'vw';
-      particle.style.bottom = Math.random() * 100 + 'vh';
-      particle.style.animationDuration = (Math.random() * 20 + 10) + 's';
-      particle.style.opacity = Math.random();
-      particlesContainer.appendChild(particle);
-    }
+    // --- ESTADO GLOBAL ---
+    let commandHistory = [];
+    let historyIndex = -1;
+    let currentDirectory = "/"; // Simulación de directorio
+    let settings = {
+        theme: 'dark',
+        soundEnabled: true,
+        particlesEnabled: true,
+        typingEffectEnabled: true,
+        typingSpeed: TYPING_SPEED_DEFAULT,
+        showBetaWarning: true,
+        expertMode: false, // Inicia en modo básico
+    };
+    let aliases = {}; // Para alias de comandos
+    let isTyping = false; // Para controlar sonido de tecleo
+    let currentSuggestions = [];
+    let selectedSuggestionIndex = -1;
+    let chartInstance = null;
+    let particleAnimationId = null;
+    let particles = [];
 
-    /* ------------------------------
-       Reproducir audio de fondo tras la primera interacción
-    ------------------------------ */
-    const audioElement = document.getElementById('background-audio');
-    document.body.addEventListener('click', () => {
-      if (audioElement.paused) {
-        audioElement.play().catch(() => {});
-      }
-    }, {once:true});
+    // --- REFERENCIAS DOM ---
+    const $ = (selector) => document.querySelector(selector);
+    const $$ = (selector) => document.querySelectorAll(selector);
+    const terminalInput = $('#terminalInput');
+    const terminalOutput = $('#terminalOutput');
+    const terminalContainer = $('#terminalContainer');
+    const terminalPrompt = $('#terminalPrompt');
+    const sectionsContainer = $('#sections');
+    const suggestionsBox = $('#suggestionsBox');
+    const suggestionsList = $('#suggestionsList');
+    const notificationsContainer = $('#notificationsContainer');
+    const loaderOverlay = $('#loaderOverlay');
+    const loaderBar = $('#loaderBar');
+    const loaderPercentage = $('#loaderPercentage');
+    const footerYear = $('#currentYear');
+    const betaWarning = $('.beta-warning');
+    const particlesCanvas = $('#particlesCanvas');
+    const ctxParticles = particlesCanvas.getContext('2d');
 
-    /* ------------------------------
-       Variables y Estados Globales
-    ------------------------------ */
-    const terminalInput = document.getElementById('terminalInput');
-    const terminalOutput = document.getElementById('terminalOutput');
-    const sectionsContainer = document.getElementById('sections');
-    const suggestionsBox = document.getElementById('suggestionsBox');
-    const suggestionsList = document.getElementById('suggestionsList');
-    const notificationsContainer = document.getElementById('notificationsContainer');
-
-    // Modo experto/básico
-    let expertMode = false;
-
-    // Sonidos
-    const commandSound = document.getElementById('command-sound');
-    const errorSound = document.getElementById('error-sound');
-
-    // Para el gráfico (sección estadísticas)
-    let statsChartInstance = null;
-
-    // Citas para comando "quote"
-    const hackingQuotes = [
-      "La seguridad es un proceso, no un producto. — Bruce Schneier",
-      "El secreto de la creatividad es saber cómo esconder tus fuentes. — Albert Einstein",
-      "La mejor forma de mantener un secreto es no tenerlo. — Lord Henry",
-      "Los sistemas más seguros son aquellos que no se usan. — Gene Spafford",
-      "No hay sistema que no pueda ser hackeado, solo tiempo insuficiente para hacerlo."
-    ];
-
-    /* ------------------------------
-       Funciones de Apoyo
-    ------------------------------ */
-    function playCommandSound() {
-      if(commandSound) {
-        commandSound.currentTime = 0;
-        commandSound.play().catch(() => {});
-      }
-    }
-    function playErrorSound() {
-      if(errorSound) {
-        errorSound.currentTime = 0;
-        errorSound.play().catch(() => {});
-      }
-    }
-    function flashOutput(success = true) {
-      terminalOutput.classList.add('feedback');
-      setTimeout(() => {
-        terminalOutput.classList.remove('feedback');
-      }, 150);
-    }
-    function typeOutput(text, callback) {
-      let index = 0;
-      function typeChar() {
-        if (index < text.length) {
-          terminalOutput.innerHTML += text.charAt(index);
-          index++;
-          setTimeout(typeChar, 20);
-        } else if(callback) {
-          callback();
-        }
-      }
-      typeChar();
-    }
-    // Notificaciones
-    function showNotification(type, message) {
-      const notif = document.createElement('div');
-      notif.className = `notification ${type}`;
-      notif.textContent = message;
-      notificationsContainer.appendChild(notif);
-      // Se elimina solo tras la animación
-      setTimeout(() => {
-        if(notificationsContainer.contains(notif)) {
-          notificationsContainer.removeChild(notif);
-        }
-      }, 5200); // 5s de animación + extra
-    }
-
-    // Crear enlaces clicables para "ls" (abrir secciones)
-    function createClickableSectionLink(sectionId) {
-      return `<a href="#" style="color: var(--primary-color); text-decoration: underline;" 
-                onclick="handleOpenCommand('${sectionId}'); return false;">${sectionId}</a>`;
-    }
-
-    // Dibuja el gráfico (estadísticas)
-    function drawStatsChart() {
-      const ctx = document.getElementById('statsChart').getContext('2d');
-      if(statsChartInstance) {
-        statsChartInstance.destroy();
-      }
-      statsChartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'],
-          datasets: [{
-            label: 'Vulnerabilidades',
-            data: [12, 19, 7, 15, 22, 9],
-            backgroundColor: 'rgba(255, 45, 149, 0.6)',
-            borderColor: 'rgba(255, 45, 149, 1)',
-            borderWidth: 1
-          }]
-        },
-        options: {
-          scales: {
-            y: { beginAtZero: true }
-          }
-        }
-      });
-    }
-
-    /* ------------------------------
-       Ayuda Contextual Inteligente
-    ------------------------------ */
-    const contextTips = {
-      nmap: "Tip: Nmap escanea puertos y descubre hosts. Uso básico: nmap <ip>.",
-      wireshark: "Tip: Wireshark analiza tráfico en vivo. Abre capturas pcap para investigar.",
-      metasploit: "Tip: Metasploit Framework para exploits. Comando: msfconsole.",
-      burp: "Tip: Burp Suite audita aplicaciones web; intercepta y modifica requests.",
-      aircrack: "Tip: Aircrack-ng audita redes Wi-Fi, permite romper contraseñas WEP/WPA."
+    // Audio elements
+    const audio = {
+        bg: $('#background-audio'),
+        cmd: $('#command-sound'),
+        err: $('#error-sound'),
+        type: $('#typing-sound'),
+        boot: $('#boot-sound'),
     };
 
-    // Mostrar tips si se detectan palabras clave
-    function checkContextTip(userInput) {
-      for(const key in contextTips) {
-        if(userInput.toLowerCase().includes(key)) {
-          showNotification('info', contextTips[key]);
-          break;
-        }
-      }
-    }
+    // --- UTILIDADES ---
 
-    /* ------------------------------
-       BANNER PERSONALIZADO (Hook de modo experto) (15)
-    ------------------------------ */
-    function getExpertBanner() {
-      return `\n
-*************************************************
-*                                               *
-*          BIENVENIDO A MODO EXPERTO            *
-*   ¡Poder ilimitado conlleva gran responsabilidad! 
-*                                               *
-*************************************************
-      `;
-    }
-
-    /* ------------------------------
-       Panel de Estado del Sistema (sysinfo) (11)
-       Sólo en modo experto
-    ------------------------------ */
-    function getSystemInfo() {
-      const ua = navigator.userAgent || "N/A";
-      const now = new Date().toLocaleString();
-      let memText = "No soportado por este navegador.";
-      if(performance && performance.memory) {
-        const usedMB = (performance.memory.usedJSHeapSize / 1048576).toFixed(2);
-        const totalMB = (performance.memory.totalJSHeapSize / 1048576).toFixed(2);
-        memText = `${usedMB} MB / ${totalMB} MB (used / total JS Heap)`;
-      }
-      const screenRes = `${window.screen.width}x${window.screen.height}`;
-      return `
-Fecha/Hora Local:  ${now}
-User-Agent:        ${ua}
-Memoria (JS Heap): ${memText}
-Resolución Pant:   ${screenRes}
-      `;
-    }
-
-    /* ------------------------------
-       Lista de Comandos y Visibilidad según modo
-    ------------------------------ */
-    const allCommands = [
-      "help", "ls", "open", "info", "clear", "cls", "exit",
-      "ascii", "quote", "theme", "mode", "sysinfo"
-    ];
-    const expertCommands = ["ascii", "quote", "theme", "sysinfo"];
-
-    function isCommandVisible(cmdName) {
-      if(!expertMode && expertCommands.includes(cmdName)) {
-        return false;
-      }
-      return true;
-    }
-
-    const commands = {
-      help: function(args) {
-        if(args.length === 0) {
-          let visibleCmds = allCommands.filter(isCommandVisible);
-          let helpText = "Comandos disponibles:\n";
-          for(let cmd of visibleCmds) {
-            helpText += "  " + cmd + "\n";
-          }
-          helpText += "\nEscribe 'help <comando>' para más detalles.";
-          return helpText;
-        } else {
-          const cmd = args[0].toLowerCase();
-          const helpDetails = {
-            open: "open <sección>: Abre la sección especificada (ej: open inicio).",
-            info: "info <sección>: Muestra detalles sobre la sección (ej: info seguridad).",
-            ls: "ls: Lista todas las secciones disponibles.",
-            clear: "clear/cls: Limpia la pantalla de la terminal.",
-            exit: "exit: Reinicia la terminal.",
-            ascii: "ascii: Muestra un arte ASCII de estilo hacker (modo experto).",
-            quote: "quote: Cita aleatoria de ciberseguridad (modo experto).",
-            theme: "theme <dark|light|toggle>: Cambia el tema (modo experto).",
-            mode: "mode <basic|expert>: Cambia entre modo básico y experto.",
-            sysinfo: "Muestra información del sistema/navegador (modo experto)."
-          };
-          return helpDetails[cmd] || "No hay información para el comando: " + cmd;
-        }
-      },
-      ls: function() {
-        const sectionIds = Array.from(sectionsContainer.querySelectorAll('.section'))
-                                .map(sec => sec.id);
-        let output = 'Secciones disponibles: ';
-        output += sectionIds.map(id => createClickableSectionLink(id)).join(', ');
-        return output;
-      },
-      open: function(args) {
-        if(args.length === 0) {
-          playErrorSound();
-          flashOutput(false);
-          return 'Uso: open <sección>';
-        }
-        const target = args[0].toLowerCase();
-        const allSections = sectionsContainer.querySelectorAll('.section');
-        allSections.forEach(sec => sec.classList.remove('active'));
-
-        const sectionToOpen = sectionsContainer.querySelector('#' + target);
-        if(sectionToOpen) {
-          sectionToOpen.classList.add('active');
-          if(target === 'estadisticas') {
-            drawStatsChart();
-          }
-          flashOutput(true);
-          return 'Abriendo sección: ' + target + '\n\n' + sectionToOpen.innerText;
-        } else {
-          playErrorSound();
-          flashOutput(false);
-          return 'Sección no encontrada: ' + target;
-        }
-      },
-      info: function(args) {
-        if(args.length === 0) {
-          playErrorSound();
-          flashOutput(false);
-          return 'Uso: info <sección>';
-        }
-        const target = args[0].toLowerCase();
-        const infoMap = {
-          inicio: 'La sección de inicio da la bienvenida y explica la funcionalidad básica.',
-          seguridad: 'Se detallan las mejores prácticas para mantener sistemas seguros.',
-          herramientas: 'Se muestran las herramientas disponibles, con enlaces de descarga.',
-          descargas: 'Lista de enlaces para descargar herramientas de hacking ético.',
-          estadisticas: 'Gráfica de ejemplo con datos de vulnerabilidades mensuales.',
-          acerca: 'Información sobre CyberTools, nuestra misión y cómo colaborar.'
+    // Debounce
+    function debounce(func, delay) {
+        let timeoutId;
+        return function(...args) {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                func.apply(this, args);
+            }, delay);
         };
-        if(infoMap[target]) {
-          flashOutput(true);
-          return `Información sobre ${target}: ${infoMap[target]}`;
-        } else {
-          playErrorSound();
-          flashOutput(false);
-          return 'No hay información adicional para la sección: ' + target;
+    }
+
+    // Limpiar HTML (básico)
+    function sanitizeHTML(str) {
+        const temp = document.createElement('div');
+        temp.textContent = str;
+        return temp.innerHTML;
+    }
+
+     // Calcular RGB desde CSS var (para sombras, etc.)
+    function updateRootRgbVariables() {
+        const style = getComputedStyle(document.documentElement);
+        const primaryColor = style.getPropertyValue('--primary-color').trim();
+        // Simplificación: Asume formato #RRGGBB o rgb(r, g, b)
+        let rgb = [255, 45, 149]; // Default
+        try {
+            if (primaryColor.startsWith('#')) {
+                const bigint = parseInt(primaryColor.slice(1), 16);
+                rgb = [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
+            } else if (primaryColor.startsWith('rgb')) {
+                rgb = primaryColor.match(/\d+/g).map(Number);
+            }
+        } catch(e) { console.warn("Could not parse primary color for RGB variable."); }
+        document.documentElement.style.setProperty('--primary-rgb', rgb.join(', '));
+    }
+
+    // --- AUDIO ---
+    function playSound(soundId) {
+        if (!settings.soundEnabled || !audio[soundId]) return;
+        try {
+            audio[soundId].currentTime = 0;
+            audio[soundId].play().catch(e => {}); // Ignora errores si ya está sonando o interacción no permitida
+        } catch (e) { console.warn(`Could not play sound: ${soundId}`, e); }
+    }
+    function stopSound(soundId) {
+        if (!audio[soundId]) return;
+        try {
+            audio[soundId].pause();
+            audio[soundId].currentTime = 0;
+        } catch (e) {}
+    }
+
+    // --- SIMULACIÓN DE CARGA ---
+    function simulateLoading() {
+        let progress = 0;
+        loaderOverlay.classList.remove('hidden'); // Asegura visibilidad
+        playSound('boot'); // Sonido de inicio
+
+        const interval = setInterval(() => {
+            progress += Math.random() * 5 + 2; // Progreso más rápido
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(interval);
+                loaderBar.style.width = '100%';
+                loaderPercentage.textContent = '100%';
+                setTimeout(() => {
+                    loaderOverlay.classList.add('hidden');
+                    terminalInput.focus(); // Enfocar input al terminar
+                     // Intenta reproducir audio de fondo tras pequeña demora
+                    if(settings.soundEnabled) {
+                       setTimeout(() => playSound('bg'), 500);
+                    }
+                    // Mostrar mensaje bienvenida después de cargar
+                    displayWelcomeMessage();
+                }, 600); // Tiempo para ver el 100%
+            }
+            loaderBar.style.width = progress + '%';
+            loaderPercentage.textContent = Math.floor(progress) + '%';
+        }, 80); // Intervalo más corto
+    }
+
+    // --- PARTÍCULAS (Canvas) ---
+    function initParticles() {
+        particlesCanvas.width = window.innerWidth;
+        particlesCanvas.height = window.innerHeight;
+        particles = [];
+         if (!settings.particlesEnabled) {
+            ctxParticles.clearRect(0, 0, particlesCanvas.width, particlesCanvas.height);
+            if(particleAnimationId) cancelAnimationFrame(particleAnimationId);
+            particleAnimationId = null;
+            return;
         }
-      },
-      clear: function() {
+
+        const particleColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
+
+        for (let i = 0; i < PARTICLES_DEFAULT_COUNT; i++) {
+            particles.push({
+                x: Math.random() * particlesCanvas.width,
+                y: Math.random() * particlesCanvas.height,
+                radius: Math.random() * 1.5 + 0.5, // Tamaños variados
+                vx: (Math.random() - 0.5) * 0.5, // Velocidad X lenta
+                vy: (Math.random() - 0.5) * 0.5, // Velocidad Y lenta
+                color: particleColor, // Usar color primario del tema
+                opacity: Math.random() * 0.5 + 0.2 // Opacidad variada
+            });
+        }
+        if (!particleAnimationId) animateParticles();
+    }
+
+    function animateParticles() {
+         if (!settings.particlesEnabled) {
+             ctxParticles.clearRect(0, 0, particlesCanvas.width, particlesCanvas.height);
+             particleAnimationId = null;
+             return; // Detener si están desactivadas
+         }
+
+        ctxParticles.clearRect(0, 0, particlesCanvas.width, particlesCanvas.height);
+
+        particles.forEach(p => {
+            // Movimiento
+            p.x += p.vx;
+            p.y += p.vy;
+
+            // Rebote en bordes
+            if (p.x < 0 || p.x > particlesCanvas.width) p.vx *= -1;
+            if (p.y < 0 || p.y > particlesCanvas.height) p.vy *= -1;
+
+            // Dibujar partícula
+            ctxParticles.beginPath();
+            ctxParticles.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            ctxParticles.fillStyle = `rgba(${getComputedStyle(document.documentElement).getPropertyValue('--primary-rgb')}, ${p.opacity})`; // Usa RGB del tema
+            ctxParticles.fill();
+        });
+
+        particleAnimationId = requestAnimationFrame(animateParticles);
+    }
+
+    window.addEventListener('resize', debounce(() => {
+        if (settings.particlesEnabled) {
+             initParticles(); // Reiniciar en resize
+        } else {
+             particlesCanvas.width = window.innerWidth;
+             particlesCanvas.height = window.innerHeight;
+             ctxParticles.clearRect(0, 0, particlesCanvas.width, particlesCanvas.height);
+        }
+
+    }, 200));
+
+
+    // --- NOTIFICACIONES ---
+    function showNotification(type, message, duration = 5000) {
+        const notif = document.createElement('div');
+        notif.className = `notification ${type}`;
+        // Sanitizar mensaje antes de insertarlo
+        const iconClass = { info: 'fa-info-circle', success: 'fa-check-circle', warning: 'fa-exclamation-triangle', error: 'fa-times-circle' }[type] || 'fa-bell';
+        notif.innerHTML = `<i class="fas ${iconClass}"></i> ${sanitizeHTML(message)}`; // Añadir icono
+        notificationsContainer.prepend(notif); // Añadir al principio (aparecen abajo)
+
+        setTimeout(() => {
+            notif.style.opacity = '0';
+             notif.style.transform = 'translateX(100%)';
+             setTimeout(() => {
+                if (notificationsContainer.contains(notif)) {
+                    notificationsContainer.removeChild(notif);
+                }
+             }, 500); // Espera a que termine la transición de salida
+        }, duration);
+    }
+
+    // --- MANEJO DEL TERMINAL ---
+
+    // Limpiar pantalla
+    function clearTerminal() {
         terminalOutput.innerHTML = '';
-        return '';
-      },
-      cls: function() {
-        return commands.clear();
-      },
-      exit: function() {
-        terminalOutput.innerHTML = '';
-        return 'Terminal reiniciada.';
-      },
-      ascii: function() {
-        if(!expertMode) {
-          playErrorSound();
-          return "Este comando está disponible sólo en modo experto. Usa 'mode expert'.";
+    }
+
+    // Añadir línea al output
+    function appendOutput(htmlContent, skipPrompt = false) {
+        const promptHtml = !skipPrompt ? `<span class="prompt">${USERNAME}@${HOSTNAME}:${currentDirectory}${PROMPT_SYMBOL}</span> ` : '';
+        terminalOutput.innerHTML += `${promptHtml}${htmlContent}\n`;
+        scrollToBottom();
+    }
+
+     // Efecto de escritura
+    function typeOutput(text, callback, speed = settings.typingSpeed) {
+        if (!settings.typingEffectEnabled || speed <= 0) {
+            // Si está desactivado o velocidad 0, mostrar instantáneo
+            terminalOutput.innerHTML += text;
+            scrollToBottom();
+            if (callback) callback();
+            return;
         }
-        flashOutput(true);
-        return `
-  _________  __   ____  ______  _______ 
- / ____/   |/_/  / __ \\/  _/  |/  / __ \\
-/ /   / /| | /  / / / // // /|_/ / / / /
-/ /___/ ___ |   / /_/ // // /  / / /_/ / 
-\\____/_/  |_|  /_____/___/_/  /_/\\____/  
-      H A C K   T H E   P L A N E T
-        `;
-      },
-      quote: function() {
-        if(!expertMode) {
-          playErrorSound();
-          return "Este comando está disponible sólo en modo experto. Usa 'mode expert'.";
+
+        isTyping = true;
+        playSound('type'); // Iniciar sonido de tecleo (si está habilitado)
+        let index = 0;
+        const lines = text.split('\n');
+        let currentLine = 0;
+
+        function typeChar() {
+            if (currentLine < lines.length) {
+                const line = lines[currentLine];
+                if (index < line.length) {
+                    terminalOutput.innerHTML += line.charAt(index);
+                    index++;
+                    scrollToBottom(); // Scroll mientras escribe
+                    setTimeout(typeChar, speed);
+                } else {
+                    terminalOutput.innerHTML += '\n'; // Añadir salto de línea
+                    index = 0;
+                    currentLine++;
+                    scrollToBottom();
+                    setTimeout(typeChar, speed); // Pausa breve entre líneas (opcional)
+                }
+            } else {
+                isTyping = false;
+                stopSound('type'); // Detener sonido de tecleo
+                 if (callback) callback();
+                scrollToBottom(); // Asegura scroll al final
+            }
         }
-        flashOutput(true);
-        const randomIndex = Math.floor(Math.random() * hackingQuotes.length);
-        return hackingQuotes[randomIndex];
-      },
-      theme: function(args) {
-        if(!expertMode) {
-          playErrorSound();
-          return "Este comando está disponible sólo en modo experto. Usa 'mode expert'.";
+        typeChar();
+    }
+
+    // Scroll al final del output
+    let userScrolledUp = false;
+    terminalOutput.addEventListener('scroll', () => {
+        // Detectar si el usuario ha hecho scroll hacia arriba
+        const threshold = 10; // Margen pequeño
+        userScrolledUp = terminalOutput.scrollTop + terminalOutput.clientHeight + threshold < terminalOutput.scrollHeight;
+    });
+
+    function scrollToBottom() {
+        if (!userScrolledUp) {
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
         }
-        const htmlEl = document.documentElement;
-        const currentTheme = htmlEl.getAttribute('data-theme');
-        if(!args[0]) {
-          return "Uso: theme <dark|light|toggle>";
+    }
+
+    // Actualizar prompt
+    function updatePrompt() {
+        terminalPrompt.textContent = `${USERNAME}@${HOSTNAME}:${currentDirectory}${PROMPT_SYMBOL}`;
+    }
+
+     // Crear enlaces clickables para comandos
+    function createCommandLink(command, text = null) {
+        const displayText = text || command;
+        // Sanitizar command antes de usarlo en el onclick
+        const safeCommand = command.replace(/'/g, "\\'").replace(/"/g, '\\"');
+        return `<a href="#" onclick="executeCommandFromLink('${safeCommand}'); return false;">${sanitizeHTML(displayText)}</a>`;
+    }
+     // Función para ejecutar comando desde enlace
+    window.executeCommandFromLink = function(command) {
+        terminalInput.value = command;
+        processCommand();
+        terminalInput.focus();
+    }
+
+
+    // --- HISTORIAL DE COMANDOS ---
+    function addToHistory(command) {
+        if (!command || commandHistory[commandHistory.length - 1] === command) {
+            return; // No añadir vacío o duplicado consecutivo
         }
-        const choice = args[0].toLowerCase();
-        if(choice === 'dark') {
-          htmlEl.setAttribute('data-theme', 'dark');
-          flashOutput(true);
-          return 'Tema cambiado a modo oscuro.';
-        } else if(choice === 'light') {
-          htmlEl.setAttribute('data-theme', 'light');
-          flashOutput(true);
-          return 'Tema cambiado a modo claro.';
-        } else if(choice === 'toggle') {
-          const newTheme = (currentTheme === 'dark') ? 'light' : 'dark';
-          htmlEl.setAttribute('data-theme', newTheme);
-          flashOutput(true);
-          return `Tema alternado a: ${newTheme}`;
+        commandHistory.push(command);
+        if (commandHistory.length > MAX_HISTORY) {
+            commandHistory.shift(); // Eliminar el más antiguo
+        }
+        historyIndex = commandHistory.length; // Reset index al final
+        saveSettings(); // Guardar historial junto con settings
+    }
+
+    function navigateHistory(direction) {
+        const newIndex = historyIndex + direction;
+        if (newIndex >= -1 && newIndex < commandHistory.length) {
+            historyIndex = newIndex;
+            terminalInput.value = (historyIndex === -1 || historyIndex === commandHistory.length) ? '' : commandHistory[historyIndex];
+             // Mover cursor al final
+             setTimeout(() => terminalInput.setSelectionRange(terminalInput.value.length, terminalInput.value.length), 0);
+        }
+    }
+
+    // --- AUTOCOMPLETADO Y SUGERENCIAS ---
+    function updateSuggestions() {
+        const inputText = terminalInput.value.trimStart(); // Considerar espacios al inicio
+        const currentWord = inputText.split(' ').pop().toLowerCase();
+        selectedSuggestionIndex = -1; // Reset selección
+
+        if (inputText.length === 0 || currentWord.length === 0) {
+            suggestionsBox.style.display = 'none';
+            currentSuggestions = [];
+            return;
+        }
+
+        // Sugerir comandos o argumentos (simplificado)
+        const isFirstWord = !inputText.includes(' ');
+        let potentialSuggestions = [];
+
+        if (isFirstWord) {
+            potentialSuggestions = Object.keys(commands)
+                                      .filter(cmd => isCommandVisible(cmd) && cmd.startsWith(currentWord));
         } else {
-          playErrorSound();
-          flashOutput(false);
-          return 'Opción no válida. Usa: theme <dark|light|toggle>';
+             // Sugerir secciones para 'open', 'cd', 'info'
+            const firstWord = inputText.split(' ')[0].toLowerCase();
+            if (['open', 'cd', 'info'].includes(firstWord)) {
+                 potentialSuggestions = Array.from(sectionsContainer.querySelectorAll('.section'))
+                                          .map(sec => sec.id)
+                                          .filter(id => id.startsWith(currentWord));
+            } else if (firstWord === 'theme') {
+                potentialSuggestions = ['dark', 'light', 'matrix', 'toggle'].filter(t => t.startsWith(currentWord));
+            } else if (firstWord === 'settings') {
+                 potentialSuggestions = ['list', 'get', 'set', 'toggle', 'save'].filter(s => s.startsWith(currentWord));
+            } else if (firstWord === 'alias') {
+                // No sugerir nada para el valor del alias
+            }
+             // Podríamos añadir sugerencias para argumentos de otros comandos aquí
         }
-      },
-      sysinfo: function() {
-        if(!expertMode) {
-          playErrorSound();
-          return "Este comando está disponible sólo en modo experto. Usa 'mode expert'.";
-        }
-        flashOutput(true);
-        return getSystemInfo();
-      },
-      mode: function(args) {
-        if(!args[0]) {
-          return "Uso: mode <basic|expert>";
-        }
-        const choice = args[0].toLowerCase();
-        if(choice === 'basic') {
-          expertMode = false;
-          showNotification('info', 'Modo Básico activado');
-          return 'Modo Básico activado. Algunos comandos avanzados se ocultan.';
-        } else if(choice === 'expert') {
-          expertMode = true;
-          showNotification('info', 'Modo Experto activado');
-          return 'Modo Experto activado.' + getExpertBanner() + 
-                 '\nAhora puedes usar todos los comandos avanzados.';
+
+        currentSuggestions = potentialSuggestions.sort(); // Ordenar alfabéticamente
+
+        if (currentSuggestions.length === 0) {
+            suggestionsBox.style.display = 'none';
         } else {
-          playErrorSound();
-          return 'Opción no válida. Usa: mode <basic|expert>';
+            suggestionsList.innerHTML = '';
+            currentSuggestions.forEach((suggestion, index) => {
+                const li = document.createElement('li');
+                li.textContent = suggestion;
+                li.setAttribute('role', 'option');
+                li.id = `suggestion-${index}`;
+                li.addEventListener('click', () => {
+                    autocompleteSuggestion(suggestion);
+                });
+                suggestionsList.appendChild(li);
+            });
+            suggestionsBox.style.display = 'block';
+            // Ajustar posición si está cerca del borde inferior (básico)
+            const boxRect = suggestionsBox.getBoundingClientRect();
+            const inputRect = terminalInput.getBoundingClientRect();
+             if (boxRect.bottom > window.innerHeight - 10) {
+                suggestionsBox.style.bottom = `${inputRect.height + 5}px`; // Mover arriba del input
+             } else {
+                  suggestionsBox.style.bottom = '45px'; // Posición por defecto
+             }
         }
-      }
+         updateAriaAutocomplete(currentSuggestions.length > 0);
+    }
+
+    function autocompleteSuggestion(suggestion) {
+        const currentText = terminalInput.value;
+        const lastSpaceIndex = currentText.lastIndexOf(' ');
+        let baseText = '';
+        if (lastSpaceIndex !== -1) {
+            baseText = currentText.substring(0, lastSpaceIndex + 1);
+        }
+        terminalInput.value = baseText + suggestion + ' '; // Añadir espacio al final
+        suggestionsBox.style.display = 'none';
+        currentSuggestions = [];
+        terminalInput.focus();
+        // Mover cursor al final
+        setTimeout(() => terminalInput.setSelectionRange(terminalInput.value.length, terminalInput.value.length), 0);
+    }
+
+    function navigateSuggestions(direction) {
+        if (currentSuggestions.length === 0) return;
+
+        const previousSelected = $(`#suggestion-${selectedSuggestionIndex}`);
+        if (previousSelected) previousSelected.classList.remove('selected');
+
+        selectedSuggestionIndex += direction;
+
+        if (selectedSuggestionIndex < 0) {
+            selectedSuggestionIndex = currentSuggestions.length - 1; // Wrap around to bottom
+        } else if (selectedSuggestionIndex >= currentSuggestions.length) {
+            selectedSuggestionIndex = 0; // Wrap around to top
+        }
+
+        const currentSelected = $(`#suggestion-${selectedSuggestionIndex}`);
+        if (currentSelected) {
+            currentSelected.classList.add('selected');
+            currentSelected.scrollIntoView({ block: 'nearest' }); // Scroll para ver el item
+            terminalInput.setAttribute('aria-activedescendant', currentSelected.id);
+        }
+    }
+     function updateAriaAutocomplete(hasSuggestions) {
+        if(hasSuggestions) {
+            terminalInput.setAttribute('aria-expanded', 'true');
+        } else {
+            terminalInput.setAttribute('aria-expanded', 'false');
+             terminalInput.removeAttribute('aria-activedescendant');
+        }
+     }
+
+
+    // --- PROCESAMIENTO DE COMANDOS ---
+    function processCommand() {
+        const inputText = terminalInput.value.trim();
+        userScrolledUp = false; // Reset scroll lock on new command
+
+        if (inputText === '') {
+            appendOutput('', false); // Solo añade una nueva línea de prompt
+            return;
+        }
+
+        // Añadir comando al output visible y al historial
+        appendOutput(sanitizeHTML(inputText));
+        addToHistory(inputText);
+
+        // Limpiar input y ocultar sugerencias
+        terminalInput.value = '';
+        suggestionsBox.style.display = 'none';
+        currentSuggestions = [];
+        updateAriaAutocomplete(false);
+
+        // Parsear comando y argumentos
+        let args = inputText.match(/(?:[^\s"]+|"[^"]*")+/g) || []; // Maneja args entre comillas
+        args = args.map(arg => arg.startsWith('"') && arg.endsWith('"') ? arg.slice(1, -1) : arg); // Quita comillas
+        let cmd = args.shift()?.toLowerCase() || '';
+
+        // Resolver alias
+        if (aliases[cmd]) {
+             const aliasCmd = aliases[cmd];
+             const aliasParts = aliasCmd.match(/(?:[^\s"]+|"[^"]*")+/g) || [];
+             cmd = aliasParts.shift()?.toLowerCase() || '';
+             args = aliasParts.concat(args); // Prepend alias args
+        }
+
+
+        // Ejecutar comando
+        if (commands[cmd]) {
+             if (!isCommandVisible(cmd)) {
+                 playSound('err');
+                 typeOutput(`<span class="error">Error: El comando '${sanitizeHTML(cmd)}' solo está disponible en modo experto. Usa 'settings set expertMode true'.</span>`, () => terminalInput.focus());
+                 return;
+             }
+
+            try {
+                playSound('cmd');
+                const result = commands[cmd](args); // Ejecuta la función del comando
+                 if (result !== null && result !== undefined && result !== '') { // No mostrar nada si el comando devuelve null/undefined/""
+                    if (typeof result === 'string') {
+                        typeOutput(result, () => terminalInput.focus());
+                    } else if (result instanceof Promise) {
+                        // Manejar promesas (para comandos asíncronos si se añaden)
+                        result.then(output => {
+                            if (output !== null && output !== undefined && output !== '') {
+                               typeOutput(output, () => terminalInput.focus());
+                            } else {
+                                 terminalInput.focus(); // Enfocar si no hay salida
+                            }
+                        }).catch(error => {
+                            playSound('err');
+                            typeOutput(`<span class="error">Error ejecutando ${cmd}: ${sanitizeHTML(error.message || error)}</span>`, () => terminalInput.focus());
+                        });
+                     } else {
+                         // Si no es string ni promesa, intenta convertir a string
+                        typeOutput(String(result), () => terminalInput.focus());
+                    }
+                 } else {
+                     // Si el comando no devuelve nada explícitamente, solo enfocar input
+                     terminalInput.focus();
+                 }
+
+            } catch (error) {
+                console.error("Error executing command:", cmd, args, error);
+                playSound('err');
+                typeOutput(`<span class="error">Error interno ejecutando '${sanitizeHTML(cmd)}': ${sanitizeHTML(error.message)}</span>`, () => terminalInput.focus());
+            }
+        } else {
+            handleUnknownCommand(cmd);
+        }
+    }
+
+    function handleUnknownCommand(cmd) {
+         playSound('err');
+         let suggestion = findSimilarCommand(cmd);
+         let errorMsg = `<span class="error">Error: Comando no reconocido: '${sanitizeHTML(cmd)}'.</span>`;
+         if (suggestion) {
+            errorMsg += `\nQuizás quisiste decir: ${createCommandLink(suggestion)}?`;
+         }
+         errorMsg += `\nEscribe ${createCommandLink('help')} para ver la lista de comandos.`;
+         typeOutput(errorMsg, () => terminalInput.focus());
+    }
+
+     // --- Similitud de comandos (Levenshtein básico) ---
+    function levenshtein(a, b) {
+        if (a.length === 0) return b.length;
+        if (b.length === 0) return a.length;
+        const matrix = [];
+        for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+        for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+        for (let i = 1; i <= b.length; i++) {
+            for (let j = 1; j <= a.length; j++) {
+                const cost = a[j - 1] === b[i - 1] ? 0 : 1;
+                matrix[i][j] = Math.min(matrix[i - 1][j] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j - 1] + cost);
+            }
+        }
+        return matrix[b.length][a.length];
+    }
+
+    function findSimilarCommand(cmd) {
+        let minDistance = 3; // Umbral de distancia
+        let bestMatch = null;
+        const availableCommands = Object.keys(commands).filter(isCommandVisible);
+
+        availableCommands.forEach(availableCmd => {
+            const distance = levenshtein(cmd, availableCmd);
+            if (distance < minDistance) {
+                minDistance = distance;
+                bestMatch = availableCmd;
+            }
+        });
+        return bestMatch;
+    }
+
+
+    // --- DEFINICIÓN DE COMANDOS ---
+    const commands = {
+        help: (args) => {
+            if (args.length === 0) {
+                let helpText = `CyberTools Terminal ${VERSION}\n`;
+                helpText += `Escribe 'help <comando>' para obtener ayuda sobre un comando específico.\n\n`;
+                helpText += "Comandos disponibles:\n";
+                const availableCmds = Object.keys(commands).filter(isCommandVisible).sort();
+                // Formatear en columnas (básico)
+                const colWidth = 15;
+                let line = "";
+                availableCmds.forEach((cmd, index) => {
+                    line += cmd.padEnd(colWidth);
+                    if ((index + 1) % 4 === 0 || index === availableCmds.length - 1) {
+                        helpText += `  ${line}\n`;
+                        line = "";
+                    }
+                });
+                 helpText += `\nModo actual: <span class="${settings.expertMode ? 'success' : 'warning'}">${settings.expertMode ? 'Experto' : 'Básico'}</span>. Usa 'settings set expertMode [true|false]' para cambiar.`;
+                return helpText;
+            } else {
+                const cmd = args[0].toLowerCase();
+                if (commands[cmd] && commandHelp[cmd]) {
+                    return commandHelp[cmd];
+                } else {
+                    return `<span class="error">No hay ayuda disponible para '${sanitizeHTML(cmd)}'.</span>`;
+                }
+            }
+        },
+
+        ls: (args) => {
+             // Simulación de 'ls' con directorios/secciones
+            let path = args[0] || currentDirectory; // Aceptar argumento de ruta (simplificado)
+            if (path !== '/') path = path.replace(/\/$/, ''); // Normalizar
+
+            let output = `Contenido de ${path}:\n`;
+            if (path === '/') {
+                const sectionIds = Array.from(sectionsContainer.querySelectorAll('.section'))
+                                       .map(sec => sec.id);
+                sectionIds.forEach(id => {
+                     output += `<span style="color: var(--secondary-color);">drw-</span> ${createCommandLink('cd /'+id, id+'/')}\n`; // d=directory
+                });
+                output += `<span style="color: var(--muted-color);">-rw-</span> README.txt\n`; // Archivo ficticio
+            } else if (path.startsWith('/') && sectionsContainer.querySelector(`#${path.slice(1)}`)) {
+                 const sectionId = path.slice(1);
+                 output += `<span style="color: var(--muted-color);">-rw-</span> ${sectionId}_details.txt\n`; // Archivos ficticios dentro
+                 output += `<span style="color: var(--muted-color);">-rw-</span> related_tools.list\n`;
+                 if (sectionId === 'herramientas') {
+                      const tools = Array.from(sectionsContainer.querySelectorAll('#herramientas .card h3')).map(h => h.textContent.toLowerCase() + '.info');
+                      tools.forEach(t => output += `<span style="color: var(--muted-color);">-r--</span> ${t}\n`);
+                 }
+                 output += createCommandLink('cd /', '../') + '\n'; // Volver a root
+            }
+             else {
+                 return `<span class="error">ls: no se puede acceder a '${sanitizeHTML(path)}': No existe el fichero o el directorio</span>`;
+            }
+            return output;
+        },
+
+        cd: (args) => {
+            if (args.length === 0) {
+                currentDirectory = '/';
+                updatePrompt();
+                return null; // No output
+            }
+            let targetDir = args[0];
+            if (targetDir === '..') {
+                if (currentDirectory !== '/') {
+                    currentDirectory = '/'; // Simplificado: '..' siempre va a root
+                }
+            } else {
+                targetDir = targetDir.replace(/^\//, '').replace(/\/$/, ''); // Normalizar
+                if (targetDir === '') { // cd /
+                     currentDirectory = '/';
+                } else if (Array.from(sectionsContainer.querySelectorAll('.section')).map(s => s.id).includes(targetDir)) {
+                    currentDirectory = `/${targetDir}`;
+                } else {
+                     return `<span class="error">cd: no existe el directorio: ${sanitizeHTML(targetDir)}</span>`;
+                }
+            }
+            updatePrompt();
+            return null; // No output
+        },
+
+        pwd: () => currentDirectory,
+
+        open: (args) => {
+            if (args.length === 0) return `<span class="warning">Uso: open &lt;seccion&gt;</span>\nSecciones disponibles: ${commands.ls(['/']).split('\n').slice(1).map(l => l.split(' ').pop().replace('/','')).filter(Boolean).join(', ')}`;
+
+            const targetId = args[0].toLowerCase();
+            const section = $(`#sections #${targetId}`);
+
+            if (section) {
+                 // Ocultar todas las secciones en el output
+                $$('.section-visible').forEach(s => s.style.display = 'none');
+                // Clonar la sección y añadirla al output
+                const clonedSection = section.cloneNode(true);
+                clonedSection.style.display = 'block'; // Asegurar que sea visible
+                 clonedSection.classList.add('section-visible'); // Marcar para ocultar después
+                terminalOutput.appendChild(clonedSection);
+
+                if (targetId === 'estadisticas') {
+                    setTimeout(drawStatsChart, 50); // Dibujar después de añadir al DOM
+                }
+                 // Cambiar directorio simulado
+                 currentDirectory = `/${targetId}`;
+                 updatePrompt();
+
+                return `<span class="success">Sección '${targetId}' abierta.</span>`; // Devolver mensaje simple
+            } else {
+                return `<span class="error">Sección no encontrada: '${sanitizeHTML(targetId)}'. Usa 'ls' para ver las secciones disponibles.</span>`;
+            }
+        },
+
+        info: (args) => {
+             if (args.length === 0) return `<span class="warning">Uso: info &lt;tema&gt;</span>\nTemas con info: inicio, seguridad, herramientas, estadisticas, acerca, ${Object.keys(contextTips).join(', ')}`;
+            const target = args[0].toLowerCase();
+             if (commandHelp[target]) { // Reutilizar textos de ayuda si existen
+                 return `<span class="info">Info sobre ${target}:</span>\n${commandHelp[target]}`;
+             } else if (contextTips[target]) {
+                 return `<span class="info">Info sobre ${target}:</span>\n${contextTips[target].replace('Tip: ', '')}`;
+             } else {
+                return `<span class="error">No hay información disponible para '${sanitizeHTML(target)}'.</span>`;
+             }
+        },
+
+        clear: () => {
+            clearTerminal();
+            displayPromptLine(); // Muestra la línea de prompt inicial vacía
+            return null; // No añadir más output
+        },
+        cls: () => commands.clear(),
+
+        date: () => new Date().toLocaleString(),
+        whoami: () => USERNAME,
+        hostname: () => HOSTNAME,
+        fetch: () => {
+            const ua = navigator.userAgent || "N/A";
+             let memText = "N/A";
+             if(performance && performance.memory) {
+                const usedMB = (performance.memory.usedJSHeapSize / 1048576).toFixed(1);
+                const totalMB = (performance.memory.totalJSHeapSize / 1048576).toFixed(1);
+                 memText = `${usedMB}MB / ${totalMB}MB`;
+             }
+            const screenRes = `${window.screen.width}x${window.screen.height}`;
+            const themeInfo = `${settings.theme} theme`;
+             const expertInfo = settings.expertMode ? 'Experto' : 'Básico';
+
+            // Simple ASCII Art (puedes mejorarlo)
+            const ascii = `
+       <span style="color: var(--primary-color);"> _,.--.,_</span>
+       <span style="color: var(--primary-color);"> .'.-.'-'.-.'.</span>   <span style="color: var(--text-color); font-weight: bold;">${USERNAME}@${HOSTNAME}</span>
+       <span style="color: var(--primary-color);">/.' অভ্যাস '.\\</span>   -------------
+      <span style="color: var(--primary-color);">|:          :|</span>   <span style="color: var(--muted-color);">OS:</span> ${navigator.platform} (Emulado en Web)
+      <span style="color: var(--primary-color);">\\'.        .' /</span>   <span style="color: var(--muted-color);">Kernel:</span> Browser ${navigator.vendor}
+       <span style="color: var(--primary-color);">'._'------'_.'</span>   <span style="color: var(--muted-color);">Uptime:</span> ${((performance.now() / 1000) / 60).toFixed(0)} mins
+        <span style="color: var(--primary-color);">'"'--'""'--'"'</span>   <span style="color: var(--muted-color);">Shell:</span> WebTerminal ${VERSION}
+                       <span style="color: var(--muted-color);">Display:</span> ${screenRes}
+                       <span style="color: var(--muted-color);">Theme:</span> ${themeInfo}
+                       <span style="color: var(--muted-color);">Mode:</span> ${expertInfo}
+                       <span style="color: var(--muted-color);">Memory:</span> ${memText} (JS Heap)
+                       <span style="color: var(--muted-color);">User Agent:</span> ${ua.substring(0, 40)}...
+            `;
+            return `<pre>${ascii}</pre>`;
+        },
+
+        echo: (args) => {
+            // Une los argumentos y saca las comillas si las hay al principio/final
+             let output = args.join(' ');
+             return sanitizeHTML(output); // Sanitizar para evitar XSS
+        },
+
+        calc: (args) => {
+            if (args.length === 0) return '<span class="warning">Uso: calc &lt;expresión matemática&gt;</span>';
+            const expression = args.join(' ');
+            try {
+                // ¡PRECAUCIÓN! eval() es peligroso. Usar una librería segura como math.js en producción.
+                // Para esta demo, hacemos una validación MUY BÁSICA.
+                if (!/^[0-9+\-*/().\s]+$/.test(expression)) {
+                    throw new Error("Expresión inválida. Solo números y operadores básicos permitidos.");
+                }
+                // eslint-disable-next-line no-eval
+                const result = eval(expression);
+                 if (isNaN(result)) throw new Error("Resultado inválido.");
+                return `<span class="success">= ${result}</span>`;
+            } catch (e) {
+                return `<span class="error">Error al calcular: ${sanitizeHTML(e.message)}</span>`;
+            }
+        },
+
+         settings: (args) => {
+            const action = args[0]?.toLowerCase();
+            const key = args[1];
+            const value = args.slice(2).join(' '); // El resto es el valor
+
+            const validKeys = ['theme', 'soundEnabled', 'particlesEnabled', 'typingEffectEnabled', 'typingSpeed', 'showBetaWarning', 'expertMode'];
+
+            switch (action) {
+                case 'list':
+                case 'ls':
+                    let output = "Configuración actual:\n";
+                    validKeys.forEach(k => {
+                        output += `  ${k.padEnd(20)}: <span class="info">${settings[k]}</span>\n`;
+                    });
+                    return output;
+
+                case 'get':
+                    if (!key) return '<span class="warning">Uso: settings get &lt;clave&gt;</span>';
+                    if (settings.hasOwnProperty(key)) {
+                        return `${key}: <span class="info">${settings[key]}</span>`;
+                    } else {
+                        return `<span class="error">Clave no encontrada: '${sanitizeHTML(key)}'.</span>`;
+                    }
+
+                case 'set':
+                    if (!key || value === undefined) return '<span class="warning">Uso: settings set &lt;clave&gt; &lt;valor&gt;</span>';
+                     if (!validKeys.includes(key)) {
+                         return `<span class="error">Clave no válida: '${sanitizeHTML(key)}'. Usa 'settings list' para ver las claves disponibles.</span>`;
+                     }
+
+                    // Convertir valor
+                    let newValue;
+                    if (['true', 'on', '1'].includes(value.toLowerCase())) newValue = true;
+                    else if (['false', 'off', '0'].includes(value.toLowerCase())) newValue = false;
+                    else if (key === 'typingSpeed' && !isNaN(parseInt(value)) && parseInt(value) >= 0) newValue = parseInt(value);
+                    else if (key === 'theme' && ['dark', 'light', 'matrix'].includes(value.toLowerCase())) newValue = value.toLowerCase();
+                    else newValue = value; // Dejar como string si no coincide
+
+                     // Validaciones específicas
+                    if (key === 'typingSpeed' && typeof newValue !== 'number') return `<span class="error">Valor inválido para typingSpeed. Debe ser un número >= 0.</span>`;
+                    if (key === 'theme' && typeof newValue !== 'string') return `<span class="error">Tema inválido. Opciones: dark, light, matrix.</span>`;
+                     if (typeof settings[key] === 'boolean' && typeof newValue !== 'boolean') return `<span class="error">Valor inválido para ${key}. Debe ser true/false, on/off, 1/0.</span>`;
+
+                     // Aplicar cambio
+                    settings[key] = newValue;
+
+                     // Acciones post-cambio
+                    if (key === 'theme') applyTheme(newValue);
+                    if (key === 'particlesEnabled') initParticles(); // Re-inicializar partículas
+                    if (key === 'soundEnabled' && !newValue) { stopSound('bg'); stopSound('type'); } // Detener sonidos si se desactivan
+                    if (key === 'soundEnabled' && newValue) { playSound('bg'); } // Reanudar fondo si se activa
+                    if (key === 'showBetaWarning') betaWarning.style.display = newValue ? 'flex' : 'none';
+                    if (key === 'expertMode') showNotification('info', `Modo ${newValue ? 'Experto' : 'Básico'} ${newValue ? 'activado' : 'desactivado'}.`);
+
+                    saveSettings();
+                    return `<span class="success">${key} establecido a ${newValue}.</span>`;
+
+                 case 'toggle':
+                      if (!key) return '<span class="warning">Uso: settings toggle &lt;clave_booleana&gt;</span>';
+                      if (settings.hasOwnProperty(key) && typeof settings[key] === 'boolean') {
+                          return commands.settings(['set', key, !settings[key]]); // Llama a 'set' con el valor invertido
+                      } else {
+                           return `<span class="error">'${sanitizeHTML(key)}' no es una configuración booleana válida para alternar.</span>`;
+                      }
+
+                 case 'save':
+                     saveSettings();
+                     return '<span class="success">Configuración guardada en localStorage.</span>';
+
+                default:
+                    return `<span class="warning">Acción no reconocida. Uso: settings [list|get|set|toggle|save] ...</span>`;
+            }
+        },
+
+         alias: (args) => {
+            if (args.length === 0) {
+                let output = "Aliases definidos:\n";
+                if (Object.keys(aliases).length === 0) return "No hay aliases definidos.";
+                for (const name in aliases) {
+                    output += `  <span class="info">${name}</span>='${sanitizeHTML(aliases[name])}'\n`;
+                }
+                return output;
+            }
+
+            const definition = args.join(' ');
+            const match = definition.match(/^([^=]+)=(.*)$/); // name=command with args
+
+            if (!match) {
+                return `<span class="warning">Uso: alias nombre='comando con argumentos'\nEjemplo: alias ll='ls -l'</span>`;
+            }
+
+            const name = match[1].trim();
+            const command = match[2].trim().replace(/^'|'$/g, ''); // Quita comillas simples opcionales
+
+            if (!name || !command) {
+                return `<span class="warning">Nombre y comando del alias no pueden estar vacíos.</span>`;
+            }
+             if (commands[name]) {
+                 return `<span class="error">No se puede crear alias con el mismo nombre que un comando existente: '${name}'.</span>`;
+             }
+
+            aliases[name] = command;
+            saveSettings(); // Guardar alias
+            return `<span class="success">Alias '${name}' creado.</span>`;
+        },
+
+        unalias: (args) => {
+            if (args.length === 0) return `<span class="warning">Uso: unalias &lt;nombre_alias&gt;</span>`;
+            const name = args[0];
+            if (aliases[name]) {
+                delete aliases[name];
+                saveSettings();
+                return `<span class="success">Alias '${name}' eliminado.</span>`;
+            } else {
+                return `<span class="error">Alias no encontrado: '${sanitizeHTML(name)}'.</span>`;
+            }
+        },
+
+        quote: () => {
+             const quotes = [
+                "La seguridad es un proceso, no un producto. — Bruce Schneier",
+                "La privacidad no es algo que simplemente tengamos derecho a tener, es algo que tenemos que proteger. — Edward Snowden",
+                "El único sistema seguro es aquel que está apagado, desconectado y enterrado. — Gene Spafford",
+                "La ingeniería social es usar la manipulación para que la gente revele información confidencial. El error humano es el eslabón más débil.",
+                "No hay parche para la estupidez humana. — Kevin Mitnick (atribuido)",
+                "Hackea el planeta. — Zero Cool (Hackers, 1995)",
+                "El arte del engaño. — Kevin Mitnick (Título de libro)",
+                 "Las contraseñas son como la ropa interior: cámbialas a menudo y no las compartas.",
+                 "En ciberseguridad, debes tener éxito siempre. El atacante solo necesita tener éxito una vez.",
+            ];
+            const randomIndex = Math.floor(Math.random() * quotes.length);
+            return `<i>"${quotes[randomIndex]}"</i>`;
+        },
+
+        ascii: () => {
+            const arts = [
+                `
+  <span style="color: var(--primary-color);">  _______</span>
+  <span style="color: var(--primary-color);"> /  _____|</span> <span style="color: var(--secondary-color);">   _________.__    .__</span>
+  <span style="color: var(--primary-color);">' O O--'\\</span>  <span style="color: var(--secondary-color);"> /   _____/|  |__ |__| ____</span>
+  <span style="color: var(--primary-color);"> '- ^ -' /</span> <span style="color: var(--secondary-color);">  \\_____  \\ |  |  \\|  |/    \\</span>
+    <span style="color: var(--primary-color);"> '--.--'</span>   <span style="color: var(--secondary-color);"> /        \\|   Y  \\  |   |  \\</span>
+           <span style="color: var(--secondary-color);">/_______  /|___|  /__|___|  /</span>
+                   <span style="color: var(--secondary-color);">\\/      \\/      \\/</span>
+                `,
+                 `
+<span style="color: var(--secondary-color);">      .o8</span>      <span style="color: var(--primary-color);">     .o8</span>
+<span style="color: var(--secondary-color);">     "888</span>      <span style="color: var(--primary-color);">    "888</span>
+<span style="color: var(--secondary-color);"> .oooo888</span> <span style="color: var(--accent-color);">oooo</span> <span style="color: var(--secondary-color);"> .ooooo.</span>  <span style="color: var(--primary-color);">.oooo888</span>  <span style="color: var(--accent-color);">.ooooo.</span>  <span style="color: var(--accent-color);">.oooo.</span>
+<span style="color: var(--secondary-color);">d88' \`888</span> <span style="color: var(--accent-color);">\`888</span> <span style="color: var(--secondary-color);">d88' \`88b</span> <span style="color: var(--primary-color);">d88' \`888</span> <span style="color: var(--accent-color);">d88' \`88b</span> <span style="color: var(--accent-color);">\`P  )88b</span>
+<span style="color: var(--secondary-color);">888   888</span>  <span style="color: var(--accent-color);">888</span> <span style="color: var(--secondary-color);">888ooo888</span> <span style="color: var(--primary-color);">888   888</span> <span style="color: var(--accent-color);">888ooo888</span>  <span style="color: var(--accent-color);">.oP"888</span>
+<span style="color: var(--secondary-color);">888   888</span>  <span style="color: var(--accent-color);">888</span> <span style="color: var(--secondary-color);">888    .o</span> <span style="color: var(--primary-color);">888   888</span> <span style="color: var(--accent-color);">888    .o</span> <span style="color: var(--accent-color);">d8(  888</span>
+<span style="color: var(--secondary-color);">\`Y8bod88P'</span> <span style="color: var(--accent-color);">o888o</span> <span style="color: var(--secondary-color);">\`Y8bod8P'</span> <span style="color: var(--primary-color);">\`Y8bod88P"</span> <span style="color: var(--accent-color);">\`Y8bod8P'</span> <span style="color: var(--accent-color);">\`Y88888o</span>
+                `,
+                  `
+<span style="color: var(--primary-color);">  ╔═╗╦═╗╔═╗╔╦╗╦╔═╗╔╗╔╔═╗╦═╗</span>
+<span style="color: var(--primary-color);">  ║ ╦╠╦╝║╣  ║ ║║ ║║║║╠═╣╠╦╝</span>
+<span style="color: var(--primary-color);">  ╚═╝╩╚═╚═╝ ╩ ╩╚═╝╝╚╝╩ ╩╩╚═</span>
+<span style="color: var(--secondary-color);">    ╔═╗╔═╗╦  ╔═╗╔═╗╔═╗╔═╗</span>
+<span style="color: var(--secondary-color);">    ║ ╦╠═╣║  ╠═╝╠═╣║ ╦║╣</span>
+<span style="color: var(--secondary-color);">    ╚═╝╩ ╩╩═╝╩  ╩ ╩╚═╝╚═╝</span>
+                `
+            ];
+             const randomIndex = Math.floor(Math.random() * arts.length);
+             return `<pre>${arts[randomIndex]}</pre>`;
+        },
+
+         // --- Comandos de modo experto ---
+        theme: (args) => {
+             if (!settings.expertMode) return commands.mode([]); // Muestra mensaje de modo
+             const choice = args[0]?.toLowerCase();
+             const validThemes = ['dark', 'light', 'matrix', 'toggle'];
+             if (!choice || !validThemes.includes(choice)) {
+                 return `<span class="warning">Uso: theme [dark|light|matrix|toggle]</span>`;
+             }
+
+             let newTheme;
+             if (choice === 'toggle') {
+                 const current = document.documentElement.getAttribute('data-theme') || 'dark';
+                 // Ciclo: dark -> light -> matrix -> dark
+                 if (current === 'dark') newTheme = 'light';
+                 else if (current === 'light') newTheme = 'matrix';
+                 else newTheme = 'dark';
+             } else {
+                 newTheme = choice;
+             }
+             applyTheme(newTheme);
+             settings.theme = newTheme; // Guarda en settings temporalmente
+             saveSettings(); // Guarda permanentemente
+             return `<span class="success">Tema cambiado a ${newTheme}.</span>`;
+        },
+
+         sysinfo: () => {
+            if (!settings.expertMode) return commands.mode([]);
+             return commands.fetch(); // Reutiliza fetch para info del sistema
+        },
+
+         exit: () => {
+             // Podría cerrar la ventana/tab, pero es agresivo.
+             // Mejor simular un reinicio o limpieza.
+             clearTerminal();
+             displayWelcomeMessage();
+             return `<span class="warning">Simulando reinicio de terminal...</span>`;
+         },
+         // Añadir 'reboot' como alias de 'exit'
+    };
+    commands.reboot = commands.exit; // Alias simple
+    commands.quit = commands.exit;
+
+    // --- Textos de Ayuda para Comandos ---
+    const commandHelp = {
+        help: "help [comando]: Muestra la lista de comandos o la ayuda para uno específico.",
+        ls: "ls [ruta]: Lista el contenido del directorio actual o la ruta especificada (simulado).",
+        cd: "cd [directorio]: Cambia al directorio especificado ('/' o '/seccion'). 'cd ..' vuelve a '/'. 'cd' sin args va a '/'.",
+        pwd: "pwd: Muestra el directorio de trabajo actual (simulado).",
+        open: "open <seccion>: Muestra el contenido de la sección especificada en la terminal (ej: open herramientas).",
+        info: "info <tema>: Muestra información detallada sobre una sección o herramienta (ej: info seguridad, info nmap).",
+        clear: "clear / cls: Limpia la pantalla de la terminal.",
+        cls: "clear / cls: Limpia la pantalla de la terminal.",
+        date: "date: Muestra la fecha y hora actual del sistema.",
+        whoami: "whoami: Muestra el nombre de usuario actual.",
+        hostname: "hostname: Muestra el nombre del host (simulado).",
+        fetch: "fetch: Muestra información resumida del sistema/navegador con arte ASCII.",
+        echo: "echo <texto>: Imprime el texto proporcionado en la terminal.",
+        calc: "calc <expresión>: Calcula una expresión matemática simple (ej: calc 2 * (3 + 4)). ¡Usa con precaución!",
+        settings: `settings [list|get|set|toggle|save] [clave] [valor]: Gestiona la configuración.
+    list: Muestra toda la configuración.
+    get <clave>: Muestra el valor de una clave.
+    set <clave> <valor>: Establece el valor de una clave (ej: set soundEnabled false).
+    toggle <clave_booleana>: Invierte un valor booleano (true/false).
+    save: Guarda la configuración actual en localStorage.`,
+        alias: "alias [nombre='comando']: Define o lista alias. Ej: alias ll='ls -als'",
+        unalias: "unalias <nombre>: Elimina un alias.",
+        quote: "quote: Muestra una cita aleatoria relacionada con ciberseguridad o hacking.",
+        exit: "exit / reboot / quit: Simula un reinicio de la terminal.",
+        reboot: "exit / reboot / quit: Simula un reinicio de la terminal.",
+        quit: "exit / reboot / quit: Simula un reinicio de la terminal.",
+        // Ayuda para comandos de experto (se muestra si el comando es visible)
+        theme: "theme [dark|light|matrix|toggle]: Cambia el tema visual de la terminal (modo experto).",
+        ascii: "ascii: Muestra un arte ASCII aleatorio (modo experto).",
+        sysinfo: "sysinfo: Muestra información del sistema/navegador (similar a fetch) (modo experto).",
+         mode: "mode [basic|expert]: Cambia entre modo básico y experto (ya no existe, se usa 'settings set expertMode [true|false]')." // Mensaje informativo
     };
 
-    /* ------------------------------
-       Función para abrir sección desde enlace clickable
-    ------------------------------ */
-    function handleOpenCommand(sectionId) {
-      terminalOutput.innerHTML += "\nuser@cybertools:~$ open " + sectionId;
-      const result = commands.open([sectionId]);
-      typeOutput("\n" + result, function() {
-        terminalOutput.scrollTop = terminalOutput.scrollHeight;
-      });
-      playCommandSound();
-    }
+     // --- Ayuda Contextual ---
+    const contextTips = {
+        nmap: "Nmap (Network Mapper) es usado para descubrir hosts y servicios en una red creando un 'mapa' de la misma.",
+        aircrack: "Aircrack-ng es una suite para evaluar la seguridad Wi-Fi. Puede crackear claves WEP y WPA/WPA2-PSK.",
+        metasploit: "Metasploit Framework es una potente herramienta para desarrollar y ejecutar exploits contra máquinas remotas.",
+        burp: "Burp Suite actúa como un proxy interceptor para analizar y manipular el tráfico web entre el navegador y el servidor.",
+        john: "John the Ripper (JtR) es un cracker de contraseñas offline, rápido y multiplataforma.",
+        wireshark: "Wireshark captura y muestra el tráfico de red en tiempo real, permitiendo un análisis profundo de protocolos.",
+        seguridad: "La seguridad es una capa fundamental. Revisa la sección 'seguridad' con 'open seguridad'.",
+        herramientas: "Explora las herramientas disponibles con 'open herramientas'.",
+        phishing: "El phishing intenta engañarte para robar tus credenciales. ¡Desconfía de enlaces y adjuntos sospechosos!",
+        password: "Usa contraseñas largas, únicas y habilita MFA siempre. Considera 'open seguridad'.",
+        linux: "Muchos comandos aquí se inspiran en la terminal de Linux/Unix.",
+        exploit: "Un exploit aprovecha una vulnerabilidad. Metasploit es clave aquí. Úsalo éticamente.",
+    };
 
-    /* ------------------------------
-       Autocompletado de Comandos
-    ------------------------------ */
-    function showSuggestions(userInput) {
-      const filteredCommands = allCommands.filter(cmd => {
-        if(!isCommandVisible(cmd)) return false;
-        return cmd.startsWith(userInput.toLowerCase());
-      });
-
-      if(userInput.length === 0 || filteredCommands.length === 0) {
-        suggestionsBox.style.display = 'none';
-        return;
-      }
-      suggestionsList.innerHTML = '';
-      filteredCommands.forEach(cmd => {
-        const li = document.createElement('li');
-        li.textContent = cmd;
-        li.addEventListener('click', () => {
-          terminalInput.value = cmd;
-          suggestionsBox.style.display = 'none';
-          terminalInput.focus();
-        });
-        suggestionsList.appendChild(li);
-      });
-      suggestionsBox.style.display = 'block';
-    }
-
-    terminalInput.addEventListener('input', function() {
-      const inputVal = terminalInput.value.trim();
-      showSuggestions(inputVal);
-      checkContextTip(inputVal);
-    });
-
-    terminalInput.addEventListener('keydown', function(e) {
-      if(e.key === 'Enter') {
-        suggestionsBox.style.display = 'none';
-
-        const inputText = terminalInput.value.trim();
-        terminalOutput.innerHTML += "\nuser@cybertools:~$ " + inputText;
-        terminalInput.value = '';
-        const parts = inputText.split(' ');
-        const cmd = parts[0].toLowerCase();
-        const args = parts.slice(1);
-
-        if(commands[cmd]) {
-          playCommandSound();
-          const result = commands[cmd](args);
-          typeOutput("\n" + result, function() {
-            terminalOutput.scrollTop = terminalOutput.scrollHeight;
-          });
-        } else {
-          playErrorSound();
-          typeOutput("\n<span style='color: red;'>Error: Comando no reconocido: " + cmd + "</span>", function() {
-            terminalOutput.scrollTop = terminalOutput.scrollHeight;
-          });
+    function checkContextTip(userInput) {
+        const words = userInput.toLowerCase().split(/\s+/);
+        for (const word of words) {
+            if (contextTips[word]) {
+                showNotification('info', `Relacionado con '${word}': ${contextTips[word]}`, 7000);
+                return; // Muestra solo el primer tip encontrado
+            }
         }
-      }
-      if(e.key === 'Escape') {
-        suggestionsBox.style.display = 'none';
-      }
+    }
+
+    // --- Visibilidad de Comandos (Modo Experto) ---
+     function isCommandVisible(cmdName) {
+        const expertCommands = ["theme", "ascii", "sysinfo", /* otros comandos futuros */];
+        if (!settings.expertMode && expertCommands.includes(cmdName)) {
+            return false;
+        }
+        return true;
+    }
+
+
+    // --- INICIALIZACIÓN ---
+
+    function applyTheme(themeName) {
+        document.documentElement.setAttribute('data-theme', themeName);
+        updateRootRgbVariables(); // Actualizar variable --primary-rgb
+         initParticles(); // Reiniciar partículas con el nuevo color primario
+         // Actualizar gráfico si existe y es visible
+         if (chartInstance && $('#estadisticas')?.classList.contains('section-visible')) {
+            drawStatsChart();
+         }
+    }
+
+    function loadSettings() {
+        const savedSettings = localStorage.getItem('cyberToolsSettings');
+        if (savedSettings) {
+            try {
+                const parsed = JSON.parse(savedSettings);
+                // Fusionar asegurando que solo claves válidas se carguen
+                for (const key in settings) {
+                    if (parsed.hasOwnProperty(key) && typeof parsed[key] === typeof settings[key]) {
+                         // Caso especial para theme, asegurar que es válido
+                         if (key === 'theme' && !['dark', 'light', 'matrix'].includes(parsed[key])) {
+                             continue; // Ignorar theme inválido guardado
+                         }
+                        settings[key] = parsed[key];
+                    }
+                }
+                // Cargar alias
+                if (parsed.aliases && typeof parsed.aliases === 'object') {
+                     aliases = parsed.aliases;
+                }
+                 // Cargar historial
+                 if (parsed.commandHistory && Array.isArray(parsed.commandHistory)) {
+                     commandHistory = parsed.commandHistory.slice(-MAX_HISTORY); // Limitar al cargar
+                     historyIndex = commandHistory.length;
+                 }
+
+            } catch (e) {
+                console.error("Error loading settings from localStorage:", e);
+                localStorage.removeItem('cyberToolsSettings'); // Eliminar datos corruptos
+            }
+        }
+        // Aplicar configuración cargada
+        applyTheme(settings.theme);
+        betaWarning.style.display = settings.showBetaWarning ? 'flex' : 'none';
+        updatePrompt(); // Actualizar prompt con directorio cargado (si se guardara)
+    }
+
+    function saveSettings() {
+        try {
+            // Incluir alias e historial en el objeto a guardar
+            const settingsToSave = { ...settings, aliases, commandHistory };
+            localStorage.setItem('cyberToolsSettings', JSON.stringify(settingsToSave));
+        } catch (e) {
+            console.error("Error saving settings to localStorage:", e);
+            showNotification('error', 'No se pudo guardar la configuración. ¿LocalStorage lleno o deshabilitado?');
+        }
+    }
+
+    // Muestra la línea de prompt inicial (sin comando)
+    function displayPromptLine() {
+         terminalOutput.innerHTML += `<span class="prompt">${USERNAME}@${HOSTNAME}:${currentDirectory}${PROMPT_SYMBOL}</span> \n`;
+         scrollToBottom();
+    }
+
+     function displayWelcomeMessage() {
+        clearTerminal();
+        const welcome = `
+CyberTools Terminal v${VERSION} inicializado.
+Timestamp: ${new Date().toISOString()}
+-----------------------------------------------------
+Bienvenido, ${USERNAME}.
+Escribe '<span class="command">help</span>' para ver los comandos disponibles.
+Usa '<span class="command">ls</span>' para explorar secciones y '<span class="command">open &lt;seccion&gt;</span>' para abrirlas.
+-----------------------------------------------------
+`;
+        typeOutput(welcome, () => {
+            terminalInput.focus();
+            // Mostrar tip inicial útil
+             showNotification('info', "Prueba 'fetch' para ver info del sistema o 'settings list' para configurar.", 8000);
+        }, 5); // Velocidad rápida para bienvenida
+    }
+
+    // --- Gráfico de Estadísticas ---
+    function drawStatsChart() {
+        const ctx = document.getElementById('statsChart')?.getContext('2d');
+        if (!ctx) return; // Salir si el canvas no está (ej. sección no abierta)
+
+        const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const gridColor = theme === 'light' ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)';
+        const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim();
+        const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
+         const primaryRgb = getComputedStyle(document.documentElement).getPropertyValue('--primary-rgb').trim();
+
+
+        const data = {
+            labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago'],
+            datasets: [{
+                label: 'Vulnerabilidades Críticas',
+                data: [5, 8, 3, 7, 12, 6, 9, 5], // Datos simulados
+                backgroundColor: `rgba(${primaryRgb}, 0.6)`,
+                borderColor: primaryColor,
+                borderWidth: 2,
+                 borderRadius: 5,
+                 tension: 0.3 // Suavizar líneas si es tipo 'line'
+            },
+            {
+                label: 'Vulnerabilidades Medias',
+                data: [12, 15, 9, 14, 10, 18, 11, 16],
+                backgroundColor: `rgba(${primaryRgb}, 0.3)`, // Más claro
+                borderColor: `rgba(${primaryRgb}, 0.8)`,
+                 borderWidth: 1,
+                  borderRadius: 5,
+            }]
+        };
+
+        const options = {
+             responsive: true,
+             maintainAspectRatio: false, // Permitir que el contenedor defina el aspect ratio
+             scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: gridColor },
+                    ticks: { color: textColor }
+                },
+                x: {
+                    grid: { color: gridColor },
+                    ticks: { color: textColor }
+                }
+            },
+            plugins: {
+                legend: { labels: { color: textColor } },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#eee',
+                }
+            }
+        };
+
+        if (chartInstance) {
+            chartInstance.destroy(); // Destruir instancia anterior si existe
+        }
+        chartInstance = new Chart(ctx, {
+            type: 'bar', // o 'line'
+            data: data,
+            options: options
+        });
+    }
+
+    // --- EVENT LISTENERS ---
+    terminalInput.addEventListener('keydown', (e) => {
+        switch (e.key) {
+            case 'Enter':
+                 e.preventDefault();
+                 if (selectedSuggestionIndex !== -1) {
+                     // Si hay una sugerencia seleccionada, autocompletarla
+                     autocompleteSuggestion(currentSuggestions[selectedSuggestionIndex]);
+                 } else {
+                     // Si no, procesar el comando actual
+                    processCommand();
+                 }
+                break;
+            case 'ArrowUp':
+                 e.preventDefault();
+                if (suggestionsBox.style.display === 'block' && currentSuggestions.length > 0) {
+                     navigateSuggestions(-1); // Navegar sugerencias hacia arriba
+                 } else {
+                     navigateHistory(-1); // Navegar historial hacia atrás
+                 }
+                break;
+            case 'ArrowDown':
+                 e.preventDefault();
+                 if (suggestionsBox.style.display === 'block' && currentSuggestions.length > 0) {
+                     navigateSuggestions(1); // Navegar sugerencias hacia abajo
+                 } else {
+                    navigateHistory(1); // Navegar historial hacia adelante
+                 }
+                break;
+             case 'Tab':
+                e.preventDefault(); // Siempre prevenir default de Tab
+                 if (currentSuggestions.length === 1) {
+                    // Si solo hay una sugerencia, autocompletarla
+                    autocompleteSuggestion(currentSuggestions[0]);
+                 } else if (currentSuggestions.length > 1) {
+                     // Si hay varias, mostrar debajo del input (o navegar con Tab)
+                     navigateSuggestions(1); // Ciclar por las sugerencias con Tab
+                 }
+                 // Si no hay sugerencias, Tab no hace nada (o podría intentar autocompletar archivos/directorios en futuro)
+                break;
+            case 'Escape':
+                 if (suggestionsBox.style.display === 'block') {
+                     suggestionsBox.style.display = 'none';
+                     currentSuggestions = [];
+                     selectedSuggestionIndex = -1;
+                      updateAriaAutocomplete(false);
+                 } else {
+                    terminalInput.value = ''; // Limpiar input si no hay sugerencias
+                 }
+                break;
+        }
     });
+
+    // Usar debounce para las sugerencias y tips contextuales
+    const debouncedUpdateSuggestions = debounce(updateSuggestions, DEBOUNCE_DELAY);
+    const debouncedContextTips = debounce(checkContextTip, DEBOUNCE_DELAY * 2); // Más retraso para tips
+
+    terminalInput.addEventListener('input', () => {
+        debouncedUpdateSuggestions();
+        debouncedContextTips(terminalInput.value);
+        // Si el input está vacío, ocultar sugerencias inmediatamente
+        if (terminalInput.value.trim() === '') {
+            suggestionsBox.style.display = 'none';
+            currentSuggestions = [];
+             selectedSuggestionIndex = -1;
+             updateAriaAutocomplete(false);
+        }
+    });
+
+     // Ocultar sugerencias si se hace clic fuera
+    document.addEventListener('click', (e) => {
+        if (!terminalContainer.contains(e.target)) {
+            suggestionsBox.style.display = 'none';
+            currentSuggestions = [];
+            selectedSuggestionIndex = -1;
+             updateAriaAutocomplete(false);
+        }
+    });
+
+    // Enfocar input al hacer clic en cualquier lugar de la terminal
+    terminalContainer.addEventListener('click', (e) => {
+         // Evitar re-enfocar si se hace clic en un enlace dentro del output
+         if (e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON') {
+            terminalInput.focus();
+         }
+    });
+
+
+    // --- INICIO DE LA APLICACIÓN ---
+    document.addEventListener('DOMContentLoaded', () => {
+        footerYear.textContent = new Date().getFullYear();
+        loadSettings(); // Cargar configuración primero
+        updateRootRgbVariables(); // Calcular colores derivados
+        simulateLoading(); // Iniciar animación de carga
+        initParticles(); // Iniciar partículas (respetará settings.particlesEnabled)
+
+         // Reproducir audio de fondo en la primera interacción del usuario
+        const startAudioInteraction = () => {
+             if (settings.soundEnabled && audio.bg && audio.bg.paused) {
+                playSound('bg');
+             }
+             document.body.removeEventListener('click', startAudioInteraction);
+             document.body.removeEventListener('keydown', startAudioInteraction);
+        };
+        document.body.addEventListener('click', startAudioInteraction, { once: true });
+        document.body.addEventListener('keydown', startAudioInteraction, { once: true });
+    });
+
   </script>
 </body>
 </html>
-
-

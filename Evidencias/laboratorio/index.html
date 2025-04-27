@@ -3,1524 +3,2005 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>CyberLab Dashboard – Fondo Aurora Pixelada</title>
+  <title>CyberLab Overdrive Dashboard – Interfaz Holográfica v2.0</title>
   <!-- Importación de fuentes -->
   <link href="https://fonts.googleapis.com/css?family=Share+Tech+Mono|VT323" rel="stylesheet">
-  <!-- Bootstrap CSS -->
+  <!-- Bootstrap CSS (Mantenido para estructura base si se necesita, pero menos dependiente) -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <!-- Font Awesome para Iconos -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <style>
     /* --------------------------------------------------
-       VARIABLES GLOBALES Y RESET
+       VARIABLES GLOBALES Y RESET FUTURISTA
     -------------------------------------------------- */
     :root {
-      /* Fuentes y colores generales */
+      /* Paleta de Colores Neón Refinada */
       --font-main: 'Share Tech Mono', monospace;
       --font-heading: 'VT323', monospace;
-      --color-bg: #000; /* Fondo negro */
-      --color-text: #ffffff;
-      --color-accent: #0aff99;
-      --color-accent2: #ff00aa;
-      --color-red: #ff1919; /* Tono rojo para las partículas */
-      --color-muted: #aaaaaa;
-      --hover-shadow: 0 4px 15px rgba(255, 25, 25, 0.6);
-      /* Transiciones y breakpoint */
-      --transition-fast: 0.3s;
+      --color-bg-deep: #02040a; /* Más profundo que negro */
+      --color-bg-layer: rgba(10, 15, 25, 0.7); /* Para glassmorphism */
+      --color-text: #e0f0ff; /* Blanco azulado suave */
+      --color-text-muted: #88aaff; /* Azul pálido para texto secundario */
+      --color-accent: #00f0ff; /* Cyan eléctrico principal */
+      --color-accent2: #ff00aa; /* Magenta secundario */
+      --color-accent3: #f0ff00; /* Amarillo neón para alertas/highlights */
+      --color-red: #ff1919; /* Rojo para errores/partículas */
+      --color-border: rgba(0, 240, 255, 0.3); /* Borde base translúcido */
+      --color-border-active: rgba(0, 240, 255, 0.8);
+      --color-shadow: rgba(0, 240, 255, 0.15); /* Sombra Neón */
+      --color-glass-bg: rgba(15, 25, 35, 0.65); /* Fondo para efecto cristal */
+      --color-skeleton-base: rgba(224, 240, 255, 0.05);
+      --color-skeleton-shine: rgba(224, 240, 255, 0.1);
+
+      /* Efectos y Transiciones */
+      --blur-amount: 10px; /* Ligeramente menos blur */
+      --saturate-amount: 150%;
+      --transition-fast: 0.25s;
+      --transition-medium: 0.5s;
+      --transition-slow: 0.8s;
+      --hover-scale: 1.03;
+      --active-scale: 0.98;
+
+      /* Layout */
       --mobile-break: 768px;
+      --scrollbar-width: 6px;
     }
-    
+
     /* RESET Y BASE */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      scrollbar-width: thin; /* Firefox */
+      scrollbar-color: var(--color-accent) var(--color-bg-layer); /* Firefox */
     }
+    /* Custom Scrollbar (Webkit) */
+    ::-webkit-scrollbar {
+      width: var(--scrollbar-width);
+      height: var(--scrollbar-width);
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: var(--color-accent);
+      border-radius: calc(var(--scrollbar-width) / 2);
+      border: 1px solid var(--color-bg-layer);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background-color: var(--color-accent2);
+    }
+
+    html {
+      scroll-behavior: smooth; /* Scroll suave */
+    }
+
     body {
-      background: var(--color-bg);
+      background-color: var(--color-bg-deep);
       color: var(--color-text);
       font-family: var(--font-main);
       overflow-x: hidden;
-      position: relative;
+      position: relative; /* Para capas de fondo */
+      min-height: 100vh;
+      cursor: default; /* Cursor por defecto del sistema */
     }
-    
-    /* --------------------------------------------------
-       PANTALLA DE BIENVENIDA (NUEVO)
-    -------------------------------------------------- */
-    .welcome-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.85);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 11000;
-      backdrop-filter: blur(5px);
-    }
-    .welcome-panel {
-      background: rgba(10,255,153,0.1);
-      border: 2px solid var(--color-accent);
-      padding: 2rem;
-      border-radius: 10px;
-      text-align: center;
-    }
-    .welcome-panel h1 {
-      font-family: var(--font-heading);
-      font-size: 2.5rem;
-      color: var(--color-accent);
-      margin-bottom: 1rem;
-    }
-    .welcome-panel p {
-      font-size: 1.2rem;
-      margin-bottom: 1.5rem;
-    }
-    .welcome-panel button {
-      background: var(--color-accent);
-      color: var(--color-bg);
-      border: none;
-      padding: 0.8rem 2rem;
-      font-size: 1rem;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background var(--transition-fast);
-    }
-    .welcome-panel button:hover {
-      background: var(--color-accent2);
-    }
-    
 
-    
-    .particles {
-      /* Se posiciona fixed para estar en el root y se ubica por encima */
+    /* CAPAS DE FONDO */
+    body::before { /* Capa de Gradiente Animado Sutil */
+      content: '';
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(60deg, rgba(0, 240, 255, 0.02), rgba(255, 0, 170, 0.02), rgba(0, 50, 150, 0.03));
+      background-size: 300% 300%;
+      animation: animatedGradient 35s ease infinite;
+      z-index: -10;
       pointer-events: none;
-      overflow: hidden;
-      z-index: 1; /* Por encima del video */
     }
-    
-    .particle {
-      position: absolute;
-      /* Partículas más grandes */
-      width: 3px;
-      height: 3px;
-      background: var(--color-red);
-      opacity: 0.8;
-      /* Nueva animación con glitch */
-      animation: glitchParticle 5s linear infinite;
+    @keyframes animatedGradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
-    
-    /* 
-       KEYFRAMES con pequeñas sacudidas (shifts) 
-       para simular un efecto glitch mientras se mueven.
-    */
-    @keyframes glitchParticle {
-      0% {
-        transform: translateY(100vh) translateX(0);
-        opacity: 0;
-      }
-      10% {
-        transform: translateY(90vh) translateX(5px) scale(1.2);
-        opacity: 0.6;
-      }
-      12% {
-        transform: translateY(88vh) translateX(-3px) scale(1.0);
-        opacity: 1;
-      }
-      25% {
-        transform: translateY(60vh) translateX(0);
-        opacity: 1;
-      }
-      30% {
-        transform: translateY(58vh) translateX(-4px) scale(1.1);
-      }
-      40% {
-        transform: translateY(50vh) translateX(2px) scale(0.9);
-      }
-      50% {
-        transform: translateY(40vh) translateX(0) scale(1.2);
-      }
-      55% {
-        transform: translateY(35vh) translateX(3px) scale(1.0);
-      }
-      70% {
-        transform: translateY(20vh) translateX(-2px) scale(1.1);
-      }
-      80% {
-        transform: translateY(10vh) translateX(4px) scale(0.8);
-      }
-      100% {
-        transform: translateY(-10px) translateX(-3px) scale(1);
-        opacity: 0;
-      }
-    }
-    
-    /* --------------------------------------------------
-       ESTILOS GENERALES PARA ENLACES, BOTONES, IMÁGENES Y TABLAS
-    -------------------------------------------------- */
-    a, button {
-      text-decoration: none;
-      color: inherit;
-      cursor: pointer;
-    }
-    img {
-      max-width: 100%;
-      display: block;
-    }
-    ul, li {
-      list-style: none;
-    }
-    
-    /* --------------------------------------------------
-       CURSOR PERSONALIZADO (opcional)
-    -------------------------------------------------- */
-    body.custom-cursor { cursor: none; }
-    .cursor-dot, .cursor-dot-expanded {
+
+    #bg-video { /* Video de Fondo */
       position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      object-fit: cover;
+      z-index: -9;
+      opacity: 0.25; /* Más sutil */
+      mix-blend-mode: screen;
       pointer-events: none;
-      mix-blend-mode: exclusion;
-      z-index: 9999;
-      transform: translate(-50%,-50%);
     }
-    .cursor-dot {
-      width: 12px;
-      height: 12px;
-      background-color: var(--color-accent2);
-      border-radius: 50%;
-      transition: background-color 0.2s;
+
+    #particles-js { /* Contenedor tsParticles */
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      z-index: -8;
+      pointer-events: none; /* Importante para no bloquear clicks */
     }
-    .cursor-dot-expanded {
-      width: 50px;
-      height: 50px;
-      border: 2px solid var(--color-accent2);
-      border-radius: 50%;
-      opacity: 0.5;
-      transition: width 0.3s, height 0.3s, border 0.3s, opacity 0.3s;
+
+    body::after { /* Capa de Scanlines */
+      content: "";
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(rgba(0, 0, 0, 0) 50%, rgba(0, 240, 255, 0.03) 50%);
+      background-size: 100% 3px; /* Más finas */
+      opacity: 0.15; /* Más sutil */
+      pointer-events: none;
+      z-index: 10; /* Encima de casi todo excepto UI flotante */
+      animation: scanlines 20s linear infinite;
+      mix-blend-mode: overlay;
     }
-    
+    @keyframes scanlines {
+      0% { background-position: 0 0; }
+      100% { background-position: 0 80px; }
+    }
+
     /* --------------------------------------------------
-       NAVBAR CYBERPUNK + BOOTSTRAP
+       CURSOR PERSONALIZADO Y BIENVENIDA ELIMINADOS
     -------------------------------------------------- */
-    /* Se mantiene el estilo personalizado y se agregan clases de Bootstrap */
+
+    /* --------------------------------------------------
+       NAVBAR FLOTANTE (Glass + Animación + Hover)
+    -------------------------------------------------- */
     nav.cyber-nav {
       position: fixed;
-      top: 20px;
+      top: 20px; /* Ligeramente más arriba */
       left: 50%;
       transform: translateX(-50%);
-      width: 70%;
-      max-height: 50px;
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(5px);
-      border: 2px solid var(--color-accent);
-      border-radius: 20px;
-      box-shadow: 0 0 20px rgba(10,255,153,0.3);
-      padding: 0.5rem 1rem;
-      z-index: 9999;
+      width: auto; /* Ajustar al contenido */
+      max-width: 90%; /* Un poco más ancho */
+      padding: 0.5rem 1.2rem;
+      background: var(--color-glass-bg);
+      backdrop-filter: blur(var(--blur-amount)) saturate(var(--saturate-amount));
+      border: 1px solid var(--color-border);
+      border-radius: 50px; /* Bordes redondeados */
+      box-shadow: 0 8px 32px 0 var(--color-shadow);
+      z-index: 999; /* Suficientemente alto */
       opacity: 0;
-      animation: navbarEnter 1.2s ease forwards;
+      display: flex;
+      align-items: center;
+      animation: navbarEnter 1.2s ease 0.2s forwards, float 8s ease-in-out infinite 1.5s; /* Inicia antes */
+      transition: background var(--transition-medium), box-shadow var(--transition-medium), backdrop-filter var(--transition-medium);
+      overflow: hidden;
     }
+    nav.cyber-nav::before { /* Borde animado */
+        content: ''; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px;
+        background: linear-gradient(60deg, var(--color-accent), var(--color-accent2), var(--color-accent));
+        background-size: 400% 400%; z-index: -1; border-radius: inherit;
+        animation: animatedBorderGradient 6s linear infinite;
+        opacity: 0; transition: opacity var(--transition-fast); pointer-events: none;
+    }
+    nav.cyber-nav:hover::before { opacity: 0.6; }
+
     @keyframes navbarEnter {
-      0% { transform: translate(-50%, -60px); opacity: 0; }
-      100% { transform: translate(-50%, 0); opacity: 1; }
+      from { transform: translate(-50%, -80px); opacity: 0; }
+      to { transform: translate(-50%, 0); opacity: 1; }
     }
-    /* Estructura del Navbar con Bootstrap */
-    .navbar-nav {
-      flex-direction: row;
+    @keyframes float {
+      0%, 100% { transform: translate(-50%, 0px); }
+      50% { transform: translate(-50%, -3px); } /* Flote sutil */
     }
-    .navbar-nav .nav-item {
-      margin-left: 1rem;
+    body.scrolled nav.cyber-nav {
+       background: rgba(20, 30, 45, 0.85); /* Más opaco */
+       box-shadow: 0 12px 45px 0 rgba(0, 240, 255, 0.2);
+       backdrop-filter: blur(12px) saturate(170%); /* Ajuste ligero */
     }
-    nav.cyber-nav a.nav-brand {
+
+    nav.cyber-nav .navbar-brand {
       font-family: var(--font-heading);
-      font-size: 1.5rem;
+      font-size: 1.7rem;
       color: var(--color-accent);
-      margin-right: 2rem;
-      text-shadow: 0 0 5px var(--color-accent);
+      margin-right: 1.5rem;
+      text-shadow: 0 0 10px var(--color-accent);
+      transition: text-shadow var(--transition-fast), color var(--transition-fast);
+      cursor: pointer;
     }
-    nav.cyber-nav a.nav-brand:hover {
-      text-shadow: 0 0 15px var(--color-accent);
-      transition: 0.3s;
+    nav.cyber-nav .navbar-brand:hover {
+      text-shadow: 0 0 20px var(--color-accent), 0 0 5px #fff;
+      color: #fff;
     }
+    .navbar-nav { flex-direction: row; }
+    .navbar-nav .nav-item { margin-left: 0.4rem; }
     nav.cyber-nav .nav-link {
       font-family: var(--font-main);
       color: var(--color-text);
-      font-size: 1rem;
+      font-size: 0.9rem;
       text-transform: uppercase;
-      padding: 0.5rem 1rem;
-      transition: color var(--transition-fast), text-shadow var(--transition-fast);
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      transition: color var(--transition-fast), background-color var(--transition-fast), text-shadow var(--transition-fast), transform var(--transition-fast);
+      position: relative;
+      cursor: pointer;
     }
-    nav.cyber-nav .nav-link:hover {
-      color: var(--color-accent);
-      text-shadow: 0 0 5px var(--color-accent);
+    nav.cyber-nav .nav-link::after { /* Indicador inferior sutil */
+        content: ''; position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%);
+        width: 0; height: 2px; background-color: var(--color-accent);
+        transition: width var(--transition-fast);
     }
-    
+    nav.cyber-nav .nav-link:hover,
+    nav.cyber-nav .nav-link:focus {
+      color: var(--color-bg-deep);
+      background-color: var(--color-accent);
+      text-shadow: none;
+      transform: translateY(-2px);
+    }
+    nav.cyber-nav .nav-link:hover::after { width: 60%; }
+    nav.cyber-nav .nav-link:active { transform: scale(var(--active-scale)); }
+
+    #volumeControl { font-size: 1.1rem; cursor: pointer; margin-left: 1rem; }
+    #volumeControl i { transition: color var(--transition-fast); }
+    #volumeControl:hover i { color: var(--color-accent2); }
+
+
     /* --------------------------------------------------
-       BARRAS DE PROGRESO
-    -------------------------------------------------- */
-    .progress-bar {
-      width: 100%;
-      height: 10px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 5px;
-      margin: 0.5rem 0;
-      overflow: hidden;
-    }
-    .progress {
-      height: 100%;
-      width: 0%;
-      background: var(--color-accent);
-      transition: width 0.1s;
-    }
-    
-    /* --------------------------------------------------
-       DASHBOARD Y PANELES
+       CONTENEDOR PRINCIPAL Y PANELES (Glass + Borde Animado)
     -------------------------------------------------- */
     .dashboard-container {
-      margin-top: 80px;
-      padding: 2rem;
+      padding: 100px 2.5rem 3rem 2.5rem; /* Menos padding lateral */
+      max-width: 1500px; /* Limitar ancho máximo */
+      margin: 0 auto;
     }
     .panel {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--color-accent);
-      border-radius: 10px;
-      padding: 1.5rem;
+      background: var(--color-glass-bg);
+      border: 1px solid var(--color-border);
+      border-radius: 15px;
+      padding: 2rem;
+      margin-bottom: 2.5rem;
+      box-shadow: 0 10px 35px 5px var(--color-shadow);
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(var(--blur-amount)) saturate(var(--saturate-amount));
+      transition: transform var(--transition-medium) ease, box-shadow var(--transition-medium) ease;
+      opacity: 0;
+      transform: translateY(30px);
+      animation: panelEnter 0.6s ease forwards;
+      cursor: default;
+    }
+    /* Animación de entrada escalonada más rápida */
+    .panel:nth-child(1) { animation-delay: 0.1s; }
+    .panel:nth-child(2) { animation-delay: 0.15s; }
+    .panel:nth-child(3) { animation-delay: 0.2s; }
+    .panel:nth-child(4) { animation-delay: 0.25s; }
+
+    @keyframes panelEnter {
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Borde animado en hover para paneles */
+    .panel::before {
+        content: ''; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px;
+        background: linear-gradient(70deg, var(--color-accent), var(--color-accent2), var(--color-accent3), var(--color-accent));
+        background-size: 400% 400%; z-index: -1; border-radius: inherit;
+        animation: animatedBorderGradient 10s linear infinite;
+        opacity: 0; transition: opacity var(--transition-fast); pointer-events: none;
+    }
+    .panel:hover {
+       transform: translateY(-5px) scale(1.01);
+       box-shadow: 0 15px 50px 10px rgba(0, 240, 255, 0.25);
+    }
+    .panel:hover::before { opacity: 0.7; }
+
+    .panel-title {
+      font-family: var(--font-heading);
+      font-size: 2.4rem;
+      text-align: center;
       margin-bottom: 2rem;
-      box-shadow: 0 0 15px rgba(10,255,153,0.2);
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, var(--color-accent), var(--color-text), var(--color-accent2));
+      background-size: 200% auto;
+      color: transparent;
+      background-clip: text;
+      -webkit-background-clip: text;
+      animation: textGradient 6s linear infinite;
+      text-shadow: 0 0 12px var(--color-shadow);
+      cursor: text;
+    }
+
+    /* --------------------------------------------------
+       GRID DE PROYECTOS (Hover mejorado, Imagen/GIF)
+    -------------------------------------------------- */
+    .projects-grid, .beta-testing {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); /* Ligeramente más pequeñas */
+      gap: 1.8rem; /* Menos gap */
+    }
+    .project-card, .beta-project {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--color-border);
+      border-radius: 10px;
+      padding: 0;
+      text-align: center;
+      transition: transform var(--transition-fast) ease-out, box-shadow var(--transition-fast) ease-out;
+      cursor: pointer;
       position: relative;
       overflow: hidden;
     }
-    .panel-title {
-      font-family: var(--font-heading);
-      font-size: 2rem;
+    .project-card::before, .beta-project::before { /* Borde Neón sutil constante */
+        content: ''; position: absolute; top: -1px; left: -1px; right: -1px; bottom: -1px;
+        border: 1px solid transparent; border-radius: inherit; z-index: 0;
+        background: linear-gradient(var(--color-accent), var(--color-accent2)) border-box;
+        -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: destination-out;
+        mask-composite: exclude;
+        opacity: 0.4; transition: opacity var(--transition-fast); pointer-events: none;
+    }
+    .project-card:hover, .beta-project:hover {
+      transform: translateY(-6px) scale(var(--hover-scale));
+      box-shadow: 0 8px 25px 5px var(--color-shadow);
+    }
+    .project-card:hover::before, .beta-project:hover::before { opacity: 1; }
+    .project-card:active, .beta-project:active { transform: scale(var(--active-scale)); transition-duration: 0.1s; }
+
+    .project-image-container {
+      width: 100%;
+      height: 140px; /* Un poco menos alta */
+      overflow: hidden;
+      position: relative;
+      border-radius: 10px 10px 0 0;
+      background-color: rgba(0,0,0,0.2); /* Fondo mientras carga img */
+    }
+    .project-image-container img {
+      width: 100%; height: 100%; object-fit: cover;
+      position: absolute; top: 0; left: 0;
+      transition: opacity var(--transition-medium) ease-in-out;
+      backface-visibility: hidden; /* Puede ayudar rendimiento en transiciones */
+    }
+    .project-image-container .project-gif { opacity: 0; }
+    .project-card:hover .project-image-container .project-portada { opacity: 0; }
+    .project-card:hover .project-image-container .project-gif { opacity: 1; }
+
+    .project-card-content {
+        padding: 1.2rem; /* Menos padding */
+        position: relative; z-index: 1;
+        background: linear-gradient(rgba(15, 25, 35, 0.7), rgba(15, 25, 35, 0.9));
+        border-top: 1px solid var(--color-border);
+    }
+    .project-card h3, .beta-project h3 {
+      margin-bottom: 0.6rem;
       color: var(--color-accent);
-      text-align: center;
-      margin-bottom: 1rem;
-      text-shadow: 0 0 5px var(--color-accent);
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      letter-spacing: 1px;
+      cursor: text; /* Heredado, pero explícito */
     }
-    
-    /* --------------------------------------------------
-       GRID DE PROYECTOS
-    -------------------------------------------------- */
-    .projects-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1.5rem;
+    .project-card p, .beta-project p {
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      margin-bottom: 0.8rem;
+      cursor: text;
     }
-    .project-card {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--color-accent);
-      border-radius: 5px;
-      padding: 1rem;
-      text-align: center;
-      transition: transform 0.3s, box-shadow 0.3s;
-      cursor: pointer;
+    /* Barra de Progreso Mejorada */
+    .progress-bar-container {
+      width: 100%; height: 6px; /* Más delgada */
+      background: rgba(0, 240, 255, 0.1);
+      border-radius: 3px; overflow: hidden;
       position: relative;
     }
-    .project-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 0 15px rgba(10,255,153,0.3);
+    .progress-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--color-accent), var(--color-accent2));
+      border-radius: 3px;
+      transition: width var(--transition-slow) cubic-bezier(0.25, 1, 0.5, 1);
+      position: relative;
     }
-    .project-card h3 {
-      margin-bottom: 0.5rem;
-      color: var(--color-accent);
-      font-family: var(--font-heading);
-    }
-    .project-card p {
-      font-size: 0.9rem;
-      color: var(--color-text);
-      margin-bottom: 0.5rem;
-    }
-    
+    .progress-fill::after { /* Brillo animado */
+        content: ''; position: absolute; top:0; left:0; right:0; bottom:0;
+        background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+        background-size: 80px 100%;
+        animation: progressBarShine 2s linear infinite;
+        opacity: 0.8;
+     }
+     @keyframes progressBarShine {
+        0% { background-position: -80px 0; }
+        100% { background-position: calc(100% + 80px) 0; }
+     }
+
     /* --------------------------------------------------
-       TABLAS Y GRÁFICOS – ANÁLISIS
+       ANÁLISIS, GRÁFICOS Y TABLAS (Hover y Estilo)
     -------------------------------------------------- */
     .analytics-container {
       display: flex;
       flex-wrap: wrap;
-      gap: 1rem;
+      gap: 2rem;
       justify-content: space-around;
+      align-items: center;
     }
-    .data-table {
-      width: 300px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--color-accent);
-      border-radius: 5px;
-      padding: 1rem;
-      margin-top: 1rem;
-      cursor: pointer;
+    .chart-container {
+        position: relative;
+        width: clamp(280px, 45%, 550px); /* Ajuste responsive */
+        height: 280px; /* Un poco menos alto */
+        padding: 1rem;
+        border: 1px solid var(--color-border);
+        border-radius: 10px;
+        background: rgba(15, 25, 35, 0.5);
+        transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+        cursor: default;
     }
-    .data-table table {
-      width: 100%;
-      border-collapse: collapse;
+    .chart-container:hover {
+        transform: scale(var(--hover-scale));
+        box-shadow: 0 0 20px var(--color-shadow);
     }
+    .data-table-container {
+      width: clamp(260px, 30%, 400px); /* Ajuste responsive */
+      background: rgba(15, 25, 35, 0.5);
+      border: 1px solid var(--color-border);
+      border-radius: 10px;
+      padding: 1.5rem;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+      cursor: default;
+    }
+    .data-table-container:hover {
+        transform: scale(var(--hover-scale));
+        box-shadow: 0 0 20px var(--color-shadow);
+    }
+    .data-table { width: 100%; border-collapse: collapse; }
     .data-table th, .data-table td {
-      padding: 0.5rem;
+      padding: 0.7rem 0.5rem;
       text-align: left;
-      font-size: 0.9rem;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      font-size: 0.85rem; /* Ligeramente más pequeño */
+      border-bottom: 1px solid rgba(0, 240, 255, 0.1);
       color: var(--color-text);
+      cursor: text;
     }
-    
+    .data-table th {
+      color: var(--color-accent);
+      font-family: var(--font-heading);
+      font-size: 1rem; letter-spacing: 1px;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table td:last-child { text-align: right; font-weight: bold; color: #fff; }
+
     /* --------------------------------------------------
-       DATOS DEL SISTEMA
+       DATOS DEL SISTEMA (Layout mejorado)
     -------------------------------------------------- */
     .system-data {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 2rem;
-      justify-content: center;
+      display: flex; flex-wrap: wrap; gap: 1.8rem; /* Menos gap */
+      justify-content: center; align-items: stretch;
     }
     .data-panel {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--color-accent);
-      border-radius: 5px;
-      padding: 1rem;
-      min-width: 250px;
-      text-align: center;
+      background: rgba(15, 25, 35, 0.5);
+      border: 1px solid var(--color-border); border-radius: 10px;
+      padding: 1.5rem; flex: 1; min-width: 220px; /* Más pequeño */
+      text-align: left;
+      display: flex; flex-direction: column; justify-content: center;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+      cursor: default;
     }
-    .system-graph {
-      width: 300px;
-      height: 300px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--color-accent);
-      border-radius: 5px;
-      padding: 1rem;
+     .data-panel:hover {
+        transform: scale(var(--hover-scale));
+        box-shadow: 0 0 15px var(--color-shadow);
     }
-    
+    .data-panel h4 {
+        font-family: var(--font-heading); color: var(--color-accent);
+        font-size: 1.2rem; margin-bottom: 1rem; text-align: center;
+        cursor: text;
+    }
+    .data-panel h4 i { margin-right: 0.5rem; color: var(--color-accent2); } /* Iconos coloridos */
+    .data-panel p {
+        margin-bottom: 0.7rem; font-size: 0.9rem; color: var(--color-text-muted);
+        display: flex; justify-content: space-between;
+        cursor: text;
+    }
+    .data-panel p span:last-child { color: var(--color-text); font-weight: bold; }
+    .data-panel p span:first-child { opacity: 0.8; }
+
+    .system-graph-container {
+      flex: 1.5; min-width: 260px; height: 280px; /* Ajustado */
+      padding: 1rem; border: 1px solid var(--color-border); border-radius: 10px;
+      background: rgba(15, 25, 35, 0.5);
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+      cursor: default;
+    }
+     .system-graph-container:hover {
+        transform: scale(var(--hover-scale));
+        box-shadow: 0 0 20px var(--color-shadow);
+    }
+     .system-graph-container canvas { max-height: 100%; }
+
+
     /* --------------------------------------------------
-       PANEL DE BETA TESTING
+       BETA TESTING (Usa misma grid y estilo de tarjeta)
     -------------------------------------------------- */
-    .beta-testing {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    .beta-project {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--color-accent);
-      border-radius: 5px;
-      padding: 1rem;
-      cursor: pointer;
-      transition: transform 0.3s, box-shadow 0.3s;
-      position: relative;
-    }
-    .beta-project:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 0 10px rgba(10,255,153,0.3);
-    }
-    
+    /* .beta-project hereda estilos de .project-card */
+
+
     /* --------------------------------------------------
-       MODAL PARA DETALLE DE PROYECTOS CON TABS
+       MODAL (Glass + Animación Entrada/Salida + Tabs Mejoradas)
     -------------------------------------------------- */
     .modal-proyecto {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.8);
-      display: none;
-      align-items: center;
-      justify-content: center;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; /* Usa 100% en vez de vw/vh a veces es más estable */
+      background: rgba(2, 4, 10, 0.75); /* Ligeramente más oscuro */
+      display: flex;
+      align-items: center; justify-content: center;
       z-index: 10000;
-      animation: fadeIn 0.5s ease;
+      backdrop-filter: blur(6px); /* Un poco más de blur */
+      opacity: 0; pointer-events: none;
+      transition: opacity var(--transition-medium) ease;
+      cursor: default;
     }
+    .modal-proyecto.visible {
+      opacity: 1; pointer-events: auto;
+    }
+
     .modal-content {
-      background: var(--color-bg);
-      border: 2px solid var(--color-accent);
-      border-radius: 10px;
-      padding: 1rem;
-      width: 95%;
-      max-width: 1000px;
-      max-height: 90vh;
+      background: var(--color-glass-bg);
+      border: 1px solid var(--color-border-active);
+      border-radius: 18px; /* Ligeramente menos redondeado */
+      padding: 0;
+      width: 90%; max-width: 1150px; /* Ligeramente más ancho */
+      height: 88vh; /* Ligeramente más alto */
       overflow: hidden;
       position: relative;
-      animation: slideIn 0.5s ease;
-      display: flex;
-      flex-direction: column;
+      box-shadow: 0 15px 60px 10px rgba(0, 240, 255, 0.25); /* Sombra más intensa */
+      backdrop-filter: blur(var(--blur-amount)) saturate(var(--saturate-amount));
+      display: flex; flex-direction: column;
+      transform: scale(0.95) translateY(15px); /* Animación sutil */
+      transition: transform var(--transition-medium) cubic-bezier(0.165, 0.84, 0.44, 1);
+      cursor: default;
+    }
+    .modal-proyecto.visible .modal-content {
+      transform: scale(1) translateY(0);
+    }
+
+    /* Borde animado para el modal */
+     .modal-content::before {
+        content: ''; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px;
+        background: linear-gradient(80deg, var(--color-accent), var(--color-accent2), var(--color-accent3), var(--color-accent));
+        background-size: 400% 400%; z-index: -1; border-radius: inherit;
+        animation: animatedBorderGradient 7s linear infinite;
+        opacity: 0.9; /* Casi siempre visible */
+        pointer-events: none;
+    }
+
+    .modal-header {
+      padding: 0.8rem 1.5rem; /* Menos padding vertical */
+      border-bottom: 1px solid var(--color-border);
+      position: relative;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-shrink: 0; /* Evitar que se encoja */
+    }
+    #modalTitle {
+        font-family: var(--font-heading); font-size: 1.7rem; color: var(--color-accent);
+        margin: 0; text-shadow: 0 0 8px var(--color-shadow);
+        cursor: text;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; /* Evitar overflow */
+        max-width: calc(100% - 50px); /* Espacio para botón cerrar */
     }
     .close-modal {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      font-size: 2rem;
-      color: var(--color-accent);
-      cursor: pointer;
+      font-size: 2.3rem; color: var(--color-accent); cursor: pointer;
+      line-height: 1; transition: color var(--transition-fast), transform var(--transition-fast);
+      position: absolute; top: 50%; right: 1.2rem; transform: translateY(-50%);
+      padding: 0 5px; /* Área de click más grande */
     }
-    /* --------------------------------------------------
-       TABS DE MODAL
-    -------------------------------------------------- */
-    .modal-tabs {
+    .close-modal:hover { color: var(--color-accent2); transform: translateY(-50%) rotate(90deg) scale(1.1); }
+
+    .modal-body {
       display: flex;
-      border-bottom: 1px solid var(--color-accent);
-      margin-bottom: 1rem;
+      flex-grow: 1;
+      overflow: hidden;
     }
-    .modal-tabs button {
-      flex: 1;
-      background: transparent;
-      border: none;
-      padding: 0.8rem;
-      font-family: var(--font-heading);
-      font-size: 1rem;
-      color: var(--color-text);
-      cursor: pointer;
-      transition: background var(--transition-fast);
-    }
-    .modal-tabs button.active,
-    .modal-tabs button:hover {
-      background: rgba(10,255,153,0.2);
-    }
-    .tab-content {
+
+    /* TABS VERTICALES */
+    .modal-tabs {
+      display: flex; flex-direction: column;
+      border-right: 1px solid var(--color-border);
+      padding: 0.8rem 0;
+      flex-shrink: 0;
+      width: 190px; /* Ligeramente más estrecho */
       overflow-y: auto;
-      height: calc(100% - 60px);
-      padding: 1rem;
+      background: rgba(10, 20, 30, 0.4); /* Fondo más notorio */
+      transition: width var(--transition-fast); /* Animación en móvil */
     }
-    .tab-pane {
-      display: none;
+    .modal-tabs button.tab-link {
+      background: transparent; border: none;
+      padding: 0.8rem 1.3rem; font-family: var(--font-main);
+      font-size: 0.85rem; color: var(--color-text-muted);
+      cursor: pointer;
+      text-align: left;
+      transition: background var(--transition-fast), color var(--transition-fast), border-left-color var(--transition-fast);
+      position: relative; border-left: 3px solid transparent;
+      width: 100%;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; /* Evitar overflow texto */
     }
-    .tab-pane.active {
-      display: block;
+    .modal-tabs button.tab-link i {
+        margin-right: 0.7rem; width: 1.2em; text-align: center;
+        color: var(--color-accent); transition: color var(--transition-fast);
+        opacity: 0.8;
     }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+    .modal-tabs button.tab-link.active,
+    .modal-tabs button.tab-link:hover {
+      background: rgba(0, 240, 255, 0.1);
+      color: var(--color-text);
+      border-left-color: var(--color-accent);
     }
-    
-    @keyframes slideIn {
-      from { transform: translateY(-50px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
+     .modal-tabs button.tab-link:hover i {
+         color: var(--color-accent2);
+         opacity: 1;
+     }
+    .modal-tabs button.tab-link.active {
+        font-weight: bold;
+        box-shadow: inset 3px 0 8px -2px var(--color-shadow);
     }
-    
+    .modal-tabs button.tab-link.active i {
+        opacity: 1;
+    }
+
+    /* CONTENIDO DE TABS */
+    .tab-content-container {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 1.5rem 2rem; /* Ajuste padding */
+      cursor: text;
+      position: relative; /* Para el skeleton overlay */
+    }
+    .tab-pane { display: none; animation: fadeIn 0.4s ease forwards; } /* Usar forwards */
+    .tab-pane.active { display: block; }
+
+    /* Estilos dentro de las tabs */
+    .tab-pane h3 {
+        font-family: var(--font-heading); font-size: 1.5rem;
+        color: var(--color-accent2); margin-bottom: 1.3rem;
+        border-bottom: 1px solid var(--color-border); padding-bottom: 0.5rem;
+    }
+    .tab-pane h4 {
+        font-family: var(--font-heading); font-size: 1.1rem;
+        color: var(--color-accent); margin: 1.5rem 0 0.8rem 0;
+    }
+    .tab-pane p, .tab-pane li { color: var(--color-text-muted); font-size: 0.9rem; line-height: 1.7; }
+    .tab-pane ul { list-style: none; padding-left: 0; }
+    .tab-pane ul li { margin-bottom: 0.5rem; position: relative; padding-left: 1.5rem; }
+    .tab-pane ul li::before {
+        content: '»'; font-family: monospace;
+        position: absolute; left: 0; top: 1px;
+        color: var(--color-accent); font-weight: bold;
+        font-size: 1.1em;
+    }
+    .tab-pane a { color: var(--color-accent); text-decoration: none; transition: color var(--transition-fast), text-shadow var(--transition-fast); cursor: pointer;}
+    .tab-pane a:hover { color: var(--color-accent3); text-shadow: 0 0 5px var(--color-accent3); }
+    .tab-pane li.completed { text-decoration: line-through; opacity: 0.7; } /* Para tareas completadas */
+
+    /* Inputs y Textareas */
+    .tab-pane textarea, .tab-pane input[type="text"] {
+        width: 100%; background: rgba(10, 20, 30, 0.7); color: var(--color-text);
+        border: 1px solid var(--color-border); border-radius: 5px; padding: 0.7rem;
+        font-family: var(--font-main); font-size: 0.9rem; margin-bottom: 0.8rem;
+        transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+        cursor: text;
+        resize: vertical; /* Permitir redimensionar verticalmente textarea */
+    }
+     .tab-pane textarea:focus, .tab-pane input[type="text"]:focus {
+        outline: none; border-color: var(--color-accent);
+        box-shadow: 0 0 10px var(--color-shadow);
+     }
+    .tab-pane button {
+        background: transparent; color: var(--color-accent);
+        border: 1px solid var(--color-accent); padding: 0.5rem 1.2rem;
+        font-size: 0.9rem; border-radius: 5px; cursor: pointer;
+        transition: all var(--transition-fast); margin-top: 0.5rem;
+        font-family: var(--font-main);
+    }
+    .tab-pane button:hover { background: var(--color-accent); color: var(--color-bg-deep); box-shadow: 0 0 8px var(--color-accent); }
+    .tab-pane button i { margin-right: 0.5rem; }
+
+    /* Iframe Prototipo */
+    #proIframe { width: 100%; height: 350px; border: 1px solid var(--color-border); border-radius: 5px; background: #eee; } /* Fondo gris claro */
+
+    /* Comentarios */
+    #comLista {
+       max-height: 250px; overflow-y: auto; margin-bottom: 1rem;
+       border: 1px solid var(--color-border); padding: 1rem; border-radius: 5px;
+       background: rgba(10, 20, 30, 0.3);
+    }
+    .comment { border-bottom: 1px dashed rgba(0, 240, 255, 0.1); padding-bottom: 0.8rem; margin-bottom: 0.8rem; }
+    .comment:last-child { border-bottom: none; margin-bottom: 0; }
+    .comment strong { color: var(--color-accent2); font-family: var(--font-heading); font-size: 1rem; }
+    .comment small { float: right; opacity: 0.6; font-size: 0.75rem; }
+    .comment p { margin: 0.3rem 0 0 0; font-size: 0.85rem; line-height: 1.5; }
+
+    /* Skeleton Loading */
+    .loading-state {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--color-glass-bg); /* Mismo fondo que el contenido */
+      padding: 1.5rem 2rem; /* Mismo padding */
+      z-index: 5;
+      display: none; /* Oculto por defecto */
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .modal-content.loading .loading-state {
+        display: block;
+        opacity: 1;
+    }
+    .skeleton {
+      background: linear-gradient(90deg, var(--color-skeleton-base) 25%, var(--color-skeleton-shine) 50%, var(--color-skeleton-base) 75%);
+      background-size: 200% 100%;
+      animation: skeleton-loading 1.8s infinite linear;
+      border-radius: 4px;
+      display: block; /* Asegurar que es block */
+    }
+    .skeleton-title { height: 1.8em; margin-bottom: 1.5em; width: 50%; }
+    .skeleton-text { height: 1em; margin-bottom: 0.7em; width: 90%; }
+    .skeleton-text.short { width: 60%; }
+    .skeleton-block { height: 150px; margin-bottom: 1em; }
+    .skeleton-list-item { height: 1.5em; margin-bottom: 1em; width: 80%; }
+    @keyframes skeleton-loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+
+    /* --------------------------------------------------
+       EFECTOS GLITCH Y TEXTO (Refinados)
+    -------------------------------------------------- */
+    .glitch-text { position: relative; }
+    .glitch-text::before,
+    .glitch-text::after {
+      content: attr(data-text); position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%; overflow: hidden; background: inherit;
+      pointer-events: none;
+      color: inherit; /* Heredar color base */
+    }
+    .glitch-text::before {
+      left: 2px; text-shadow: -1px 0 var(--color-accent);
+      clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+      animation: glitch-anim-1 3.5s infinite linear alternate-reverse; /* Más lento */
+    }
+    .glitch-text::after {
+      left: -2px; text-shadow: 1px 0 var(--color-accent2);
+      clip-path: polygon(0 100%, 100% 100%, 100% 55%, 0 55%);
+      animation: glitch-anim-2 4.5s infinite linear alternate-reverse; /* Más lento */
+    }
+    /* Keyframes simplificados para rendimiento */
+    @keyframes glitch-anim-1 {
+        0%, 100% { clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%); transform: translate(0, 0); }
+        10% { clip-path: polygon(0 60%, 100% 60%, 100% 100%, 0 100%); transform: translate(0.5px, -0.5px); }
+        20% { clip-path: polygon(0 20%, 100% 20%, 100% 55%, 0 55%); transform: translate(-0.5px, 0.5px); }
+        /* ... pocos pasos clave ... */
+    }
+     @keyframes glitch-anim-2 {
+        0%, 100% { clip-path: polygon(0 100%, 100% 100%, 100% 55%, 0 55%); transform: translate(0, 0); }
+        15% { clip-path: polygon(0 0, 100% 0, 100% 30%, 0 30%); transform: translate(-0.5px, 0.5px); }
+        25% { clip-path: polygon(0 70%, 100% 70%, 100% 90%, 0 90%); transform: translate(0.5px, -0.5px); }
+        /* ... pocos pasos clave ... */
+    }
+
+    @keyframes textGradient {
+       to { background-position: -200% center; }
+    }
+    @keyframes animatedBorderGradient {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+
     /* --------------------------------------------------
        RESPONSIVIDAD
     -------------------------------------------------- */
     @media (max-width: var(--mobile-break)) {
-      .panel-title { font-size: 1.8rem; }
-      nav.cyber-nav {
-        width: 90%;
-        top: 10px;
-        max-height: 45px;
-      }
-    }
-    
-    /* --------------------------------------------------
-       NUEVO: ESTILOS PARA EL EFECTO GLITCH (3 segundos)
-    -------------------------------------------------- */
-    @keyframes glitchEffect {
-      0% {
-        transform: translate(0);
-        opacity: 1;
-      }
-      20% {
-        transform: translate(-2px, 2px);
-        opacity: 0.8;
-      }
-      40% {
-        transform: translate(2px, -2px);
-        opacity: 0.9;
-      }
-      60% {
-        transform: translate(-2px, -2px);
-        opacity: 0.7;
-      }
-      80% {
-        transform: translate(2px, 2px);
-        opacity: 0.85;
-      }
-      100% {
-        transform: translate(0);
-        opacity: 1;
-      }
-    }
-    .glitch {
-      animation: glitchEffect 3s ease-out;
-    }
-    
-    /* --------------------------------------------------
-       NUEVO: Estilos para Iluminación y Sombras Dinámicas
-    -------------------------------------------------- */
-    .iluminar {
-      transition: box-shadow 0.3s ease, transform 0.3s ease;
-    }
-    .iluminar:hover {
-      box-shadow: 0 0 20px var(--color-accent);
-      transform: scale(1.02);
-    }
-    
-    /* --------------------------------------------------
-       NUEVO: Efectos de Glitch y Pixelado para textos
-    -------------------------------------------------- */
-    .glitch-text {
-      position: relative;
-      color: var(--color-text);
-    }
-    .glitch-text::before,
-    .glitch-text::after {
-      content: attr(data-text);
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      overflow: hidden;
-      clip: rect(0, 900px, 0, 0);
-    }
-    .glitch-text::before {
-      animation: glitch-anim 2s infinite linear alternate-reverse;
-      color: var(--color-accent);
-      z-index: -1;
-    }
-    .glitch-text::after {
-      animation: glitch-anim2 2s infinite linear alternate-reverse;
-      color: var(--color-accent2);
-      z-index: -2;
-    }
-    @keyframes glitch-anim {
-      0% { clip: rect(42px, 9999px, 44px, 0); transform: translate(2px, -2px); }
-      20% { clip: rect(12px, 9999px, 18px, 0); transform: translate(-2px, 0); }
-      40% { clip: rect(82px, 9999px, 90px, 0); transform: translate(2px, 2px); }
-      60% { clip: rect(32px, 9999px, 40px, 0); transform: translate(-2px, -2px); }
-      80% { clip: rect(22px, 9999px, 30px, 0); transform: translate(2px, 0); }
-      100% { clip: rect(52px, 9999px, 60px, 0); transform: translate(-2px, 2px); }
-    }
-    @keyframes glitch-anim2 {
-      0% { clip: rect(12px, 9999px, 20px, 0); transform: translate(-2px, 2px); }
-      20% { clip: rect(32px, 9999px, 40px, 0); transform: translate(2px, 0); }
-      40% { clip: rect(72px, 9999px, 80px, 0); transform: translate(-2px, -2px); }
-      60% { clip: rect(42px, 9999px, 50px, 0); transform: translate(2px, 2px); }
-      80% { clip: rect(22px, 9999px, 30px, 0); transform: translate(-2px, 0); }
-      100% { clip: rect(62px, 9999px, 70px, 0); transform: translate(2px, -2px); }
-    }
-    
-    /* --------------------------------------------------
-       NUEVO: Estilos para la imagen de fondo en las tarjetas
-    -------------------------------------------------- */
-    .project-image-container {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      z-index: 0;
-    }
-    .project-image-container img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .project-card > *:not(.project-image-container),
-    .beta-project > *:not(.project-image-container) {
-      position: relative;
-      z-index: 1;
-    }
-    
-    /* --------------------------------------------------
-       NUEVO: Mejoras Visuales para "Estado Visual del Repositorio"
-    -------------------------------------------------- */
-    /* Aplicar iluminación a la cabecera */
-    .repo-header.iluminar {
-      transition: box-shadow 0.3s ease, transform 0.3s ease;
-    }
-    .repo-header.iluminar:hover {
-      box-shadow: 0 0 20px var(--color-accent);
-      transform: scale(1.02);
-    }
-    /* Fondo gradiente en métricas */
-    .repo-metrics {
-      background: linear-gradient(135deg, rgba(10,255,153,0.1), rgba(255,25,25,0.1));
-      padding: 1rem;
-      border-radius: 10px;
-      transition: transform 0.3s ease;
-    }
-    .repo-metrics:hover {
-      transform: scale(1.02);
-    }
-    
-    /* --------------------------------------------------
-       NUEVO: VIDEO DE FONDO PARA PC Y GIF DE RESPALDO PARA MÓVILES
-    -------------------------------------------------- */
-    /* Se agrega el video de fondo en PC con z-index superior a la aurora */
-    #bg-video {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      object-fit: cover;
-      z-index: -5; /* Por encima de la aurora (-10) */
-    }
-    /* Media Query para dispositivos móviles: oculta el video y muestra un GIF de fondo */
-    @media (max-width: var(--mobile-break)) {
-      #bg-video {
-        display: none;
-      }
+      #bg-video { display: none; } /* Ocultar video en móvil */
       body {
-        background: url('gifs/red.gif') no-repeat center center fixed;
-        background-size: cover;
+          /* Opcional: Añadir fallback si el gradiente es pesado */
+          /* background: var(--color-bg-deep) url('path/to/mobile-fallback.gif') no-repeat center center fixed;
+          background-size: cover; */
       }
+      body::before, body::after { opacity: 0.1; } /* Reducir capas */
+
+      nav.cyber-nav { width: 95%; top: 10px; padding: 0.4rem 0.8rem; border-radius: 10px; }
+      nav.cyber-nav .navbar-brand { font-size: 1.4rem; margin-right: 0.8rem; }
+      nav.cyber-nav .nav-link { font-size: 0.75rem; padding: 0.4rem 0.5rem; }
+      #volumeControl { display: none; }
+
+      .dashboard-container { padding: 80px 1rem 1rem 1rem; }
+      .panel { padding: 1.5rem; border-radius: 10px; }
+      .panel-title { font-size: 1.8rem; }
+
+      .projects-grid, .beta-testing { grid-template-columns: 1fr; gap: 1.5rem;}
+
+      .analytics-container, .system-data { flex-direction: column; align-items: center; gap: 1.5rem;}
+      .chart-container, .data-table-container, .data-panel, .system-graph-container { width: 100%; max-width: 400px; height: auto; /* Permitir altura auto */}
+      .chart-container { height: 250px; }
+      .system-graph-container { height: 250px; }
+
+      .modal-content { width: 95%; height: 90vh; border-radius: 15px; }
+      .modal-header { padding: 0.6rem 1rem; }
+      #modalTitle { font-size: 1.4rem; max-width: calc(100% - 40px); }
+      .close-modal { font-size: 2rem; right: 0.8rem; }
+
+      .modal-body { flex-direction: column; } /* Tabs arriba */
+      .modal-tabs {
+          flex-direction: row; /* Horizontal */
+          border-right: none; border-bottom: 1px solid var(--color-border);
+          width: 100%; padding: 0.3rem 0;
+          overflow-x: auto; /* Scroll horizontal para tabs */
+          overflow-y: hidden;
+          flex-shrink: 0; /* No encoger verticalmente */
+          background: rgba(10, 20, 30, 0.6); /* Fondo un poco más oscuro */
+          /* Ocultar scrollbar visualmente si es necesario */
+          -ms-overflow-style: none; /* IE and Edge */
+          scrollbar-width: none; /* Firefox */
+      }
+       .modal-tabs::-webkit-scrollbar { display: none; /* Chrome, Safari, Opera */ }
+
+      .modal-tabs button.tab-link {
+          border-left: none; border-bottom: 3px solid transparent;
+          padding: 0.6rem 0.8rem; /* Menos padding */
+          text-align: center; flex-shrink: 0; /* No encoger botones */
+          font-size: 0.8rem;
+      }
+      .modal-tabs button.tab-link i { margin-right: 0.4rem; }
+      .modal-tabs button.tab-link.active, .modal-tabs button.tab-link:hover {
+          border-bottom-color: var(--color-accent); border-left: none;
+          box-shadow: none; /* Quitar sombra inset */
+          background: rgba(0, 240, 255, 0.15);
+      }
+      .tab-content-container { padding: 1.2rem; } /* Menos padding */
+      .tab-pane h3 { font-size: 1.3rem; }
+      .tab-pane h4 { font-size: 1rem; }
+      #proIframe { height: 250px; }
     }
+
   </style>
 </head>
-<body>
-  <!-- PANTALLA DE BIENVENIDA INICIAL (NUEVO) -->
-  <div id="welcomeOverlay" class="welcome-overlay">
-    <div class="welcome-panel">
-      <h1>Bienvenido a CyberLab</h1>
-      <p>Al hacer clic en "Aceptar", la experiencia cambiará a un mundo cyberpunk interactivo.</p>
-      <button id="welcomeAccept">Aceptar</button>
-    </div>
-  </div>
-  
-  <!-- AUDIO DE ANUNCIO RÁPIDO PARA LA BIENVENIDA (NUEVO) -->
-  <audio id="welcomeSound">
-    <source src="audio/anuncios/Sonido para Clicks.wav" type="audio/mp3">
-    Tu navegador no soporta este audio.
-  </audio>
-  
-  <!-- AUDIO DE MÚSICA DE FONDO (NUEVO) -->
-  <audio id="bgMusic" loop>
-    <source src="audio/general/sound.flac" type="audio/mp3">
-    Tu navegador no soporta este audio.
-  </audio>
-  
-  <!-- ==================================================
-       VIDEO DE FONDO PARA PC
-       Se agrega sin eliminar otros elementos. En móviles se ocultará mediante media query.
-  ================================================== -->
-  <video id="bg-video" autoplay muted loop>
+<body> <!-- Sin clases extra -->
+
+  <!-- AUDIO -->
+  <audio id="bgMusic" loop><source src="audio/general/sound.flac" type="audio/flac"></audio>
+  <audio id="clickSound"><source src="audio/click/Sonido para Clicks.wav" type="audio/wav"></audio>
+  <audio id="tabSound"><source src="audio/pestaña/Pestañas.wav" type="audio/wav"></audio>
+  <!-- <audio id="hoverSound"><source src="audio/hover/subtle_hover.wav" type="audio/wav"></audio> --> <!-- Hover sound puede ser molesto sin cursor dedicado -->
+  <audio id="modalOpenSound"><source src="audio/modal/modal_open.wav" type="audio/wav"></audio>
+  <audio id="modalCloseSound"><source src="audio/modal/modal_close.wav" type="audio/wav"></audio>
+  <audio id="successSound"><source src="audio/feedback/success.wav" type="audio/wav"></audio> <!-- Ejemplo feedback -->
+  <audio id="errorSound"><source src="audio/feedback/error.wav" type="audio/wav"></audio> <!-- Ejemplo feedback -->
+
+  <!-- FONDO VIDEO/PARTÍCULAS -->
+  <video id="bg-video" autoplay muted loop playsinline>
     <source src="mp4/videoplayback.mp4" type="video/mp4">
-    Tu navegador no soporta videos de fondo.
+    Tu navegador no soporta video HTML5.
   </video>
-  
-  <!-- ==================================================
-       FONDO CON AURORA NEGRA Y PARTICULAS ROJAS
-  ================================================== -->
-  <div class="background-aurora">
-    <div class="particles"></div>
-  </div>
-  
-  <!-- ==================================================
-       NAVBAR DE NAVEGACIÓN CON BOOTSTRAP
-  ================================================== -->
+  <div id="particles-js"></div>
+
+  <!-- NAVBAR -->
   <nav class="cyber-nav navbar navbar-expand-lg">
-    <a class="nav-brand navbar-brand" href="../Menu.html">CyberLab</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarContent" 
-      aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarContent">
-      <ul class="navbar-nav ml-auto">
+    <a class="navbar-brand glitch-text" data-text="CyberLab" href="../Menu.html">CyberLab</a>
+    <!-- Navbar Toggler (opcional si se necesita en móvil extremo) -->
+    <!-- <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon" style="color: var(--color-accent);"></span>
+    </button> -->
+    <div class="collapse navbar-collapse" id="navbarContent"> <!-- Mantenemos colapso por si acaso -->
+      <ul class="navbar-nav ml-auto align-items-center">
         <li class="nav-item"><a class="nav-link" href="#panel1">Proyectos</a></li>
         <li class="nav-item"><a class="nav-link" href="#panel2">Análisis</a></li>
         <li class="nav-item"><a class="nav-link" href="#panel3">Sistema</a></li>
-        <li class="nav-item"><a class="nav-link" href="#panel4">Beta Testing</a></li>
+        <li class="nav-item"><a class="nav-link" href="#panel4">Beta Tests</a></li>
+        <li class="nav-item">
+            <a class="nav-link" id="volumeControl" href="#" title="Control de Volumen">
+                <i class="fas fa-volume-up"></i>
+            </a>
+        </li>
       </ul>
     </div>
   </nav>
-  
-  <!-- ==================================================
-       CONTENEDOR PRINCIPAL DEL DASHBOARD
-  ================================================== -->
+
+  <!-- DASHBOARD CONTAINER -->
   <div class="dashboard-container">
-    <!-- PANEL 1: Proyectos en Progreso -->
+
+    <!-- PANEL 1: Proyectos -->
     <section id="panel1" class="panel">
       <h2 class="panel-title glitch-text" data-text="Proyectos en Progreso">Proyectos en Progreso</h2>
       <div class="projects-grid">
-        <!-- Cada tarjeta contiene un data-project con su ID o nombre -->
-        <div class="project-card" data-project="Proyecto 1">
+        <!-- Tarjeta Proyecto Ejemplo (data-project es la clave en el objeto JS) -->
+        <div class="project-card" data-project="Nexus">
           <div class="project-image-container">
-            <img class="project-portada" src="https://i.pinimg.com/736x/c9/3d/88/c93d88b5f29c00ee90a1f16cd8e26609.jpg" alt="Portada">
-            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Proyecto+1" alt="Gif de portada" style="display:none;">
+            <img class="project-portada" src="https://i.pinimg.com/736x/c9/3d/88/c93d88b5f29c00ee90a1f16cd8e26609.jpg" alt="Portada Proyecto Nexus">
+            <img class="project-gif" src="https://media.giphy.com/media/VbnUQpnihPSIgIXuZv/giphy.gif" alt="Gif Proyecto Nexus">
           </div>
-          <h3>Proyecto 1</h3>
-          <p>Estado: 45% completado</p>
-          <div class="progress-bar"><div class="progress" style="width:45%;"></div></div>
+          <div class="project-card-content">
+            <h3>Proyecto Nexus</h3>
+            <p>Estado: Desarrollo Alfa</p>
+            <div class="progress-bar-container">
+              <div class="progress-fill" data-progress="45" style="width: 0%;"></div>
+            </div>
+          </div>
         </div>
-        <div class="project-card" data-project="Proyecto 2">
+         <div class="project-card" data-project="QuantumLeap">
           <div class="project-image-container">
-            <img class="project-portada" src="https://i.pinimg.com/736x/3b/05/7f/3b057f3b20c81d295cc2f4b359f695ea.jpg" alt="Portada">
-            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Proyecto+2" alt="Gif de portada" style="display:none;">
+            <img class="project-portada" src="https://i.pinimg.com/736x/3b/05/7f/3b057f3b20c81d295cc2f4b359f695ea.jpg" alt="Portada Quantum Leap AI">
+            <img class="project-gif" src="https://media.giphy.com/media/l41lGnxllmN3YqOyI/giphy.gif" alt="Gif Quantum Leap AI">
           </div>
-          <h3>Proyecto 2</h3>
-          <p>Estado: 60% completado</p>
-          <div class="progress-bar"><div class="progress" style="width:60%;"></div></div>
+          <div class="project-card-content">
+            <h3>Quantum Leap AI</h3>
+            <p>Estado: Optimización Beta</p>
+            <div class="progress-bar-container">
+              <div class="progress-fill" data-progress="60" style="width: 0%;"></div>
+            </div>
+          </div>
         </div>
-        <div class="project-card" data-project="Proyecto 3">
+         <div class="project-card" data-project="TitanProtocol">
           <div class="project-image-container">
-            <img class="project-portada" src="https://i.pinimg.com/736x/ed/3a/fc/ed3afc8254a0d8c4c2c45d8db8773e6c.jpg" alt="Portada">
-            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Proyecto+3" alt="Gif de portada" style="display:none;">
+            <img class="project-portada" src="https://i.pinimg.com/736x/ed/3a/fc/ed3afc8254a0d8c4c2c45d8db8773e6c.jpg" alt="Portada Titan Protocol">
+            <img class="project-gif" src="https://media.giphy.com/media/l41lGnxllmN3YqOyI/giphy.gif" alt="Gif Titan Protocol">
           </div>
-          <h3>Proyecto 3</h3>
-          <p>Estado: 30% completado</p>
-          <div class="progress-bar"><div class="progress" style="width:30%;"></div></div>
+          <div class="project-card-content">
+            <h3>Titan Protocol</h3>
+            <p>Estado: Diseño UI</p>
+            <div class="progress-bar-container">
+              <div class="progress-fill" data-progress="30" style="width: 0%;"></div>
+            </div>
+          </div>
         </div>
-        <div class="project-card" data-project="Proyecto 4">
+         <div class="project-card" data-project="AetherNetwork">
           <div class="project-image-container">
-            <img class="project-portada" src="https://i.pinimg.com/736x/1e/f8/fa/1ef8fa667ab0de78c48a21951be9d99a.jpg" alt="Portada">
-            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Proyecto+4" alt="Gif de portada" style="display:none;">
+            <img class="project-portada" src="https://i.pinimg.com/736x/1e/f8/fa/1ef8fa667ab0de78c48a21951be9d99a.jpg" alt="Portada Aether Network">
+            <img class="project-gif" src="https://media.giphy.com/media/l41lGnxllmN3YqOyI/giphy.gif" alt="Gif Aether Network">
           </div>
-          <h3>Proyecto 4</h3>
-          <p>Estado: 80% completado</p>
-          <div class="progress-bar"><div class="progress" style="width:80%;"></div></div>
+          <div class="project-card-content">
+            <h3>Aether Network</h3>
+            <p>Estado: Despliegue Inminente</p>
+            <div class="progress-bar-container">
+              <div class="progress-fill" data-progress="80" style="width: 0%;"></div>
+            </div>
+          </div>
         </div>
-        <div class="project-card" data-project="Proyecto 5">
+        <div class="project-card" data-project="Chimera"> <!-- Clave usada en Beta también -->
           <div class="project-image-container">
-            <img class="project-portada" src="https://i.pinimg.com/736x/7d/54/f0/7d54f0f2323f539d580cf13078462648.jpg" alt="Portada">
-            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Proyecto+5" alt="Gif de portada" style="display:none;">
+            <img class="project-portada" src="https://i.pinimg.com/736x/7d/54/f0/7d54f0f2323f539d580cf13078462648.jpg" alt="Portada Project Chimera">
+            <img class="project-gif" src="https://media.giphy.com/media/l41lGnxllmN3YqOyI/giphy.gif" alt="Gif Project Chimera">
           </div>
-          <h3>Proyecto 5</h3>
-          <p>Estado: 50% completado</p>
-          <div class="progress-bar"><div class="progress" style="width:50%;"></div></div>
+          <div class="project-card-content">
+            <h3>Project Chimera</h3>
+            <p>Estado: Feedback UI/UX</p>
+            <div class="progress-bar-container">
+              <div class="progress-fill" data-progress="50" style="width: 0%;"></div>
+            </div>
+          </div>
         </div>
-        <div class="project-card" data-project="Proyecto 6">
+        <div class="project-card" data-project="Stealth"> <!-- Clave usada en Beta también -->
           <div class="project-image-container">
-            <img class="project-portada" src="https://i.pinimg.com/736x/95/fd/07/95fd07104c3665c009f97b2772caf6b7.jpg" alt="Portada">
-            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Proyecto+6" alt="Gif de portada" style="display:none;">
+            <img class="project-portada" src="https://i.pinimg.com/736x/95/fd/07/95fd07104c3665c009f97b2772caf6b7.jpg" alt="Portada Stealth Protocol">
+            <img class="project-gif" src="https://media.giphy.com/media/l41lGnxllmN3YqOyI/giphy.gif" alt="Gif Stealth Protocol">
           </div>
-          <h3>Proyecto 6</h3>
-          <p>Estado: 70% completado</p>
-          <div class="progress-bar"><div class="progress" style="width:70%;"></div></div>
+          <div class="project-card-content">
+            <h3>Stealth Protocol</h3>
+            <p>Estado: Pruebas de Estrés</p>
+            <div class="progress-bar-container">
+              <div class="progress-fill" data-progress="70" style="width: 0%;"></div>
+            </div>
+          </div>
         </div>
-        <div class="project-card" data-project="Proyecto 7">
+        <div class="project-card" data-project="Helios"> <!-- Clave usada en Beta también -->
           <div class="project-image-container">
-            <img class="project-portada" src="https://i.pinimg.com/736x/53/a1/25/53a125f83bb386fe6343587e00915d98.jpg" alt="Portada">
-            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Proyecto+7" alt="Gif de portada" style="display:none;">
+            <img class="project-portada" src="https://i.pinimg.com/736x/53/a1/25/53a125f83bb386fe6343587e00915d98.jpg" alt="Portada Helios Framework">
+            <img class="project-gif" src="https://media.giphy.com/media/l41lGnxllmN3YqOyI/giphy.gif" alt="Gif Helios Framework">
           </div>
-          <h3>Proyecto 7</h3>
-          <p>Estado: 40% completado</p>
-          <div class="progress-bar"><div class="progress" style="width:40%;"></div></div>
+          <div class="project-card-content">
+            <h3>Helios Framework</h3>
+            <p>Estado: Integración API</p>
+            <div class="progress-bar-container">
+              <div class="progress-fill" data-progress="40" style="width: 0%;"></div>
+            </div>
+          </div>
         </div>
-        <div class="project-card" data-project="Proyecto 8">
+        <div class="project-card" data-project="Synapse"> <!-- Clave usada en Beta también -->
           <div class="project-image-container">
-            <img class="project-portada" src="https://i.pinimg.com/474x/d8/44/8f/d8448f7fd7e6bb2177a3f35856bcde8d.jpg" alt="Portada">
-            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Proyecto+8" alt="Gif de portada" style="display:none;">
+            <img class="project-portada" src="https://i.pinimg.com/474x/d8/44/8f/d8448f7fd7e6bb2177a3f35856bcde8d.jpg" alt="Portada Synapse Link">
+            <img class="project-gif" src="https://media.giphy.com/media/l41lGnxllmN3YqOyI/giphy.gif" alt="Gif Synapse Link">
           </div>
-          <h3>Proyecto 8</h3>
-          <p>Estado: 55% completado</p>
-          <div class="progress-bar"><div class="progress" style="width:55%;"></div></div>
+          <div class="project-card-content">
+            <h3>Synapse Link</h3>
+            <p>Estado: Lanzamiento RC</p>
+            <div class="progress-bar-container">
+              <div class="progress-fill" data-progress="55" style="width: 0%;"></div>
+            </div>
+          </div>
         </div>
-        <div class="project-card" data-project="Proyecto 9">
+        <div class="project-card" data-project="Warden"> <!-- Clave usada en Beta también -->
           <div class="project-image-container">
-            <img class="project-portada" src="https://i.pinimg.com/474x/0f/2c/2c/0f2c2c06f7fdf767e5725e1f403bdf04.jpg" alt="Portada">
-            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Proyecto+9" alt="Gif de portada" style="display:none;">
+            <img class="project-portada" src="https://i.pinimg.com/474x/0f/2c/2c/0f2c2c06f7fdf767e5725e1f403bdf04.jpg" alt="Portada Warden Security">
+            <img class="project-gif" src="https://media.giphy.com/media/l41lGnxllmN3YqOyI/giphy.gif" alt="Gif Warden Security">
           </div>
-          <h3>Proyecto 9</h3>
-          <p>Estado: 85% completado</p>
-          <div class="progress-bar"><div class="progress" style="width:85%;"></div></div>
+          <div class="project-card-content">
+            <h3>Warden Security</h3>
+            <p>Estado: Auditoría Externa</p>
+            <div class="progress-bar-container">
+              <div class="progress-fill" data-progress="85" style="width: 0%;"></div>
+            </div>
+          </div>
         </div>
-        <div class="project-card" data-project="Proyecto 10">
+        <div class="project-card" data-project="NovaCore">
           <div class="project-image-container">
-            <img class="project-portada" src="https://i.pinimg.com/474x/d0/ae/4a/d0ae4aae65a7d80f633a8113ba092844.jpg" alt="Portada">
-            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Proyecto+10" alt="Gif de portada" style="display:none;">
+            <img class="project-portada" src="https://i.pinimg.com/474x/d0/ae/4a/d0ae4aae65a7d80f633a8113ba092844.jpg" alt="Portada Nova Core">
+            <img class="project-gif" src="https://media.giphy.com/media/l41lGnxllmN3YqOyI/giphy.gif" alt="Gif Nova Core">
           </div>
-          <h3>Proyecto 10</h3>
-          <p>Estado: 95% completado</p>
-          <div class="progress-bar"><div class="progress" style="width:95%;"></div></div>
+          <div class="project-card-content">
+            <h3>Nova Core</h3>
+            <p>Estado: Producción</p>
+            <div class="progress-bar-container">
+              <div class="progress-fill" data-progress="95" style="width: 0%;"></div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
-    
-    <!-- PANEL 2: Análisis y Gráficos -->
+
+    <!-- PANEL 2: Análisis -->
     <section id="panel2" class="panel">
-      <h2 class="panel-title">Análisis y Gráficos</h2>
+      <h2 class="panel-title glitch-text" data-text="Análisis de Datos">Análisis de Datos</h2>
       <div class="analytics-container">
-        <div style="position: relative; width: 400px; height: 250px; cursor:pointer;">
+        <div class="chart-container">
           <canvas id="chart1"></canvas>
         </div>
-        <div class="data-table" style="cursor:pointer;">
-          <table>
+        <div class="data-table-container">
+          <table class="data-table">
             <thead>
               <tr>
-                <th>Parámetro</th>
-                <th>Valor</th>
+                <th>Métrica Clave</th>
+                <th>Valor Actual</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>Carga del Sistema</td>
-                <td>68%</td>
+                <td>Rendimiento Global</td>
+                <td><span class="glitch-text" data-text="Óptimo">Óptimo</span></td>
               </tr>
               <tr>
-                <td>Velocidad</td>
-                <td>1200ms</td>
+                <td>Latencia Promedio</td>
+                <td><span id="analisis-latencia">85</span> ms</td>
+              </tr>
+               <tr>
+                <td>Carga de Red</td>
+                <td><span id="analisis-red">68</span>%</td>
               </tr>
               <tr>
                 <td>Proyectos Activos</td>
                 <td>10</td>
               </tr>
+               <tr>
+                <td>Anomalías Detectadas</td>
+                <td style="color: var(--color-accent3);"><span id="analisis-anomalias">1 Crítica</span></td>
+              </tr>
+               <tr>
+                  <td>Uptime Últimas 24h</td>
+                  <td>99.98%</td>
+               </tr>
             </tbody>
           </table>
         </div>
       </div>
     </section>
-    
-    <!-- PANEL 3: Datos del Sistema -->
+
+    <!-- PANEL 3: Sistema -->
     <section id="panel3" class="panel">
-      <h2 class="panel-title">Datos del Sistema</h2>
+      <h2 class="panel-title glitch-text" data-text="Estado del Sistema">Estado del Sistema</h2>
       <div class="system-data">
         <div class="data-panel">
-          <p>Memoria: 8GB / 16GB</p>
-          <p>CPU: 4.2 GHz</p>
-          <p>Almacenamiento: 500GB / 1TB</p>
+            <h4><i class="fas fa-server"></i>Núcleo Computacional</h4>
+            <p><span>CPU Load:</span> <span id="cpu-load">-- %</span></p>
+            <p><span>Memoria RAM:</span> <span id="ram-usage">-- GB / -- GB</span></p>
+            <p><span>Temp. CPU:</span> <span id="cpu-temp">-- °C</span></p>
+            <p><span>Almacenamiento SSD:</span> <span id="disk-usage">-- GB / -- TB</span></p>
         </div>
-        <div class="system-graph">
-          <canvas id="systemChart"></canvas>
+        <div class="system-graph-container">
+            <canvas id="systemChart"></canvas>
+        </div>
+         <div class="data-panel">
+             <h4><i class="fas fa-network-wired"></i>Conectividad</h4>
+             <p><span>Ping Global:</span> <span id="ping">-- ms</span></p>
+             <p><span>Ancho de Banda:</span> <span id="bandwidth">-- Gbps</span></p>
+             <p><span>Conexiones Activas:</span> <span id="connections">--</span></p>
+             <p><span>Estado Firewall:</span> <span style="color: var(--color-accent);">Activo</span></p>
         </div>
       </div>
     </section>
-    
+
     <!-- PANEL 4: Beta Testing -->
     <section id="panel4" class="panel">
-      <h2 class="panel-title">Panel de Beta Testing</h2>
+      <h2 class="panel-title glitch-text" data-text="Pruebas Beta Activas">Pruebas Beta Activas</h2>
       <div class="beta-testing">
-        <!-- Tarjetas para Beta Proyectos (datos únicos se cargarán al hacer clic) -->
-        <div class="beta-project" data-project="Beta Proyecto A">
-          <div class="project-image-container">
-            <img class="project-portada" src="https://i.pinimg.com/474x/a9/0b/11/a90b11a39d73ad4ee8d5da33d7ea7371.jpg" alt="Portada">
-            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Beta+A" alt="Gif de portada" style="display:none;">
+        <div class="beta-project" data-project="Chimera"> <!-- USA LA MISMA CLAVE QUE EL PROYECTO PRINCIPAL -->
+           <div class="project-image-container">
+            <img class="project-portada" src="https://i.pinimg.com/474x/a9/0b/11/a90b11a39d73ad4ee8d5da33d7ea7371.jpg" alt="Portada Beta Chimera">
+            <img class="project-gif" src="https://media.giphy.com/media/3o7TKS6AWgP3Q1jKog/giphy.gif" alt="Gif Beta Chimera">
           </div>
-          <h3>Beta Proyecto A</h3>
-          <p>Progreso: 75%</p>
-          <div class="progress-bar"><div class="progress" style="width:75%;"></div></div>
+          <div class="project-card-content">
+            <h3>Proyecto Chimera</h3>
+            <p>Fase Beta: Feedback UI/UX</p>
+            <div class="progress-bar-container">
+              <div class="progress-fill" data-progress="75" style="width: 0%;"></div>
+            </div>
+          </div>
         </div>
-        <div class="beta-project" data-project="Beta Proyecto B">
-          <div class="project-image-container">
-            <img class="project-portada" src="https://i.pinimg.com/474x/45/9e/11/459e115f9fa059fbd5cb03a8d5ced2e8.jpg" alt="Portada">
-            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Beta+B" alt="Gif de portada" style="display:none;">
+         <div class="beta-project" data-project="Stealth"> <!-- USA LA MISMA CLAVE -->
+           <div class="project-image-container">
+            <img class="project-portada" src="https://i.pinimg.com/474x/45/9e/11/459e115f9fa059fbd5cb03a8d5ced2e8.jpg" alt="Portada Beta Stealth">
+            <img class="project-gif" src="https://media.giphy.com/media/B1xE0PEW/giphy.gif" alt="Gif Beta Stealth">
           </div>
-          <h3>Beta Proyecto B</h3>
-          <p>Progreso: 60%</p>
-          <div class="progress-bar"><div class="progress" style="width:60%;"></div></div>
+          <div class="project-card-content">
+            <h3>Stealth Protocol</h3>
+            <p>Fase Beta: Pruebas de Estrés</p>
+            <div class="progress-bar-container">
+              <div class="progress-fill" data-progress="60" style="width: 0%;"></div>
+            </div>
+          </div>
         </div>
-        <div class="beta-project" data-project="Beta Proyecto C">
-          <div class="project-image-container">
-            <img class="project-portada" src="https://i.pinimg.com/474x/14/6a/b4/146ab4bfcb440f105a4101ba6a3cc9a2.jpg" alt="Portada">
-            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Beta+C" alt="Gif de portada" style="display:none;">
+        <div class="beta-project" data-project="Helios"> <!-- USA LA MISMA CLAVE -->
+           <div class="project-image-container">
+            <img class="project-portada" src="https://i.pinimg.com/474x/14/6a/b4/146ab4bfcb440f105a4101ba6a3cc9a2.jpg" alt="Portada Beta Helios">
+            <img class="project-gif" src="https://media.giphy.com/media/B1xE0PEW/giphy.gif" alt="Gif Beta Helios">
           </div>
-          <h3>Beta Proyecto C</h3>
-          <p>Progreso: 30%</p>
-          <div class="progress-bar"><div class="progress" style="width:30%;"></div></div>
+          <div class="project-card-content">
+            <h3>Helios Framework</h3>
+            <p>Fase Beta: Integración API</p>
+            <div class="progress-bar-container">
+              <div class="progress-fill" data-progress="30" style="width: 0%;"></div>
+            </div>
+          </div>
         </div>
-        <div class="beta-project" data-project="Beta Proyecto D">
-          <div class="project-image-container">
-            <img class="project-portada" src="https://i.pinimg.com/474x/10/01/15/100115c998799729b8f1bc1e54bb3238.jpg" alt="Portada">
-            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Beta+D" alt="Gif de portada" style="display:none;">
+        <div class="beta-project" data-project="Synapse"> <!-- USA LA MISMA CLAVE -->
+           <div class="project-image-container">
+            <img class="project-portada" src="https://i.pinimg.com/474x/10/01/15/100115c998799729b8f1bc1e54bb3238.jpg" alt="Portada Beta Synapse">
+            <img class="project-gif" src="https://media.giphy.com/media/B1xE0PEW/giphy.gif" alt="Gif Beta Synapse">
           </div>
-          <h3>Beta Proyecto D</h3>
-          <p>Progreso: 90%</p>
-          <div class="progress-bar"><div class="progress" style="width:90%;"></div></div>
+          <div class="project-card-content">
+            <h3>Synapse Link</h3>
+            <p>Fase Beta: Lanzamiento RC</p>
+            <div class="progress-bar-container">
+              <div class="progress-fill" data-progress="90" style="width: 0%;"></div>
+            </div>
+          </div>
         </div>
-        <div class="beta-project" data-project="Beta Proyecto E">
-          <div class="project-image-container">
-            <img class="project-portada" src="https://i.pinimg.com/474x/b0/38/fa/b038fa196686f9cf118e1f5b533d830b.jpg" alt="Portada">
-            <img class="project-gif" src="https://via.placeholder.com/280x150?text=Gif+Beta+E" alt="Gif de portada" style="display:none;">
+        <div class="beta-project" data-project="Warden"> <!-- USA LA MISMA CLAVE -->
+           <div class="project-image-container">
+            <img class="project-portada" src="https://i.pinimg.com/474x/b0/38/fa/b038fa196686f9cf118e1f5b533d830b.jpg" alt="Portada Beta Warden">
+            <img class="project-gif" src="https://media.giphy.com/media/B1xE0PEW/giphy.gif" alt="Gif Beta Warden">
           </div>
-          <h3>Beta Proyecto E</h3>
-          <p>Progreso: 50%</p>
-          <div class="progress-bar"><div class="progress" style="width:50%;"></div></div>
+          <div class="project-card-content">
+            <h3>Warden Security</h3>
+            <p>Fase Beta: Auditoría Externa</p>
+            <div class="progress-bar-container">
+              <div class="progress-fill" data-progress="50" style="width: 0%;"></div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
-  </div>
-  
-  <!-- ==================================================
-       MODAL PARA DETALLE DE PROYECTOS CON TABS
-       (Se carga la información única según el proyecto o beta proyecto seleccionado)
-  ================================================== -->
+
+  </div> <!-- Fin de dashboard-container -->
+
+  <!-- MODAL DETALLE PROYECTO -->
   <div id="modalProyecto" class="modal-proyecto">
     <div class="modal-content">
-      <span class="close-modal">&times;</span>
-      <!-- Navegación de Tabs -->
-      <div class="modal-tabs">
-        <button class="tab-link active" data-tab="tab-descripcion">Descripción</button>
-        <button class="tab-link" data-tab="tab-estadisticas">Estadísticas</button>
-        <button class="tab-link" data-tab="tab-historial">Historial</button>
-        <button class="tab-link" data-tab="tab-comentarios">Comentarios</button>
-        <button class="tab-link" data-tab="tab-documentacion">Documentación</button>
-        <button class="tab-link" data-tab="tab-tareas">Tareas</button>
-        <button class="tab-link" data-tab="tab-integraciones">Integraciones</button>
-        <button class="tab-link" data-tab="tab-prototipo">Prototipo</button>
-        <button class="tab-link" data-tab="tab-seguridad">Seguridad</button>
-        <button class="tab-link" data-tab="tab-finanzas">Finanzas</button>
+      <div class="modal-header">
+         <h2 id="modalTitle" class="glitch-text" data-text="Cargando...">Cargando...</h2>
+         <span class="close-modal" title="Cerrar Ventana">×</span>
       </div>
-      <!-- Contenedor de contenido de Tabs -->
-      <div class="tab-content">
-        <!-- Tab: Descripción -->
-        <div class="tab-pane active" id="tab-descripcion">
-          <h2 id="modalTitle">Detalle - Proyecto</h2>
-          <section>
-            <h3>Descripción General</h3>
-            <p id="descTexto"></p>
-            <p>
-              <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" style="color: var(--color-accent);">
-                Ver video de demostración
-              </a>
-            </p>
-            <!-- Recursos Multimedia Adicionales -->
-            <div style="margin-top:1rem; border-top: 1px solid var(--color-accent); padding-top:1rem;">
+      <div class="modal-body">
+        <!-- Pestañas Verticales -->
+        <div class="modal-tabs">
+          <button class="tab-link active" data-tab="tab-descripcion"><i class="fas fa-info-circle fa-fw"></i> Descripción</button>
+          <button class="tab-link" data-tab="tab-estadisticas"><i class="fas fa-chart-line fa-fw"></i> Estadísticas</button>
+          <button class="tab-link" data-tab="tab-historial"><i class="fas fa-history fa-fw"></i> Historial</button>
+          <button class="tab-link" data-tab="tab-tareas"><i class="fas fa-tasks fa-fw"></i> Tareas</button>
+          <button class="tab-link" data-tab="tab-documentacion"><i class="fas fa-file-alt fa-fw"></i> Docs</button>
+          <button class="tab-link" data-tab="tab-comentarios"><i class="fas fa-comments fa-fw"></i> Comentarios</button>
+          <button class="tab-link" data-tab="tab-integraciones"><i class="fas fa-plug fa-fw"></i> APIs</button>
+          <button class="tab-link" data-tab="tab-prototipo"><i class="fas fa-vr-cardboard fa-fw"></i> Prototipo</button>
+          <button class="tab-link" data-tab="tab-seguridad"><i class="fas fa-shield-alt fa-fw"></i> Seguridad</button>
+          <button class="tab-link" data-tab="tab-finanzas"><i class="fas fa-coins fa-fw"></i> Finanzas</button>
+          <!-- Añadir más pestañas si es necesario -->
+        </div>
+        <!-- Contenedor del Contenido de las Pestañas -->
+        <div class="tab-content-container">
+          <!-- Estado de Carga (Skeleton) -->
+          <div class="loading-state">
+              <div class="skeleton skeleton-title" style="width: 40%;"></div>
+              <div class="skeleton skeleton-text"></div>
+              <div class="skeleton skeleton-text short"></div>
+              <br>
+              <div class="skeleton skeleton-text" style="width: 30%;"></div>
+              <div class="skeleton skeleton-list-item" style="width: 60%;"></div>
+              <div class="skeleton skeleton-list-item" style="width: 50%;"></div>
+              <br>
+              <div class="skeleton skeleton-block" style="height: 100px;"></div>
+          </div>
+
+          <!-- Paneles de Contenido (uno por pestaña) -->
+          <div class="tab-pane active" id="tab-descripcion">
+              <h3>Descripción General</h3>
+              <p id="descTexto">Cargando...</p>
               <h4>Recursos Multimedia</h4>
-              <ul id="descRecursos"></ul>
-            </div>
-          </section>
-        </div>
-        <!-- Tab: Estadísticas -->
-        <div class="tab-pane" id="tab-estadisticas">
-          <section>
-            <h3>Estadísticas y Análisis</h3>
-            <p id="statsTexto"></p>
-            <canvas id="chartProyecto" style="max-height:200px;"></canvas>
-            <!-- Opciones Avanzadas en Estadísticas -->
-            <div style="margin-top:1rem; border-top: 1px solid var(--color-accent); padding-top:1rem;">
+              <ul id="descRecursos"><li>Cargando...</li></ul>
+          </div>
+          <div class="tab-pane" id="tab-estadisticas">
+              <h3>Estadísticas Clave</h3>
+              <p id="statsTexto">Cargando...</p>
+              <div style="height: 250px; margin-bottom: 1rem; position: relative;">
+                  <canvas id="chartProyecto"></canvas>
+              </div>
               <h4>Opciones Avanzadas</h4>
-              <ul id="statsOpciones"></ul>
-            </div>
-          </section>
-        </div>
-        <!-- Tab: Historial -->
-        <div class="tab-pane" id="tab-historial">
-          <section>
-            <h3>Línea de Tiempo e Historial</h3>
-            <p id="histTexto"></p>
-            <ul id="histLista"></ul>
-            <!-- Interactividad y Filtros en Historial -->
-            <div style="margin-top:1rem; border-top: 1px solid var(--color-accent); padding-top:1rem;">
-              <h4>Interactividad y Filtros</h4>
-              <ul id="histFiltros"></ul>
-            </div>
-          </section>
-        </div>
-        <!-- Tab: Comentarios -->
-        <div class="tab-pane" id="tab-comentarios">
-          <section>
-            <h3>Comentarios y Colaboración</h3>
-            <p id="comTexto"></p>
-            <textarea id="comInput" placeholder="Deja tu comentario..." style="width:100%; height:80px; background: #222; color: #fff; border: 1px solid var(--color-accent); border-radius: 5px; padding: 0.5rem;"></textarea>
-            <button style="margin-top:10px; background: var(--color-accent); border:none; padding:0.5rem 1rem; cursor:pointer;">Enviar</button>
-            <!-- Funciones Extras en Comentarios -->
-            <div style="margin-top:1rem; border-top: 1px solid var(--color-accent); padding-top:1rem;">
-              <h4>Funciones Extras</h4>
-              <ul id="comExtras"></ul>
-            </div>
-          </section>
-        </div>
-        <!-- Tab: Documentación -->
-        <div class="tab-pane" id="tab-documentacion">
-          <section>
-            <h3>Documentación y Recursos Técnicos</h3>
-            <p id="docTexto"></p>
-            <ul id="docLista"></ul>
-            <!-- Características Avanzadas en Documentación -->
-            <div style="margin-top:1rem; border-top: 1px solid var(--color-accent); padding-top:1rem;">
-              <h4>Características Avanzadas</h4>
-              <ul id="docAvanzadas"></ul>
-            </div>
-          </section>
-        </div>
-        <!-- Tab: Tareas -->
-        <div class="tab-pane" id="tab-tareas">
-          <section>
-            <h3>Tareas y Cronograma</h3>
-            <p id="tarTexto"></p>
-            <ul id="tarLista"></ul>
-            <!-- Mejoras y Funcionalidades en Tareas -->
-            <div style="margin-top:1rem; border-top: 1px solid var(--color-accent); padding-top:1rem;">
-              <h4>Mejoras y Funcionalidades</h4>
-              <ul id="tarOpciones"></ul>
-            </div>
-          </section>
-        </div>
-        <!-- Tab: Integraciones -->
-        <div class="tab-pane" id="tab-integraciones">
-          <section>
-            <h3>Integraciones y API</h3>
-            <p id="intTexto"></p>
-            <ul id="intLista"></ul>
-            <!-- Herramientas de Prueba en Integraciones -->
-            <div style="margin-top:1rem; border-top: 1px solid var(--color-accent); padding-top:1rem;">
-              <h4>Herramientas de Prueba</h4>
-              <ul id="intOpciones"></ul>
-            </div>
-          </section>
-        </div>
-        <!-- Tab: Prototipo -->
-        <div class="tab-pane" id="tab-prototipo">
-          <section>
-            <h3>Prototipo Interactivo</h3>
-            <p id="proTexto"></p>
-            <iframe id="proIframe" src="about:blank" style="width:100%; height:250px; border:1px solid var(--color-accent); border-radius:5px;"></iframe>
-            <!-- Opciones de Interacción en Prototipo -->
-            <div style="margin-top:1rem; border-top: 1px solid var(--color-accent); padding-top:1rem;">
-              <h4>Opciones de Interacción</h4>
-              <ul id="proOpciones"></ul>
-            </div>
-          </section>
-        </div>
-        <!-- Tab: Seguridad -->
-        <div class="tab-pane" id="tab-seguridad">
-          <section>
-            <h3>Seguridad y Auditoría</h3>
-            <p id="segTexto"></p>
-            <ul id="segLista"></ul>
-            <!-- Monitoreo y Alertas en Seguridad -->
-            <div style="margin-top:1rem; border-top: 1px solid var(--color-accent); padding-top:1rem;">
-              <h4>Monitoreo y Alertas</h4>
-              <ul id="segOpciones"></ul>
-            </div>
-          </section>
-        </div>
-        <!-- Tab: Finanzas -->
-        <div class="tab-pane" id="tab-finanzas">
-          <section>
-            <h3>Finanzas y Presupuestos</h3>
-            <p id="finTexto"></p>
-            <ul id="finLista"></ul>
-            <!-- Análisis Financiero en Finanzas -->
-            <div style="margin-top:1rem; border-top: 1px solid var(--color-accent); padding-top:1rem;">
-              <h4>Análisis Financiero</h4>
-              <ul id="finOpciones"></ul>
-            </div>
-          </section>
-        </div>
-      </div>
-    </div>
-  </div>
+              <ul id="statsOpciones"><li>Cargando...</li></ul>
+          </div>
+          <div class="tab-pane" id="tab-historial">
+              <h3>Línea Temporal</h3>
+              <p id="histTexto">Cargando...</p>
+              <ul id="histLista"><li>Cargando...</li></ul>
+              <h4>Filtros</h4>
+              <ul id="histFiltros"><li>Cargando...</li></ul>
+          </div>
+          <div class="tab-pane" id="tab-tareas">
+              <h3>Gestión de Tareas</h3>
+              <p id="tarTexto">Cargando...</p>
+              <ul id="tarLista"><li>Cargando...</li></ul>
+              <h4>Funcionalidades</h4>
+              <ul id="tarOpciones"><li>Cargando...</li></ul>
+          </div>
+          <div class="tab-pane" id="tab-documentacion">
+              <h3>Base de Conocimiento</h3>
+              <p id="docTexto">Cargando...</p>
+              <ul id="docLista"><li>Cargando...</li></ul>
+              <h4>Herramientas</h4>
+              <ul id="docAvanzadas"><li>Cargando...</li></ul>
+          </div>
+          <div class="tab-pane" id="tab-comentarios">
+             <h3>Canal de Comunicación</h3>
+             <p id="comTexto">Cargando...</p>
+             <div id="comLista"><p style="text-align: center; color: var(--color-text-muted);">Cargando comentarios...</p></div>
+             <textarea id="comInput" placeholder="Escribe tu comentario... Shift+Enter para nueva línea." rows="3"></textarea>
+             <button id="comSubmitBtn"><i class="fas fa-paper-plane"></i> Enviar Comentario</button>
+             <h4>Funciones Extras</h4>
+             <ul id="comExtras"><li>Cargando...</li></ul>
+          </div>
+          <div class="tab-pane" id="tab-integraciones">
+             <h3>APIs e Integraciones</h3>
+             <p id="intTexto">Cargando...</p>
+             <ul id="intLista"><li>Cargando...</li></ul>
+             <h4>Pruebas</h4>
+             <ul id="intOpciones"><li>Cargando...</li></ul>
+          </div>
+          <div class="tab-pane" id="tab-prototipo">
+             <h3>Prototipo Interactivo</h3>
+             <p id="proTexto">Cargando...</p>
+             <iframe id="proIframe" src="about:blank" title="Prototipo Interactivo" loading="lazy"></iframe>
+             <h4>Interacción</h4>
+             <ul id="proOpciones"><li>Cargando...</li></ul>
+          </div>
+          <div class="tab-pane" id="tab-seguridad">
+             <h3>Auditoría de Seguridad</h3>
+             <p id="segTexto">Cargando...</p>
+             <ul id="segLista"><li>Cargando...</li></ul>
+             <h4>Monitoreo</h4>
+             <ul id="segOpciones"><li>Cargando...</li></ul>
+          </div>
+          <div class="tab-pane" id="tab-finanzas">
+             <h3>Análisis Financiero</h3>
+             <p id="finTexto">Cargando...</p>
+             <ul id="finLista"><li>Cargando...</li></ul>
+             <h4>Reportes</h4>
+             <ul id="finOpciones"><li>Cargando...</li></ul>
+          </div>
+        </div> <!-- Fin tab-content-container -->
+      </div> <!-- Fin modal-body -->
+    </div> <!-- Fin modal-content -->
+  </div> <!-- Fin modalProyecto -->
 
 
-  
-  <!-- ==================================================
-       AUDIO PARA INTERACCIONES Y ANIMACIONES
-       (Sección de Archivos de Sonido)
-  ================================================== -->
-  <!-- Sonido para Clicks -->
-  <audio id="clickSound">
-    <source src="audio/click/Sonido para Clicks.wav" type="audio/mp3">
-    Tu navegador no soporta este audio.
-  </audio>
-  <!-- Sonido para Cambio de Pestañas -->
-  <audio id="tabSound">
-    <source src="audio/pestaña/Pestañas.wav" type="audio/mp3">
-    Tu navegador no soporta este audio.
-  </audio>
-  <!-- Sonido para Animaciones -->
-  <audio id="animSound">
-    <source src="audio/animacion/Animaciones.wav" type="audio/mp3">
-    Tu navegador no soporta este audio.
-  </audio>
-  
-  <!-- ==================================================
-       INCLUYENDO CHART.JS DESDE CDN PARA LOS GRÁFICOS
-  ================================================== -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Bootstrap JS, Popper.js y jQuery -->
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  
-  <!-- ==================================================
-       SCRIPT DE INTERACCIONES, ANIMACIONES, TABS Y PARTICULAS
-       (Carga de datos únicos según el proyecto seleccionado)
-  ================================================== -->
+  <!-- SCRIPTS -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script> <!-- Mantenido si Bootstrap JS lo necesita -->
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script> <!-- Mantenido si Bootstrap JS lo necesita -->
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> <!-- Mantenido por si se usa el toggler o tooltips de BS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script> <!-- Usar una versión estable de Chart.js 3.x -->
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.9.3/tsparticles.bundle.min.js"></script>
+
   <script>
-    // Objeto con datos únicos para cada proyecto y beta proyecto
-    const proyectos = {
-      "Proyecto 1": {
-        descripcion: {
-          texto: "El Proyecto 1 se centra en el desarrollo de una plataforma innovadora para la gestión de datos en tiempo real.",
-          recursos: ["Video introductorio", "Galería de imágenes", "Diagrama de flujo"]
-        },
-        estadisticas: {
-          texto: "Métricas de rendimiento, análisis predictivo y KPIs para el Proyecto 1.",
-          opciones: ["Filtro de fecha", "Actualización en tiempo real", "Comparativa histórica"],
-          datos: [20, 40, 60]
-        },
-        historial: {
-          texto: "Registro de versiones y actualizaciones del Proyecto 1.",
-          eventos: ["[01/02/2025] Versión 1.0 lanzada", "[15/02/2025] Parche de seguridad", "[01/03/2025] Nueva funcionalidad incorporada"],
-          filtros: ["Búsqueda por fecha", "Exportar en PDF"]
-        },
-        comentarios: {
-          texto: "Comentarios y feedback de los usuarios del Proyecto 1.",
-          extras: ["Adjuntar archivos", "Reacciones", "Hilos de respuesta"]
-        },
-        documentacion: {
-          texto: "Documentación técnica, guías y tutoriales del Proyecto 1.",
-          enlaces: ["Guía de instalación", "API Documentation", "Repositorio GitHub"],
-          avanzadas: ["Editor de código embebido", "Secciones colapsables", "Buscador interno"]
-        },
-        tareas: {
-          texto: "Tareas pendientes y cronograma del Proyecto 1.",
-          lista: ["[ ] Implementar búsqueda", "[x] Actualizar documentación", "[ ] Revisión de seguridad"],
-          opciones: ["Arrastrar y soltar", "Etiquetas de prioridad", "Sincronización con Trello"]
-        },
-        integraciones: {
-          texto: "Integraciones con servicios externos y pruebas de API para el Proyecto 1.",
-          lista: ["Google Analytics: Conectado", "Stripe: En configuración", "Slack: Integrado"],
-          opciones: ["Sandbox interactivo", "Visualización de logs", "Simulación de llamadas"]
-        },
-        prototipo: {
-          texto: "Demo interactiva y modo presentación del Proyecto 1.",
-          iframeSrc: "https://www.example.com/demo1",
-          opciones: ["Activar simulaciones", "Modo presentación", "Feedback inmediato"]
-        },
-        seguridad: {
-          texto: "Auditoría y seguridad en el Proyecto 1.",
-          lista: ["Última auditoría: 01/03/2025", "Alertas: Ninguna"],
-          opciones: ["Monitoreo de accesos", "Configuración de alertas", "Registro de incidentes"]
-        },
-        finanzas: {
-          texto: "Control de costos y análisis financiero del Proyecto 1.",
-          lista: ["Presupuesto: $50,000", "Gastos: $30,000", "ROI proyectado: 150%"],
-          opciones: ["Gráficos comparativos", "Filtros por categoría", "Exportación de datos"]
-        }
-      },
-      // ... Resto de los proyectos (Proyecto 2 a Proyecto 10 y Beta Proyectos)
-      // Se omiten aquí por brevedad, pero en tu código original deben permanecer intactos.
-    };
-
     document.addEventListener('DOMContentLoaded', function() {
-      // Reproducir sonido de bienvenida rápido
-      const welcomeSound = document.getElementById('welcomeSound');
-      welcomeSound.currentTime = 0;
-      welcomeSound.play();
 
-      // Mostrar la pantalla de bienvenida hasta que el usuario haga clic en "Aceptar"
-      const welcomeOverlay = document.getElementById('welcomeOverlay');
-      const welcomeAccept = document.getElementById('welcomeAccept');
-      welcomeAccept.addEventListener('click', function() {
-        // Reproducir sonido de anuncio al aceptar
-        playClickSound();
-        // Ocultar el overlay
-        welcomeOverlay.style.display = 'none';
-        // Iniciar la música de fondo
-        const bgMusic = document.getElementById('bgMusic');
-        bgMusic.currentTime = 0;
-        bgMusic.play();
-      });
+      // --- CONFIGURACIÓN INICIAL Y REFERENCIAS GLOBALES ---
+      const bgMusic = document.getElementById('bgMusic');
+      const clickSound = document.getElementById('clickSound');
+      const tabSound = document.getElementById('tabSound');
+      const modalOpenSound = document.getElementById('modalOpenSound');
+      const modalCloseSound = document.getElementById('modalCloseSound');
+      const successSound = document.getElementById('successSound'); // Para feedback
+      const errorSound = document.getElementById('errorSound');     // Para feedback
+      // const hoverSound = document.getElementById('hoverSound'); // Descomentar si se quiere sonido en hover general
 
-      // Generar partículas en el fondo
-      const particlesContainer = document.querySelector('.particles');
-      const numParticles = 300;
-      for (let i = 0; i < numParticles; i++) {
-        const particle = document.createElement('div');
-        particle.classList.add('particle');
-        particle.style.left = Math.random() * 100 + 'vw';
-        particle.style.top = Math.random() * 100 + 'vh';
-        particle.style.animationDelay = Math.random() * 5 + 's';
-        particle.style.animationDuration = 5 + Math.random() * 5 + 's';
-        particlesContainer.appendChild(particle);
+      const modalElement = document.getElementById('modalProyecto');
+      const modalContentElement = modalElement?.querySelector('.modal-content');
+      const closeModalBtnElement = modalElement?.querySelector('.close-modal');
+      const modalTitleElement = document.getElementById('modalTitle');
+      const tabLinksContainer = modalElement?.querySelector('.modal-tabs');
+      const tabContentContainer = modalElement?.querySelector('.tab-content-container');
+      const volumeBtnElement = document.getElementById('volumeControl');
+      const particlesContainerId = "particles-js"; // ID del contenedor de partículas
+      const systemChartCanvas = document.getElementById('systemChart');
+      const chart1Canvas = document.getElementById('chart1');
+      const projectChartCanvas = document.getElementById('chartProyecto');
+
+      let soundsEnabled = true; // Sonido activado por defecto
+      let systemUpdateInterval;
+      let systemChartInstance = null; // Instancia del gráfico radar del sistema
+      let chart1Instance = null; // Instancia del gráfico de análisis
+      let activeProjectChartInstance = null; // Instancia del gráfico del proyecto en el modal
+
+      // Comprobar si los elementos principales existen
+      if (!modalElement || !modalContentElement || !closeModalBtnElement || !modalTitleElement || !tabLinksContainer || !tabContentContainer) {
+          console.error("Error crítico: No se encontraron elementos esenciales del modal.");
+          // Podrías deshabilitar la funcionalidad del modal aquí
+          return; // Salir si faltan elementos clave
       }
-      
-      // Funciones para reproducir sonidos
-      function playClickSound() {
-        const sound = document.getElementById('clickSound');
-        sound.currentTime = 0;
-        sound.play();
+
+
+      // --- DATOS DE PROYECTOS (Más Detallados y Completos) ---
+      // La clave (ej. "Nexus") debe coincidir con el data-project de la tarjeta HTML
+      const proyectos = {
+          "Nexus": {
+              name: "Proyecto Nexus", progress: 45, status: "Desarrollo Alfa",
+              descripcion: { texto: "Nexus es una plataforma descentralizada para la computación cuántica simulada, enfocada en la optimización de algoritmos genéticos complejos y el análisis de datos masivos.", recursos: ["Whitepaper v1.2", "Demo Interactiva (QuantumSim)", "Arquitectura de Red Neuronal", "Repositorio GitHub (Privado)"] },
+              estadisticas: { texto: "Métricas clave de rendimiento de simulación, convergencia de algoritmos y uso de recursos cuánticos simulados.", opciones: ["Exportar datos CSV", "Comparar con benchmarks Qiskit", "Predicción de rendimiento a escala", "Visualizar mapa de calor de errores"], datos: [30, 55, 45, 70, 65, 80, 75] }, // Más datos
+              historial: { texto: "Log de commits, releases importantes y decisiones de arquitectura.", eventos: ["[15/03/2025] Refactorización del motor cuántico.", "[01/03/2025] Release Alfa 0.8.1 (corrección de errores)", "[20/02/2025] Integración de librería Qiskit v0.45", "[10/02/2025] Decisión: Usar arquitectura basada en microservicios"], filtros: ["Filtrar por tipo (Commit/Release/Decisión)", "Buscar por hash/tag", "Rango de fechas"] },
+              tareas: { texto: "Backlog priorizado y tareas asignadas al equipo de desarrollo cuántico.", lista: ["[ ] Optimizar rutina de entrelazamiento Hadamard", "[x] Implementar visualizador 3D de esfera de Bloch", "[ ] Test de integración continua con simulador distribuido", "[ ] Documentar API de simulación"], opciones: ["Vista Kanban", "Asignar a miembro del equipo", "Establecer prioridad (Crítica/Alta/Media/Baja)", "Crear subtareas"] },
+              documentacion: { texto: "Documentación técnica, API docs y guías de desarrollo colaborativo.", enlaces: ["Referencia API REST (/api/v1/quantum)", "Guía de Contribución (CONTRIBUTING.md)", "Tutorial: Simulación Básica de Grover", "Diagramas de Arquitectura (PlantUML)"], avanzadas: ["Generador de documentación (Sphinx)", "Ejemplos de código interactivos (Jupyter)", "Glosario de términos cuánticos"] },
+              comentarios: { texto: "Feedback reciente, discusiones técnicas y planificación del próximo sprint.", extras: ["Menciones (@dev_lead)", "Reacciones con emojis (⚛️, ✅, ❓)", "Hilos de conversación anidados", "Adjuntar archivos (logs, screenshots)", "Integración con Slack (#nexus-dev)"] },
+              integraciones: { texto: "Conexión con plataformas externas de CI/CD, cloud y herramientas de desarrollo.", lista: ["GitHub Actions: Vinculado (Build & Test)", "Slack: Notificaciones activas", "AWS Quantum Ledger: Pendiente (Evaluando)", "SonarQube: Análisis de código OK"], opciones: ["Test de endpoints API", "Monitor de estado de integración (Health Check)", "Ver logs de despliegue"] },
+              prototipo: { texto: "Interfaz de usuario preliminar para la gestión de simulaciones y visualización de resultados.", iframeSrc: "https://www.wikipedia.org", /* Sustituir con URL real o about:blank */ opciones: ["Modo oscuro/claro", "Simular datos en tiempo real", "Feedback directo en la interfaz (Comentarios)", "Exportar vista actual"] },
+              seguridad: { texto: "Resultados de auditorías, gestión de dependencias y políticas de acceso.", lista: ["Última revisión PenTest: 10/03/2025 (OK, 2 issues menores)", "Dependencias actualizadas (npm audit)", "Escaneo de vulnerabilidades semanal (Snyk)", "Política de Acceso: RBAC implementado"], opciones: ["Ver reporte completo de auditoría", "Configurar 2FA para acceso Admin", "Lista blanca de IPs", "Rotación de claves API"] },
+              finanzas: { texto: "Presupuesto asignado, gastos acumulados y proyecciones financieras.", lista: ["Asignado: $150,000 USD", "Gastado (Q1 2025): $42,500 USD", "Burn Rate Actual: $14k/mes", "Próxima ronda financiación: Q3 2025"], opciones: ["Proyección de gastos (6 meses)", "Desglose por categoría (Personal/Cloud/Software)", "Generar reporte PDF", "Alertas de presupuesto"] }
+          },
+          "QuantumLeap": {
+              name: "Quantum Leap AI", progress: 60, status: "Optimización Beta",
+              // ... (Completar datos detallados para todas las pestañas) ...
+              descripcion: { texto: "Framework de IA que combina redes neuronales clásicas con algoritmos cuánticos para acelerar el entrenamiento y mejorar la precisión en tareas específicas.", recursos: ["Artículo de Investigación", "Presentación Técnica", "Demo (Clasificación de Imágenes)"] },
+              estadisticas: { texto: "Comparativa de velocidad de entrenamiento y precisión vs modelos clásicos.", opciones: ["Exportar resultados", "Variar parámetros cuánticos", "Análisis de sensibilidad"], datos: [40, 60, 55, 75, 70, 85, 80] },
+              historial: { texto: "Log de optimizaciones y resultados de benchmarks.", eventos: ["[18/03] Optimización de puerta CNOT simulada", "[05/03] Benchmark CIFAR-10 completado", "[25/02] Inicio fase Beta"], filtros: ["Por tipo", "Por métrica"] },
+              tareas: { texto: "Tareas de optimización y corrección de bugs.", lista: ["[ ] Reducir consumo de memoria en simulador", "[x] Corregir bug de condición de carrera", "[ ] Añadir soporte para dataset MNIST"], opciones: ["Vista por prioridad", "Filtrar por asignado"] },
+              documentacion: { texto: "Guías de uso y documentación de la arquitectura híbrida.", enlaces: ["Guía Rápida", "API de Componentes Cuánticos", "Arquitectura Híbrida"], avanzadas: ["Notebooks de ejemplo", "FAQ"] },
+              comentarios: { texto: "Feedback de los beta testers y discusiones internas.", extras: ["Encuestas de feedback", "Canal dedicado #qai-beta"] },
+              integraciones: { texto: "Integración con plataformas de Machine Learning.", lista: ["TensorFlow: Compatible", "PyTorch: Experimental", "Kubeflow: En progreso"], opciones: ["Probar compatibilidad", "Ver estado"] },
+              prototipo: { texto: "Interfaz para configurar y ejecutar experimentos.", iframeSrc: "about:blank", opciones: ["Guardar/Cargar configuración", "Visualizar progreso"] },
+              seguridad: { texto: "Análisis de seguridad del código y datos.", lista: ["Revisión de código interna", "Protección de datos de entrenamiento"], opciones: ["Reportar vulnerabilidad", "Ver políticas"] },
+              finanzas: { texto: "Costos de computación (clásica y simulada).", lista: ["Presupuesto R&D: $80k", "Gasto actual: $35k"], opciones: ["Estimar costo por experimento", "Optimizar uso de recursos"] }
+          },
+          "TitanProtocol": { name: "Titan Protocol", progress: 30, status: "Diseño UI", /* ... (Completar) ... */ },
+          "AetherNetwork": { name: "Aether Network", progress: 80, status: "Despliegue Inminente", /* ... (Completar) ... */ },
+          "Chimera": { name: "Project Chimera", progress: 50, status: "Feedback UI/UX", /* ... (Datos compartidos con Beta) ... */ },
+          "Stealth": { name: "Stealth Protocol", progress: 70, status: "Pruebas de Estrés", /* ... (Datos compartidos con Beta) ... */ },
+          "Helios": { name: "Helios Framework", progress: 40, status: "Integración API", /* ... (Datos compartidos con Beta) ... */ },
+          "Synapse": { name: "Synapse Link", progress: 55, status: "Lanzamiento RC", /* ... (Datos compartidos con Beta) ... */ },
+          "Warden": { name: "Warden Security", progress: 85, status: "Auditoría Externa", /* ... (Datos compartidos con Beta) ... */ },
+          "NovaCore": { name: "Nova Core", progress: 95, status: "Producción", /* ... (Completar) ... */ },
+          // Los proyectos Beta usan la misma clave y datos que el proyecto principal
+          // La tarjeta puede tener un data-project="Chimera" y mostrará los datos de "Chimera"
+      };
+
+      // --- FUNCIONES AUXILIARES ---
+
+      // Función para reproducir sonidos (con control de volumen global)
+      function playSound(audioElement, volume = 0.6) { // Volumen por defecto más bajo
+          if (!soundsEnabled || !audioElement) return;
+          audioElement.pause();
+          audioElement.currentTime = 0;
+          audioElement.volume = volume;
+          // Usar una promesa para manejar posibles errores de reproducción automática
+          const playPromise = audioElement.play();
+          if (playPromise !== undefined) {
+              playPromise.catch(error => {
+                  // La reproducción automática falló, no hacer nada o loggear un warning
+                  // console.warn(`Advertencia al reproducir ${audioElement.id}:`, error);
+              });
+          }
       }
-      function playTabSound() {
-        const sound = document.getElementById('tabSound');
-        sound.currentTime = 0;
-        sound.play();
+
+      // Helper para establecer texto (más seguro)
+      function setTextContent(elementId, text) {
+          const el = document.getElementById(elementId);
+          if (el) {
+              el.textContent = text || 'Información no disponible.';
+          } else {
+              // console.warn(`Elemento no encontrado para setTextContent: ${elementId}`);
+          }
       }
-      function playAnimSound() {
-        const sound = document.getElementById('animSound');
-        sound.currentTime = 0;
-        sound.play();
+
+      // Helper para llenar listas <ul> (más seguro)
+      function fillList(ulId, items, formatter) {
+          const ul = document.getElementById(ulId);
+          if (ul) {
+              if (items && Array.isArray(items) && items.length > 0) {
+                  ul.innerHTML = items.map(formatter).join('');
+              } else {
+                  ul.innerHTML = '<li style="padding-left:0; color: var(--color-text-muted); font-style: italic;">No hay datos disponibles.</li>';
+              }
+          } else {
+             // console.warn(`Elemento UL no encontrado para fillList: ${ulId}`);
+          }
       }
-      
-      // Agregar evento click a elementos interactivos
-      const clickableElements = document.querySelectorAll('.project-card, .beta-project, .data-table, canvas, .nav-link');
-      clickableElements.forEach(elem => elem.addEventListener('click', playClickSound));
-      
-      // Animar las barras de progreso
-      const progressBars = document.querySelectorAll('.progress');
-      progressBars.forEach(bar => {
-        let width = 0;
-        const target = parseInt(bar.style.width);
-        const interval = setInterval(() => {
-          if (width >= target) clearInterval(interval);
-          else { width++; bar.style.width = width + '%'; }
-        }, 10);
-      });
-      
-      // Gráfico 1: Progreso de Proyectos (línea)
-      const ctx = document.getElementById('chart1').getContext('2d');
-      const chart1 = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-          datasets: [{
-            label: 'Progreso de Proyectos',
-            data: [30, 45, 60, 50, 80, 90],
-            backgroundColor: 'rgba(10,255,153,0.2)',
-            borderColor: 'rgba(10,255,153,1)',
-            borderWidth: 2,
-            tension: 0.3
-          }]
-        },
-        options: {
+
+       // Helper para simular comentarios
+       function addComment(user, text, timestamp) {
+           const comLista = document.getElementById('comLista');
+           if (!comLista) return;
+
+           const commentDiv = document.createElement('div');
+           commentDiv.classList.add('comment');
+           commentDiv.innerHTML = `
+               <small>${timestamp || new Date().toLocaleString('es-ES', { hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit' })}</small>
+               <strong>${user || 'Usuario Anónimo'}:</strong>
+               <p>${text || ''}</p>
+           `;
+
+           // Si es el primer comentario, limpiar el mensaje "No hay comentarios"
+           if (comLista.querySelector('p')) {
+               comLista.innerHTML = '';
+           }
+
+           comLista.appendChild(commentDiv);
+           comLista.scrollTop = comLista.scrollHeight; // Scroll al final
+       }
+
+
+      // --- INICIALIZACIÓN Y MANEJADORES DE EVENTOS ---
+
+      // Control de Volumen
+      if (volumeBtnElement) {
+          volumeBtnElement.addEventListener('click', (e) => {
+              e.preventDefault();
+              soundsEnabled = !soundsEnabled;
+              volumeBtnElement.innerHTML = `<i class="fas ${soundsEnabled ? 'fa-volume-up' : 'fa-volume-mute'}"></i>`;
+              bgMusic.muted = !soundsEnabled;
+              // Intentar reproducir si se activan sonidos y estaba pausada
+              if (soundsEnabled && bgMusic.paused) {
+                  const playPromise = bgMusic.play();
+                  if (playPromise !== undefined) {
+                      playPromise.catch(error => console.warn("Reproducción automática de música bloqueada."));
+                  }
+              }
+              playSound(clickSound); // Sonido de feedback al clickear
+              volumeBtnElement.setAttribute('title', soundsEnabled ? 'Silenciar Sonidos' : 'Activar Sonidos');
+          });
+      } else {
+          console.warn("Botón de control de volumen no encontrado.");
+      }
+
+      // Inicialización Directa (Música, Animaciones, Datos)
+      if (soundsEnabled && bgMusic) {
+          bgMusic.volume = 0.3; // Volumen inicial bajo
+          const playPromise = bgMusic.play();
+          if (playPromise !== undefined) {
+              playPromise.catch(error => {
+                  console.warn("La reproducción automática de música fue bloqueada. Requiere interacción del usuario.");
+                  // Opcional: Mostrar un botón para activar sonido manualmente
+              });
+          }
+      } else if (!bgMusic) {
+          console.warn("Elemento de audio para música de fondo no encontrado.");
+      }
+
+      // Iniciar animaciones y datos simulados
+      animateProgressBars();
+      startSystemDataUpdates();
+
+      // Inicializar tsParticles
+      if (typeof tsParticles !== 'undefined' && document.getElementById(particlesContainerId)) {
+          try {
+              tsParticles.load(particlesContainerId, {
+                  fpsLimit: 60,
+                  interactivity: {
+                      events: {
+                          onHover: { enable: true, mode: "repulse" },
+                          onClick: { enable: true, mode: "push" }
+                      },
+                      modes: {
+                          repulse: { distance: 70, duration: 0.4, speed: 0.6 }, // Ajuste ligero
+                          push: { quantity: 3 }, // Más partículas al click
+                          // bubble: { distance: 100, duration: 2, opacity: 0.8, size: 10 } // Bubble puede ser pesado
+                      }
+                  },
+                  particles: {
+                      color: { value: [ "var(--color-accent)", "var(--color-accent2)", "#ffffff" ] }, // Usar variables CSS
+                      links: {
+                          color: "var(--color-text-muted)", distance: 120, enable: true, opacity: 0.15, width: 1
+                      },
+                      collisions: { enable: false }, // Desactivado para rendimiento
+                      move: {
+                          direction: "none", enable: true, outModes: { default: "bounce" },
+                          random: true, speed: 0.7, // Ligeramente más rápido
+                          straight: false,
+                          attract: { enable: false, rotateX: 600, rotateY: 1200 } // Desactivado para rendimiento
+                      },
+                      number: { density: { enable: true, area: 1000 }, value: 50 }, // Menos partículas
+                      opacity: { value: { min: 0.1, max: 0.4 }, animation: { enable: true, speed: 0.5, minimumValue: 0.1, sync: false } }, // Animación sutil de opacidad
+                      shape: { type: ["circle", "square", "triangle"] }, // Más formas
+                      size: { value: { min: 1, max: 3 }, animation: { enable: true, speed: 2, minimumValue: 1, sync: false } } // Animación sutil de tamaño
+                  },
+                  detectRetina: true,
+                  background: { color: 'transparent' }
+              });
+          } catch (error) {
+              console.error("Error al inicializar tsParticles:", error);
+          }
+      } else if (!document.getElementById(particlesContainerId)) {
+          console.warn(`Contenedor de partículas con ID "${particlesContainerId}" no encontrado.`);
+      } else {
+          console.warn("Librería tsParticles no encontrada o no cargada.");
+      }
+
+
+      // Efecto Navbar al hacer scroll
+      window.addEventListener('scroll', () => {
+          if (window.scrollY > 30) { // Umbral más bajo
+              document.body.classList.add('scrolled');
+          } else {
+              document.body.classList.remove('scrolled');
+          }
+      }, { passive: true }); // Mejor rendimiento
+
+       // Animación Barras de Progreso al ser visibles (o al inicio)
+        function animateProgressBars() {
+            const progressFills = document.querySelectorAll('.progress-fill');
+            progressFills.forEach(fill => {
+                const targetWidth = fill.getAttribute('data-progress');
+                if (targetWidth) {
+                    // Retraso inicial pequeño y aleatorio para escalonar
+                    const delay = 150 + Math.random() * 300;
+                    setTimeout(() => {
+                         fill.style.width = targetWidth + '%';
+                    }, delay);
+                } else {
+                    // console.warn("Elemento .progress-fill sin atributo data-progress:", fill);
+                    fill.style.width = '0%'; // Asegurar estado inicial
+                }
+            });
+        }
+        // Se llama una vez al inicio. Si se quisiera animar al hacer scroll, se necesitaría Intersection Observer.
+
+      // --- GRÁFICOS Chart.js ---
+      const chartDefaultOptions = {
           responsive: true,
           maintainAspectRatio: false,
-          scales: { y: { beginAtZero: true, max: 100 } }
-        }
-      });
-      
-      // Gráfico 2: Datos del Sistema (dona)
-      const ctxSys = document.getElementById('systemChart').getContext('2d');
-      const systemChart = new Chart(ctxSys, {
-        type: 'doughnut',
-        data: {
-          labels: ['Usado', 'Libre'],
-          datasets: [{
-            data: [50, 50],
-            backgroundColor: ['rgba(10,255,153,0.8)','rgba(255,25,25,0.6)']
-          }]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-      });
-      
-      // Función para cargar datos específicos del proyecto o beta proyecto
-      function cargarContenidoProyecto(nombreProyecto) {
-        const datos = proyectos[nombreProyecto];
-        if (!datos) return;
-        // Actualizar Descripción
-        document.getElementById('modalTitle').textContent = 'Detalle - ' + nombreProyecto;
-        document.getElementById('descTexto').textContent = datos.descripcion.texto;
-        const recList = document.getElementById('descRecursos');
-        recList.innerHTML = "";
-        datos.descripcion.recursos.forEach(item => {
-          const li = document.createElement('li');
-          li.textContent = item;
-          recList.appendChild(li);
-        });
-        // Actualizar Estadísticas
-        document.getElementById('statsTexto').textContent = datos.estadisticas.texto;
-        const statsOpc = document.getElementById('statsOpciones');
-        statsOpc.innerHTML = "";
-        datos.estadisticas.opciones.forEach(item => {
-          const li = document.createElement('li');
-          li.textContent = item;
-          statsOpc.appendChild(li);
-        });
-        // Actualizar Historial
-        document.getElementById('histTexto').textContent = datos.historial.texto;
-        const histList = document.getElementById('histLista');
-        histList.innerHTML = "";
-        datos.historial.eventos.forEach(evento => {
-          const li = document.createElement('li');
-          li.textContent = evento;
-          histList.appendChild(li);
-        });
-        const histFiltros = document.getElementById('histFiltros');
-        histFiltros.innerHTML = "";
-        datos.historial.filtros.forEach(item => {
-          const li = document.createElement('li');
-          li.textContent = item;
-          histFiltros.appendChild(li);
-        });
-        // Actualizar Comentarios
-        document.getElementById('comTexto').textContent = datos.comentarios.texto;
-        const comExtras = document.getElementById('comExtras');
-        comExtras.innerHTML = "";
-        datos.comentarios.extras.forEach(item => {
-          const li = document.createElement('li');
-          li.textContent = item;
-          comExtras.appendChild(li);
-        });
-        // Actualizar Documentación
-        document.getElementById('docTexto').textContent = datos.documentacion.texto;
-        const docLista = document.getElementById('docLista');
-        docLista.innerHTML = "";
-        datos.documentacion.enlaces.forEach(item => {
-          const li = document.createElement('li');
-          li.innerHTML = `<a href="#" style="color: var(--color-accent);">${item}</a>`;
-          docLista.appendChild(li);
-        });
-        const docAvanzadas = document.getElementById('docAvanzadas');
-        docAvanzadas.innerHTML = "";
-        datos.documentacion.avanzadas.forEach(item => {
-          const li = document.createElement('li');
-          li.textContent = item;
-          docAvanzadas.appendChild(li);
-        });
-        // Actualizar Tareas
-        document.getElementById('tarTexto').textContent = datos.tareas.texto;
-        const tarLista = document.getElementById('tarLista');
-        tarLista.innerHTML = "";
-        datos.tareas.lista.forEach(item => {
-          const li = document.createElement('li');
-          li.textContent = item;
-          tarLista.appendChild(li);
-        });
-        const tarOpciones = document.getElementById('tarOpciones');
-        tarOpciones.innerHTML = "";
-        datos.tareas.opciones.forEach(item => {
-          const li = document.createElement('li');
-          li.textContent = item;
-          tarOpciones.appendChild(li);
-        });
-        // Actualizar Integraciones
-        document.getElementById('intTexto').textContent = datos.integraciones.texto;
-        const intLista = document.getElementById('intLista');
-        intLista.innerHTML = "";
-        datos.integraciones.lista.forEach(item => {
-          const li = document.createElement('li');
-          li.textContent = item;
-          intLista.appendChild(li);
-        });
-        const intOpciones = document.getElementById('intOpciones');
-        intOpciones.innerHTML = "";
-        datos.integraciones.opciones.forEach(item => {
-          const li = document.createElement('li');
-          li.textContent = item;
-          intOpciones.appendChild(li);
-        });
-        // Actualizar Prototipo
-        document.getElementById('proTexto').textContent = datos.prototipo.texto;
-        document.getElementById('proIframe').src = datos.prototipo.iframeSrc;
-        const proOpciones = document.getElementById('proOpciones');
-        proOpciones.innerHTML = "";
-        datos.prototipo.opciones.forEach(item => {
-          const li = document.createElement('li');
-          li.textContent = item;
-          proOpciones.appendChild(li);
-        });
-        // Actualizar Seguridad
-        document.getElementById('segTexto').textContent = datos.seguridad.texto;
-        const segLista = document.getElementById('segLista');
-        segLista.innerHTML = "";
-        datos.seguridad.lista.forEach(item => {
-          const li = document.createElement('li');
-          li.textContent = item;
-          segLista.appendChild(li);
-        });
-        const segOpciones = document.getElementById('segOpciones');
-        segOpciones.innerHTML = "";
-        datos.seguridad.opciones.forEach(item => {
-          const li = document.createElement('li');
-          li.textContent = item;
-          segOpciones.appendChild(li);
-        });
-        // Actualizar Finanzas
-        document.getElementById('finTexto').textContent = datos.finanzas.texto;
-        const finLista = document.getElementById('finLista');
-        finLista.innerHTML = "";
-        datos.finanzas.lista.forEach(item => {
-          const li = document.createElement('li');
-          li.textContent = item;
-          finLista.appendChild(li);
-        });
-        const finOpciones = document.getElementById('finOpciones');
-        finOpciones.innerHTML = "";
-        datos.finanzas.opciones.forEach(item => {
-          const li = document.createElement('li');
-          li.textContent = item;
-          finOpciones.appendChild(li);
-        });
-      }
-      
-      // Abrir modal al hacer click en tarjetas de proyectos o beta proyectos
-      document.querySelectorAll('.project-card, .beta-project').forEach(card => {
-        card.addEventListener('click', function() {
-          const nombreProyecto = this.getAttribute('data-project');
-          cargarContenidoProyecto(nombreProyecto);
-          document.getElementById('modalProyecto').style.display = 'flex';
-          playAnimSound(); // Sonido al abrir el modal
-        });
-      });
-      
-      // Cerrar modal al hacer click en la X o fuera del contenido
-      document.querySelector('.close-modal').addEventListener('click', function() {
-        document.getElementById('modalProyecto').style.display = 'none';
-        playClickSound();
-      });
-      window.addEventListener('click', function(event) {
-        if (event.target === document.getElementById('modalProyecto')) {
-          document.getElementById('modalProyecto').style.display = 'none';
-          playClickSound();
-        }
-      });
-      
-      // Manejo de cambio de pestañas con sonido
-      const tabLinks = document.querySelectorAll('.tab-link');
-      const tabPanes = document.querySelectorAll('.tab-pane');
-      tabLinks.forEach(link => {
-        link.addEventListener('click', function() {
-          playTabSound();
-          tabLinks.forEach(btn => btn.classList.remove('active'));
-          tabPanes.forEach(pane => pane.classList.remove('active'));
-          this.classList.add('active');
-          const tabId = this.getAttribute('data-tab');
-          document.getElementById(tabId).classList.add('active');
-        });
-      });
-      
-      // Ejemplo: Inicializar gráfico en el tab de Estadísticas del modal
-      const ctxProyecto = document.getElementById('chartProyecto').getContext('2d');
-      const chartProyecto = new Chart(ctxProyecto, {
-        type: 'bar',
-        data: {
-          labels: ['Metric 1', 'Metric 2', 'Metric 3'],
-          datasets: [{
-            label: 'Datos del Proyecto',
-            data: [20, 35, 50],
-            backgroundColor: 'rgba(10,255,153,0.5)',
-            borderColor: 'rgba(10,255,153,1)',
-            borderWidth: 1
-          }]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-      });
-    });
+          plugins: {
+              legend: {
+                  labels: {
+                      color: 'var(--color-text-muted)', // Usar variable CSS
+                      font: { family: 'var(--font-main)', size: 10 } // Usar variable CSS
+                  }
+              },
+              tooltip: {
+                  enabled: true,
+                  backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                  titleColor: 'var(--color-accent)', // Usar variable CSS
+                  bodyColor: 'var(--color-text)', // Usar variable CSS
+                  titleFont: { family: 'var(--font-heading)', size: 13 }, // Usar variable CSS
+                  bodyFont: { family: 'var(--font-main)', size: 11 }, // Usar variable CSS
+                  borderColor: 'var(--color-accent)', // Usar variable CSS
+                  borderWidth: 1,
+                  padding: 10,
+                  displayColors: true,
+                  usePointStyle: true, // Puntos en tooltip
+              }
+          },
+          scales: {
+              y: {
+                  beginAtZero: true,
+                  ticks: { color: 'var(--color-text-muted)', font: { size: 10 } }, // Usar variable CSS
+                  grid: { color: 'rgba(0, 240, 255, 0.1)', borderDash: [2, 4] } // Líneas discontinuas
+              },
+              x: {
+                  ticks: { color: 'var(--color-text-muted)', font: { size: 10 } }, // Usar variable CSS
+                  grid: { color: 'rgba(0, 240, 255, 0.05)' }
+              }
+          },
+          animation: {
+              duration: 1000, // Animación más rápida
+              easing: 'easeOutCubic' // Curva suave
+          },
+          // Interaction (optional, can improve performance slightly on hover if complex)
+          // interaction: {
+          //   intersect: false,
+          //   mode: 'index',
+          // },
+      };
 
-    // Función para inicializar la navegación de pestañas
-    function initRepoTabs() {
-      const tabBtns = document.querySelectorAll('.repo-tabs .tab-btn');
-      const tabPanes = document.querySelectorAll('.repo-tab-pane');
-      tabBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-          // Quitar clase active de todos y agregar al seleccionado
-          tabBtns.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          const target = btn.getAttribute('data-tab');
-          tabPanes.forEach(pane => {
-            pane.classList.toggle('active', pane.id === target);
+      // Gráfico 1: Análisis (Línea)
+      if (chart1Canvas) {
+          const ctx1 = chart1Canvas.getContext('2d');
+          chart1Instance = new Chart(ctx1, {
+              type: 'line',
+              data: {
+                  labels: ['Q1', 'Q2', 'Q3', 'Q4', 'Q1(p)', 'Q2(p)'],
+                  datasets: [{
+                      label: 'Rendimiento Proyectos', data: [30, 45, 60, 55, 80, 90],
+                      backgroundColor: 'rgba(0, 240, 255, 0.1)', borderColor: 'var(--color-accent)',
+                      borderWidth: 2, tension: 0.4, fill: true, pointBackgroundColor: 'var(--color-accent)',
+                      pointRadius: 4, pointHoverRadius: 6 // Mayor en hover
+                  }, {
+                      label: 'Carga Sistema', data: [20, 30, 40, 35, 50, 60],
+                      backgroundColor: 'rgba(255, 0, 170, 0.1)', borderColor: 'var(--color-accent2)',
+                      borderWidth: 2, tension: 0.4, fill: true, pointBackgroundColor: 'var(--color-accent2)',
+                      pointRadius: 4, pointHoverRadius: 6
+                  }]
+              },
+              options: {
+                  ...chartDefaultOptions,
+                   scales: { y: { ...chartDefaultOptions.scales.y, max: 100 } }, // Establecer máximo Y
+                   plugins: { legend: { position: 'bottom', labels: {...chartDefaultOptions.plugins.legend.labels, font: { size: 11 } } } } // Leyenda abajo
+              }
           });
-        });
-      });
-    }
+      } else {
+          console.warn("Canvas para Gráfico 1 ('chart1') no encontrado.");
+      }
 
-    // --------------------------------------------------
-    // NUEVO: Efectos de Partículas Interactivas
-    // Las partículas se moverán ligeramente alejándose del cursor
-    document.addEventListener('mousemove', (e) => {
-      const particles = document.querySelectorAll('.particle');
-      particles.forEach(particle => {
-        const rect = particle.getBoundingClientRect();
-        const partX = rect.left + rect.width / 2;
-        const partY = rect.top + rect.height / 2;
-        const deltaX = partX - e.clientX;
-        const deltaY = partY - e.clientY;
-        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-        if(distance < 100) {
-          const offsetX = deltaX / distance * 10;
-          const offsetY = deltaY / distance * 10;
-          particle.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
-        } else {
-          particle.style.transform = 'translate(0, 0)';
-        }
+      // Gráfico 2: Sistema (Radar)
+      if (systemChartCanvas) {
+          const ctxSys = systemChartCanvas.getContext('2d');
+          systemChartInstance = new Chart(ctxSys, {
+              type: 'radar',
+              data: {
+                  labels: ['CPU', 'RAM', 'Red', 'Disco I/O', 'GPU'],
+                  datasets: [{
+                      label: 'Uso Actual (%)', data: [0, 0, 0, 0, 0], // Inicia en 0, se actualiza
+                      backgroundColor: 'rgba(0, 240, 255, 0.25)', borderColor: 'var(--color-accent)',
+                      borderWidth: 1.5, pointBackgroundColor: 'var(--color-accent)', pointBorderColor: '#fff',
+                      pointHoverBackgroundColor: '#fff', pointHoverBorderColor: 'var(--color-accent)', pointRadius: 3
+                  }, {
+                      label: 'Umbral Óptimo (%)', data: [80, 75, 85, 70, 70],
+                      backgroundColor: 'rgba(255, 0, 170, 0.1)', borderColor: 'var(--color-accent2)',
+                      borderWidth: 1, pointRadius: 0, borderDash: [5, 5], fill: false // Sin relleno, línea discontinua
+                  }]
+              },
+              options: {
+                  ...chartDefaultOptions,
+                  scales: {
+                      r: { // Opciones específicas para escala radial
+                           angleLines: { color: 'rgba(0, 240, 255, 0.1)' },
+                           grid: { color: 'rgba(0, 240, 255, 0.1)' },
+                           pointLabels: { color: 'var(--color-text)', font: { family: 'var(--font-main)', size: 10 } },
+                           ticks: {
+                               backdropColor: 'transparent', color: 'var(--color-text-muted)',
+                               stepSize: 20, display: false // Ocultar números en ejes radiales
+                            },
+                           min: 0, max: 100
+                      }
+                  },
+                  plugins: {
+                      legend: { display: true, position: 'bottom', labels: {...chartDefaultOptions.plugins.legend.labels, font: { size: 10 }, usePointStyle: true, padding: 15 } },
+                      tooltip: { ...chartDefaultOptions.plugins.tooltip, displayColors: false } // Ocultar color box en tooltip radar
+                  }
+              }
+          });
+      } else {
+           console.warn("Canvas para Gráfico del Sistema ('systemChart') no encontrado.");
+      }
+
+      // --- ACTUALIZACIÓN DATOS SISTEMA (Simulado) ---
+      function updateSystemData() {
+          // Valores simulados más realistas (con algo de variabilidad)
+          const baseCpuLoad = 50 + Math.sin(Date.now() / 5000) * 15; // Oscilación lenta
+          const cpuLoad = Math.max(10, Math.min(95, Math.floor(baseCpuLoad + Math.random() * 10)));
+          const totalRam = 16;
+          const ramUsage = Math.max(2, Math.min(totalRam * 0.9, (totalRam * 0.4 + (cpuLoad / 100) * totalRam * 0.5 + Math.random() * 1.5))).toFixed(1);
+          const cpuTemp = Math.max(45, Math.min(85, Math.floor(40 + (cpuLoad / 100) * 35 + Math.random() * 5)));
+          const totalDisk = 1000;
+          const diskUsage = (450 + Math.random() * 100).toFixed(0); // Menos variación
+          const ping = Math.max(8, Math.min(150, Math.floor(15 + Math.random() * 20 + (Math.random() > 0.95 ? 50 : 0)))); // Pico ocasional
+          const bandwidth = (0.8 + Math.random() * 0.4).toFixed(2); // Más estable
+          const connections = Math.max(100, Math.min(800, Math.floor(300 + Math.random() * 100 + Math.sin(Date.now() / 8000) * 50)));
+
+          // Actualizar DOM (con comprobaciones)
+          document.getElementById('cpu-load')?.textContent = `${cpuLoad} %`;
+          document.getElementById('ram-usage')?.textContent = `${ramUsage} GB / ${totalRam} GB`;
+          document.getElementById('cpu-temp')?.textContent = `${cpuTemp} °C`;
+          document.getElementById('disk-usage')?.textContent = `${diskUsage} GB / ${totalDisk/1000} TB`;
+          document.getElementById('ping')?.textContent = `${ping} ms`;
+          document.getElementById('bandwidth')?.textContent = `${bandwidth} Gbps`;
+          document.getElementById('connections')?.textContent = `${connections}`;
+
+          // Actualizar análisis (algunos valores)
+          document.getElementById('analisis-latencia')?.textContent = ping;
+          document.getElementById('analisis-red')?.textContent = Math.round((parseFloat(bandwidth)/1.2)*100); // Simular carga basada en ancho de banda
+          if(ping > 100 || cpuTemp > 80) {
+              document.getElementById('analisis-anomalias')?.textContent = '2 (1 Crítica)';
+              document.getElementById('analisis-anomalias')?.style.color = 'var(--color-red)';
+          } else if (ping > 60 || cpuTemp > 70) {
+              document.getElementById('analisis-anomalias')?.textContent = '1 Menor';
+              document.getElementById('analisis-anomalias')?.style.color = 'var(--color-accent3)';
+          } else {
+               document.getElementById('analisis-anomalias')?.textContent = '0 Detectadas';
+               document.getElementById('analisis-anomalias')?.style.color = 'var(--color-accent)';
+          }
+
+
+          // Actualizar Gráfico Radar (si existe)
+          if (systemChartInstance && systemChartInstance.data.datasets[0]) {
+              const diskIO = Math.floor(Math.random() * 30 + 20 + (cpuLoad > 70 ? 10 : 0)); // Simular I/O relacionado con CPU
+              const gpuUsage = Math.floor(Math.random() * 25 + 30 + (Math.random() > 0.8 ? 15: 0)); // Simular GPU
+              systemChartInstance.data.datasets[0].data = [
+                  cpuLoad,
+                  (ramUsage / totalRam) * 100,
+                  Math.min(100, Math.round((parseFloat(bandwidth)/1.2)*100)), // Carga de red basada en ancho de banda
+                  diskIO,
+                  gpuUsage
+              ];
+              // Actualización suave sin re-animación completa
+              systemChartInstance.update('none');
+          }
+      }
+      function startSystemDataUpdates() {
+         // Ejecutar una vez inmediatamente
+         updateSystemData();
+         // Limpiar intervalo anterior si existe
+         if (systemUpdateInterval) clearInterval(systemUpdateInterval);
+         // Iniciar nuevo intervalo
+         systemUpdateInterval = setInterval(updateSystemData, 2500); // Actualizar cada 2.5 segundos
+      }
+
+
+      // --- MODAL INTERACCIONES ---
+      const allProjectCards = document.querySelectorAll('.project-card, .beta-project');
+
+      // Abrir Modal al hacer clic en una tarjeta
+      allProjectCards.forEach(card => {
+          card.addEventListener('click', () => {
+              const projectId = card.getAttribute('data-project');
+              if (projectId && proyectos[projectId]) {
+                  openModal(projectId);
+                  playSound(clickSound);
+              } else {
+                  console.error(`Proyecto no encontrado o ID inválido: ${projectId}`);
+                  playSound(errorSound); // Sonido de error si no se encuentra
+                  // Opcional: Mostrar un mensaje de error al usuario
+              }
+          });
       });
-    });
+
+      // Función para Abrir el Modal
+      function openModal(projectId) {
+          playSound(modalOpenSound, 0.5);
+          modalContentElement.classList.add('loading'); // Mostrar skeleton
+          modalElement.classList.add('visible'); // Mostrar modal
+          document.body.style.overflow = 'hidden'; // Evitar scroll del fondo
+
+          // Resetear estado visual (Título, Scroll, Pestaña activa)
+          modalTitleElement.textContent = "Cargando Datos...";
+          modalTitleElement.dataset.text = "Cargando Datos...";
+          modalTitleElement.dataset.projectId = ""; // Limpiar ID temporalmente
+          tabContentContainer.scrollTop = 0; // Scroll al inicio
+          activateTab(tabLinksContainer.querySelector('.tab-link[data-tab="tab-descripcion"]')); // Activar primera pestaña
+
+          // Simular carga y luego mostrar contenido
+          setTimeout(() => {
+              cargarContenidoProyecto(projectId); // Cargar datos reales
+              modalContentElement.classList.remove('loading'); // Ocultar skeleton
+          }, 600 + Math.random() * 400); // Tiempo de carga simulado
+      }
+
+      // Función para Cerrar el Modal
+      function closeModal() {
+          playSound(modalCloseSound, 0.5);
+          modalElement.classList.remove('visible');
+          document.body.style.overflow = ''; // Restaurar scroll del fondo
+
+          // Limpiar gráfico del proyecto si existe
+          if (activeProjectChartInstance) {
+              activeProjectChartInstance.destroy();
+              activeProjectChartInstance = null;
+          }
+          // Opcional: Limpiar contenido del modal para la próxima vez
+          // resetModalContent();
+      }
+      // Event listeners para cerrar el modal
+      closeModalBtnElement.addEventListener('click', closeModal);
+      modalElement.addEventListener('click', (event) => {
+          // Cerrar si se hace clic en el fondo oscuro (fuera del modal-content)
+          if (event.target === modalElement) {
+              closeModal();
+          }
+      });
+      // Cerrar con tecla Escape
+      document.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape' && modalElement.classList.contains('visible')) {
+              closeModal();
+          }
+      });
+
+
+      // Manejo de Pestañas del Modal
+      tabLinksContainer.addEventListener('click', (event) => {
+          const targetLink = event.target.closest('.tab-link');
+          if (targetLink) {
+              activateTab(targetLink);
+              playSound(tabSound, 0.4); // Sonido de cambio de pestaña más bajo
+          }
+      });
+
+      function activateTab(activeLink) {
+          if (!activeLink || activeLink.classList.contains('active')) return; // No hacer nada si ya está activa
+
+          // Desactivar todas las pestañas y paneles
+          tabLinksContainer.querySelectorAll('.tab-link').forEach(link => link.classList.remove('active'));
+          tabContentContainer.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+
+          // Activar la pestaña y panel seleccionados
+          activeLink.classList.add('active');
+          const tabId = activeLink.getAttribute('data-tab');
+          const activePane = document.getElementById(tabId);
+          if (activePane) {
+              activePane.classList.add('active');
+              tabContentContainer.scrollTop = 0; // Scroll al inicio del nuevo contenido
+
+              // Lógica específica por pestaña (ej. inicializar gráfico)
+              if (tabId === 'tab-estadisticas') {
+                  const currentProjectId = modalTitleElement.dataset.projectId;
+                  if (currentProjectId && proyectos[currentProjectId]) {
+                      // Usar ?. para acceso seguro a datos anidados
+                      initOrUpdateProjectChart(proyectos[currentProjectId].estadisticas?.datos || []);
+                  } else {
+                      initOrUpdateProjectChart([]); // Mostrar gráfico vacío si no hay datos
+                  }
+              } else {
+                   // Destruir gráfico si no estamos en la pestaña de estadísticas
+                   if (activeProjectChartInstance) {
+                       activeProjectChartInstance.destroy();
+                       activeProjectChartInstance = null;
+                   }
+              }
+          } else {
+               console.error(`Panel de contenido no encontrado para la pestaña: ${tabId}`);
+          }
+      }
+
+      // Función para cargar datos específicos del proyecto en el modal
+      function cargarContenidoProyecto(projectId) {
+          const datos = proyectos[projectId];
+          if (!datos) {
+              console.error("Datos no encontrados para:", projectId);
+              modalTitleElement.textContent = "Error al Cargar";
+              modalTitleElement.dataset.text = "Error al Cargar";
+              modalTitleElement.dataset.projectId = "";
+              // Mostrar mensaje de error en la primera pestaña
+              setTextContent('descTexto', 'Error: No se pudieron cargar los datos para este proyecto.');
+              fillList('descRecursos', [], item => `<li>${item}</li>`); // Limpiar listas
+              // Limpiar otras pestañas también podría ser buena idea
+              return;
+          }
+
+          // Actualizar Título del Modal
+          const titleText = `Detalle - ${datos.name || projectId}`;
+          modalTitleElement.textContent = titleText;
+          modalTitleElement.dataset.text = titleText; // Para efecto glitch
+          modalTitleElement.dataset.projectId = projectId; // Guardar ID actual
+
+          // Cargar contenido en cada pestaña usando helpers y acceso seguro ?.
+          setTextContent('descTexto', datos.descripcion?.texto);
+          fillList('descRecursos', datos.descripcion?.recursos, item => `<li><i class="fas fa-link fa-xs fa-fw"></i> ${item}</li>`); // Añadir icono
+
+          setTextContent('statsTexto', datos.estadisticas?.texto);
+          fillList('statsOpciones', datos.estadisticas?.opciones, item => `<li>${item}</li>`);
+          // El gráfico se carga/actualiza en activateTab
+
+          setTextContent('histTexto', datos.historial?.texto);
+          fillList('histLista', datos.historial?.eventos, evento => `<li>${evento}</li>`);
+          fillList('histFiltros', datos.historial?.filtros, item => `<li><i class="fas fa-filter fa-xs fa-fw"></i> ${item}</li>`);
+
+          setTextContent('tarTexto', datos.tareas?.texto);
+          fillList('tarLista', datos.tareas?.lista, item => `<li class="${item.includes('[x]') ? 'completed' : ''}">${item.replace('[x]', '<i class="fas fa-check-square" style="color:var(--color-accent);"></i>').replace('[ ]', '<i class="far fa-square" style="color:var(--color-text-muted);"></i>')}</li>`);
+          fillList('tarOpciones', datos.tareas?.opciones, item => `<li>${item}</li>`);
+
+          setTextContent('docTexto', datos.documentacion?.texto);
+          fillList('docLista', datos.documentacion?.enlaces, item => `<li><a href="#" target="_blank" rel="noopener noreferrer" title="Abrir ${item}"><i class="fas fa-external-link-alt fa-xs fa-fw"></i> ${item}</a></li>`);
+          fillList('docAvanzadas', datos.documentacion?.avanzadas, item => `<li><i class="fas fa-cogs fa-xs fa-fw"></i> ${item}</li>`);
+
+          setTextContent('comTexto', datos.comentarios?.texto);
+          const comLista = document.getElementById('comLista');
+          if(comLista) comLista.innerHTML = ''; // Limpiar comentarios anteriores
+          // Simular algunos comentarios iniciales
+          addComment("Dev Lead", "¡Buen avance en la refactorización del núcleo!", "10:35 19/03");
+          if(datos.status === 'Feedback UI/UX') addComment("UX Designer", "Recibido feedback positivo sobre el nuevo layout.", "11:15 19/03");
+          fillList('comExtras', datos.comentarios?.extras, item => `<li>${item}</li>`);
+
+          setTextContent('intTexto', datos.integraciones?.texto);
+          fillList('intLista', datos.integraciones?.lista, item => `<li>${item.replace('Vinculado','<span style="color:var(--color-accent);">Vinculado <i class="fas fa-check"></i></span>').replace('Pendiente','<span style="color:var(--color-accent3);">Pendiente <i class="fas fa-clock"></i></span>')}</li>`);
+          fillList('intOpciones', datos.integraciones?.opciones, item => `<li>${item}</li>`);
+
+          setTextContent('proTexto', datos.prototipo?.texto);
+          const proIframe = document.getElementById('proIframe');
+          if (proIframe) proIframe.src = datos.prototipo?.iframeSrc || 'about:blank'; // Cargar Iframe
+          fillList('proOpciones', datos.prototipo?.opciones, item => `<li>${item}</li>`);
+
+          setTextContent('segTexto', datos.seguridad?.texto);
+          fillList('segLista', datos.seguridad?.lista, item => `<li>${item.replace('(OK', '<span style="color:var(--color-accent);">(OK').replace('issues menores)','menores)</span>')}</li>`);
+          fillList('segOpciones', datos.seguridad?.opciones, item => `<li>${item}</li>`);
+
+          setTextContent('finTexto', datos.finanzas?.texto);
+          fillList('finLista', datos.finanzas?.lista, item => `<li>${item}</li>`);
+          fillList('finOpciones', datos.finanzas?.opciones, item => `<li>${item}</li>`);
+      }
+
+      // Inicializar / Actualizar Gráfico del Proyecto en Modal
+      function initOrUpdateProjectChart(data = []) {
+          if (!projectChartCanvas) {
+              console.warn("Canvas para Gráfico del Proyecto ('chartProyecto') no encontrado.");
+              return;
+          }
+          const ctxProyecto = projectChartCanvas.getContext('2d');
+
+          // Destruir instancia anterior si existe
+          if (activeProjectChartInstance) {
+              activeProjectChartInstance.destroy();
+              activeProjectChartInstance = null;
+          }
+
+          // Asegurarse de que data sea un array
+          const validData = Array.isArray(data) ? data : [];
+          const labels = validData.length > 0 ? validData.map((_, i) => `Ciclo ${i + 1}`) : ['Sin Datos'];
+          const chartDataPoints = validData.length > 0 ? validData : [0];
+
+          activeProjectChartInstance = new Chart(ctxProyecto, {
+              type: 'bar', // Tipo Barra por defecto
+              data: {
+                  labels: labels,
+                  datasets: [{
+                      label: 'Métrica Principal',
+                      data: chartDataPoints,
+                      backgroundColor: 'rgba(0, 240, 255, 0.4)', // Color base
+                      borderColor: 'var(--color-accent)',
+                      borderWidth: 1,
+                      hoverBackgroundColor: 'rgba(0, 240, 255, 0.7)', // Más opaco en hover
+                      borderRadius: 3, // Bordes redondeados
+                  }, {
+                       label: 'Métrica Secundaria (Simulada)',
+                       data: chartDataPoints.map(d => Math.max(0, d - 10 - Math.random()*15)), // Datos secundarios simulados
+                       backgroundColor: 'rgba(255, 0, 170, 0.3)',
+                       borderColor: 'var(--color-accent2)',
+                       borderWidth: 1,
+                       hoverBackgroundColor: 'rgba(255, 0, 170, 0.6)',
+                       borderRadius: 3,
+                       type: 'line', // Puede ser tipo línea sobre barras
+                       tension: 0.3,
+                       fill: false,
+                       pointRadius: 3,
+                       pointHoverRadius: 5
+                   }]
+              },
+              options: {
+                  ...chartDefaultOptions,
+                  plugins: {
+                      ...chartDefaultOptions.plugins,
+                      title: { display: true, text: 'Evolución Métricas Clave', color: 'var(--color-text)', font: { family: 'var(--font-heading)', size: 14 } },
+                      legend: { display: true, position: 'bottom', labels: {...chartDefaultOptions.plugins.legend.labels, font: {size: 10}, usePointStyle: true } }
+                  },
+                   scales: {
+                       y: { ...chartDefaultOptions.scales.y, title: { display: true, text: 'Valor', color: 'var(--color-text-muted)', font:{size:10} } },
+                       x: { ...chartDefaultOptions.scales.x, title: { display: true, text: 'Periodo', color: 'var(--color-text-muted)', font:{size:10} } }
+                   }
+              }
+          });
+      }
+
+      // --- INICIALIZACIÓN FINAL Y VERIFICACIONES ---
+      // Verificar que todos los data-project tienen datos en el objeto JS
+      allProjectCards.forEach(card => {
+          const projectId = card.getAttribute('data-project');
+          if (!projectId || !proyectos[projectId]) {
+              console.warn(`Advertencia: La tarjeta con data-project="${projectId}" no tiene datos correspondientes en el objeto 'proyectos'. El modal no funcionará para esta tarjeta.`);
+              // Opcional: Añadir una clase visual a la tarjeta para indicar que no es funcional
+              card.style.opacity = '0.5';
+              card.style.cursor = 'not-allowed';
+              card.title = "Datos no disponibles para este proyecto.";
+          }
+      });
+
+      console.log("%cCyberLab Overdrive Interface v2.0 Initialized.", "color: #00f0ff; font-family: 'Share Tech Mono', monospace; font-size: 1.2em;");
+      console.log("Modo Cursor: Sistema Operativo (Estándar)");
+      console.log("Modal de detalles activado para tarjetas de proyecto.");
+
+    }); // Fin de DOMContentLoaded
   </script>
+
 </body>
 </html>
-
-
-
 
 
 
