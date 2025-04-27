@@ -2,1443 +2,1986 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Cyberpunk UI + Mini Chart + MP3 Player - Enhanced con Paneles Dinámicos</title>
+  <title>Cyberdeck OS - Netrunner Interface v2.1</title> <!-- Título actualizado -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Fuente -->
+
+  <!-- Fuentes -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-  
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome (para iconos) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+
+  <!-- tsParticles -->
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@1/tsparticles.min.js"></script>
+
+  <!-- Socket.IO (Placeholder URL) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js" integrity="sha512-YeeA/Qxn5hYdkukScTCNNOhTrvWUvyI ಸುರินಾಥ್ ಕาร์тиക്കുлятор" crossorigin="anonymous" referrerpolicy="no-referrer"></script> <!-- Reemplaza con tu URL real -->
+
+
   <style>
     /* VARIABLES CSS */
     :root {
-      --primary-color: #ff0040;
-      --secondary-color: #ff5588;
-      --accent-color: #1e90ff;
-      --background-color: #0a0a0a;
-      --text-color: #ffccaa;
+      --primary-color: #00f0ff; /* Azul Cyan Neón */
+      --primary-color-rgb: 0, 240, 255;
+      --secondary-color: #ff00ff; /* Magenta Neón */
+      --secondary-color-rgb: 255, 0, 255;
+      --accent-color: #f7ff00; /* Amarillo Neón */
+      --accent-color-rgb: 247, 255, 0;
+      --background-color: #050a15; /* Azul muy oscuro */
+      --panel-bg-color: rgba(10, 20, 40, 0.7); /* Azul oscuro semi-transparente */
+      --text-color: #e0f0ff; /* Texto azulado claro */
+      --text-muted-color: #a0b0d0;
+      --border-color: rgba(var(--primary-color-rgb), 0.5);
+      --highlight-bg: rgba(var(--primary-color-rgb), 0.1);
+      --selected-bg: var(--primary-color);
+      --selected-text: #050a15; /* Texto oscuro para contraste sobre selección */
+      --danger-color: #ff4444;
+
+      --font-main: 'Orbitron', sans-serif;
+      --font-secondary: 'Rajdhani', sans-serif; /* Fuente más legible para textos */
+      --animation-speed: 1s; /* Control global */
+      --base-font-size: 14px;
     }
-    /* MODO DE ALTO CONTRASTE */
-    .high-contrast {
+
+    /* MODO DE ALTO CONTRASTE (Alternativa) */
+    body.high-contrast {
       --primary-color: #ffff00;
+      --primary-color-rgb: 255, 255, 0;
       --secondary-color: #ff00ff;
+      --secondary-color-rgb: 255, 0, 255;
       --accent-color: #00ffff;
+      --accent-color-rgb: 0, 255, 255;
       --background-color: #000;
+      --panel-bg-color: rgba(0, 0, 0, 0.85);
       --text-color: #ffffff;
+      --text-muted-color: #cccccc;
+      --border-color: var(--primary-color);
+      --selected-bg: var(--primary-color);
+      --selected-text: #000;
     }
-    
+
     /* RESETEO Y ESTILOS GENERALES */
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body {
-      width: 100%; height: 100%;
-      background: transparent;
+    html { font-size: var(--base-font-size); }
+    body {
+      width: 100vw; height: 100vh; /* Usar vw/vh para asegurar pantalla completa */
+      background-color: var(--background-color);
       overflow: hidden;
-      font-family: Arial, sans-serif;
+      font-family: var(--font-secondary);
       color: var(--text-color);
       transition: opacity 0.7s ease-in-out;
       opacity: 1;
+      position: relative; /* Para overlays */
     }
     body.fade-out { opacity: 0; }
-    
-    /* Fondos semitransparentes en contenedores */
-    .main-container, .left-panels, .detail-container, .right-panel {
-      background: rgba(10,10,10,0.5);
+
+    /* Overlay Scanlines (Sutil) */
+    body::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(rgba(10, 20, 40, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
+                  linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 100% 4px, 3px 100%;
+      z-index: -1;
+      pointer-events: none;
+      animation: scanlineAnim 0.2s linear infinite;
+      opacity: 0.5;
     }
-    
+    @keyframes scanlineAnim {
+      0% { background-position: 0 0; }
+      100% { background-position: 0 4px; }
+    }
+
+    /* Loading Overlay */
+    #loading-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--background-color);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; /* Centrar verticalmente */
+      z-index: 2000;
+      color: var(--primary-color);
+      font-family: var(--font-main);
+      font-size: 1.5rem;
+      text-shadow: 0 0 10px var(--primary-color);
+      opacity: 1;
+      transition: opacity 0.5s ease-out;
+    }
+    #loading-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .loader { /* Simple spinner */
+       border: 4px solid rgba(var(--primary-color-rgb), 0.3);
+       border-top: 4px solid var(--primary-color);
+       border-radius: 50%;
+       width: 40px; height: 40px;
+       animation: spin 1s linear infinite;
+       margin-bottom: 15px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+
+    /* Fondos con backdrop-filter */
+    .main-container, .left-panels, .detail-container, .right-panel, .top-bar, .filter-dropdown, #themeModal, #achievementsModal, #dashboardStats, #tutorialOverlay > div {
+      background: var(--panel-bg-color);
+      backdrop-filter: blur(8px); /* Efecto cristal esmerilado */
+      border: 1px solid var(--border-color);
+      box-shadow: 0 0 15px rgba(var(--primary-color-rgb), 0.1), inset 0 0 8px rgba(var(--secondary-color-rgb), 0.1);
+    }
+
     /* VIDEO DE FONDO */
     #bgVideo {
-      position: fixed; top: 0; left: 0;
+      position: fixed; top: 50%; left: 50%;
       min-width: 100%; min-height: 100%;
       width: auto; height: auto;
-      z-index: -3; object-fit: cover;
+      z-index: -3;
+      transform: translate(-50%, -50%);
+      object-fit: cover;
+      filter: brightness(0.6) saturate(1.2); /* Ajuste visual */
     }
-    @media only screen and (max-width:768px) {
-      #bgVideo { display: none; }
-      body { background: url('ruta/a/tu/fondo-movil.jpg') no-repeat center center fixed; background-size: cover; }
-    }
-    
+    #bgVideo.parallax { transition: transform 0.1s linear; }
+
     /* SCROLL */
-    ::-webkit-scrollbar { width: 8px; background-color: #111; }
-    ::-webkit-scrollbar-thumb { background: var(--primary-color); }
-    
+    ::-webkit-scrollbar { width: 8px; background-color: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--primary-color); border-radius: 4px; border: 1px solid var(--background-color); }
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px;}
+
     /* BARRA SUPERIOR */
     .top-bar {
-      position: fixed; top: 0; left: 0; width: 100%; height: 50px;
-      background: #1a1a1a; border-bottom: 2px solid var(--primary-color);
-      display: flex; align-items: center; padding: 0 20px; z-index: 999;
-      box-shadow: 0 0 10px var(--primary-color);
+      position: fixed; top: 10px; left: 10px; right: 10px; /* Flotante */
+      height: 55px; /* Un poco más alta */
+      border-radius: 8px;
+      display: flex; align-items: center; padding: 0 25px; z-index: 999;
+      font-family: var(--font-main);
     }
-    .top-bar-left { display: flex; align-items: center; gap: 40px; flex-wrap: wrap; }
-    .level-cred { display: flex; align-items: center; gap: 20px; font-size: 14px; }
-    .level-cred .label { color: var(--secondary-color); margin-right: 5px; }
-    .level-cred .value { color: var(--primary-color); }
-    .top-nav {
-      display: flex; align-items: center; gap: 30px; margin-left: 40px;
-      transition: max-height 0.3s ease-in-out;
+    .top-bar-left { display: flex; align-items: center; gap: 25px; }
+    /* Nombres de stats actualizados */
+    .level-cred { display: flex; align-items: center; gap: 20px; font-size: 1.1rem; white-space: nowrap; }
+    .level-cred .label { color: var(--secondary-color); margin-right: 6px; text-transform: uppercase; font-weight: 400; letter-spacing: 1px;}
+    .level-cred .value { color: var(--primary-color); font-weight: 700; }
+    .top-nav { display: flex; align-items: center; gap: 30px; margin-left: 35px; }
+    .top-nav-item { color: var(--text-muted-color); font-size: 1rem; text-transform: uppercase; transition: color 0.2s, text-shadow 0.2s; cursor: pointer; text-decoration: none; padding: 5px 0; position: relative; }
+    .top-nav-item::after { /* Subrayado animado */
+      content: ''; position: absolute; bottom: -2px; left: 0; width: 0; height: 2px;
+      background: var(--primary-color); transition: width 0.3s ease-out;
     }
-    .top-nav-item {
-      color: #ffd0dc; font-size: 14px; text-transform: uppercase;
-      transition: color 0.2s; cursor: pointer; text-decoration: none;
-    }
-    .top-nav-item:hover { color: #fff; }
-    .top-nav-item.active { color: var(--primary-color); text-shadow: 0 0 5px var(--primary-color); }
-    .top-bar-right {
-      margin-left: auto; display: flex; align-items: center; gap: 30px; font-size: 14px;
-    }
-    .top-bar-right .stat { display: flex; align-items: center; gap: 5px; }
-    .top-bar-right .stat .label { color: var(--secondary-color); }
-    .top-bar-right .stat .value { color: var(--primary-color); }
-    .nav-toggle {
-      display: none; background: none; border: none;
-      color: #ffd0dc; font-size: 24px; cursor: pointer;
-    }
-    
-    /* CONTENEDOR PRINCIPAL (3 COLUMNAS) */
+    .top-nav-item:hover, .top-nav-item.active { color: var(--primary-color); text-shadow: 0 0 10px var(--primary-color); }
+    .top-nav-item:hover::after, .top-nav-item.active::after { width: 100%; }
+    .top-bar-right { margin-left: auto; display: flex; align-items: center; gap: 25px; font-size: 1.1rem; white-space: nowrap; }
+    /* Nombres de stats actualizados */
+    .top-bar-right .stat .label { color: var(--secondary-color); text-transform: uppercase; font-weight: 400; letter-spacing: 1px;}
+    .top-bar-right .stat .value { color: var(--primary-color); font-weight: 700; }
+    #themeToggle { background: transparent; border: 1px solid var(--primary-color); color: var(--text-color); padding: 5px 10px; cursor: pointer; font-size: 0.9rem; border-radius: 4px; transition: background 0.2s, color 0.2s, box-shadow 0.2s; font-family: var(--font-main);}
+    #themeToggle:hover { background: var(--primary-color); color: var(--selected-text); box-shadow: 0 0 8px var(--primary-color); }
+    .nav-toggle { display: none; background: none; border: none; color: var(--primary-color); font-size: 28px; cursor: pointer; padding: 5px; }
+
+    /* CONTENEDOR PRINCIPAL */
     .main-container {
-      position: absolute; top: 50px; left: 0; right: 0; bottom: 0;
-      display: grid; grid-template-columns: 300px 1fr 350px; overflow: hidden;
-      box-shadow: inset 0 0 8px var(--primary-color);
+      position: absolute; top: 75px; left: 10px; right: 10px; bottom: 10px;
+      display: grid; grid-template-columns: 320px 1fr 380px; /* Ajuste de anchos */
+      gap: 15px;
+      overflow: hidden;
+      border-radius: 8px;
     }
-    
+
     /* PANEL IZQUIERDO */
     .left-panels {
-      border-right: 2px solid var(--primary-color);
-      display: flex; flex-direction: column; overflow: auto;
-      box-shadow: inset 0 0 8px var(--primary-color); padding: 10px;
+      display: flex; flex-direction: column; overflow: hidden;
+      padding: 20px; border-radius: 8px; /* Redondeado completo */
+      border-right: none; /* Quitar borde derecho, el gap ya separa */
     }
-    .left-panels .search-container { margin-bottom: 10px; }
-    .left-panels input[type="text"] {
-      width: 100%; padding: 6px 8px; border: 1px solid var(--primary-color);
-      border-radius: 4px; background: #1a1a1a; color: var(--text-color);
+    .search-container { margin-bottom: 20px; position: relative; }
+    .search-container input[type="text"] {
+      width: 100%; padding: 10px 15px; padding-left: 40px;
+      border: 1px solid var(--border-color); border-radius: 5px;
+      background: rgba(0,0,0,0.4); color: var(--text-color);
+      font-family: var(--font-secondary); font-size: 1rem;
+      transition: box-shadow 0.2s, border-color 0.2s;
     }
-    /* Filtro avanzado para Projects */
-    .advanced-filter-nav {
-      margin: 10px 0;
+    .search-container input[type="text"]:focus { outline: none; box-shadow: 0 0 10px var(--primary-color); border-color: var(--primary-color); }
+    .search-container .search-icon { /* Usar clase para icono */
+        position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+        color: var(--secondary-color); font-size: 1.1rem; pointer-events: none;
     }
-    .advanced-filter-nav ul {
-      list-style: none;
-      display: flex;
-      gap: 10px;
-      padding: 0;
-    }
+
+    /* Filtro avanzado */
+    .advanced-filter-nav { margin-bottom: 20px; }
+    .advanced-filter-nav ul { list-style: none; display: flex; flex-wrap: wrap; gap: 10px; padding: 0; }
     .advanced-filter-nav li {
-      padding: 5px 10px;
-      background: var(--primary-color);
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-      text-transform: uppercase;
-      color: #000;
-      transition: background 0.3s;
+      padding: 7px 15px; background: transparent;
+      border: 1px solid var(--border-color); border-radius: 20px;
+      cursor: pointer; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted-color);
+      transition: all 0.3s ease; white-space: nowrap;
+      font-family: var(--font-main); letter-spacing: 0.5px;
     }
     .advanced-filter-nav li.active, .advanced-filter-nav li:hover {
-      background: var(--secondary-color);
+      background: var(--primary-color); color: var(--selected-text);
+      border-color: var(--primary-color);
+      box-shadow: 0 0 12px rgba(var(--primary-color-rgb), 0.7);
+      transform: translateY(-2px);
     }
-    .data-list-container {
-      margin-top: 10px;
+
+    /* Contenedor de listas */
+    .list-section { display: flex; flex-direction: column; overflow: hidden; margin-bottom: 20px; flex-grow: 1; }
+    .list-title {
+      color: var(--primary-color); text-transform: uppercase; font-size: 1.2rem;
+      margin-bottom: 15px; text-shadow: 0 0 8px var(--primary-color);
+      font-family: var(--font-main); border-bottom: 1px solid rgba(var(--secondary-color-rgb), 0.3); padding-bottom: 8px;
+      display: flex; align-items: center; gap: 8px;
     }
-    .data-item {
-      display: flex;
-      flex-direction: column;
-      padding: 8px 15px;
-      border-bottom: 1px solid #421111;
-      cursor: pointer;
-      transition: background 0.2s, box-shadow 0.2s;
-      font-size: 13px;
-      color: #ffd0dc;
+    .list-title i { font-size: 1rem; } /* Iconos en títulos */
+
+    .data-list-container, .mission-list {
+       flex-grow: 1; overflow-y: auto; padding-right: 8px; /* Espacio para scrollbar */
     }
-    .data-item:hover {
-      background: #2a0a0a;
-      box-shadow: 0 0 10px var(--primary-color);
+
+    /* Estilo de Item común */
+    .data-item, .mission-item {
+      display: flex; flex-direction: column; padding: 12px 15px; padding-left: 25px; /* Espacio para marcador */
+      border-bottom: 1px solid rgba(var(--primary-color-rgb), 0.15);
+      cursor: pointer; position: relative;
+      transition: background-color 0.2s ease-out, transform 0.2s ease-out;
+      font-size: 1rem; color: var(--text-muted-color);
+      margin-bottom: 5px; border-radius: 4px;
     }
-    .data-item.selected {
-      background: var(--primary-color);
-      color: #fff;
-      box-shadow: inset 0 0 10px var(--primary-color);
+    .data-item::before, .mission-item::before { /* Marcador lateral */
+       content: ''; position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
+       width: 4px; height: 60%; background: var(--border-color); border-radius: 2px;
+       transition: background-color 0.2s, height 0.2s, box-shadow 0.2s;
     }
-    /* Se mantiene la sección original de Projects (Side Jobs se conserva) */
-    
-    .project-list-container, .mission-list-container { margin-top: 10px; }
-    .project-list-title, .mission-list-title {
-      color: var(--primary-color); text-transform: uppercase; font-size: 14px;
-      margin: 10px 0; text-shadow: 0 0 5px var(--primary-color);
-      font-family: 'Orbitron', sans-serif;
+    .data-item:hover, .mission-item:hover {
+      background-color: var(--highlight-bg);
+      color: var(--text-color);
+      transform: translateX(3px);
     }
-    .project-list, .mission-list {
-      max-height: 150px; overflow-y: auto; padding: 0 5px;
+    .data-item:hover::before, .mission-item:hover::before {
+      background-color: var(--secondary-color); height: 80%;
     }
-    .project-item, .mission-item {
-      display: flex; flex-direction: column; padding: 8px 15px;
-      border-bottom: 1px solid #421111; cursor: pointer; position: relative;
-      transition: background 0.2s, box-shadow 0.2s; font-size: 13px; color: #ffd0dc;
+    .data-item.selected, .mission-item.selected {
+      background-color: var(--selected-bg); color: var(--selected-text);
+      box-shadow: 0 0 15px rgba(var(--primary-color-rgb), 0.5);
+      transform: translateX(5px) scale(1.01);
     }
-    .project-item:hover, .mission-item:hover {
-      background: #2a0a0a; box-shadow: 0 0 10px var(--primary-color);
+    .data-item.selected::before, .mission-item.selected::before {
+      background-color: var(--accent-color); height: 90%;
+      box-shadow: 0 0 8px var(--accent-color);
     }
-    .project-item.selected, .mission-item.selected {
-      background: var(--primary-color); color: #fff;
-      box-shadow: inset 0 0 10px var(--primary-color);
+    /* Nombres actualizados */
+    .data-item.selected .program-name, .mission-item.selected .subroutine-name { color: var(--selected-text); }
+    .data-item.selected .program-desc, .mission-item.selected .subroutine-threat, .mission-item.selected .progress-text { color: rgba(0,0,0,0.7); }
+    .data-item.selected .progress-fill { background-color: var(--accent-color); }
+    .data-item.selected .new-flag { background: var(--accent-color); color: #000; }
+
+
+    .program-name, .subroutine-name { /* Nombre cambiado de project/mission */
+      font-weight: 600; text-transform: uppercase; margin-bottom: 4px;
+      color: var(--text-color); font-size: 1rem; font-family: var(--font-main);
     }
-    .project-name, .mission-name {
-      font-weight: bold; text-transform: uppercase; margin-bottom: 3px;
-      color: #ffbfc6;
+    .program-desc, .subroutine-threat { /* Nombre cambiado de project/mission */
+        font-size: 0.9rem; color: var(--text-muted-color); line-height: 1.4;
     }
-    .project-summary { font-size: 12px; color: #ffccaa; }
-    .mission-danger { font-size: 12px; color: #ff9900; }
+    .subroutine-threat { /* Mismo estilo que mission-danger */
+        color: var(--danger-color); font-weight: 600;
+    }
+
+
     .new-flag {
-      position: absolute; right: 10px; top: 10px; font-size: 10px;
-      background: var(--primary-color); color: #000; padding: 2px 5px;
-      border-radius: 2px; text-transform: uppercase; pointer-events: none;
+      position: absolute; right: 15px; top: 12px; font-size: 0.7rem;
+      background: var(--secondary-color); color: #fff; padding: 2px 6px;
+      border-radius: 3px; text-transform: uppercase; pointer-events: none;
+      font-weight: bold; letter-spacing: 0.5px;
     }
-    .mission-progress { margin-top: 5px; }
+    .mission-progress { margin-top: 8px; } /* Mantenemos nombre de clase por simplicidad JS */
     .progress-bar {
-      width: 100%; background-color: #421111; border-radius: 3px;
-      overflow: hidden; height: 6px;
+      width: 100%; background-color: rgba(var(--primary-color-rgb), 0.1); border-radius: 4px;
+      overflow: hidden; height: 8px; border: 1px solid rgba(var(--primary-color-rgb), 0.2);
     }
     .progress-fill {
       height: 100%; background-color: var(--primary-color);
-      transition: width 0.3s;
+      transition: width 0.5s ease-out; border-radius: 3px;
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
     }
     .progress-text {
-      font-size: 10px; color: #ffccaa; margin-top: 2px;
+      font-size: 0.8rem; color: var(--text-muted-color); margin-top: 4px; display: block; text-align: right;
     }
-    
+
     /* PANEL CENTRAL (Detalle) */
     .detail-container {
-      border-right: 2px solid var(--primary-color); padding: 20px;
+      padding: 25px 30px;
       display: flex; flex-direction: column; justify-content: flex-start;
-      overflow-y: auto; box-shadow: inset 0 0 8px var(--primary-color);
-      background: rgba(10,10,10,0.5); border-radius: 8px;
-      font-family: 'Orbitron', sans-serif;
+      overflow-y: auto; border-radius: 8px;
     }
     .detail-title {
       color: var(--primary-color); text-transform: uppercase;
-      font-size: 24px; margin-bottom: 10px;
-      text-shadow: 0 0 5px var(--primary-color);
+      font-size: 1.8rem; margin-bottom: 8px;
+      text-shadow: 0 0 10px var(--primary-color), 0 0 20px rgba(var(--primary-color-rgb), 0.5);
+      font-family: var(--font-main);
+      letter-spacing: 1px;
     }
     .detail-subtitle {
-      color: var(--secondary-color); font-size: 16px;
-      margin-bottom: 15px; text-shadow: 0 0 3px var(--secondary-color);
+      color: var(--secondary-color); font-size: 1.1rem;
+      margin-bottom: 20px; text-shadow: 0 0 5px var(--secondary-color);
+      font-family: var(--font-secondary); font-weight: 600;
+      border-bottom: 1px dashed rgba(var(--secondary-color-rgb), 0.3);
+      padding-bottom: 10px;
     }
     .detail-description {
-      color: #ffccaa; font-size: 13px; line-height: 1.6;
-      flex: 1; transition: opacity 0.3s;
+      color: var(--text-color); font-size: 1rem; line-height: 1.7;
+      flex: 1; transition: opacity 0.3s; font-family: var(--font-secondary);
     }
     .detail-description strong {
       color: var(--primary-color); display: block;
-      margin-top: 15px; margin-bottom: 5px; font-size: 14px;
+      margin-top: 20px; margin-bottom: 8px; font-size: 1.1rem;
+      text-transform: uppercase; font-family: var(--font-main); letter-spacing: 0.5px;
     }
     .detail-description ul {
-      list-style-type: disc; padding-left: 20px; margin-bottom: 10px;
+      list-style-type: none; /* Quitar puntos por defecto */
+      padding-left: 10px; margin-bottom: 15px;
     }
-    .detail-description li { margin-bottom: 5px; }
+    .detail-description li {
+      margin-bottom: 8px; position: relative; padding-left: 20px;
+    }
+    .detail-description li::before { /* Usar icono o forma cyberpunk */
+       content: "\f105"; /* Font Awesome angle-right */
+       font-family: "Font Awesome 6 Free";
+       font-weight: 900;
+       position: absolute; left: 0; top: 2px;
+       color: var(--secondary-color);
+       font-size: 0.9em;
+    }
     .detail-description a {
-      color: var(--accent-color); text-decoration: none;
+      color: var(--accent-color); text-decoration: none; font-weight: 600;
       transition: color 0.3s, text-shadow 0.3s;
+      border-bottom: 1px dashed var(--accent-color);
     }
     .detail-description a:hover {
       color: var(--primary-color);
-      text-shadow: 0 0 5px var(--primary-color);
+      text-shadow: 0 0 8px var(--primary-color);
+      border-bottom-style: solid;
     }
-    .detail-description a:visited { color: var(--accent-color); }
-    
-    /* PANEL DERECHO CON FILTRO DESPLEGABLE */
+
+    /* PANEL DERECHO */
     .right-panel {
       padding: 20px; overflow-y: auto;
-      box-shadow: inset 0 0 8px var(--secondary-color);
       position: relative; display: flex; flex-direction: column;
-      background: rgba(10,10,10,0.5); border-radius: 8px;
-      font-family: 'Orbitron', sans-serif;
+      border-radius: 8px; border-left: none; /* Quitar borde */
     }
     .filter-menu-container {
-      position: relative; display: inline-block; margin-bottom: 10px;
+      position: relative; display: inline-block; margin-bottom: 20px; z-index: 10; /* Asegurar que el dropdown esté encima */
     }
     .filter-button {
-      background: var(--primary-color); color: #fff; border: none;
-      padding: 8px 12px; cursor: pointer; border-radius: 4px;
-      font-size: 12px;
+      background: var(--primary-color); color: var(--selected-text); border: none;
+      padding: 8px 15px; cursor: pointer; border-radius: 5px;
+      font-size: 0.9rem; font-family: var(--font-main); text-transform: uppercase;
+      display: flex; align-items: center; gap: 8px;
+      transition: background 0.2s, box-shadow 0.2s;
     }
+    .filter-button:hover { background: var(--secondary-color); box-shadow: 0 0 10px var(--secondary-color); }
     .filter-dropdown {
-      display: none; position: absolute; top: 100%; left: 0;
-      background: var(--background-color); border: 1px solid var(--primary-color);
-      border-radius: 4px; z-index: 10; min-width: 120px;
+      display: none; position: absolute; top: 105%; left: 0; /* Ligera separación */
+      background: var(--panel-bg-color); /* Hereda estilo panel */
+      border: 1px solid var(--border-color);
+      border-radius: 5px; z-index: 11; /* Por encima del botón */
+      min-width: 180px; /* Más ancho */
+      padding: 5px 0;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     }
-    .filter-menu-container:hover .filter-dropdown { display: block; }
+    .filter-menu-container:hover .filter-dropdown { display: block; animation: fadeInDropdown 0.3s ease forwards; }
+    @keyframes fadeInDropdown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
     .filter-item {
-      padding: 8px 12px; cursor: pointer; color: var(--text-color);
+      padding: 10px 15px; cursor: pointer; color: var(--text-muted-color);
+      font-size: 0.95rem; transition: background 0.2s, color 0.2s;
+      display: flex; align-items: center; gap: 10px;
     }
-    .filter-item:hover {
-      background: var(--primary-color); color: #fff;
-    }
-    .tab-content { display: none; animation: fadeIn 0.5s forwards; }
+    .filter-item i { width: 15px; text-align: center; color: var(--secondary-color); } /* Iconos en dropdown */
+    .filter-item:hover { background: var(--highlight-bg); color: var(--primary-color); }
+    .filter-item:hover i { color: var(--primary-color); }
+
+    .tab-content { display: none; animation: fadeInContent 0.5s forwards; }
     .tab-content.active { display: block; }
-    
+    @keyframes fadeInContent { from { opacity: 0; } to { opacity: 1; } }
+
     /* Elementos internos del panel derecho */
+    .right-panel-title {
+        color: var(--primary-color); text-transform: uppercase; font-size: 1.3rem;
+        margin-bottom: 15px; text-shadow: 0 0 8px var(--primary-color);
+        font-family: var(--font-main); border-bottom: 1px solid rgba(var(--secondary-color-rgb), 0.3); padding-bottom: 8px;
+    }
     .right-panel-image {
-      width: 100%; height: auto; border: 2px solid var(--primary-color);
-      background: var(--background-color); padding: 5px;
-      transition: transform 0.2s; margin-bottom: 20px; border-radius: 4px;
+      width: 100%; height: auto; border: 2px solid var(--border-color);
+      padding: 5px; background: rgba(0,0,0,0.2);
+      transition: transform 0.3s ease, box-shadow 0.3s ease; margin-bottom: 20px; border-radius: 6px;
+      display: block; /* Evitar espacio extra bajo la imagen */
     }
     .right-panel-image:hover {
-      transform: scale(1.02);
-      box-shadow: 0 0 10px var(--primary-color);
+      transform: scale(1.03);
+      box-shadow: 0 0 15px var(--primary-color);
+      border-color: var(--primary-color);
     }
-    .right-panel-video { width: 100%; height: auto; margin-bottom: 20px; }
-    .mini-chart-container {
-      width: 100%; height: 120px; border: 1px solid var(--primary-color);
-      box-shadow: 0 0 5px var(--primary-color); position: relative;
-      overflow: hidden; margin-bottom: 15px; border-radius: 4px;
-      background: #1a1a1a;
+    .right-panel-video { width: 100%; height: auto; margin-bottom: 20px; border-radius: 6px; border: 1px solid var(--border-color); display: block;}
+
+    /* Gráfico (Chart.js) */
+    .chart-container {
+      width: 100%; height: 150px; /* Altura para el mini-chart */
+      border: 1px solid var(--border-color);
+      box-shadow: 0 0 8px rgba(var(--primary-color-rgb), 0.3);
+      position: relative; overflow: hidden; margin-bottom: 20px; border-radius: 6px;
+      background: rgba(0,0,0,0.2); padding: 10px;
     }
-    #miniChart { width: 100%; height: 100%; display: block; }
+     #statsChartContainer { /* Contenedor para el gráfico de estadísticas */
+        height: 200px; /* Más altura para el gráfico principal */
+     }
+
+    /* Visualizador de Audio */
+    #audioVisualizer { width: 100%; height: 80px; display: block; margin-bottom: 20px; border-radius: 4px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color);}
+
+    /* Reproductor MP3 */
     .mp3-player {
-      width: 100%; background: var(--background-color);
-      border: 1px solid var(--primary-color); box-shadow: 0 0 5px var(--primary-color);
-      padding: 10px; display: flex; flex-direction: column; gap: 6px;
-      color: #ffccaa; border-radius: 4px;
+      width: 100%; background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border-color); box-shadow: 0 0 8px rgba(var(--primary-color-rgb), 0.3);
+      padding: 15px; display: flex; flex-direction: column; gap: 10px;
+      color: var(--text-muted-color); border-radius: 6px;
     }
     .mp3-album-cover {
-      width: 100px; height: 100px; margin: 0 auto;
-      border: 1px solid var(--primary-color); box-shadow: 0 0 4px var(--primary-color);
-      margin-bottom: 6px; border-radius: 4px; overflow: hidden;
+      width: 80px; height: 80px; margin: 0 auto 10px auto;
+      border: 2px solid var(--primary-color); box-shadow: 0 0 8px var(--primary-color);
+      border-radius: 4px; overflow: hidden;
     }
-    .mp3-album-cover img {
-      width: 100%; height: 100%; object-fit: cover; display: block;
-    }
-    .mp3-player-header {
-      font-size: 12px; text-transform: uppercase; color: var(--primary-color);
-      margin-bottom: 3px; text-align: center; text-shadow: 0 0 3px var(--primary-color);
+    .mp3-album-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .mp3-player-header { /* Título cambiado a Audio Interface */
+      font-size: 0.9rem; text-transform: uppercase; color: var(--secondary-color);
+      margin-bottom: 5px; text-align: center; text-shadow: 0 0 5px var(--secondary-color);
+      font-family: var(--font-main); letter-spacing: 1px;
     }
     #trackTitle {
-      font-size: 13px; text-align: center; margin-bottom: 8px; color: #ffbfc6;
+      font-size: 1.1rem; text-align: center; margin-bottom: 12px; color: var(--text-color); font-weight: 600;
     }
-    .mp3-player-controls {
-      display: flex; gap: 6px; align-items: center; justify-content: center;
-    }
+    .mp3-player-controls { display: flex; gap: 10px; align-items: center; justify-content: center; }
     .mp3-btn {
-      background: var(--primary-color); border: none; color: #000;
-      padding: 4px 8px; cursor: pointer; text-transform: uppercase;
-      font-size: 11px; transition: background 0.2s; border-radius: 4px;
+      background: transparent; border: 1px solid var(--primary-color); color: var(--primary-color);
+      padding: 6px 12px; cursor: pointer; text-transform: uppercase;
+      font-size: 0.9rem; transition: all 0.2s ease; border-radius: 4px;
+      font-family: var(--font-main);
     }
-    .mp3-btn:hover { background: var(--secondary-color); }
+    .mp3-btn:hover { background: var(--primary-color); color: var(--selected-text); box-shadow: 0 0 8px var(--primary-color); }
+    .mp3-progress-container { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
     .mp3-progress {
-      flex: 1; height: 6px; background: #421111;
-      border: 1px solid var(--primary-color); position: relative;
-      margin: 0 6px; border-radius: 3px;
+      flex: 1; height: 8px; background: rgba(var(--primary-color-rgb), 0.1);
+      border: 1px solid var(--border-color); position: relative; border-radius: 4px; cursor: pointer; /* Para buscar */
     }
     .mp3-progress-fill {
       position: absolute; left: 0; top: 0; bottom: 0;
       width: 0%; background: var(--primary-color); border-radius: 3px;
+      box-shadow: 0 0 5px var(--primary-color); pointer-events: none;
     }
-    .mp3-time {
-      font-size: 10px; color: #ffccaa; width: 40px; text-align: right;
-    }
-    .mp3-volume {
-      display: flex; align-items: center; gap: 4px; margin-top: 5px;
-      justify-content: center;
-    }
-    .mp3-volume-label {
-      font-size: 10px; color: var(--secondary-color); text-transform: uppercase;
-    }
+    .mp3-time { font-size: 0.85rem; color: var(--text-muted-color); width: 45px; text-align: right; }
+    .mp3-volume { display: flex; align-items: center; gap: 8px; margin-top: 10px; justify-content: center; }
+    .mp3-volume-label { font-size: 0.8rem; color: var(--secondary-color); text-transform: uppercase; font-family: var(--font-main); }
     .mp3-volume input[type="range"] {
-      width: 80px; -webkit-appearance: none; background: #421111;
-      border: 1px solid var(--primary-color); height: 6px;
-      cursor: pointer; border-radius: 3px;
+      width: 100px; height: 6px; -webkit-appearance: none; appearance: none;
+      background: linear-gradient(to right, var(--primary-color) 0%, var(--primary-color) var(--value, 100%), rgba(var(--primary-color-rgb), 0.2) var(--value, 100%), rgba(var(--primary-color-rgb), 0.2) 100%);
+      border: 1px solid var(--border-color);
+      cursor: pointer; border-radius: 3px; outline: none;
     }
     .mp3-volume input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none; width: 12px; height: 12px;
-      background: var(--primary-color); border-radius: 50%;
-      cursor: pointer; border: none;
+      -webkit-appearance: none; appearance: none; width: 14px; height: 14px;
+      background: var(--accent-color); border-radius: 50%;
+      cursor: pointer; border: none; box-shadow: 0 0 5px var(--accent-color);
     }
-    
-    /* FOOTER */
-    .footer-buttons {
-      position: absolute; bottom: 10px; right: 20px;
-      display: flex; gap: 20px;
+    .mp3-volume input[type="range"]::-moz-range-thumb { /* Firefox */
+      width: 14px; height: 14px; background: var(--accent-color); border-radius: 50%;
+      cursor: pointer; border: none; box-shadow: 0 0 5px var(--accent-color);
     }
-    .footer-btn {
-      color: #fff; font-size: 12px; text-transform: uppercase;
-      display: flex; align-items: center; gap: 5px; cursor: pointer;
-      transition: color 0.2s, text-shadow 0.3s;
+    .mp3-volume input[type="range"]::-moz-range-track { background: transparent; } /* Ocultar track por defecto FF */
+
+    /* Contenido específico de pestañas */
+    #tab-stats p, #tab-integraciones p, #tab-settings p { margin-bottom: 15px; line-height: 1.6; }
+    #historyList { list-style: none; max-height: 250px; overflow-y: auto; padding-right: 5px; }
+    #historyList li { padding: 8px 5px; border-bottom: 1px dashed rgba(var(--primary-color-rgb), 0.2); font-size: 0.9rem; color: var(--text-muted-color); }
+    #historyList li:last-child { border-bottom: none; }
+    #chatWindow { background: rgba(0,0,0,0.3); padding: 15px; border: 1px solid var(--border-color); height: 200px; overflow-y: auto; margin-bottom: 10px; border-radius: 4px; font-size: 0.95rem; }
+    #chatWindow p { margin-bottom: 8px; line-height: 1.5; } /* Estilo mensajes chat */
+    #chatInput { width: calc(100% - 70px); padding: 10px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.4); color: var(--text-color); border-radius: 4px 0 0 4px; font-size: 0.95rem; }
+    #chatSend { width: 60px; padding: 10px; background: var(--primary-color); border: none; cursor: pointer; color: var(--selected-text); border-radius: 0 4px 4px 0; font-family: var(--font-main); text-transform: uppercase; font-size: 0.85rem; transition: background 0.2s; }
+    #chatSend:hover { background: var(--secondary-color); }
+    #tab-integraciones ul { list-style: none; max-height: 200px; overflow-y: auto; }
+    #tab-integraciones li { background: rgba(var(--primary-color-rgb), 0.05); padding: 10px; border-radius: 4px; margin-bottom: 8px; border-left: 3px solid var(--secondary-color); }
+    #tab-integraciones strong { color: var(--primary-color); }
+    #tab-settings label { display: block; margin-bottom: 12px; cursor: pointer; color: var(--text-muted-color); }
+    #tab-settings input[type="checkbox"] { margin-right: 8px; accent-color: var(--primary-color); }
+    #tab-settings input[type="range"] { width: 150px; vertical-align: middle; margin-left: 10px; accent-color: var(--primary-color);}
+    #tab-settings span { margin-left: 5px; color: var(--accent-color); font-weight: bold; }
+
+    /* FOOTER (Simplificado o eliminado si no es necesario) */
+    /* .footer-buttons { ... } */
+
+    /* ANIMACIONES Y EFECTOS EXTRA */
+    .neon-effect { /* Aplicar a textos importantes */
+      text-shadow: 0 0 5px rgba(var(--primary-color-rgb), 0.8),
+                   0 0 10px rgba(var(--primary-color-rgb), 0.6),
+                   0 0 15px rgba(var(--primary-color-rgb), 0.4),
+                   0 0 20px rgba(var(--primary-color-rgb), 0.2);
+      animation: neonPulse 1.8s infinite alternate ease-in-out;
     }
-    .footer-btn:hover {
-      color: var(--primary-color); text-shadow: 0 0 5px var(--primary-color);
+    @keyframes neonPulse {
+      from { text-shadow: 0 0 4px rgba(var(--primary-color-rgb), 0.7), 0 0 8px rgba(var(--primary-color-rgb), 0.5), 0 0 12px rgba(var(--primary-color-rgb), 0.3); }
+      to { text-shadow: 0 0 8px rgba(var(--primary-color-rgb), 0.9), 0 0 16px rgba(var(--primary-color-rgb), 0.7), 0 0 25px rgba(var(--primary-color-rgb), 0.5); }
     }
-    
-    /* ANIMACIONES */
-    .fade-in {
-      opacity: 0; animation: fadeIn 0.8s forwards;
+
+    .glitch-effect { /* Aplicar a elementos para efecto ocasional */
+      position: relative;
     }
-    @keyframes fadeIn {
-      0% { opacity: 0; transform: translateY(10px); }
-      100% { opacity: 1; transform: translateY(0); }
+    .glitch-effect::before, .glitch-effect::after {
+      content: attr(data-text); /* Necesita JS para setear data-text */
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--panel-bg-color); /* O el fondo del elemento */
+      overflow: hidden; clip: rect(0, 900px, 0, 0);
     }
-    
+    .glitch-effect::before { left: 2px; text-shadow: -1px 0 var(--secondary-color); animation: glitchAnim 2s infinite linear alternate-reverse; }
+    .glitch-effect::after { left: -2px; text-shadow: 1px 0 var(--accent-color); animation: glitchAnim2 3s infinite linear alternate-reverse; }
+
+    @keyframes glitchAnim { /* Ajustar tiempos y valores */
+      0% { clip: rect(42px, 9999px, 44px, 0); } 5% { clip: rect(12px, 9999px, 59px, 0); } 10% { clip: rect(35px, 9999px, 88px, 0); } /* ... más pasos */ 100% { clip: rect(90px, 9999px, 98px, 0); }
+    }
+    @keyframes glitchAnim2 { /* Similar a glitchAnim pero con valores diferentes */
+      0% { clip: rect(65px, 9999px, 100px, 0); } /* ... */ 100% { clip: rect(10px, 9999px, 33px, 0); }
+    }
+
+    /* Otros elementos (Modales, etc.) */
+    #tsparticles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; }
+    #tutorialOverlay, #themeModal, #achievementsModal, #dashboardStats {
+        position: fixed; z-index: 1000; display: none; /* Ocultos por defecto */
+        border-radius: 8px; padding: 25px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    #tutorialOverlay { top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 10, 21, 0.9); align-items: center; justify-content: center; text-align: center; }
+    #tutorialOverlay > div { max-width: 500px; } /* Contenedor interno */
+    #tutorialOverlay h2 { font-family: var(--font-main); color: var(--primary-color); margin-bottom: 15px; font-size: 1.6rem; }
+    #tutorialOverlay p { margin-bottom: 20px; line-height: 1.6; }
+    #tutorialOverlay .close-btn { padding: 10px 25px; background: var(--primary-color); color: var(--selected-text); border: none; cursor: pointer; border-radius: 5px; font-family: var(--font-main); text-transform: uppercase; transition: background 0.2s; }
+    #tutorialOverlay .close-btn:hover { background: var(--secondary-color); }
+
+    #themeModal { top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; }
+    #themeModal h3 { font-family: var(--font-main); color: var(--primary-color); margin-bottom: 20px; }
+    #themeModal label { display: block; margin-bottom: 5px; color: var(--text-muted-color); font-size: 0.9rem; }
+    #themeModal input[type="color"] { width: 100%; height: 40px; border: 1px solid var(--border-color); margin-bottom: 15px; padding: 0; cursor: pointer; background: transparent; border-radius: 4px; }
+    #themeModal .close-theme-btn { width: 100%; padding: 12px; background: var(--primary-color); color: var(--selected-text); border: none; cursor: pointer; border-radius: 5px; font-family: var(--font-main); text-transform: uppercase; transition: background 0.2s; }
+    #themeModal .close-theme-btn:hover { background: var(--secondary-color); }
+
+    /* Estilos para Notificaciones, Logros, Dashboard... */
+    .notification-container { /* Clase para el contenedor de notificaciones */
+        position: fixed; bottom: 20px; right: 20px; z-index: 1100;
+        display: flex; flex-direction: column; gap: 10px;
+        width: 300px; /* Ancho fijo para mejor alineación */
+        max-height: 80vh; /* Evitar que ocupen toda la pantalla */
+        overflow-y: auto; /* Scroll si hay muchas */
+        pointer-events: none; /* Permitir click "a través" del contenedor */
+    }
+    .cyber-notification { /* Estilo base para cada notificación */
+        pointer-events: all; /* Habilitar interacción con notificaciones individuales */
+        /* ... (estilos definidos en JS se aplican aquí también) ... */
+    }
+    /* ... (Añadir estilos detallados si se implementan visualmente) ... */
+
+    /* Botones flotantes */
+    .floating-btn {
+      position: fixed; background: var(--primary-color); color: var(--selected-text);
+      border: none; border-radius: 50%; width: 55px; height: 55px;
+      cursor: pointer; z-index: 1000; font-size: 1.5rem; /* Icono más grande */
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 5px 15px rgba(var(--primary-color-rgb), 0.4);
+      transition: background 0.2s, transform 0.2s ease-out;
+    }
+    .floating-btn:hover { background: var(--secondary-color); transform: scale(1.1); }
+    #voiceCommandBtn { bottom: 90px; left: 20px; }
+    #fullscreenToggle { bottom: 20px; left: 20px; }
+
+    /* Iconos Sociales */
+    #socialShare { position: fixed; bottom: 25px; right: 20px; z-index: 1000; display: flex; gap: 15px; }
+    #socialShare a { color: var(--primary-color); font-size: 1.6rem; text-decoration: none; transition: transform 0.2s, color 0.2s; }
+    #socialShare a:hover { transform: scale(1.2) rotate(5deg); color: var(--accent-color); }
+
+
     /* RESPONSIVIDAD */
-    @media (max-width:1200px) {
-      .main-container { grid-template-columns: 250px 1fr 300px; }
-      .top-nav { margin-left: 15px; gap: 10px; }
-      .level-cred { gap: 10px; }
+    @media (max-width: 1200px) {
+      .main-container { grid-template-columns: 280px 1fr 320px; gap: 10px; }
+      .top-nav { gap: 20px; margin-left: 20px; }
+      html { font-size: 13px; } /* Ajustar tamaño base */
     }
-    @media (max-width:992px) {
+
+    @media (max-width: 992px) {
       .main-container {
-        grid-template-columns: 1fr; grid-template-rows: auto 1fr;
+        grid-template-columns: 1fr; grid-template-rows: auto minmax(300px, auto) auto; /* Filas: Izquierda, Centro, Derecha */
+        top: 65px; /* Más espacio desde topbar */
+        bottom: 5px; left: 5px; right: 5px; /* Ajustar márgenes */
       }
-      .left-panels, .right-panel, .detail-container {
-        border-right: none; border-bottom: 2px solid var(--primary-color);
-      }
-    }
-    @media (max-width:768px) {
+      .left-panels, .detail-container, .right-panel { border-radius: 8px; /* Redondeado en todas las esquinas */ }
+      .left-panels { border-bottom: 2px solid var(--border-color); } /* Separador */
+      .detail-container { border-bottom: 2px solid var(--border-color); }
+      .top-bar { padding: 0 15px; }
+      .top-bar-left { gap: 15px;}
+      .level-cred { gap: 10px; font-size: 1rem; }
+      .top-nav { display: none; } /* Ocultar nav normal, mostrar toggle */
       .nav-toggle { display: block; }
-      .top-nav {
-        position: absolute; top: 50px; left: 0; right: 0;
-        background: #1a1a1a; flex-direction: column; align-items: flex-start;
-        max-height: 0; overflow: hidden;
+      .top-nav.mobile-active { /* Estilo para nav móvil */
+          display: flex; flex-direction: column; align-items: stretch;
+          position: absolute; top: 100%; left: 0; right: 0;
+          background: var(--panel-bg-color); border: 1px solid var(--border-color);
+          border-top: none; border-radius: 0 0 8px 8px;
+          padding: 15px; max-height: 300px; overflow-y: auto;
+          animation: slideDown 0.3s ease-out;
       }
-      .top-nav.active { max-height: 300px; padding: 10px 20px; }
-      .top-nav-item { padding: 10px 0; width: 100%; }
-      .main-container {
-        grid-template-columns: 1fr; grid-template-rows: auto 1fr;
-      }
-      .left-panels, .right-panel, .detail-container {
-        border-right: none; border-bottom: 2px solid var(--primary-color);
-      }
+       @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+      .top-nav.mobile-active .top-nav-item { padding: 10px 0; width: 100%; text-align: center; border-bottom: 1px solid rgba(var(--primary-color-rgb), 0.1); }
+      .top-nav.mobile-active .top-nav-item:last-child { border-bottom: none; }
+      .top-nav.mobile-active .top-nav-item::after { display: none; } /* Ocultar subrayado en móvil */
     }
-    @media (max-width:576px) {
-      .main-container {
-        grid-template-columns: 1fr; grid-template-rows: auto 1fr;
-      }
-      .project-list-container, .mission-list-container { padding: 5px 0; }
-      .project-list-title, .mission-list-title { margin: 5px 10px; }
-      .project-item, .mission-item { padding: 8px 10px; }
-      .detail-container, .right-panel { padding: 15px; }
-      .mp3-album-cover { width: 80px; height: 80px; }
-      .mp3-player-controls { gap: 4px; }
-      .mp3-volume input[type="range"] { width: 60px; }
-      .footer-buttons { flex-direction: column; gap: 10px; right: 10px; }
+
+    @media (max-width: 768px) {
+       html { font-size: 12px; }
+       .top-bar { height: 50px; }
+       .level-cred, .top-bar-right .stat { display: none; } /* Ocultar stats en móvil */
+       .main-container { grid-template-columns: 1fr; grid-template-rows: auto auto auto; /* Cada panel en su fila */ }
+       .left-panels, .detail-container, .right-panel { padding: 15px; }
+       .detail-title { font-size: 1.5rem; }
+       .detail-subtitle { font-size: 1rem; }
+       .mp3-player { padding: 10px; }
+       .mp3-album-cover { width: 60px; height: 60px; }
+       .floating-btn { width: 45px; height: 45px; font-size: 1.2rem; }
+       #voiceCommandBtn { bottom: 75px; left: 15px; }
+       #fullscreenToggle { bottom: 15px; left: 15px; }
+       #socialShare { bottom: 15px; right: 15px; gap: 10px; }
+       #socialShare a { font-size: 1.4rem; }
     }
-    
-    /* ELEMENTOS ADICIONALES */
-    #tsparticles {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      z-index: -2;
+
+    @media (max-width: 480px) {
+       .advanced-filter-nav ul { gap: 5px; }
+       .advanced-filter-nav li { padding: 5px 10px; font-size: 0.75rem; }
+       .filter-button { padding: 6px 10px; font-size: 0.8rem; }
+       .mp3-player-controls { flex-wrap: wrap; gap: 8px; }
+       .mp3-volume input[type="range"] { width: 80px; }
     }
-    #tutorialOverlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.8); color: #fff; display: none;
-      align-items: center; justify-content: center; z-index: 1000;
-      padding: 20px; text-align: center;
-    }
-    #tutorialOverlay.active { display: flex; }
-    #tutorialOverlay .close-btn {
-      margin-top: 20px; padding: 10px 20px;
-      background: var(--primary-color); border: none;
-      cursor: pointer; border-radius: 4px;
-    }
-    #voiceCommandBtn {
-      position: fixed; bottom: 80px; left: 20px;
-      background: var(--primary-color); color: #000;
-      border: none; border-radius: 50%; width: 50px; height: 50px;
-      cursor: pointer; z-index: 1000; font-size: 24px;
-    }
-    #fullscreenToggle {
-      position: fixed; bottom: 20px; left: 20px;
-      background: var(--primary-color); color: #000;
-      border: none; border-radius: 50%; width: 50px; height: 50px;
-      cursor: pointer; z-index: 1000; font-size: 24px;
-    }
-    #socialShare {
-      position: fixed; bottom: 20px; right: 20px;
-      z-index: 1000; display: flex; gap: 10px;
-    }
-    #socialShare a {
-      color: var(--primary-color); font-size: 20px;
-      text-decoration: none; transition: transform 0.2s;
-    }
-    #socialShare a:hover { transform: scale(1.2); }
-    #dashboardStats {
-      position: fixed; top: 20px; right: 20px;
-      background: rgba(10,10,10,0.9); color: #ffccaa;
-      padding: 15px; border: 1px solid var(--primary-color);
-      border-radius: 8px; z-index: 1000; display: none;
-      font-family: 'Orbitron', sans-serif;
-    }
-    #themeModal {
-      position: fixed; top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(10,10,10,0.95); color: #ffccaa;
-      padding: 20px; border: 1px solid var(--primary-color);
-      border-radius: 8px; z-index: 1000; display: none;
-      width: 300px; font-family: 'Orbitron', sans-serif;
-    }
-    #themeModal.active { display: block; }
-    #themeModal input[type="color"] {
-      width: 100%; height: 40px; border: none; margin-bottom: 10px;
-    }
-    #themeModal .close-theme-btn {
-      background: var(--primary-color); border: none;
-      padding: 8px; cursor: pointer; width: 100%;
-      border-radius: 4px;
-    }
-    #achievementsModal {
-      position: fixed; bottom: 100px; right: 20px;
-      background: rgba(10,10,10,0.95); color: #ffccaa;
-      padding: 15px; border: 1px solid var(--primary-color);
-      border-radius: 8px; z-index: 1000; display: none;
-      font-family: 'Orbitron', sans-serif;
-    }
-    #achievementsModal.active { display: block; }
-    
-    /* Lazy loading */
-    img[loading="lazy"] { opacity: 0; transition: opacity 0.5s ease-in; }
-    img.loaded { opacity: 1; }
+
   </style>
-  
-  <!-- tsParticles -->
-  <script src="https://cdn.jsdelivr.net/npm/tsparticles@1/tsparticles.min.js"></script>
-  <!-- Socket.IO -->
-  <script src="https://tu-servidor.herokuapp.com/socket.io/socket.io.js"></script>
-  <!-- Font Awesome -->
-  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-  
 </head>
 <body>
+  <!-- Overlay de Carga -->
+  <div id="loading-overlay">
+    <div class="loader"></div>
+    Booting Cyberdeck OS... <!-- Texto actualizado -->
+  </div>
+
   <!-- Video de fondo -->
   <video autoplay muted loop playsinline id="bgVideo" preload="auto">
     <source src="src/video/Anime girl wallpaper 4k - best purple wallpaper.mp4" type="video/mp4">
-    Tu navegador no soporta el elemento de video.
+    <!-- Añadir más fuentes si es necesario (webm, ogv) -->
+    Your browser doesn't support the video element. Cyberdeck visuals degraded. <!-- Texto actualizado -->
   </video>
-  
+
   <!-- Fondo de Partículas -->
   <div id="tsparticles"></div>
-  
+
   <!-- Overlay de Tutorial -->
   <div id="tutorialOverlay">
     <div>
-      <h2>Bienvenido al Cyberpunk UI</h2>
-      <p>Explora proyectos, misiones y controla el reproductor usando atajos de teclado o comandos de voz. Utiliza los botones en pantalla para cambiar de modo, compartir y ajustar configuraciones avanzadas.</p>
-      <button class="close-btn" id="closeTutorialBtn">Entendido</button>
+      <!-- Texto tutorial actualizado -->
+      <h2><i class="fas fa-plug"></i> Cyberdeck OS Initialized</h2>
+      <p>Welcome, Netrunner. Navigate active runs and subroutines via the left panel. Access file/process details in the center. Utilize deck utilities and monitor performance on the right. Engage neural commands or keyboard shortcuts for rapid interaction with the Grid.</p>
+      <button class="close-btn" id="closeTutorialBtn">Acknowledge & Connect <i class="fas fa-check"></i></button>
     </div>
   </div>
-  
-  <!-- Botones Globales -->
-  <button id="voiceCommandBtn" title="Comandos de Voz">🎤</button>
-  <button id="fullscreenToggle" title="Pantalla Completa">⛶</button>
+
+  <!-- Botones Globales Flotantes -->
+  <button id="voiceCommandBtn" title="Neural Commands (Voice)" class="floating-btn"><i class="fas fa-microphone-alt"></i></button> <!-- Título actualizado -->
+  <button id="fullscreenToggle" title="Toggle Full Immersion (Fullscreen)" class="floating-btn"><i class="fas fa-expand"></i></button> <!-- Título actualizado -->
   <div id="socialShare">
-    <a href="https://twitter.com/intent/tweet?text=¡Mira%20este%20Cyberpunk%20UI!" target="_blank" title="Compartir en Twitter">
-      <i class="fab fa-twitter"></i>
-    </a>
-    <a href="https://www.facebook.com/sharer/sharer.php?u=YOUR_URL" target="_blank" title="Compartir en Facebook">
-      <i class="fab fa-facebook"></i>
-    </a>
+    <!-- Los enlaces sociales pueden mantenerse o eliminarse según la inmersión deseada -->
+    <a href="https://twitter.com/intent/tweet?text=Check%20out%20this%20Cyberdeck%20OS%20Interface!" target="_blank" title="Share Interface Snapshot"><i class="fab fa-twitter"></i></a>
+    <a href="https://www.facebook.com/sharer/sharer.php?u=YOUR_URL" target="_blank" title="Share on Facebook (Data Leak?)"><i class="fab fa-facebook"></i></a>
+    <a href="#" title="Broadcast on ShadowNet (Reddit Analog)"><i class="fab fa-reddit-alien"></i></a>
   </div>
-  <div id="dashboardStats">
-    <p>CPU: <span id="cpuUsage">0%</span></p>
-    <p>Memoria: <span id="memoryUsage">0MB</span></p>
+
+  <!-- Modales y Paneles Flotantes (Inicialmente Ocultos) -->
+  <div id="dashboardStats" style="display: none;">
+    <h4><i class="fas fa-chart-line"></i> Deck Status</h4> <!-- Título actualizado -->
+    <p>CPU Load: <span id="cpuUsage">0%</span></p>
+    <p>Memory Usage: <span id="memoryUsage">0MB</span></p>
+    <p>Network Latency: <span id="networkLatency">0ms</span></p>
   </div>
-  <div id="themeModal">
-    <h3>Ajustes de Tema</h3>
-    <label>Color Primario</label>
-    <input type="color" id="primaryColorPicker" value="#ff0040">
-    <label>Color Secundario</label>
-    <input type="color" id="secondaryColorPicker" value="#ff5588">
-    <label>Color de Acento</label>
-    <input type="color" id="accentColorPicker" value="#1e90ff">
-    <button class="close-theme-btn" id="closeThemeModalBtn">Aplicar y Cerrar</button>
+  <div id="themeModal" style="display: none;">
+    <h3><i class="fas fa-palette"></i> Customize Deck UI Matrix</h3> <!-- Título actualizado -->
+    <label for="primaryColorPicker">Primary Matrix Color:</label>
+    <input type="color" id="primaryColorPicker" value="#00f0ff">
+    <label for="secondaryColorPicker">Secondary Matrix Color:</label>
+    <input type="color" id="secondaryColorPicker" value="#ff00ff">
+    <label for="accentColorPicker">Accent/Highlight Color:</label>
+    <input type="color" id="accentColorPicker" value="#f7ff00">
+    <button class="close-theme-btn" id="closeThemeModalBtn">Apply & Compile <i class="fas fa-check"></i></button> <!-- Texto botón actualizado -->
   </div>
-  <div id="achievementsModal">
-    <h4>Logros</h4>
-    <ul id="achievementsList">
-      <!-- Se llenará dinámicamente -->
-    </ul>
+  <div id="achievementsModal" style="display: none;">
+    <h4><i class="fas fa-trophy"></i> Netrunner Milestones</h4> <!-- Título actualizado -->
+    <ul id="achievementsList"></ul>
   </div>
-  
+  <div id="notificationContainer" class="notification-container">
+      <!-- Notificaciones se añadirán aquí -->
+  </div>
+
+
   <!-- HEADER -->
   <header class="top-bar">
     <div class="top-bar-left">
+      <button class="nav-toggle" id="navToggle"><i class="fas fa-bars"></i></button>
       <div class="level-cred">
-        <div>
-          <span class="label">Level:</span>
-          <span class="value">9</span>
-        </div>
-        <div>
-          <span class="label">Street Cred:</span>
-          <span class="value">10</span>
-        </div>
+        <!-- Labels mantenidos, representan nivel/reputación y credibilidad/dinero -->
+        <div><span class="label">LVL:</span><span class="value">9</span></div>
+        <div><span class="label">Cred:</span><span class="value">10</span></div>
       </div>
-      <button class="nav-toggle" id="navToggle">&#9776;</button>
       <nav class="top-nav" id="topNav">
-        <a href="../Menu.html" class="top-nav-item">Inicio</a>
-        
+        <!-- ================== MODIFICACIÓN AQUÍ ================== -->
+        <a href="index.html" class="top-nav-item active">Dashboard</a> <!-- Enlace a sí mismo o index -->
+        <a href="software.html" class="top-nav-item">Software</a>     <!-- Enlace a software.html -->
+        <a href="netmap.html" class="top-nav-item">NetMap</a>         <!-- Enlace a netmap.html -->
+        <a href="datalog.html" class="top-nav-item">DataLog</a>        <!-- Enlace a datalog.html -->
+        <!-- ================== FIN DE MODIFICACIÓN ================== -->
       </nav>
     </div>
     <div class="top-bar-right">
       <div class="stat">
-        <span class="label">Capacity:</span>
-        <span class="value">83/312</span>
+        <!-- Labels mantenidos, representan capacidad y fondos -->
+        <span class="label">CAP:</span><span class="value">83/312</span>
       </div>
       <div class="stat">
-        <span class="label">E$</span>
-        <span class="value">5457</span>
+        <span class="label">E$:</span><span class="value">5457</span>
       </div>
-      <button id="themeToggle" title="Cambiar Tema" style="background:none; border: 1px solid var(--primary-color); color: #ffd0dc; padding: 5px; cursor: pointer;">
-        Modo Oscuro
-      </button>
+      <button id="themeToggle" title="Customize Deck UI"><i class="fas fa-palette"></i></button> <!-- Título actualizado -->
     </div>
   </header>
-  
+
   <!-- MAIN -->
   <main class="main-container fade-in">
-    <!-- PANEL IZQUIERDO: Filtro avanzado para Projects y Side Jobs -->
+
+    <!-- PANEL IZQUIERDO: Explorador de Archivos/Procesos -->
     <aside class="left-panels">
       <div class="search-container">
-        <input type="text" id="searchInput" placeholder="Buscar...">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" id="searchInput" placeholder="Access File/Process..."> <!-- Placeholder actualizado -->
       </div>
-      <!-- Filtro avanzado para Projects -->
-      <section class="project-list-container">
-        <div class="project-list-title">Projects</div>
-        <nav class="advanced-filter-nav">
-          <ul>
-            <li class="filter-option active" data-filter="projects">Projects</li>
-            <li class="filter-option" data-filter="herramientas">Herramientas</li>
-            <li class="filter-option" data-filter="logros">Logros</li>
-            <li class="filter-option" data-filter="contenido">Contenido</li>
-            <li class="filter-option" data-filter="ideas">Ideas</li>
-          </ul>
-        </nav>
-        <!-- Contenedor de la lista según filtro -->
-        <div class="data-list-container" id="dataList">
-          <!-- Se renderizará la lista según el filtro seleccionado -->
+
+      <!-- Filtro de Tipos de Datos -->
+      <nav class="advanced-filter-nav">
+        <ul>
+          <!-- Nombres de filtros actualizados (usando data-filter original para JS) -->
+          <li class="filter-option active" data-filter="projects"><i class="fas fa-tasks"></i> Active Runs</li>
+          <li class="filter-option" data-filter="herramientas"><i class="fas fa-tools"></i> Utilities</li>
+          <li class="filter-option" data-filter="logros"><i class="fas fa-trophy"></i> Access Logs</li>
+          <li class="filter-option" data-filter="contenido"><i class="fas fa-book-open"></i> Intel</li>
+          <li class="filter-option" data-filter="ideas"><i class="fas fa-lightbulb"></i> Fragments</li>
+        </ul>
+      </nav>
+
+      <!-- Sección de Archivos/Programas filtrados -->
+      <section class="list-section project-list-container">
+        <div class="list-title" id="dataListTitle"><i class="fas fa-folder-open"></i> Active Runs</div> <!-- Título inicial actualizado -->
+        <div class="data-list-container sortable-list" id="dataList">
+          <!-- Items se renderizarán aquí (usarán program-name, program-desc) -->
         </div>
       </section>
-      <!-- Se mantiene la sección de Side Jobs en su posición original -->
-      <section class="mission-list-container">
-        <div class="mission-list-title">Side Jobs</div>
+
+      <!-- Sección de Subrutinas (Antes Misiones) -->
+      <section class="list-section mission-list-container">
+        <div class="list-title"><i class="fas fa-network-wired"></i> Subroutines</div> <!-- Título actualizado -->
         <div class="mission-list" id="missionList">
-          <!-- Se generarán dinámicamente -->
+          <!-- Subrutinas se generarán dinámicamente (usarán subroutine-name, subroutine-threat) -->
         </div>
       </section>
     </aside>
-    
-    <!-- PANEL CENTRAL -->
+
+    <!-- PANEL CENTRAL: Visor de Detalles -->
     <article class="detail-container">
-      <h2 class="detail-title" id="detailTitle">Neon UI</h2>
-      <div class="detail-subtitle" id="detailSubtitle">
-        Futuristic neon interface concept.
-      </div>
+      <!-- Textos por defecto actualizados -->
+      <h2 class="detail-title" id="detailTitle">Select File/Process...</h2>
+      <div class="detail-subtitle" id="detailSubtitle">File/Process details incoming...</div>
       <div class="detail-description" id="detailDescription">
-        <strong>Descripción:</strong><br>
-        Neon UI es un concepto de interfaz futurista diseñado para aplicaciones web modernas que buscan una estética ciberpunk...
+         Select an entry from the file explorer to view detailed information, code snippets, or active process status. Use filters to navigate through active runs, installed utilities, system access logs, gathered intel fragments, and schematic blueprints. Stay sharp, Netrunner.
       </div>
     </article>
-    
-    <!-- PANEL DERECHO CON FILTRO DESPLEGABLE -->
+
+    <!-- PANEL DERECHO: Utilidades del Deck -->
     <aside class="right-panel">
+      <!-- Menú desplegable de Utilidades -->
       <div class="filter-menu-container">
-        <button class="filter-button">Filtros</button>
+        <button class="filter-button">
+          <i class="fas fa-cogs"></i> Deck Utilities <!-- Texto botón actualizado -->
+        </button>
         <div class="filter-dropdown">
-          <div class="filter-item" data-tab="tab-general">Visión General</div>
-          <div class="filter-item" data-tab="tab-stats">Estadísticas</div>
-          <div class="filter-item" data-tab="tab-history">Historial</div>
-          <div class="filter-item" data-tab="tab-chat">Chat</div>
-          <div class="filter-item" data-tab="tab-integraciones">Integraciones</div>
-          <div class="filter-item" data-tab="tab-settings">Configuración</div>
+          <!-- Nombres de pestañas actualizados -->
+          <div class="filter-item active" data-tab="tab-general"><i class="fas fa-eye"></i> Overview</div>
+          <div class="filter-item" data-tab="tab-stats"><i class="fas fa-chart-bar"></i> Deck Performance</div>
+          <div class="filter-item" data-tab="tab-history"><i class="fas fa-history"></i> System Log</div>
+          <div class="filter-item" data-tab="tab-chat"><i class="fas fa-comments"></i> Secure Comms</div>
+          <div class="filter-item" data-tab="tab-integraciones"><i class="fas fa-plug"></i> Network Links</div>
+          <div class="filter-item" data-tab="tab-settings"><i class="fas fa-cog"></i> Deck Settings</div>
         </div>
       </div>
-      
-      <!-- Contenido de cada sección -->
+
+      <!-- Contenido de Pestañas -->
       <div class="tab-content active" id="tab-general">
-        <div class="right-panel-title" id="rightPanelTitle">Epistrophy: Badlands</div>
-        <img class="right-panel-image loaded" id="rightPanelImage" src="src/img/celestial.jpg" alt="Epistrophy: Badlands" loading="lazy">
-        <video class="right-panel-video" id="rightPanelVideo" autoplay muted loop preload="auto">
-          <source src="src/video/videoplayback (2).mp4" type="video/mp4">
-          Tu navegador no soporta el elemento de video.
+        <h3 class="right-panel-title" id="rightPanelTitle">System Idle</h3> <!-- Título inicial actualizado -->
+        <img class="right-panel-image loaded" id="rightPanelImage" src="src/img/placeholder-dark.png" alt="Selected item visual data" loading="lazy"> <!-- Placeholder -->
+        <video class="right-panel-video" id="rightPanelVideo" autoplay muted loop playsinline preload="auto" style="display: none;"> <!-- Oculto por defecto -->
+          <source src="" type="video/mp4"> <!-- Fuente se establece dinámicamente -->
+          Your browser doesn't support the video element. Visuals compromised.
         </video>
-        <div class="mini-chart-container" id="miniChartContainer">
-          <canvas id="miniChart" width="300" height="120"></canvas>
+        <!-- Gráfico Mini (Chart.js) -->
+        <div class="chart-container" id="miniChartContainer">
+            <canvas id="miniChart"></canvas>
         </div>
-        <canvas id="audioVisualizer" width="300" height="100" class="audio-visualizer"></canvas>
+        <!-- Visualizador de Audio -->
+        <canvas id="audioVisualizer"></canvas>
+        <!-- Reproductor MP3 -->
         <div class="mp3-player" id="mp3Player">
           <div class="mp3-album-cover">
-            <img id="albumCoverIm" src="src/img/celestial.jpg" alt="Album Cover" loading="lazy">
+            <img id="albumCoverIm" src="src/img/placeholder-cover.png" alt="Audio Data Cover" loading="lazy"> <!-- Placeholder -->
           </div>
-          <div class="mp3-player-header">Now Playing</div>
-          <div id="trackTitle">Ambient Cyberpunk</div>
+          <div class="mp3-player-header">Audio Interface</div> <!-- Título actualizado -->
+          <div id="trackTitle">Audio Output Idle</div> <!-- Texto actualizado -->
           <div class="mp3-player-controls">
-            <button class="mp3-btn tooltip" id="playBtn">
-              Play
-              <span class="tooltiptext">Reproducir Música</span>
-            </button>
-            <button class="mp3-btn tooltip" id="pauseBtn">
-              Pause
-              <span class="tooltiptext">Pausar Música</span>
-            </button>
+            <button class="mp3-btn tooltip" id="prevBtn" title="Previous Track"><i class="fas fa-backward"></i></button>
+            <button class="mp3-btn tooltip" id="playBtn" title="Play/Pause"><i class="fas fa-play"></i></button> <!-- Icono cambiará -->
+            <button class="mp3-btn tooltip" id="nextBtn" title="Next Track"><i class="fas fa-forward"></i></button>
           </div>
-          <div class="mp3-player-controls" style="margin-top:6px;">
+          <div class="mp3-progress-container">
             <div class="mp3-progress" id="mp3Progress">
               <div class="mp3-progress-fill" id="mp3ProgressFill"></div>
             </div>
-            <div class="mp3-time" id="mp3Time">0:00</div>
+            <div class="mp3-time" id="mp3Time">--:--</div>
           </div>
           <div class="mp3-volume">
-            <span class="mp3-volume-label">Vol</span>
-            <input type="range" id="volumeRange" min="0" max="1" step="0.01" value="1">
+            <span class="mp3-volume-label"><i class="fas fa-volume-down"></i></span>
+            <input type="range" id="volumeRange" min="0" max="1" step="0.01" value="0.8" title="Volume Control">
+             <span class="mp3-volume-label"><i class="fas fa-volume-up"></i></span>
           </div>
-          <audio id="audioPlayer"></audio>
+          <audio id="audioPlayer" preload="metadata"></audio> <!-- Preload metadata -->
         </div>
       </div>
-      
+
       <div class="tab-content" id="tab-stats">
-        <h3 class="right-panel-title">Estadísticas en Tiempo Real</h3>
-        <p>Aquí se mostrarán gráficos interactivos y KPI del sistema.</p>
-        <canvas id="statsChart" width="300" height="150"></canvas>
-      </div>
-      
-      <div class="tab-content" id="tab-history">
-        <h3 class="right-panel-title">Historial de Actividades</h3>
-        <input type="text" id="historySearch" placeholder="Buscar en el historial..." style="width:100%; padding:4px; margin-bottom:10px; border:1px solid var(--primary-color); background:#1a1a1a; color:var(--text-color);">
-        <ul id="historyList" style="list-style:none; max-height:200px; overflow-y:auto;">
-          <li>2025-02-20: Proyecto Neon UI actualizado.</li>
-          <li>2025-02-20: Misión "Epistrophy: Badlands" completada.</li>
-        </ul>
-      </div>
-      
-      <div class="tab-content" id="tab-chat">
-        <h3 class="right-panel-title">Chat en Tiempo Real</h3>
-        <div id="chatWindow" style="background:#1a1a1a; padding:10px; border:1px solid var(--primary-color); height:150px; overflow-y:auto; margin-bottom:10px;">
-          <!-- Los mensajes del chat se mostrarán aquí -->
+        <h3 class="right-panel-title">Deck Performance Monitor</h3> <!-- Título actualizado -->
+        <p>Real-time cyberdeck core metrics and data flow analysis.</p> <!-- Texto actualizado -->
+        <div class="chart-container" id="statsChartContainer">
+             <canvas id="statsChart"></canvas>
         </div>
-        <input type="text" id="chatInput" placeholder="Escribe tu mensaje..." style="width:100%; padding:6px; border:1px solid var(--primary-color); background:#1a1a1a; color:var(--text-color);">
-        <button id="chatSend" style="margin-top:5px; padding:6px 10px; background:var(--primary-color); border:none; cursor:pointer; color:#000; border-radius:4px;">Enviar</button>
+        <!-- Más elementos de estadísticas podrían ir aquí -->
       </div>
-      
-      <div class="tab-content" id="tab-integraciones">
-        <h3 class="right-panel-title">Integraciones Externas</h3>
-        <p>Aquí se mostrarán feeds de noticias y actualizaciones de redes sociales.</p>
-        <ul style="list-style:none; max-height:150px; overflow-y:auto;">
-          <li><strong>Tech News:</strong> Nuevo lanzamiento de API en ciberseguridad.</li>
-          <li><strong>Red Social:</strong> Actualización de tendencias en diseño UI.</li>
+
+      <div class="tab-content" id="tab-history">
+        <h3 class="right-panel-title">System Access Log</h3> <!-- Título actualizado -->
+        <input type="text" id="historySearch" placeholder="Filter log entries..." style="width:100%; padding:8px 12px; margin-bottom:15px; border:1px solid var(--border-color); background:rgba(0,0,0,0.4); color:var(--text-color); border-radius:4px;">
+        <ul id="historyList">
+          <!-- Entradas del historial actualizadas en JS -->
+          <li><span style="color: var(--secondary-color);">[SYS]</span> Cyberdeck OS boot sequence complete.</li>
+          <li><span style="color: var(--accent-color);">[NET]</span> Unidentified signal ping detected on port 77.</li>
         </ul>
       </div>
-      
+
+      <div class="tab-content" id="tab-chat">
+        <h3 class="right-panel-title">Secure Comms Channel</h3> <!-- Título actualizado -->
+        <div id="chatWindow">
+          <!-- Texto actualizado en JS -->
+          <p><strong style="color: var(--primary-color);">SYS_AI:</strong> Secure channel established. Awaiting transmission...</p>
+        </div>
+        <div style="display: flex;">
+            <input type="text" id="chatInput" placeholder="Transmit encrypted message..."> <!-- Placeholder actualizado -->
+            <button id="chatSend">Send</button>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-integraciones">
+        <h3 class="right-panel-title">External Network Links</h3> <!-- Título actualizado -->
+        <p>Connected data streams and grid feeds.</p> <!-- Texto actualizado -->
+        <ul id="integrationsList">
+            <!-- Ejemplos actualizados en JS -->
+            <li><strong><i class="fas fa-rss"></i> Datahaven Feed:</strong> New exploit signature available - 'Wraith v3'.</li>
+            <li><strong><i class="fab fa-twitter"></i> ShadowNet Pulse:</strong> #NightCityOps trends: Arasaka tower lockdown rumors.</li>
+            <li><strong><i class="fas fa-satellite-dish"></i> Deep Grid Intel:</strong> Encrypted data packet intercepted - ICE encryption detected.</li>
+        </ul>
+      </div>
+
       <div class="tab-content" id="tab-settings">
-        <h3 class="right-panel-title">Configuración Avanzada</h3>
-        <p>Aquí puedes personalizar opciones adicionales:</p>
-        <label>
-          <input type="checkbox" id="toggleAnimations" checked>
-          Activar Animaciones
-        </label><br>
-        <label for="animationSpeed">Velocidad de Animación:</label>
-        <input type="range" id="animationSpeed" min="0.5" max="2" step="0.1" value="1">
-        <span id="animationSpeedValue">1x</span><br>
-        <label>
-          <input type="checkbox" id="toggleNotifications" checked>
-          Activar Notificaciones
-        </label><br>
-        <label>
-          <input type="checkbox" id="toggleSoundNotifications" checked>
-          Activar Notificaciones Sonoras
-        </label><br>
-        <label>
-          <input type="checkbox" id="toggleVibration" checked>
-          Activar Vibración
-        </label><br>
-        <label>
-          <input type="checkbox" id="toggleHighContrast">
-          Activar Modo de Alto Contraste
-        </label><br>
-        <label>
-          <input type="checkbox" id="toggleLayout" checked>
-          Layout Personalizable (drag &amp; drop habilitado)
+        <h3 class="right-panel-title">Deck Configuration</h3> <!-- Título actualizado -->
+        <p>Customize cyberdeck interface and performance parameters.</p> <!-- Texto actualizado -->
+        <!-- Labels actualizados -->
+        <label title="Enable/Disable visual processing effects">
+          <input type="checkbox" id="toggleAnimations" checked> Enable Visual Augmentations
         </label>
-        <p style="margin-top:10px; font-size:12px; color:var(--accent-color);">
-          Puedes reordenar los proyectos en el panel izquierdo y guardar tu configuración.
+        <label title="Adjust global processing speed for visuals"> Augmentation Speed:
+          <input type="range" id="animationSpeed" min="0.5" max="2" step="0.1" value="1">
+          <span id="animationSpeedValue">1.0x</span>
+        </label>
+        <label title="Enable/Disable system alert popups">
+          <input type="checkbox" id="toggleNotifications" checked> Enable System Alerts
+        </label>
+        <label title="Enable/Disable auditory feedback for alerts">
+          <input type="checkbox" id="toggleSoundNotifications" checked> Alert Auditory Feedback
+        </label>
+        <label title="Enable/Disable haptic feedback routines (if hardware supported)">
+          <input type="checkbox" id="toggleVibration"> Haptic Feedback Routines
+        </label>
+        <label title="Switch to high contrast visual matrix for low-light conditions">
+          <input type="checkbox" id="toggleHighContrast"> High Contrast Matrix
+        </label>
+        <label title="Allow reordering of active runs via drag interface">
+          <input type="checkbox" id="toggleLayout" checked> Draggable Run Layout
+        </label>
+        <p style="margin-top:15px; font-size:0.9rem; color:var(--accent-color);">
+           <i class="fas fa-info-circle"></i> Configuration saved to local deck memory.
         </p>
       </div>
     </aside>
+
   </main>
-  
-  <!-- FOOTER -->
-  <footer class="footer-buttons">
-    <div class="footer-btn"><span>[ E ]</span> Select</div>
-    <div class="footer-btn"><span>[ R ]</span> Track Objective</div>
-    <div class="footer-btn"><span>[ Esc ]</span> Close</div>
-  </footer>
-  
-  <!-- SCRIPTS Y FUNCIONALIDADES -->
+
+  <!-- SCRIPTS -->
+  <!-- SortableJS (para Drag & Drop) -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
   <script>
-    /************************************************************
-     * Funcionalidades integrales: Playlist, lazy loading, tsParticles,
-     * parallax, atajos de teclado, comandos de voz, búsqueda, tabs, chat, etc.
-     ************************************************************/
-    
-    // Playlist para el MP3 Player
-    const playlist = [
-      { title: "Ambient Cyberpunk", src: "src/Audio/Future セルフ - Ambient Cyberpunk.mp3", cover: "src/img/celestial.jpg" },
-      { title: "Second Track", src: "src/Audio/second-track.mp3", cover: "src/img/cover2.jpg" }
-    ];
-    let currentTrack = 0;
-    const audioPlayer = document.getElementById('audioPlayer');
-    const trackTitle = document.getElementById('trackTitle');
-    const albumCover = document.getElementById('albumCoverIm');
-    function loadTrack(index) {
-      const track = playlist[index];
-      trackTitle.textContent = track.title;
-      albumCover.src = track.cover;
-      audioPlayer.src = track.src;
-    }
-    loadTrack(currentTrack);
-    document.getElementById('playBtn').addEventListener('click', () => { audioPlayer.play(); });
-    document.getElementById('pauseBtn').addEventListener('click', () => { audioPlayer.pause(); });
-    audioPlayer.addEventListener('ended', () => {
-      currentTrack = (currentTrack + 1) % playlist.length;
-      loadTrack(currentTrack);
-      audioPlayer.play();
-    });
-    
-    // Lazy loading con IntersectionObserver
-    if ('IntersectionObserver' in window) {
-      const lazyImages = document.querySelectorAll('img[loading="lazy"]');
-      const observer = new IntersectionObserver((entries, obs) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('loaded');
-            obs.unobserve(entry.target);
-          }
-        });
-      });
-      lazyImages.forEach(img => observer.observe(img));
-    }
-    
-    // tsParticles
-    tsParticles.load("tsparticles", {
-      "particles": {
-        "number": { "value": 80 },
-        "color": { "value": ["#ff0040", "#ff5588", "#1e90ff"] },
-        "shape": { "type": "circle" },
-        "opacity": { "value": 0.5 },
-        "size": { "value": 3 },
-        "move": { "enable": true, "speed": 2 }
-      },
-      "interactivity": {
-        "events": { "onhover": { "enable": true, "mode": "repulse" } }
-      }
-    });
-    
-    // Parallax para Video de Fondo
-    document.addEventListener('mousemove', (e) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 20;
-      const y = (e.clientY / window.innerHeight - 0.5) * 20;
-      document.getElementById('bgVideo').style.transform = `translate(${x}px, ${y}px)`;
-    });
-    
-    // Atajos de Teclado
-    let currentProjectIndex = 0;
-    function initializeKeyboardShortcuts() {
-      const projectItems = Array.from(document.querySelectorAll('.project-item'));
-      document.addEventListener('keydown', (e) => {
-        if (e.target.tagName.toLowerCase() === 'input') return;
-        switch(e.key) {
-          case 'ArrowDown':
-            currentProjectIndex = (currentProjectIndex + 1) % projectItems.length;
-            projectItems[currentProjectIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
-            projectItems.forEach(item => item.classList.remove('selected'));
-            projectItems[currentProjectIndex].classList.add('selected');
-            projectItems[currentProjectIndex].click();
-            if(window.vibrationEnabled) navigator.vibrate(50);
-            break;
-          case 'ArrowUp':
-            currentProjectIndex = (currentProjectIndex - 1 + projectItems.length) % projectItems.length;
-            projectItems[currentProjectIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
-            projectItems.forEach(item => item.classList.remove('selected'));
-            projectItems[currentProjectIndex].classList.add('selected');
-            projectItems[currentProjectIndex].click();
-            if(window.vibrationEnabled) navigator.vibrate(50);
-            break;
-          case 'e': case 'E':
-            projectItems[currentProjectIndex].click();
-            if(window.vibrationEnabled) navigator.vibrate(50);
-            break;
-          case 'r': case 'R':
-            showNotification('Track Objective activated');
-            if(window.vibrationEnabled) navigator.vibrate(50);
-            break;
-          case 'Escape':
-            document.getElementById('topNav').classList.remove('active');
-            break;
-          case 'd': case 'D':
-            const dashboard = document.getElementById('dashboardStats');
-            dashboard.style.display = (dashboard.style.display === 'block') ? 'none' : 'block';
-            break;
-          case 'v': case 'V':
-            document.getElementById('voiceCommandBtn').click();
-            break;
-        }
-      });
-    }
-    initializeKeyboardShortcuts();
-    
-    // Comandos de Voz
-    let recognition;
-    function initializeVoiceCommands() {
-      const voiceBtn = document.getElementById('voiceCommandBtn');
-      if (!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)) {
-        voiceBtn.style.display = 'none';
-        return;
-      }
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.lang = 'es-ES';
-      recognition.interimResults = false;
-      recognition.onresult = function(event) {
-        const command = event.results[0][0].transcript.toLowerCase();
-        showNotification(`Comando de voz: ${command}`);
-        if (command.includes("play")) { document.getElementById('playBtn').click(); }
-        else if (command.includes("pause")) { document.getElementById('pauseBtn').click(); }
-        else if (command.includes("fullscreen")) { toggleFullscreen(); }
-        else if (command.includes("theme")) { document.getElementById('themeToggle').click(); }
-      };
-      recognition.onerror = function(event) {
-        showNotification(`Error en reconocimiento de voz: ${event.error}`);
-      };
-      voiceBtn.addEventListener('click', () => {
-        recognition.start();
-        showNotification("Escuchando comandos de voz...");
-        if(window.vibrationEnabled) navigator.vibrate(50);
-      });
-    }
-    initializeVoiceCommands();
-    
-    // Tutorial Overlay
-    function initializeTutorial() {
-      const tutorialShown = localStorage.getItem('tutorialShown');
-      const tutorialOverlay = document.getElementById('tutorialOverlay');
-      if (!tutorialShown) { tutorialOverlay.classList.add('active'); }
-      document.getElementById('closeTutorialBtn').addEventListener('click', () => {
-        tutorialOverlay.classList.remove('active');
-        localStorage.setItem('tutorialShown', 'true');
-      });
-    }
-    initializeTutorial();
-    
-    // Pantalla Completa
-    function toggleFullscreen() {
-      if (!document.fullscreenElement) { document.documentElement.requestFullscreen(); }
-      else { if (document.exitFullscreen) { document.exitFullscreen(); } }
-    }
-    document.getElementById('fullscreenToggle').addEventListener('click', toggleFullscreen);
-    
-    // Dashboard Stats (simulados)
-    function initializeDashboardStats() {
-      function updateStats() {
-        document.getElementById('cpuUsage').textContent = Math.floor(Math.random() * 100) + '%';
-        document.getElementById('memoryUsage').textContent = Math.floor(Math.random() * 2000) + 'MB';
-      }
-      setInterval(updateStats, 1000);
-    }
-    initializeDashboardStats();
-    
-    // Configuración de Tema
-    const themeModal = document.getElementById('themeModal');
-    const themeToggle = document.getElementById('themeToggle');
-    themeToggle.addEventListener('click', () => {
-      themeModal.classList.toggle('active');
-      if(window.vibrationEnabled) navigator.vibrate(50);
-    });
-    document.getElementById('closeThemeModalBtn').addEventListener('click', () => {
-      document.documentElement.style.setProperty('--primary-color', document.getElementById('primaryColorPicker').value);
-      document.documentElement.style.setProperty('--secondary-color', document.getElementById('secondaryColorPicker').value);
-      document.documentElement.style.setProperty('--accent-color', document.getElementById('accentColorPicker').value);
-      themeModal.classList.remove('active');
-      showNotification('Tema actualizado');
-      if(window.vibrationEnabled) navigator.vibrate(50);
-    });
-    
-    // Configuración Avanzada: nuevas opciones
-    document.getElementById('animationSpeed').addEventListener('input', function() {
-      const speed = this.value;
-      document.getElementById('animationSpeedValue').textContent = speed + "x";
-      window.animationSpeedFactor = speed;
-    });
-    let soundNotificationsEnabled = document.getElementById('toggleSoundNotifications').checked;
-    document.getElementById('toggleSoundNotifications').addEventListener('change', function() {
-      soundNotificationsEnabled = this.checked;
-    });
-    window.vibrationEnabled = document.getElementById('toggleVibration').checked;
-    document.getElementById('toggleVibration').addEventListener('change', function() {
-      window.vibrationEnabled = this.checked;
-    });
-    document.getElementById('toggleHighContrast').addEventListener('change', function() {
-      if (this.checked) { document.body.classList.add('high-contrast'); }
-      else { document.body.classList.remove('high-contrast'); }
-    });
-    
-    // Sistema de Logros
-    let achievements = JSON.parse(localStorage.getItem('achievements')) || [];
-    function addAchievement(title) {
-      if (!achievements.includes(title)) {
-        achievements.push(title);
-        localStorage.setItem('achievements', JSON.stringify(achievements));
-        updateAchievementsModal();
-        showNotification(`Logro desbloqueado: ${title}`);
-        if(window.vibrationEnabled) navigator.vibrate([100,50,100]);
-      }
-    }
-    function updateAchievementsModal() {
-      const list = document.getElementById('achievementsList');
-      list.innerHTML = '';
-      achievements.forEach(ach => {
-        const li = document.createElement('li');
-        li.textContent = ach;
-        list.appendChild(li);
-      });
-    }
-    updateAchievementsModal();
-    
-    // Notificaciones y Sonidos
-    function showNotification(message) {
-      let notificationContainer = document.getElementById('notificationContainer');
-      if (!notificationContainer) {
-        notificationContainer = document.createElement('div');
-        notificationContainer.id = 'notificationContainer';
-        notificationContainer.classList.add('notification-container');
-        document.body.appendChild(notificationContainer);
-      }
-      const notification = document.createElement('div');
-      notification.classList.add('notification');
-      notification.textContent = message;
-      notificationContainer.appendChild(notification);
-      setTimeout(() => { notification.remove(); }, 4000);
-    }
-    const clickSound = new Audio('path/to/click-sound.mp3');
-    const notificationSound = new Audio('path/to/notification-sound.mp3');
-    function playClickSound() { clickSound.currentTime = 0; clickSound.play(); }
-    function playNotificationSound() { notificationSound.currentTime = 0; notificationSound.play(); }
-    
-    // Lógica de Proyectos y Misiones
-    const projectData = {
-      neonui: {
-        title: "Neon UI",
-        subtitle: "Futuristic neon interface concept.",
-        description: `
-          <strong>Descripción:</strong><br>
-          Neon UI es un concepto de interfaz futurista diseñado para aplicaciones web modernas que buscan una estética ciberpunk.
-          <strong>Características Principales:</strong>
-          <ul>
-            <li>Esquemas de Colores Neón</li>
-            <li>Efectos de Glitch</li>
-            <li>Animaciones CSS Avanzadas</li>
-            <li>Compatibilidad con BCI</li>
-          </ul>
-          <strong>Tecnologías Utilizadas:</strong>
-          <ul>
-            <li>HTML5, CSS3, JavaScript (ES6)</li>
-          </ul>
-        `,
-        link: "https://tusitio.com/neonui",
-        image: "src/img/celestial.jpg",
-        github: "https://github.com/1inmortal/githubpagetest",
-        codepen: "https://codepen.io/INM0RTAl",
-        liveDemo: "https://tusitio.com/neonui"
-      },
-      hackingpanel: {
-        title: "Hacking Panel",
-        subtitle: "Immersive hacking mini-game mechanics.",
-        description: `
-          <strong>Descripción:</strong><br>
-          Hacking Panel es un mini-juego inmersivo que simula técnicas de intrusión.
-          <strong>Características Principales:</strong>
-          <ul>
-            <li>Secuencias de Rompecabezas Netrunner</li>
-            <li>Interfaz Inmersiva</li>
-            <li>Integración de WebSockets</li>
-            <li>Progresión de Niveles</li>
-          </ul>
-        `,
-        link: "https://tusitio.com/hackingpanel",
-        image: "https://i.pinimg.com/736x/5f/05/21/5f0521673937e41576b3e8e68071acdd.jpg",
-        github: "https://github.com/1inmortal/githubpagetest",
-        codepen: "https://codepen.io/INM0RTAl",
-        liveDemo: "https://tusitio.com/hackingpanel"
-      },
-      braininterface: {
-        title: "Brain Interface",
-        subtitle: "BCI-based user interactions (prototype).",
-        description: `
-          <strong>Descripción:</strong><br>
-          Brain Interface es un prototipo que permite controlar interfaces mediante señales neuronales.
-          <strong>Características Principales:</strong>
-          <ul>
-            <li>Control por Señales Neuronales</li>
-            <li>Interfaz Adaptativa</li>
-            <li>Integración con Aplicaciones Web</li>
-            <li>Feedback en Tiempo Real</li>
-          </ul>
-        `,
-        link: "https://tusitio.com/braininterface",
-        image: "https://via.placeholder.com/600x400?text=Brain+Interface",
-        github: "https://github.com/1inmortal/githubpagetest",
-        codepen: "https://codepen.io/INM0RTAl",
-        liveDemo: "https://tusitio.com/braininterface"
-      }
-    };
-    const missionData = {
-      badlands: {
-        title: "Epistrophy: Badlands",
-        image: "src/img/chica red.jpg",
-        danger: "Danger: High",
-        newFlag: true,
-        progress: 100
-      },
-      "the-glen": {
-        title: "Epistrophy: The Glen",
-        image: "src/img/chica red 2.jpg",
-        danger: "Danger: High",
-        newFlag: true,
-        progress: 50
-      },
-      northside: {
-        title: "Epistrophy: Northside",
-        image: "src/img/gotic.jpg",
-        danger: "Danger: High",
-        newFlag: true,
-        progress: 75
-      },
-      rancho: {
-        title: "Epistrophy: Rancho Coronado",
-        image: "src/img/blanca como la nieve.jpg",
-        danger: "Danger: High",
-        newFlag: true,
-        progress: 40
-      }
-    };
-    function createMissionItem(id, data, isSelected = false) {
-      const missionItem = document.createElement('div');
-      missionItem.classList.add('mission-item');
-      if (isSelected) { missionItem.classList.add('selected'); }
-      missionItem.setAttribute('data-id', id);
-      const missionIcon = document.createElement('div');
-      missionIcon.classList.add('mission-icon');
-      missionItem.appendChild(missionIcon);
-      const missionName = document.createElement('div');
-      missionName.classList.add('mission-name');
-      missionName.textContent = data.title;
-      missionItem.appendChild(missionName);
-      const missionDanger = document.createElement('div');
-      missionDanger.classList.add('mission-danger');
-      missionDanger.textContent = data.danger;
-      missionItem.appendChild(missionDanger);
-      const missionProgress = document.createElement('div');
-      missionProgress.classList.add('mission-progress');
-      missionProgress.innerHTML = `
-        <div class="progress-bar">
-          <div class="progress-fill" style="width: ${data.progress}%"></div>
-        </div>
-        <span class="progress-text">${data.progress}% Completado</span>
-      `;
-      missionItem.appendChild(missionProgress);
-      if (data.newFlag) {
-        const newFlag = document.createElement('div');
-        newFlag.classList.add('new-flag');
-        newFlag.textContent = 'New';
-        missionItem.appendChild(newFlag);
-      }
-      missionItem.addEventListener('click', () => {
-        document.querySelectorAll('.mission-item').forEach(m => m.classList.remove('selected'));
-        missionItem.classList.add('selected');
-        document.getElementById("rightPanelTitle").textContent = data.title;
-        document.getElementById("rightPanelImage").src = data.image;
-        showNotification(`Misión seleccionada: ${data.title}`);
-        playClickSound();
-        playNotificationSound();
-        localStorage.setItem('selectedMission', id);
-        addAchievement(`Misión completada: ${data.title}`);
-      });
-      return missionItem;
-    }
-    function initializeMissions() {
-      let isFirst = true;
-      for (const [id, data] of Object.entries(missionData)) {
-        const missionItem = createMissionItem(id, data, isFirst);
-        document.getElementById('missionList').appendChild(missionItem);
-        isFirst = false;
-      }
-    }
-    initializeMissions();
-    function loadSelectedMission() {
-      const selectedMission = localStorage.getItem('selectedMission');
-      if (selectedMission) {
-        const item = document.querySelector(`.mission-item[data-id="${selectedMission}"]`);
-        if (item) { item.click(); }
-      }
-    }
-    loadSelectedMission();
-    
-    // Lógica del Filtro Avanzado en Projects
-    function renderDataList(filter) {
-      const dataList = document.getElementById('dataList');
-      dataList.innerHTML = '';
-      // Si se selecciona "projects", mostrar los items originales
-      if(filter === 'projects') {
-        Object.keys(projectData).forEach(pid => {
-          const proj = projectData[pid];
-          const div = document.createElement('div');
-          div.classList.add('data-item');
-          div.setAttribute('data-id', pid);
-          div.innerHTML = `<div class="project-name">${proj.title}</div>
-                           <div class="project-summary">${proj.subtitle}</div>`;
-          div.addEventListener('click', () => {
-            document.getElementById('detailTitle').textContent = proj.title;
-            document.getElementById('detailSubtitle').textContent = proj.subtitle;
-            document.getElementById('detailDescription').innerHTML = proj.description +
-              `<br><br><strong>Enlaces:</strong>
-              <ul>
-                <li><a href="${proj.link}" target="_blank">Sitio Web</a></li>
-                <li><a href="${proj.github}" target="_blank">GitHub</a></li>
-                <li><a href="${proj.codepen}" target="_blank">CodePen</a></li>
-                <li><a href="${proj.liveDemo}" target="_blank">Demo en Vivo</a></li>
-              </ul>`;
-            document.querySelectorAll('.data-item').forEach(el => el.classList.remove('selected'));
-            div.classList.add('selected');
-            localStorage.setItem('selectedProject', pid);
-            showNotification(`Proyecto seleccionado: ${proj.title}`);
-            playClickSound();
-            playNotificationSound();
-            addAchievement(`Proyecto: ${proj.title}`);
-          });
-          dataList.appendChild(div);
-        });
-      }
-      // Para otras secciones: herramientas, logros, contenido, ideas
-      else {
-        const sampleData = {
-          herramientas: [
-            { id: 'tool1', title: "Herramienta 1", subtitle: "Utilidad para análisis de datos", description: `<strong>Detalles:</strong><br>Permite gestionar y visualizar grandes volúmenes de información.` },
-            { id: 'tool2', title: "Herramienta 2", subtitle: "Editor de código avanzado", description: `<strong>Detalles:</strong><br>Ofrece integración con Git y soporte para múltiples lenguajes.` }
+    document.addEventListener('DOMContentLoaded', () => {
+
+        const loadingOverlay = document.getElementById('loading-overlay');
+
+        // --- CONFIGURACIÓN INICIAL Y VARIABLES GLOBALES ---
+        let currentProgramIndex = 0; // Antes projectIndex
+        let currentSubroutineIndex = 0; // Antes missionIndex
+        let activeList = 'projects'; // Mantenemos 'projects' internamente para data, 'missions' para subrutinas
+        let currentTrack = 0;
+        let isPlaying = false;
+        let soundNotificationsEnabled = localStorage.getItem('soundNotificationsEnabled') !== 'false';
+        let vibrationEnabled = localStorage.getItem('vibrationEnabled') === 'true';
+        let animationsEnabled = localStorage.getItem('animationsEnabled') !== 'false';
+        window.animationSpeedFactor = parseFloat(localStorage.getItem('animationSpeedFactor')) || 1;
+
+        const audioPlayer = document.getElementById('audioPlayer');
+        const trackTitle = document.getElementById('trackTitle');
+        const albumCover = document.getElementById('albumCoverIm');
+        const playBtn = document.getElementById('playBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const mp3ProgressFill = document.getElementById('mp3ProgressFill');
+        const mp3Progress = document.getElementById('mp3Progress');
+        const mp3Time = document.getElementById('mp3Time');
+        const volumeRange = document.getElementById('volumeRange');
+
+        const detailTitle = document.getElementById('detailTitle');
+        const detailSubtitle = document.getElementById('detailSubtitle');
+        const detailDescription = document.getElementById('detailDescription');
+        const rightPanelTitle = document.getElementById('rightPanelTitle');
+        const rightPanelImage = document.getElementById('rightPanelImage');
+        const rightPanelVideo = document.getElementById('rightPanelVideo');
+
+        const dataListContainer = document.getElementById('dataList');
+        const missionListContainer = document.getElementById('missionList'); // Mantenemos ID por simplicidad
+        const dataListTitle = document.getElementById('dataListTitle');
+
+        const notificationContainer = document.getElementById('notificationContainer');
+
+        // Sonidos (URLs de ejemplo - reemplaza con las tuyas)
+        const clickSound = new Audio('src/Audio/ui-click.wav');
+        const notificationSound = new Audio('src/Audio/ui-notification.wav');
+        const hoverSound = new Audio('src/Audio/ui-hover.wav');
+        clickSound.volume = 0.5;
+        notificationSound.volume = 0.6;
+        hoverSound.volume = 0.3;
+
+        // Playlist MP3
+        const playlist = [
+          { title: "Reaktive - Signal Lost", src: "src/Audio/Future セルフ - Ambient Cyberpunk.mp3", cover: "src/img/celestial.jpg" },
+          { title: "Void Runner - Glitch Core", src: "src/Audio/second-track.mp3", cover: "src/img/cover2.jpg" },
+          { title: "SynthWave Dreams - Neon Drive", src: "src/Audio/third-track.mp3", cover: "src/img/cover3.jpg" }
+        ];
+
+        // --- DATOS DE EJEMPLO --- (IDs y estructura interna mantenidos, títulos pueden ser actualizados)
+         const projectData = { // Representa "Active Runs"
+             neonui: { title: "Neon Core UI", subtitle: "Core visual interface daemon.", description: `<strong>Process ID:</strong> 774-UI-CORE<br><strong>Status:</strong> Stable<br><strong>Description:</strong> Renders the primary Cyberdeck OS visual matrix using accelerated hardware paths. Optimized for low-latency neural feedback.<br><strong>Dependencies:</strong> [gfx_driver_v4.dll], [neural_link_api.sys]`, link: "#", image: "src/img/celestial.jpg", github: "#", codepen: "#", liveDemo: "#" },
+             hackingpanel: { title: "ICE Breaker Suite", subtitle: "Active netrunning toolkit.", description: `<strong>Process ID:</strong> 901-ICE-BRK<br><strong>Status:</strong> Active Scan<br><strong>Description:</strong> Suite of intrusion countermeasures electronic (ICE) penetration tools. Currently scanning target node [192.168.77.101]. Includes 'Wraith', 'Spectre', and 'Hammer' modules.<br><strong>Warning:</strong> High risk of counter-intrusion detected.`, link: "#", image: "https://i.pinimg.com/736x/5f/05/21/5f0521673937e41576b3e8e68071acdd.jpg", github: "#", codepen: "#", liveDemo: "#"},
+             braininterface: { title: "Project Chimera (BCI)", subtitle: "Neural interface bridge.", description: `<strong>Process ID:</strong> 003-BCI-LINK<br><strong>Status:</strong> Linked<br><strong>Description:</strong> Experimental Brain-Computer Interface protocol for direct data transfer and system control via neural implant. Calibration required for optimal bandwidth.<br><strong>Bio-Monitor:</strong> Neural stress levels nominal.`, link: "#", image: "https://via.placeholder.com/600x400/00f0ff/050a15?text=Project+Chimera", github: "#", codepen: "#", liveDemo: "#" }
+        };
+        const missionData = { // Representa "Subroutines"
+             badlands: { title: "Data Heist: Badlands Relay", image: "src/img/chica red.jpg", danger: "Threat Level: High", newFlag: true, progress: 100 }, // Nombres y 'danger' actualizados
+             "the-glen": { title: "Trace Route: The Glen Node", image: "src/img/chica red 2.jpg", danger: "Threat Level: High", newFlag: true, progress: 50 },
+             northside: { title: "System Scan: Northside District", image: "src/img/gotic.jpg", danger: "Threat Level: Moderate", newFlag: false, progress: 75 },
+             rancho: { title: "Counter-Hack: Rancho Server Farm", image: "src/img/blanca como la nieve.jpg", danger: "Threat Level: Extreme", newFlag: true, progress: 40 }
+        };
+        const sampleData = { // Para Utilities, Logs, Intel, Fragments
+          herramientas: [ // Utilities
+            { id: 'tool1', title: "Packet Sniffer v7.2", subtitle: "Real-time network traffic analysis.", description: `<strong>Utility Type:</strong> Network Scanner<br><strong>Features:</strong> Deep packet inspection, protocol spoofing, passive/active modes. Supports encrypted streams (requires valid key).` },
+            { id: 'tool2', title: "Code Weaver IDE (Cracked)", subtitle: "AI-assisted development environment.", description: `<strong>Utility Type:</strong> Code Editor<br><strong>Features:</strong> Predictive syntax, automated debugging subroutines, direct neural coding interface (beta, unstable). Bypasses corporate licensing.` }
           ],
-          logros: [
-            { id: 'achievement1', title: "Logro 1", subtitle: "Primer logro desbloqueado", description: `<strong>Detalles:</strong><br>Obtenido al completar el primer proyecto exitosamente.` },
-            { id: 'achievement2', title: "Logro 2", subtitle: "Segundo logro desbloqueado", description: `<strong>Detalles:</strong><br>Desbloqueado tras superar retos avanzados en seguridad.` }
+          logros: [ // Access Logs (usando estructura de logros)
+            { id: 'ach1', title: "Initial Connection", subtitle: "Cyberdeck OS successfully booted.", description: `<strong>Timestamp:</strong> [System Boot Time]<br><strong>Event:</strong> Core system modules loaded. Neural link established.` },
+            { id: 'ach2', title: "UI Matrix Reconfigured", subtitle: "Deck interface theme customized.", description: `<strong>Timestamp:</strong> [Theme Save Time]<br><strong>Event:</strong> User applied custom color matrix via Deck Settings.` },
+            { id: 'ach3', title: "File System Scan", subtitle: "Accessed 5 different files/processes.", description: `<strong>Timestamp:</strong> [Last Access Time]<br><strong>Event:</strong> User navigated multiple file system entries.` }
           ],
-          contenido: [
-            { id: 'content1', title: "Contenido 1", subtitle: "Tutoriales y guías", description: `<strong>Detalles:</strong><br>Artículos y vídeos para mejorar habilidades técnicas.` },
-            { id: 'content2', title: "Contenido 2", subtitle: "Recursos y referencias", description: `<strong>Detalles:</strong><br>Documentación y ejemplos de código de proyectos destacados.` }
+          contenido: [ // Intel
+             { id: 'intel1', title: "Arasaka Security Memo (Intercepted)", subtitle: "Increased patrols near Sector 7G.", description: `<strong>Source:</strong> Encrypted Comms Sniffer<br><strong>Reliability:</strong> B+<br><strong>Content:</strong> Internal Arasaka memo detailing heightened security drone patrols in Sector 7G following recent data breaches. Avoid aerial approaches.` },
+             { id: 'intel2', title: "Militech Weapon Spec (Leaked)", subtitle: "M-10AF Lexington - Prototype schematics.", description: `<strong>Source:</strong> Darknet Data Dump<br><strong>Reliability:</strong> A-<br><strong>Content:</strong> Partial schematics and performance data for the unreleased Militech Lexington pistol variant. Notes indicate experimental smart-link integration.` }
           ],
-          ideas: [
-            { id: 'idea1', title: "Idea 1", subtitle: "Innovación en UI", description: `<strong>Detalles:</strong><br>Propuesta para implementar micro-interacciones en la interfaz.` },
-            { id: 'idea2', title: "Idea 2", subtitle: "Optimización de procesos", description: `<strong>Detalles:</strong><br>Concepto para mejorar la eficiencia del renderizado en tiempo real.` }
+          ideas: [ // Fragments
+             { id: 'idea1', title: "ICE 'Black Wall' Bypass Theory", subtitle: "Potential exploit using buffer overflow.", description: `<strong>Concept:</strong> Theorized vulnerability in Arasaka's 'Black Wall' ICE. Requires precise timing and packet manipulation. High risk, high reward.` },
+             { id: 'idea2', title: "Neural Mod: 'Adrenaline Surge'", subtitle: "Concept for combat bio-mod.", description: `<strong>Concept:</strong> Software modification for existing combat implants to trigger controlled adrenaline release on demand. Requires firmware root access.` }
           ]
         };
-        const items = sampleData[filter] || [];
-        items.forEach(item => {
-          const div = document.createElement('div');
-          div.classList.add('data-item');
-          div.setAttribute('data-id', item.id);
-          div.innerHTML = `<div class="project-name">${item.title}</div>
-                           <div class="project-summary">${item.subtitle}</div>`;
-          div.addEventListener('click', () => {
-            document.getElementById('detailTitle').textContent = item.title;
-            document.getElementById('detailSubtitle').textContent = item.subtitle;
-            document.getElementById('detailDescription').innerHTML = item.description;
-            document.querySelectorAll('.data-item').forEach(el => el.classList.remove('selected'));
-            div.classList.add('selected');
-            showNotification(`${item.title} seleccionado`);
-            playClickSound();
-            playNotificationSound();
+
+
+        // --- FUNCIONES ---
+
+        // Utilidad: Reproducir Sonido
+        function playSound(audioElement) {
+            if (!soundNotificationsEnabled || !audioElement) return;
+            audioElement.currentTime = 0;
+            audioElement.play().catch(e => console.warn("Audio playback failed:", e));
+        }
+
+        // Utilidad: Vibrar
+        function vibrate(pattern = 50) {
+            if (vibrationEnabled && navigator.vibrate) {
+                navigator.vibrate(pattern);
+            }
+        }
+
+        // Mostrar Notificación (Alerta del Sistema)
+        function showNotification(message, type = 'info') { // type: 'info', 'success', 'warning', 'error'
+             playSound(notificationSound);
+             vibrate(80);
+             const iconClass = {
+                 info: 'fas fa-info-circle', // SYS
+                 success: 'fas fa-check-circle', // OK
+                 warning: 'fas fa-exclamation-triangle', // WARN
+                 error: 'fas fa-times-circle' // ERR
+             }[type];
+             const color = {
+                info: 'var(--primary-color)',
+                success: '#4caf50',
+                warning: 'var(--accent-color)',
+                error: 'var(--danger-color)'
+             }[type];
+             const prefix = { // Añadir prefijo temático
+                 info: '[SYS]',
+                 success: '[OK]',
+                 warning: '[WARN]',
+                 error: '[ERR]'
+             }[type];
+
+            const notification = document.createElement('div');
+            notification.className = `cyber-notification ${type}`;
+            notification.style.cssText = `
+                background: rgba(10, 20, 40, 0.9);
+                color: var(--text-color);
+                padding: 12px 18px;
+                border-radius: 5px;
+                margin-bottom: 10px;
+                border-left: 4px solid ${color};
+                box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+                opacity: 0;
+                transform: translateX(20px);
+                transition: all 0.4s ease-out;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-size: 0.95rem;
+                pointer-events: all; /* Habilitar click en notificación */
+            `;
+            // Estructura actualizada con prefijo
+            notification.innerHTML = `<i class="${iconClass}" style="color: ${color}; font-size: 1.2em;"></i><span><strong style="color:${color}; margin-right: 5px;">${prefix}</strong> ${message}</span>`;
+
+            notificationContainer.appendChild(notification);
+
+            // Forzar reflow
+            void notification.offsetWidth;
+
+            notification.style.opacity = '1';
+            notification.style.transform = 'translateX(0)';
+
+            // Añadir listener para cerrar al hacer click
+            notification.addEventListener('click', () => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(20px)';
+                setTimeout(() => notification.remove(), 400);
+            });
+
+
+            setTimeout(() => {
+                if (notification.parentElement) { // Comprobar si aún existe
+                    notification.style.opacity = '0';
+                    notification.style.transform = 'translateX(20px)';
+                    setTimeout(() => notification.remove(), 400);
+                }
+            }, 5000); // Desaparece después de 5 segundos
+        }
+
+        // Formatear Tiempo (MM:SS)
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // Cargar Pista MP3
+        function loadTrack(index) {
+            const track = playlist[index];
+            trackTitle.textContent = track.title;
+            albumCover.src = track.cover || 'src/img/placeholder-cover.png';
+            albumCover.alt = track.title + " - Audio Data";
+            audioPlayer.src = track.src;
+            currentTrack = index;
+            mp3ProgressFill.style.width = '0%';
+            mp3Time.textContent = '0:00';
+            if (isPlaying) {
+                 playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                 playBtn.title = 'Pause Audio Stream';
+            } else {
+                 playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                 playBtn.title = 'Play Audio Stream';
+            }
+        }
+
+        // Control Reproductor MP3
+        function togglePlay() {
+             if (audioPlayer.paused) {
+                 audioPlayer.play().then(() => {
+                     isPlaying = true;
+                     playBtn.innerHTML = '<i class="fas fa-pause"></i>'; playBtn.title = 'Pause Audio Stream';
+                     vibrate();
+                     if (audioCtx && audioCtx.state === 'suspended') { audioCtx.resume(); }
+                 }).catch(e => showNotification(`Audio subsystem error: ${e.message}`, 'error'));
+             } else {
+                 audioPlayer.pause();
+                 isPlaying = false;
+                 playBtn.innerHTML = '<i class="fas fa-play"></i>'; playBtn.title = 'Play Audio Stream';
+                 vibrate();
+             }
+        }
+        function nextTrack() { loadTrack((currentTrack + 1) % playlist.length); if (isPlaying) audioPlayer.play(); vibrate(); }
+        function prevTrack() { loadTrack((currentTrack - 1 + playlist.length) % playlist.length); if (isPlaying) audioPlayer.play(); vibrate(); }
+
+        // Actualizar Progreso MP3
+        function updateProgress() {
+            if (audioPlayer.duration) {
+                const progressPercent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+                mp3ProgressFill.style.width = `${progressPercent}%`;
+                mp3Time.textContent = formatTime(audioPlayer.currentTime);
+            } else {
+                 mp3ProgressFill.style.width = '0%';
+                 mp3Time.textContent = '--:--';
+            }
+        }
+
+        // Buscar en la Pista MP3
+        function seek(event) {
+             if (!audioPlayer.duration) return;
+            const progressRect = mp3Progress.getBoundingClientRect();
+            const clickX = event.clientX - progressRect.left;
+            const width = progressRect.width;
+            const duration = audioPlayer.duration;
+            audioPlayer.currentTime = (clickX / width) * duration;
+            vibrate(30);
+        }
+
+        // Control de Volumen
+        function setVolume() {
+            audioPlayer.volume = volumeRange.value;
+             const value = (volumeRange.value - volumeRange.min) / (volumeRange.max - volumeRange.min) * 100;
+             volumeRange.style.setProperty('--value', value + '%');
+        }
+
+        // Renderizar Lista de Datos (Panel Izquierdo - Archivos/Programas)
+        function renderDataList(filter) {
+            dataListContainer.innerHTML = ''; // Limpiar lista actual
+            let itemsToRender = [];
+            let displayTitle = ''; // Título a mostrar
+            let icon = 'fas fa-question-circle';
+
+            // Mapeo de filtro interno a título e icono
+            const filterMap = {
+                projects: { title: "Active Runs", icon: "fas fa-tasks" },
+                herramientas: { title: "Utilities", icon: "fas fa-tools" },
+                logros: { title: "Access Logs", icon: "fas fa-shield-alt" }, // Icono cambiado
+                contenido: { title: "Intel Fragments", icon: "fas fa-book-open" },
+                ideas: { title: "Schematics/Fragments", icon: "fas fa-lightbulb" }
+            };
+
+            if (filterMap[filter]) {
+                 displayTitle = filterMap[filter].title;
+                 icon = filterMap[filter].icon;
+            } else {
+                 displayTitle = filter.charAt(0).toUpperCase() + filter.slice(1); // Fallback
+            }
+
+            if (filter === 'projects') {
+                 itemsToRender = Object.entries(projectData).map(([id, data]) => ({ id, ...data }));
+                 initializeSortable(); // Activar drag & drop para Active Runs
+            } else {
+                 itemsToRender = sampleData[filter] || [];
+                 disableSortable(); // Desactivar drag & drop para otras listas
+            }
+
+            dataListTitle.innerHTML = `<i class="${icon}"></i> ${displayTitle}`; // Actualizar título con icono y nombre temático
+
+            if (itemsToRender.length === 0) {
+                 dataListContainer.innerHTML = `<p style="padding: 15px; color: var(--text-muted-color); text-align: center;">No entries found in this data stream.</p>`;
+                 return;
+            }
+
+            itemsToRender.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.classList.add('data-item');
+                div.setAttribute('data-id', item.id);
+                div.setAttribute('data-type', filter); // Guardar tipo para selección
+                // Usar clases temáticas program-name/program-desc
+                div.innerHTML = `
+                    <div class="program-name">${item.title}</div>
+                    <div class="program-desc">${item.subtitle || item.description.substring(0, 50) + '...'}</div>
+                    ${item.newFlag ? '<div class="new-flag">New Data</div>' : ''} <!-- Texto flag actualizado -->
+                `;
+                div.addEventListener('click', () => handleItemSelection(div, item, filter));
+                div.addEventListener('mouseenter', () => playSound(hoverSound));
+                dataListContainer.appendChild(div);
+            });
+
+             if (filter === 'projects') {
+                 loadProjectOrder(); // Cargar orden guardado para 'Active Runs'
+             }
+        }
+
+        // Manejar Selección de Item (Izquierda - Archivo/Programa)
+        function handleItemSelection(element, itemData, type) {
+            document.querySelectorAll('.data-item, .mission-item').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+
+            detailTitle.textContent = itemData.title;
+            detailSubtitle.textContent = itemData.subtitle || 'File Details';
+            detailDescription.innerHTML = itemData.description || 'No data available for this entry.';
+
+            // Añadir enlaces si existen (Ej: links a código fuente, etc.)
+            if (type === 'projects' && (itemData.link || itemData.github || itemData.codepen || itemData.liveDemo)) {
+                detailDescription.innerHTML += `
+                    <br><br><strong>External Data Links:</strong>
+                    <ul>
+                        ${itemData.link ? `<li><a href="${itemData.link}" target="_blank" rel="noopener noreferrer">Public Access Node</a></li>` : ''}
+                        ${itemData.github ? `<li><a href="${itemData.github}" target="_blank" rel="noopener noreferrer">Source Code Repository</a></li>` : ''}
+                        ${itemData.codepen ? `<li><a href="${itemData.codepen}" target="_blank" rel="noopener noreferrer">Execution Sandbox</a></li>` : ''}
+                        ${itemData.liveDemo ? `<li><a href="${itemData.liveDemo}" target="_blank" rel="noopener noreferrer">Live Process Feed</a></li>` : ''}
+                    </ul>`;
+            }
+
+             if (itemData.image) {
+                 rightPanelImage.src = itemData.image;
+                 rightPanelImage.alt = itemData.title + " - Visual Data";
+                 rightPanelImage.style.display = 'block';
+                 rightPanelVideo.style.display = 'none';
+             } else {
+                 rightPanelImage.style.display = 'none';
+             }
+
+            localStorage.setItem(`selectedItemId_${type}`, itemData.id);
+            // Notificación temática
+            showNotification(`Accessing data: ${itemData.title}`, 'info');
+            playSound(clickSound);
+            vibrate();
+
+            activeList = type;
+             const items = Array.from(dataListContainer.querySelectorAll('.data-item'));
+             currentProgramIndex = items.findIndex(el => el.getAttribute('data-id') === itemData.id);
+
+             checkAndAddAchievement('File System Scan'); // Usar nombre temático del logro
+        }
+
+        // Manejar Selección de Subrutina (Izquierda - Antes Misión)
+        function handleMissionSelection(element, missionData, id) { // Mantenemos 'missionData' como variable por simplicidad
+            document.querySelectorAll('.data-item, .mission-item').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+
+            // Panel Derecho: Título e Imagen de la Subrutina
+            rightPanelTitle.textContent = "Subroutine: " + missionData.title.split(':')[0]; // Mostrar tipo de subrutina
+            rightPanelImage.src = missionData.image || 'src/img/placeholder-dark.png';
+            rightPanelImage.alt = missionData.title + " - Target Visual";
+            rightPanelImage.style.display = 'block';
+            rightPanelVideo.style.display = 'none';
+
+            // Panel Central: Detalles de la Subrutina
+            detailTitle.textContent = missionData.title;
+            detailSubtitle.textContent = missionData.danger || "Subroutine Parameters"; // Usar 'danger' como 'Threat Level'
+            detailDescription.innerHTML = `
+                <strong>Objective:</strong> ${missionData.title.split(':')[0]} // Target: ${missionData.title.split(': ')[1]}.<br>
+                <strong>Status:</strong> Execution ${missionData.progress}% complete.<br>
+                <strong>Threat Assessment:</strong> ${missionData.danger}. Counter-ICE recommended.
+                ${missionData.newFlag ? '<br><strong>Intel Flag:</strong> New subroutine assignment.' : ''}
+                <p style="margin-top: 15px;">Monitor network traffic and system integrity. Evasion protocols engaged.</p>
+            `;
+
+            localStorage.setItem('selectedMissionId', id); // Mantenemos key por simplicidad
+            showNotification(`Tracking Subroutine: ${missionData.title}`, 'info');
+            playSound(clickSound);
+            vibrate();
+
+            activeList = 'missions'; // ID interno para subrutinas
+            const items = Array.from(missionListContainer.querySelectorAll('.mission-item'));
+            currentSubroutineIndex = items.findIndex(el => el.getAttribute('data-id') === id);
+        }
+
+
+        // Crear Item de Subrutina
+        function createMissionItem(id, data) { // Mantenemos nombre función por simplicidad
+            const missionItem = document.createElement('div');
+            missionItem.classList.add('mission-item'); // Mantenemos clase por simplicidad CSS/JS
+            missionItem.setAttribute('data-id', id);
+            // Usar clases temáticas subroutine-name/subroutine-threat
+            missionItem.innerHTML = `
+                <div class="subroutine-name">${data.title}</div>
+                <div class="subroutine-threat">${data.danger}</div>
+                <div class="mission-progress"> <!-- Mantenemos clase por simplicidad -->
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${data.progress || 0}%"></div>
+                  </div>
+                  <span class="progress-text">${data.progress || 0}% Execution</span> <!-- Texto progreso actualizado -->
+                </div>
+                ${data.newFlag ? '<div class="new-flag">New Task</div>' : ''} <!-- Texto flag actualizado -->
+            `;
+            missionItem.addEventListener('click', () => handleMissionSelection(missionItem, data, id));
+            missionItem.addEventListener('mouseenter', () => playSound(hoverSound));
+            return missionItem;
+        }
+
+        // Inicializar Lista de Subrutinas
+        function initializeMissions() { // Mantenemos nombre función
+            missionListContainer.innerHTML = '';
+            Object.entries(missionData).forEach(([id, data]) => {
+                missionListContainer.appendChild(createMissionItem(id, data));
+            });
+            const selectedId = localStorage.getItem('selectedMissionId'); // Mantenemos key
+            const itemToSelect = missionListContainer.querySelector(`.mission-item[data-id="${selectedId}"]`);
+            if (itemToSelect && missionData[selectedId]) { // Asegurarse que data existe
+                 handleMissionSelection(itemToSelect, missionData[selectedId], selectedId);
+            }
+        }
+
+        // --- Drag and Drop (SortableJS) ---
+        let sortableInstance = null;
+        function initializeSortable() {
+           if (sortableInstance) {
+               sortableInstance.option("disabled", localStorage.getItem('layoutDragEnabled') === 'false'); // Habilitar/deshabilitar según setting
+               return;
+            }
+           if (typeof Sortable !== 'undefined') {
+              sortableInstance = Sortable.create(dataListContainer, {
+                animation: 150,
+                handle: '.data-item',
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                disabled: localStorage.getItem('layoutDragEnabled') === 'false', // Estado inicial según setting
+                onEnd: function (evt) {
+                  if (dataListContainer.querySelector('.data-item[data-type="projects"]')) { // Solo para 'Active Runs'
+                      const newOrder = Array.from(dataListContainer.querySelectorAll('.data-item')).map(item => item.getAttribute('data-id'));
+                      localStorage.setItem('projectOrder', JSON.stringify(newOrder)); // Mantenemos key
+                      showNotification('Active Run sequence saved.', 'success');
+                      playSound(clickSound);
+                      vibrate(100);
+                      addAchievement('Interface Layout Optimized'); // Logro temático
+                  }
+                },
+              });
+           } else {
+               console.warn("SortableJS module not loaded.");
+           }
+        }
+        function disableSortable() {
+            if (sortableInstance) {
+                sortableInstance.option("disabled", true);
+            }
+        }
+
+        function loadProjectOrder() { // Carga orden para 'Active Runs'
+          const storedOrder = localStorage.getItem('projectOrder');
+          if (storedOrder && dataListContainer.querySelector('.data-item[data-type="projects"]')) {
+            try {
+                 const order = JSON.parse(storedOrder);
+                 const itemsMap = new Map();
+                 dataListContainer.querySelectorAll('.data-item[data-type="projects"]').forEach(item => {
+                     itemsMap.set(item.getAttribute('data-id'), item);
+                 });
+                 order.forEach(id => {
+                     const item = itemsMap.get(id);
+                     if (item) { dataListContainer.appendChild(item); itemsMap.delete(id); }
+                 });
+                 itemsMap.forEach(item => dataListContainer.appendChild(item));
+            } catch (e) {
+                console.error("Failed to parse or apply run sequence:", e);
+                localStorage.removeItem('projectOrder');
+                showNotification('Error loading run sequence, reset to default.', 'error');
+            }
+          }
+        }
+
+
+        // --- Gráficos (Chart.js) ---
+        let miniChartInstance = null;
+        let statsChartInstance = null;
+
+        function createMiniChart() { // Gráfico pequeño (Ej: Signal Strength)
+            const ctx = document.getElementById('miniChart')?.getContext('2d');
+            if (!ctx) return;
+            const gradient = ctx.createLinearGradient(0, 0, 0, 80);
+            gradient.addColorStop(0, `rgba(${getComputedStyle(document.documentElement).getPropertyValue('--primary-color-rgb')}, 0.6)`);
+            gradient.addColorStop(1, `rgba(${getComputedStyle(document.documentElement).getPropertyValue('--primary-color-rgb')}, 0.1)`);
+
+            const chartData = {
+                 labels: Array(20).fill(''),
+                 datasets: [{
+                     label: 'Signal Fluctuation', // Label actualizado
+                     data: Array.from({ length: 20 }, () => Math.random() * 80 + 10),
+                     borderColor: `rgba(${getComputedStyle(document.documentElement).getPropertyValue('--primary-color-rgb')}, 0.8)`,
+                     borderWidth: 2, pointRadius: 0, tension: 0.4, fill: true, backgroundColor: gradient,
+                 }]
+             };
+            if (miniChartInstance) miniChartInstance.destroy();
+            miniChartInstance = new Chart(ctx, {
+                type: 'line', data: chartData,
+                options: {
+                     responsive: true, maintainAspectRatio: false,
+                     animation: { duration: animationsEnabled ? 800 * window.animationSpeedFactor : 0 }, // Animación condicional
+                     scales: { x: { display: false }, y: { display: false, min: 0, max: 100 } },
+                     plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                 }
+            });
+            // No iniciar intervalo aquí, se controla globalmente si las animaciones están activas
+        }
+
+        function createStatsChart() { // Gráfico grande (Deck Performance)
+             const ctx = document.getElementById('statsChart')?.getContext('2d');
+             if (!ctx) return;
+             const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
+             const secondaryColor = getComputedStyle(document.documentElement).getPropertyValue('--secondary-color').trim();
+
+             const chartData = {
+                 labels: ['Core 1', 'Core 2', 'GPU', 'Network', 'Memory', 'I/O Bus'], // Labels actualizados
+                 datasets: [{
+                     label: 'Core Load (%)', // Label actualizado
+                     data: [65, 59, 80, 81, 56, 55],
+                     backgroundColor: `rgba(${getComputedStyle(document.documentElement).getPropertyValue('--primary-color-rgb')}, 0.4)`,
+                     borderColor: primaryColor, borderWidth: 1, barThickness: 20,
+                 }, {
+                     label: 'Thermal (°C)', // Label actualizado
+                     data: [45, 42, 60, 30, 50, 35],
+                     backgroundColor: `rgba(${getComputedStyle(document.documentElement).getPropertyValue('--secondary-color-rgb')}, 0.4)`,
+                     borderColor: secondaryColor, borderWidth: 1, type: 'line', tension: 0.3,
+                     pointBackgroundColor: secondaryColor, yAxisID: 'y-temp'
+                 }]
+             };
+             if (statsChartInstance) statsChartInstance.destroy();
+             statsChartInstance = new Chart(ctx, {
+                 type: 'bar', data: chartData,
+                 options: {
+                     responsive: true, maintainAspectRatio: false,
+                      animation: { duration: animationsEnabled ? 1000 * window.animationSpeedFactor : 0 }, // Animación condicional
+                     scales: {
+                         x: { ticks: { color: 'var(--text-muted-color)', font: { family: 'var(--font-secondary)' } }, grid: { color: 'rgba(var(--primary-color-rgb), 0.1)' } },
+                         y: { // Eje Carga
+                             beginAtZero: true, max: 100,
+                             ticks: { color: 'var(--text-muted-color)', font: { family: 'var(--font-secondary)' } },
+                             grid: { color: 'rgba(var(--primary-color-rgb), 0.1)' },
+                             title: { display: true, text: 'Load (%)', color: 'var(--primary-color)' }
+                         },
+                         'y-temp': { // Eje Temperatura
+                             beginAtZero: true, max: 100, position: 'right',
+                             ticks: { color: 'var(--text-muted-color)', font: { family: 'var(--font-secondary)' } },
+                             grid: { drawOnChartArea: false },
+                             title: { display: true, text: 'Thermal (°C)', color: 'var(--secondary-color)' }
+                         }
+                     },
+                     plugins: {
+                         legend: { labels: { color: 'var(--text-color)', font: { family: 'var(--font-main)' } } },
+                         tooltip: {
+                             backgroundColor: 'rgba(0,0,0,0.8)', titleFont: { family: 'var(--font-main)' }, bodyFont: { family: 'var(--font-secondary)' }
+                         }
+                     }
+                 }
+             });
+            // No iniciar intervalo aquí
+        }
+
+        // Intervalo para actualizar gráficos (si animaciones están activas)
+        let chartUpdateInterval = null;
+        function manageChartUpdates() {
+            if (animationsEnabled) {
+                if (!chartUpdateInterval) {
+                     chartUpdateInterval = setInterval(() => {
+                        if (miniChartInstance) {
+                             miniChartInstance.data.datasets[0].data.shift();
+                             miniChartInstance.data.datasets[0].data.push(Math.random() * 80 + 10);
+                             miniChartInstance.update('none');
+                        }
+                        if (statsChartInstance) {
+                             statsChartInstance.data.datasets.forEach(dataset => {
+                                 dataset.data = dataset.data.map(() => Math.random() * (dataset.label.includes('Thermal') ? 70 : 100));
+                             });
+                             statsChartInstance.update();
+                        }
+                    }, 2000 * window.animationSpeedFactor); // Intervalo un poco más largo
+                }
+            } else {
+                if (chartUpdateInterval) {
+                    clearInterval(chartUpdateInterval);
+                    chartUpdateInterval = null;
+                }
+                // Podrías poner los gráficos en un estado estático aquí si lo deseas
+            }
+        }
+
+
+        // --- Audio Visualizer ---
+        let audioCtx;
+        let analyser;
+        let sourceNode;
+        let visualizerRafId;
+        const audioVisualizerCanvas = document.getElementById('audioVisualizer');
+        const audioVisualizerCtx = audioVisualizerCanvas?.getContext('2d');
+
+        function setupAudioVisualizer() {
+             if (!audioVisualizerCtx || audioCtx) return;
+             try {
+                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                 analyser = audioCtx.createAnalyser();
+                 analyser.fftSize = 256;
+                 sourceNode = audioCtx.createMediaElementSource(audioPlayer);
+                 sourceNode.connect(analyser);
+                 analyser.connect(audioCtx.destination);
+             } catch (e) {
+                 console.error("Failed to initialize AudioContext/Analyser:", e);
+                 showNotification("Audio visualizer failed to initialize.", "error");
+                 return;
+             }
+        }
+
+        function drawAudioVisualizer() {
+             if (!analyser || !audioVisualizerCtx || !isPlaying || !animationsEnabled) {
+                 if (audioVisualizerCtx) { // Limpiar si no se dibuja
+                      audioVisualizerCtx.fillStyle = 'rgba(0,0,0,0.3)';
+                      audioVisualizerCtx.fillRect(0, 0, audioVisualizerCanvas.width, audioVisualizerCanvas.height);
+                 }
+                 if(visualizerRafId) cancelAnimationFrame(visualizerRafId);
+                 visualizerRafId = null;
+                 return;
+             }
+             visualizerRafId = requestAnimationFrame(drawAudioVisualizer);
+
+             const bufferLength = analyser.frequencyBinCount;
+             const dataArray = new Uint8Array(bufferLength);
+             analyser.getByteFrequencyData(dataArray);
+
+             audioVisualizerCtx.fillStyle = 'rgba(0,0,0,0.3)';
+             audioVisualizerCtx.fillRect(0, 0, audioVisualizerCanvas.width, audioVisualizerCanvas.height);
+
+             const barWidth = (audioVisualizerCanvas.width / bufferLength) * 1.5;
+             let x = 0;
+             const barHeightMultiplier = audioVisualizerCanvas.height / 128;
+             const primaryColorRgb = getComputedStyle(document.documentElement).getPropertyValue('--primary-color-rgb');
+             const secondaryColorRgb = getComputedStyle(document.documentElement).getPropertyValue('--secondary-color-rgb');
+
+             for (let i = 0; i < bufferLength; i++) {
+                 const barHeight = dataArray[i] * barHeightMultiplier;
+                 const intensity = dataArray[i] / 255;
+                 const r = Math.floor(parseInt(secondaryColorRgb.split(',')[0]) * (1 - intensity) + parseInt(primaryColorRgb.split(',')[0]) * intensity);
+                 const g = Math.floor(parseInt(secondaryColorRgb.split(',')[1]) * (1 - intensity) + parseInt(primaryColorRgb.split(',')[1]) * intensity);
+                 const b = Math.floor(parseInt(secondaryColorRgb.split(',')[2]) * (1 - intensity) + parseInt(primaryColorRgb.split(',')[2]) * intensity);
+                 audioVisualizerCtx.fillStyle = `rgb(${r},${g},${b})`;
+                 audioVisualizerCtx.fillRect(x, audioVisualizerCanvas.height - barHeight, barWidth, barHeight);
+                 x += barWidth + 1;
+             }
+         }
+
+        // --- Sistema de Logros (Netrunner Milestones) ---
+        let achievements = JSON.parse(localStorage.getItem('achievements')) || [];
+        const achievementChecks = { fileAccessCount: 0 }; // Contador temático
+
+        function checkAndAddAchievement(key) {
+            let unlocked = false;
+            let title = '';
+            // Mapeo de claves internas a títulos temáticos
+            const achievementMap = {
+                'First Connection': { title: 'First Connection', condition: () => !achievements.includes('First Connection') },
+                'UI Matrix Reconfigured': { title: 'UI Matrix Reconfigured', condition: () => !achievements.includes('UI Matrix Reconfigured') },
+                'File System Scan': { title: 'File System Scan', condition: () => { achievementChecks.fileAccessCount++; return achievementChecks.fileAccessCount >= 5 && !achievements.includes('File System Scan'); } },
+                'Interface Layout Optimized': { title: 'Interface Layout Optimized', condition: () => !achievements.includes('Interface Layout Optimized') },
+                // Añadir más aquí
+            };
+
+            if (achievementMap[key] && achievementMap[key].condition()) {
+                unlocked = true;
+                title = achievementMap[key].title;
+            }
+
+            if (unlocked && title) {
+                addAchievement(title);
+            }
+        }
+
+        function addAchievement(title) {
+          if (!achievements.includes(title)) {
+            achievements.push(title);
+            localStorage.setItem('achievements', JSON.stringify(achievements));
+            updateAchievementsModal();
+            showNotification(`Milestone Reached: ${title}`, 'success'); // Notificación temática
+            vibrate([100, 50, 100]);
+          }
+        }
+        function updateAchievementsModal() {
+          const list = document.getElementById('achievementsList');
+          if (!list) return;
+          list.innerHTML = '';
+          if (achievements.length === 0) {
+              list.innerHTML = '<li>No milestones achieved yet. Keep running.</li>'; // Texto temático
+              return;
+          }
+          // Mostrar logros temáticos
+          const milestoneDetails = { // Descripciones opcionales para el modal
+               'First Connection': 'Cyberdeck OS successfully booted and neural link established.',
+               'UI Matrix Reconfigured': 'Customized the visual interface matrix via Deck Settings.',
+               'File System Scan': 'Accessed multiple files and processes within the Cyberdeck OS.',
+               'Interface Layout Optimized': 'Reordered the Active Runs sequence for optimal workflow.'
+          };
+          achievements.forEach(achTitle => {
+            const li = document.createElement('li');
+            li.style.cssText = `padding: 8px 5px; border-bottom: 1px dashed rgba(var(--primary-color-rgb), 0.2); font-size: 0.9rem; color: var(--text-muted-color);`;
+            li.innerHTML = `<i class="fas fa-trophy" style="color: var(--accent-color); margin-right: 8px;"></i><strong>${achTitle}</strong><br><span style="font-size: 0.85em; padding-left: 25px;">${milestoneDetails[achTitle] || 'Details classified.'}</span>`;
+            list.appendChild(li);
           });
-          dataList.appendChild(div);
+        }
+
+
+        // --- Inicialización de Componentes y Event Listeners ---
+
+        // Cargar estado inicial de checkboxes de configuración
+        function loadSettings() {
+             document.getElementById('toggleAnimations').checked = animationsEnabled;
+             document.getElementById('toggleSoundNotifications').checked = soundNotificationsEnabled;
+             document.getElementById('toggleVibration').checked = vibrationEnabled;
+             document.getElementById('toggleHighContrast').checked = document.body.classList.contains('high-contrast');
+             document.getElementById('toggleLayout').checked = localStorage.getItem('layoutDragEnabled') !== 'false';
+             document.getElementById('animationSpeed').value = window.animationSpeedFactor;
+             document.getElementById('animationSpeedValue').textContent = window.animationSpeedFactor.toFixed(1) + 'x';
+             document.documentElement.style.setProperty('--animation-speed', `${window.animationSpeedFactor}s`);
+             volumeRange.value = localStorage.getItem('volume') || 0.8; // Cargar volumen
+             setVolume(); // Aplicar volumen inicial y estilo de barra
+             manageChartUpdates(); // Iniciar/detener actualizaciones de gráficos según estado
+        }
+
+        // Guardar estado de configuración
+        function saveSettings() {
+            localStorage.setItem('soundNotificationsEnabled', soundNotificationsEnabled);
+            localStorage.setItem('vibrationEnabled', vibrationEnabled);
+            localStorage.setItem('animationsEnabled', animationsEnabled);
+            localStorage.setItem('highContrast', document.body.classList.contains('high-contrast') ? 'true' : 'false'); // Guardar como string 'true'/'false'
+            localStorage.setItem('layoutDragEnabled', document.getElementById('toggleLayout').checked ? 'true' : 'false'); // Guardar como string
+            localStorage.setItem('animationSpeedFactor', window.animationSpeedFactor);
+            localStorage.setItem('volume', volumeRange.value);
+        }
+
+        // Cargar Tema Guardado
+        function loadTheme() {
+             const primary = localStorage.getItem('themePrimaryColor') || '#00f0ff';
+             const secondary = localStorage.getItem('themeSecondaryColor') || '#ff00ff';
+             const accent = localStorage.getItem('themeAccentColor') || '#f7ff00';
+             const highContrast = localStorage.getItem('highContrast') === 'true'; // Comprobar string
+
+             document.documentElement.style.setProperty('--primary-color', primary);
+             document.documentElement.style.setProperty('--secondary-color', secondary);
+             document.documentElement.style.setProperty('--accent-color', accent);
+             document.getElementById('primaryColorPicker').value = primary;
+             document.getElementById('secondaryColorPicker').value = secondary;
+             document.getElementById('accentColorPicker').value = accent;
+             const hexToRgb = hex => {
+                 const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                 return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '0, 0, 0'; // Fallback seguro
+             };
+             document.documentElement.style.setProperty('--primary-color-rgb', hexToRgb(primary));
+             document.documentElement.style.setProperty('--secondary-color-rgb', hexToRgb(secondary));
+             document.documentElement.style.setProperty('--accent-color-rgb', hexToRgb(accent));
+
+             if (highContrast) {
+                 document.body.classList.add('high-contrast');
+                 document.getElementById('toggleHighContrast').checked = true;
+             } else {
+                 document.body.classList.remove('high-contrast');
+                 document.getElementById('toggleHighContrast').checked = false;
+             }
+
+
+             // Reinicializar gráficos
+             createMiniChart();
+             createStatsChart();
+             manageChartUpdates(); // Asegurarse de que el intervalo de actualización se ajuste
+        }
+
+        // Inicializar Filtro Avanzado (Panel Izquierdo)
+        document.querySelectorAll('.advanced-filter-nav .filter-option').forEach(option => {
+          option.addEventListener('click', function() {
+            playSound(clickSound); vibrate();
+            document.querySelectorAll('.advanced-filter-nav .filter-option').forEach(el => el.classList.remove('active'));
+            this.classList.add('active');
+            const filter = this.getAttribute('data-filter');
+            renderDataList(filter);
+            // Limpiar selección y panel central/derecho
+            detailTitle.textContent = 'Select File/Process...'; // Texto por defecto temático
+            detailSubtitle.textContent = 'File/Process details incoming...'; // Texto por defecto temático
+            detailDescription.innerHTML = 'Select an entry from the file explorer... Stay sharp, Netrunner.'; // Texto por defecto temático
+            rightPanelImage.src = 'src/img/placeholder-dark.png';
+            rightPanelTitle.textContent = 'System Idle'; // Texto por defecto temático
+            activeList = filter;
+            currentProgramIndex = -1;
+          });
         });
-      }
-    }
-    
-    // Renderizar inicialmente la categoría "projects"
-    renderDataList('projects');
-    
-    // Manejo de la selección del filtro avanzado
-    document.querySelectorAll('.advanced-filter-nav .filter-option').forEach(option => {
-      option.addEventListener('click', function() {
-        document.querySelectorAll('.advanced-filter-nav .filter-option').forEach(el => el.classList.remove('active'));
-        this.classList.add('active');
-        const filter = this.getAttribute('data-filter');
-        renderDataList(filter);
-        // Limpiar el panel central para nueva selección
-        document.getElementById('detailTitle').textContent = '';
-        document.getElementById('detailSubtitle').textContent = '';
-        document.getElementById('detailDescription').innerHTML = '';
-      });
-    });
-    
-    // Mini Chart Animation
-    const miniChartCanvas = document.getElementById('miniChart');
-    const miniChartCtx = miniChartCanvas.getContext('2d');
-    let waveOffset = 0;
-    window.animationSpeedFactor = 1;
-    function drawMiniChart(){
-      miniChartCtx.clearRect(0, 0, miniChartCanvas.width, miniChartCanvas.height);
-      miniChartCtx.strokeStyle = '#ff0040';
-      miniChartCtx.lineWidth = 2;
-      miniChartCtx.beginPath();
-      for(let x = 0; x < miniChartCanvas.width; x++){
-        const y = Math.sin((x + waveOffset) * 0.05) * 20 + (miniChartCanvas.height / 2);
-        if(x === 0) { miniChartCtx.moveTo(x, y); }
-        else { miniChartCtx.lineTo(x, y); }
-      }
-      miniChartCtx.stroke();
-      waveOffset += 2 * window.animationSpeedFactor;
-      requestAnimationFrame(drawMiniChart);
-    }
-    drawMiniChart();
-    
-    // Audio Visualizer
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const analyser = audioCtx.createAnalyser();
-    const source = audioCtx.createMediaElementSource(audioPlayer);
-    source.connect(analyser);
-    analyser.connect(audioCtx.destination);
-    analyser.fftSize = 256;
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-    const audioVisualizerCanvas = document.getElementById('audioVisualizer');
-    const audioVisualizerCtx = audioVisualizerCanvas.getContext('2d');
-    function drawAudioVisualizer() {
-      requestAnimationFrame(drawAudioVisualizer);
-      analyser.getByteFrequencyData(dataArray);
-      audioVisualizerCtx.fillStyle = '#1a1a1a';
-      audioVisualizerCtx.fillRect(0, 0, audioVisualizerCanvas.width, audioVisualizerCanvas.height);
-      const barWidth = (audioVisualizerCanvas.width / bufferLength) * 2.5;
-      let x = 0;
-      for(let i = 0; i < bufferLength; i++) {
-        let barHeight = dataArray[i];
-        audioVisualizerCtx.fillStyle = `rgb(${barHeight + 100},50,50)`;
-        audioVisualizerCtx.fillRect(x, audioVisualizerCanvas.height - barHeight / 2, barWidth, barHeight / 2);
-        x += barWidth + 1;
-      }
-    }
-    audioPlayer.addEventListener('play', () => {
-      audioCtx.resume().then(() => { drawAudioVisualizer(); });
-    });
-    
-    // Responsive Navigation
-    const navToggle = document.getElementById('navToggle');
-    const topNav = document.getElementById('topNav');
-    navToggle.addEventListener('click', (e) => {
-      e.stopPropagation();
-      topNav.classList.toggle('active');
-    });
-    document.addEventListener('click', (e) => {
-      if (!topNav.contains(e.target) && !navToggle.contains(e.target)) {
-        topNav.classList.remove('active');
-      }
-    });
-    
-    // Drag-and-Drop (SortableJS) en el panel izquierdo
-    function importSortable() {
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js';
-      script.onload = () => { initializeSortable(); };
-      document.head.appendChild(script);
-    }
-    function initializeSortable() {
-      Sortable.create(document.getElementById('projectList'), {
-        animation: 150,
-        onEnd: function (evt) {
-          const newOrder = Array.from(document.querySelectorAll('.project-item')).map(item => item.getAttribute('data-id'));
-          localStorage.setItem('projectOrder', JSON.stringify(newOrder));
-          showNotification('Orden de proyectos actualizado');
-          playClickSound();
-          playNotificationSound();
-          addAchievement('Orden de proyectos actualizado');
-        },
-      });
-      loadProjectOrder();
-    }
-    function loadProjectOrder() {
-      const storedOrder = localStorage.getItem('projectOrder');
-      if (storedOrder) {
-        const order = JSON.parse(storedOrder);
-        const projectList = document.getElementById('projectList');
-        order.forEach(pid => {
-          const item = document.querySelector(`.project-item[data-id="${pid}"]`);
-          if (item) { projectList.appendChild(item); }
+
+        // Inicializar Pestañas (Panel Derecho)
+        const filterItems = document.querySelectorAll('.filter-dropdown .filter-item');
+        const tabContents = document.querySelectorAll('.right-panel .tab-content');
+        filterItems.forEach(item => {
+          item.addEventListener('click', () => {
+            playSound(clickSound); vibrate();
+            const targetTabId = item.getAttribute('data-tab');
+            tabContents.forEach(content => content.classList.remove('active'));
+            filterItems.forEach(i => i.classList.remove('active'));
+            const targetTab = document.getElementById(targetTabId);
+            if (targetTab) targetTab.classList.add('active');
+            item.classList.add('active');
+            if (targetTabId === 'tab-stats' && statsChartInstance) {
+               statsChartInstance.resize();
+            }
+          });
         });
-      }
-    }
-    importSortable();
-    
-    // Manejo del Filtro Desplegable en el Panel Derecho
-    const filterItems = document.querySelectorAll('.filter-item');
-    const tabContents = document.querySelectorAll('.tab-content');
-    filterItems.forEach(item => {
-      item.addEventListener('click', () => {
-        const targetTab = item.getAttribute('data-tab');
-        tabContents.forEach(content => content.classList.remove('active'));
-        document.getElementById(targetTab).classList.add('active');
-      });
-    });
-    
-    // Búsqueda en el Panel Izquierdo
-    const searchInput = document.getElementById('searchInput');
-    searchInput.addEventListener('input', () => {
-      const filter = searchInput.value.toLowerCase();
-      const projectItems = document.querySelectorAll('.project-item');
-      const missionItems = document.querySelectorAll('.mission-item');
-      projectItems.forEach(item => {
-        const text = item.textContent.toLowerCase();
-        item.style.display = text.includes(filter) ? 'flex' : 'none';
-      });
-      missionItems.forEach(item => {
-        const text = item.textContent.toLowerCase();
-        item.style.display = text.includes(filter) ? 'flex' : 'none';
-      });
-    });
-    
-    // Chat en Tiempo Real con Socket.IO
-    const socket = io('https://tu-servidor.herokuapp.com');
-    const chatInput = document.getElementById('chatInput');
-    const chatSend = document.getElementById('chatSend');
-    const chatWindow = document.getElementById('chatWindow');
-    chatSend.addEventListener('click', sendMessage);
-    chatInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') { sendMessage(); }
-    });
-    function sendMessage() {
-      const message = chatInput.value.trim();
-      if (message !== "") {
-        socket.emit('chat message', message);
-        chatInput.value = "";
-      }
-    }
-    socket.on('chat message', (msg) => {
-      const p = document.createElement('p');
-      p.textContent = msg;
-      chatWindow.appendChild(p);
-      chatWindow.scrollTop = chatWindow.scrollHeight;
-    });
-    
-    // Placeholder para el gráfico en la pestaña Estadísticas
-    const statsChart = document.getElementById('statsChart').getContext('2d');
-    // Aquí se puede integrar Chart.js o D3.js para gráficos interactivos.
+
+        // Búsqueda Panel Izquierdo
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('input', () => {
+          const filter = searchInput.value.toLowerCase().trim();
+          let visibleCount = 0;
+          document.querySelectorAll('.data-item, .mission-item').forEach(item => {
+            const text = item.textContent.toLowerCase();
+            const match = text.includes(filter);
+            item.style.display = match ? 'flex' : 'none';
+            if(match) visibleCount++;
+          });
+          // Podrías añadir un mensaje si no hay resultados
+          // const noResultsMessage = dataListContainer.querySelector('.no-results'); // (necesitarías añadir este elemento si quieres usarlo)
+          // if(noResultsMessage) noResultsMessage.style.display = visibleCount === 0 ? 'block' : 'none';
+        });
+
+        // --- Event Listeners Adicionales ---
+
+        // MP3 Player Controls
+        playBtn.addEventListener('click', togglePlay);
+        nextBtn.addEventListener('click', nextTrack);
+        prevBtn.addEventListener('click', prevTrack);
+        audioPlayer.addEventListener('timeupdate', updateProgress);
+        audioPlayer.addEventListener('loadedmetadata', updateProgress);
+        audioPlayer.addEventListener('ended', nextTrack);
+        audioPlayer.addEventListener('play', () => { isPlaying = true; playBtn.innerHTML = '<i class="fas fa-pause"></i>'; setupAudioVisualizer(); drawAudioVisualizer(); });
+        audioPlayer.addEventListener('pause', () => { isPlaying = false; playBtn.innerHTML = '<i class="fas fa-play"></i>'; drawAudioVisualizer(); });
+        mp3Progress.addEventListener('click', seek);
+        volumeRange.addEventListener('input', setVolume);
+        volumeRange.addEventListener('change', saveSettings); // Guardar volumen al soltar
+
+
+        // Navegación Responsiva Móvil
+        const navToggle = document.getElementById('navToggle');
+        const topNav = document.getElementById('topNav');
+        navToggle.addEventListener('click', (e) => {
+          e.stopPropagation();
+          topNav.classList.toggle('mobile-active');
+          playSound(clickSound); vibrate();
+        });
+        document.addEventListener('click', (e) => {
+          if (topNav.classList.contains('mobile-active') && !topNav.contains(e.target) && !navToggle.contains(e.target)) {
+            topNav.classList.remove('mobile-active');
+          }
+        });
+
+        // Tutorial
+        const tutorialOverlay = document.getElementById('tutorialOverlay');
+        if (localStorage.getItem('tutorialShown') !== 'true') {
+             tutorialOverlay.style.display = 'flex';
+             void tutorialOverlay.offsetWidth;
+             tutorialOverlay.classList.add('active');
+        }
+        document.getElementById('closeTutorialBtn').addEventListener('click', () => {
+             tutorialOverlay.classList.remove('active');
+             setTimeout(() => tutorialOverlay.style.display = 'none', 500);
+             localStorage.setItem('tutorialShown', 'true');
+             playSound(clickSound); vibrate();
+             checkAndAddAchievement('First Connection');
+        });
+
+        // Modal de Tema
+        const themeModal = document.getElementById('themeModal');
+        const themeToggleBtn = document.getElementById('themeToggle');
+        themeToggleBtn.addEventListener('click', () => {
+             themeModal.style.display = 'block';
+             playSound(clickSound); vibrate();
+        });
+        document.getElementById('closeThemeModalBtn').addEventListener('click', () => {
+             const primary = document.getElementById('primaryColorPicker').value;
+             const secondary = document.getElementById('secondaryColorPicker').value;
+             const accent = document.getElementById('accentColorPicker').value;
+             // Guardar colores antes de aplicar el tema
+             localStorage.setItem('themePrimaryColor', primary);
+             localStorage.setItem('themeSecondaryColor', secondary);
+             localStorage.setItem('themeAccentColor', accent);
+             loadTheme(); // Llama a loadTheme para aplicar y recalcular todo
+             themeModal.style.display = 'none';
+             showNotification('UI Matrix reconfigured successfully!', 'success');
+             playSound(clickSound); vibrate();
+             checkAndAddAchievement('UI Matrix Reconfigured');
+        });
+
+        // Configuración Avanzada (Listeners para checkboxes y sliders)
+        document.getElementById('toggleAnimations').addEventListener('change', function() { animationsEnabled = this.checked; saveSettings(); manageChartUpdates(); if(animationsEnabled) drawAudioVisualizer(); }); // Controlar gráficos y visualizador
+        document.getElementById('toggleSoundNotifications').addEventListener('change', function() { soundNotificationsEnabled = this.checked; saveSettings(); });
+        document.getElementById('toggleVibration').addEventListener('change', function() { vibrationEnabled = this.checked; saveSettings(); });
+        document.getElementById('toggleHighContrast').addEventListener('change', function() { localStorage.setItem('highContrast', this.checked ? 'true' : 'false'); loadTheme(); saveSettings(); }); // Usar loadTheme para aplicar y guardar
+        document.getElementById('toggleLayout').addEventListener('change', function() { const enabled = this.checked; if(sortableInstance) sortableInstance.option("disabled", !enabled); localStorage.setItem('layoutDragEnabled', enabled ? 'true' : 'false'); saveSettings(); });
+        document.getElementById('animationSpeed').addEventListener('input', function() {
+            window.animationSpeedFactor = parseFloat(this.value);
+            document.getElementById('animationSpeedValue').textContent = window.animationSpeedFactor.toFixed(1) + 'x';
+            document.documentElement.style.setProperty('--animation-speed', `${window.animationSpeedFactor}s`);
+            // Reiniciar intervalo de gráficos con nueva velocidad si está activo
+            if(chartUpdateInterval) {
+                 clearInterval(chartUpdateInterval);
+                 chartUpdateInterval = null; // Forzar reinicio en manageChartUpdates
+                 manageChartUpdates();
+            }
+        });
+         document.getElementById('animationSpeed').addEventListener('change', saveSettings);
+
+
+        // Pantalla Completa
+        const fullscreenBtn = document.getElementById('fullscreenToggle');
+        fullscreenBtn.addEventListener('click', () => {
+            playSound(clickSound); vibrate();
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => showNotification(`Full Immersion Error: ${err.message}`, 'error'));
+                fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                    fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+                }
+            }
+        });
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) { fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>'; }
+            else { fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>'; }
+        });
+
+        // Parallax Video Fondo
+        document.addEventListener('mousemove', (e) => {
+            if(animationsEnabled) {
+                const video = document.getElementById('bgVideo');
+                if(!video) return; // Salir si el video no existe
+                const x = (e.clientX / window.innerWidth - 0.5) * 25;
+                const y = (e.clientY / window.innerHeight - 0.5) * 15;
+                // Asegurarse que el translate -50%, -50% esté presente
+                video.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px) scale(1.05)`;
+                video.classList.add('parallax');
+            } else {
+                // Resetear parallax si animaciones están desactivadas
+                const video = document.getElementById('bgVideo');
+                 if(!video) return;
+                video.style.transform = `translate(-50%, -50%) scale(1.0)`; // Solo centrado
+                video.classList.remove('parallax');
+            }
+        });
+
+        // Configuración Inicial Chat y Log temático
+        function initializeThematicElements() {
+             // Chat inicial
+            const chatWindow = document.getElementById('chatWindow');
+            if(chatWindow) {
+                chatWindow.innerHTML = `<p><strong style="color: var(--primary-color);">SYS_AI:</strong> Secure channel established. Awaiting transmission...</p>
+                                       <p><span style="color:var(--text-muted-color); font-style:italic;">Tip: Use /help for available commands.</span></p>`;
+            }
+             // Log inicial
+             const historyList = document.getElementById('historyList');
+             if(historyList) {
+                 historyList.innerHTML = `<li><span style="color: var(--primary-color);">[SYS]</span> Cyberdeck OS boot sequence complete. v2.1</li>
+                                         <li><span style="color: var(--secondary-color);">[SEC]</span> Firewall status: ACTIVE - Profile 'Stealth'.</li>
+                                         <li><span style="color: var(--accent-color);">[NET]</span> Warning: Unidentified signal ping detected on port 77.</li>`;
+             }
+             // Integraciones iniciales
+             const integrationsList = document.getElementById('integrationsList');
+             if(integrationsList) {
+                  integrationsList.innerHTML = `<li><strong><i class="fas fa-rss"></i> Datahaven Feed:</strong> New exploit signature available - 'Wraith v3'.</li>
+                                              <li><strong><i class="fab fa-twitter"></i> ShadowNet Pulse:</strong> #NightCityOps trends: Arasaka tower lockdown rumors.</li>
+                                              <li><strong><i class="fas fa-satellite-dish"></i> Deep Grid Intel:</strong> Encrypted data packet intercepted - ICE encryption detected. Requires 'KeyMaster' utility.</li>`;
+             }
+        }
+
+
+        // tsParticles Config
+        tsParticles.load("tsparticles", {
+            fpsLimit: 60,
+            particles: {
+                number: { value: 60, density: { enable: true, value_area: 800 } },
+                color: { value: ["#00f0ff", "#ff00ff", "#f7ff00"] },
+                shape: { type: ["circle", "triangle"] },
+                opacity: { value: {min: 0.1, max: 0.6}, animation: { enable: true, speed: 0.5, minimumValue: 0.1, sync: false } }, // Desactivar sync para más aleatoriedad
+                size: { value: {min: 1, max: 3}, animation: { enable: true, speed: 2, minimumValue: 1, sync: false } },
+                links: { color: "#ffffff", distance: 120, enable: true, opacity: 0.2, width: 1 },
+                move: {
+                    enable: true, speed: 1.5, direction: "none", random: true, straight: false,
+                    outModes: { // Usar outModes en plural
+                        default: "out" // Salen de la pantalla
+                    },
+                    attract: { enable: false }
+                }
+            },
+            interactivity: {
+                detect_on: "canvas",
+                events: {
+                    onhover: { enable: true, mode: "repulse" },
+                    onclick: { enable: true, mode: "push" },
+                    resize: true
+                },
+                modes: {
+                    repulse: { distance: 100, duration: 0.4 },
+                    push: { quantity: 4 } // Usar quantity en vez de particles_nb
+                }
+            },
+            detectRetina: true
+        });
+
+
+        // --- INICIALIZACIÓN FINAL ---
+        loadTheme(); // Cargar tema ANTES de configuraciones que dependen de él
+        loadSettings(); // Cargar configuración (incluye estado de animaciones, volumen, etc.)
+        initializeThematicElements(); // Cargar textos iniciales temáticos
+        renderDataList('projects'); // Renderizar lista inicial ('Active Runs')
+        initializeMissions(); // Renderizar subrutinas
+        loadTrack(currentTrack); // Cargar primera pista
+        updateAchievementsModal(); // Mostrar logros iniciales
+
+        setTimeout(() => {
+            loadingOverlay.classList.add('hidden');
+        }, 500);
+
+    }); // Fin de DOMContentLoaded
+
   </script>
-  
-  <!-- Parallax para el Video de Fondo -->
-  <script>
-    document.addEventListener('mousemove', (e) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 20;
-      const y = (e.clientY / window.innerHeight - 0.5) * 20;
-      document.getElementById('bgVideo').style.transform = `translate(${x}px, ${y}px)`;
-    });
-  </script>
+
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
