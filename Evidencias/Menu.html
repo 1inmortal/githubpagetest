@@ -161,14 +161,22 @@
   <!-- FONDO Y PARTÍCULAS -->
   <div class="particles" id="tsparticles"></div>
 
-  <!-- AUDIOS -->
-  <audio id="audio-hover" src="Audio/hover.mp3" preload="auto"></audio>
+  <!-- ===================== AUDIOS ===================== -->
+  <!-- Sonido de pasar el mouse sobre elementos interactivos -->
+  <audio id="audio-hover" src="Audio/Sound-mp3/click 2.mp3" preload="auto"></audio>
+  <!-- Sonido general de click en botones/links -->
   <audio id="audio-click" src="Audio/Sound-mp3/Sound.mp3" preload="auto"></audio>
+  <!-- Música de fondo ambiental (en loop) -->
   <audio id="background-audio" loop><source src="Audio/Stardust_ Relaxing Ambient Sci Fi Music.mp3" type="audio/mpeg"></audio>
-  <audio id="audio-loader" src="Audio/loader.mp3" preload="auto"></audio>
+  <!-- Sonido al finalizar la secuencia de carga/boot -->
+  <audio id="audio-loader" src="Audio/aviso.mp3" preload="auto"></audio>
+  <!-- Sonido para las notificaciones emergentes -->
   <audio id="audio-notification" src="Audio/ui-notification.wav" preload="auto"></audio>
-  <audio id="terminal-boot-sound" src="Audio/terminal-boot.mp3" preload="auto"></audio> <!-- Ajustar ruta -->
-  <audio id="terminal-keypress-sound" src="Audio/terminal-keypress.wav" preload="auto"></audio> <!-- Ajustar ruta -->
+  <!-- Sonido inicial de la secuencia de boot de la terminal -->
+  <audio id="terminal-boot-sound" src="Audio/Sound-mp3/terminal.mp3" preload="auto"></audio> <!-- Asegúrate que la ruta sea correcta -->
+  <!-- Sonido de "tecleo" para cada línea que aparece en la terminal -->
+  <audio id="terminal-keypress-sound" src="Audio/Sound-mp3/click.mp3" preload="auto"></audio> <!-- Asegúrate que la ruta sea correcta -->
+  <!-- ================================================== -->
 
 
   <!-- NAVEGACIÓN SUPERIOR -->
@@ -279,20 +287,63 @@
 
         // --- DOM & Global Vars ---
         const d=document; const bodyElement=d.body; const headerNav=d.getElementById('headerNav'); const hamburgerBtn=d.getElementById('hamburgerBtn'); const filterOverlay=d.getElementById('filterOverlay'); const filterLinks=d.querySelectorAll('.filter-link'); const particlesDiv=d.getElementById('tsparticles'); const preferencesPanel=d.getElementById('preferencesPanel'); const preferencesToggleBtn=d.getElementById('preferencesToggleBtn'); const notificationContainer=d.getElementById('notificationContainer'); const themeToggleMenu=d.getElementById('themeToggleMenu'); const introDescription=d.getElementById('introDescription'); const introLinesElements=[d.getElementById('introLine1'),d.getElementById('introLine2'),d.getElementById('introLine3')]; const scrollProgressBar=d.getElementById('scrollProgressBar'); const loaderOverlay=d.getElementById('loaderOverlay'); const terminalOutput=d.getElementById('terminalOutput'); const easterEggMsg=d.getElementById('easterEggMsg');
-        // Audios
-        const audioHover=d.getElementById('audio-hover'); const audioClick=d.getElementById('audio-click'); const backgroundAudio=d.getElementById('background-audio'); const audioLoader=d.getElementById('audio-loader'); const audioNotify=d.getElementById('audio-notification'); const terminalBootSound=d.getElementById('terminal-boot-sound'); const terminalKeySound=d.getElementById('terminal-keypress-sound');
+
+        // ===> REFERENCIAS A ELEMENTOS DE AUDIO <===
+        const audioHover = d.getElementById('audio-hover');                 // Sonido hover
+        const audioClick = d.getElementById('audio-click');                 // Sonido click general
+        const backgroundAudio = d.getElementById('background-audio');       // Música de fondo
+        const audioLoader = d.getElementById('audio-loader');               // Sonido fin de carga
+        const audioNotify = d.getElementById('audio-notification');         // Sonido notificación
+        const terminalBootSound = d.getElementById('terminal-boot-sound');  // Sonido inicio boot
+        const terminalKeySound = d.getElementById('terminal-keypress-sound'); // Sonido tecleo terminal
+        // ============================================
+
         // Pref Toggles
         const pT=d.getElementById('particlesToggle'); const sT=d.getElementById('scanlinesToggle'); const SndT=d.getElementById('soundsToggle'); const aT=d.getElementById('animationsToggle');
         // State
         let cT=localStorage.getItem('theme')||'dark'; let sE=localStorage.getItem('soundEnabled')!=='false'; let scE=localStorage.getItem('scanlinesEnabled')!=='false'; let pE=localStorage.getItem('particlesEnabled')!=='false'; let aE=localStorage.getItem('animationsEnabled')!=='false'; let eC=0; window.animationSpeedFactor=parseFloat(localStorage.getItem('animationSpeedFactor'))||0.8;
 
         // --- UTILS ---
-        function playSound(aE,vol=1.0){if(!sE||!aE||typeof aE.play!=='function')return;aE.volume=vol;if(aE.readyState>=3){aE.currentTime=0;aE.play().catch(e=>console.warn("Audio!",e.message));}else{const h=()=>{aE.currentTime=0;aE.play().catch(e=>console.warn("Audio!(canplay)",e.message));};aE.addEventListener('canplaythrough',h,{once:true});}}
-        function showNotification(m,t='info'){playSound(audioNotify);const iC={info:'fas fa-info-circle',success:'fas fa-check-circle',warn:'fas fa-exclamation-triangle',error:'fas fa-times-circle'}[t]||'fas fa-bell';const c={info:'var(--primary-color)',success:'var(--success-color)',warn:'var(--warning-color)',error:'var(--danger-color)'}[t]||'var(--primary-color)';const p={info:'[SYS]',success:'[OK]',warn:'[WARN]',error:'[ERR]'}[t]||'[SYS]';if(!notificationContainer){return;}const n=d.createElement('div');n.className=`cyber-notification ${t}`;n.style.borderLeftColor=c;n.innerHTML=`<i class="${iC}" style="color:${c};font-size:1.2em;"></i><span><strong style="color:${c};margin-right:5px;">${p}</strong> ${m}</span>`;notificationContainer.insertBefore(n,notificationContainer.firstChild);void n.offsetWidth;n.classList.add('visible');const rm=()=>{n.classList.remove('visible');n.addEventListener('transitionend',()=>n.remove(),{once:true});};n.addEventListener('click',rm);setTimeout(rm,5000);}
+        // Función para reproducir sonidos, respetando la configuración del usuario
+        function playSound(audioElement, vol = 1.0) {
+          // Si el sonido está desactivado globalmente (sE = soundEnabled), o el elemento no es válido, no hacer nada.
+          if (!sE || !audioElement || typeof audioElement.play !== 'function') return;
+          audioElement.volume = vol; // Ajustar volumen
+          // Verificar si el audio está listo para reproducir
+          if (audioElement.readyState >= 3) { // HAVE_FUTURE_DATA or HAVE_ENOUGH_DATA
+            audioElement.currentTime = 0; // Reiniciar al principio por si se llama rápidamente
+            audioElement.play().catch(e => console.warn("Error al reproducir audio:", e.message));
+          } else {
+            // Si no está listo, esperar al evento 'canplaythrough'
+            const canPlayHandler = () => {
+              audioElement.currentTime = 0;
+              audioElement.play().catch(e => console.warn("Error al reproducir audio (después de canplaythrough):", e.message));
+            };
+            audioElement.addEventListener('canplaythrough', canPlayHandler, { once: true });
+          }
+        }
+
+        // Función para mostrar notificaciones estilizadas
+        function showNotification(m, t = 'info') {
+          playSound(audioNotify); // <--- Reproducir sonido de notificación aquí
+          const iC = { info: 'fas fa-info-circle', success: 'fas fa-check-circle', warn: 'fas fa-exclamation-triangle', error: 'fas fa-times-circle' }[t] || 'fas fa-bell';
+          const c = { info: 'var(--primary-color)', success: 'var(--success-color)', warn: 'var(--warning-color)', error: 'var(--danger-color)' }[t] || 'var(--primary-color)';
+          const p = { info: '[SYS]', success: '[OK]', warn: '[WARN]', error: '[ERR]' }[t] || '[SYS]';
+          if (!notificationContainer) { return; }
+          const n = d.createElement('div'); n.className = `cyber-notification ${t}`; n.style.borderLeftColor = c;
+          n.innerHTML = `<i class="${iC}" style="color:${c};font-size:1.2em;"></i><span><strong style="color:${c};margin-right:5px;">${p}</strong> ${m}</span>`;
+          notificationContainer.insertBefore(n, notificationContainer.firstChild);
+          void n.offsetWidth; n.classList.add('visible');
+          const rm = () => { n.classList.remove('visible'); n.addEventListener('transitionend', () => n.remove(), { once: true }); };
+          n.addEventListener('click', rm); // Click para cerrar notificación
+          setTimeout(rm, 5000); // Cierre automático después de 5 segundos
+        }
 
         // --- THEME ---
         function applyTheme(th){d.documentElement.setAttribute('data-theme',th);localStorage.setItem('theme',th);cT=th;if(typeof loadParticles==='function'&&pE){loadParticles();}}
-        function cycleTheme(){playSound(audioClick);const th=['dark','light','high-contrast'];applyTheme(th[(th.indexOf(cT)+1)%th.length]);showNotification(`Theme Matrix: ${cT.replace('-',' ')}`,'info');}
+        function cycleTheme(){
+          playSound(audioClick); // <--- Sonido al cambiar de tema
+          const th=['dark','light','high-contrast'];applyTheme(th[(th.indexOf(cT)+1)%th.length]);showNotification(`Theme Matrix: ${cT.replace('-',' ')}`,'info');}
         function loadInitialTheme(){applyTheme(cT);}
 
         // --- PREFERENCES ---
@@ -300,7 +351,7 @@
         function loadPreferences(){sE=localStorage.getItem('soundEnabled')!=='false';scE=localStorage.getItem('scanlinesEnabled')!=='false';pE=localStorage.getItem('particlesEnabled')!=='false';aE=localStorage.getItem('animationsEnabled')!=='false';if(SndT)SndT.checked=sE;if(sT)sT.checked=scE;if(pT)pT.checked=pE;if(aT)aT.checked=aE;applyPreferences();}
 
         // --- EFFECTS ---
-        function manageParallax(){} // Placeholder - No longer needed for video
+        function manageParallax(){} // Placeholder
         function getThemeColorsForParticles(){const s=getComputedStyle(d.documentElement);return{primary:s.getPropertyValue('--primary-color').trim()||'#00f0ff',secondary:s.getPropertyValue('--secondary-color').trim()||'#ff00ff',accent:s.getPropertyValue('--accent-color').trim()||'#f7ff00',primaryRgb:s.getPropertyValue('--primary-color-rgb').trim()||'0,240,255'};}
         function loadParticles(){if(typeof tsParticles==='undefined'||!pE){window.tsParticles?.domItem(0)?.destroy();return;}const c=getThemeColorsForParticles();tsParticles.load("tsparticles",{fpsLimit:60,particles:{number:{value:80,density:{enable:true,area:700}},color:{value:[c.primary,c.secondary,c.accent]},shape:{type:["circle","edge"]},opacity:{value:{min:0.1,max:0.6},animation:{enable:true,speed:.9*window.animationSpeedFactor,minimumValue:0.05,sync:false}},size:{value:{min:.8,max:2.2},animation:{enable:true,speed:5*window.animationSpeedFactor,minimumValue:0.4,sync:false}},links:{color:`rgba(${c.primaryRgb},0.15)`,distance:110,enable:true,opacity:.1,width:1},move:{enable:true,speed:1.5*window.animationSpeedFactor,direction:"none",random:true,straight:false,outModes:{default:"bounce"},attract:{enable:true, rotateX:600, rotateY:1200}}},interactivity:{detectsOn:"window",events:{onHover:{enable:true,mode:"bubble"},onClick:{enable:true,mode:"push"},resize:true},modes:{repulse:{distance:80,duration:0.4/window.animationSpeedFactor},push:{quantity:4},bubble:{distance:150,size:3,duration:2,opacity:.8}}},detectRetina:true,background:{}}).catch(e=>console.error("tsParticles err:",e));}
 
@@ -338,7 +389,7 @@
 
         function runBootSequence() {
             let delay = 100; let currentCursorLine = null;
-            playSound(terminalBootSound, 0.4);
+            playSound(terminalBootSound, 0.4); // <--- Sonido al INICIAR el boot sequence
 
             bootSequence.forEach((lineData, index) => {
                 setTimeout(() => {
@@ -347,14 +398,13 @@
                          newLine.classList.add('terminal-line');
 
                          let lineContent = lineData.text;
-                         if (lineData.prefix) { // Add prefix span if defined
+                         // ... (lógica de prefijos existente) ...
+                         if (lineData.prefix) {
                              lineContent = `<span class='prefix-${lineData.prefix.toLowerCase()}'>[${lineData.prefix}]</span> ${lineContent}`;
                          } else if (lineData.type && lineData.type !== 'boot' && lineData.text.trim() !== '') {
-                            // Wrap full lines with status types for coloring
-                            // Exclude boot prefix and empty lines from needing [SYS] default
+                            // ...
                          } else if (lineData.text.trim() !== '' && !lineData.type && !lineData.text.includes('[')) {
-                             // Add default prefix for system messages without explicit status
-                             // lineContent = `<span class='prefix-sys'>[SYS]</span> ${lineContent}`;
+                            // ...
                          }
 
                         newLine.innerHTML = lineContent; // Use innerHTML for spans
@@ -363,61 +413,161 @@
                         if(currentCursorLine) currentCursorLine.classList.remove('cursor');
                         newLine.classList.add('cursor'); currentCursorLine = newLine;
                         terminalOutput.scrollTop = terminalOutput.scrollHeight;
-                        if(lineData.text.trim().length > 0) playSound(terminalKeySound, 0.1); // Sound per visible line
 
+                        // <--- Sonido de "tecleo" por cada línea VISIBLE que aparece
+                        if(lineData.text.trim().length > 0) {
+                          playSound(terminalKeySound, 0.1); // Volumen bajo para tecleo
+                        }
+
+                        // Al llegar a la última línea de la secuencia
                         if (index === bootSequence.length - 1) {
                              setTimeout(() => {
-                                 playSound(audioLoader); // Sound for sequence end
-                                 loaderOverlay.classList.add('hidden');
-                                 if(backgroundAudio) backgroundAudio.play().catch(e=>console.warn("BG audio!"));
+                                 playSound(audioLoader); // <--- Sonido al FINALIZAR el boot sequence
+                                 if(loaderOverlay) loaderOverlay.classList.add('hidden'); // Ocultar overlay
+                                 // <--- Iniciar música de fondo DESPUÉS de ocultar el loader
+                                 if(backgroundAudio) {
+                                     backgroundAudio.play().catch(e=>console.warn("No se pudo iniciar la música de fondo:", e.message));
+                                 }
+                                 // Mostrar sección intro animada
                                  if(introDescription) {
                                      const txtLs=["> ARCHIVE NODE 'PROJECT_X' ACCESSED...", "> LOADING ENCRYPTED DATA FRAGMENTS...", "> DISPLAYING VISUAL & OPERATIONAL EVIDENCE."];
                                      introLinesElements.forEach((l, i)=>{if(l) l.textContent=txtLs[i]||'';});
                                      introDescription.classList.add('visible');
                                  }
-                                 initPanelObserver(); // Start panel animations observer
-                             }, 1000); // Longer delay after final line
+                                 initPanelObserver(); // Iniciar observer para animaciones de paneles
+                             }, 1000); // Delay adicional después de la última línea
                          }
                     }
                 }, delay);
-                delay += lineData.delay + Math.random() * 50; // Add randomness to delay
+                delay += lineData.delay + Math.random() * 50; // Añadir pequeña aleatoriedad al delay
             });
         }
 
 
         // --- INIT & LISTENERS ---
-        window.addEventListener('scroll', ()=>{/*...*/ const sT=window.pageYOffset||d.documentElement.scrollTop;const dH=d.documentElement.scrollHeight-window.innerHeight;const sP=dH>0?(sT/dH)*100:0;if(scrollProgressBar)scrollProgressBar.style.width=sP+'%';if(headerNav)headerNav.classList.toggle('scrolled',sT>50);}, {passive:true, context:{d}});
-        if(hamburgerBtn && filterOverlay){hamburgerBtn.addEventListener('click',(e)=>{e.stopPropagation();const a=hamburgerBtn.classList.toggle('active');filterOverlay.classList.toggle('active',a);bodyElement.style.overflow=a?'hidden':'';playSound(audioClick);if(pP&&pP.classList.contains('open')){pP.classList.remove('open');pTB.querySelector('i').style.transform='';}});filterOverlay.addEventListener('click',(e)=>{if(e.target===filterOverlay){hamburgerBtn.classList.remove('active');filterOverlay.classList.remove('active');bodyElement.style.overflow='';playSound(audioClick);}});filterLinks.forEach(l=>{l.addEventListener('mouseenter',()=>playSound(audioHover));l.addEventListener('click',()=>{hamburgerBtn.classList.remove('active');filterOverlay.classList.remove('active');bodyElement.style.overflow='';playSound(audioClick);});});if(themeToggleMenu){themeToggleMenu.addEventListener('click',cycleTheme);}}
-        const pP = preferencesPanel, pTB = preferencesToggleBtn; if(pP&&pTB){pTB.addEventListener('click',()=>{const o=pP.classList.toggle('open');pTB.querySelector('i').style.transform=o?'rotate(180deg)':'rotate(0deg)';playSound(audioClick);});[pT,sT,SndT,aT].forEach(t=>{if(t){t.addEventListener('change',e=>{switch(e.target.id){case'particlesToggle':pE=e.target.checked;break;case'scanlinesToggle':scE=e.target.checked;break;case'soundsToggle':sE=e.target.checked;break;case'animationsToggle':aE=e.target.checked;break;}playSound(audioClick);applyPreferences();});}});}
-        if(easterEggMsg){d.addEventListener('keydown',e=>{if(e.key==='x'&&e.altKey&&e.ctrlKey){eC++;if(eC===1){easterEggMsg.style.display='block';showNotification("SECRET NODE DETECTED // Access Granted!","success");playSound(audioNotify,0.8);setTimeout(()=>{easterEggMsg.style.display='none';},4000);eC=0;}}else{eC=0;}});}
+        // Listener de Scroll para barra de progreso y header
+        window.addEventListener('scroll', ()=>{
+          const sT=window.pageYOffset||d.documentElement.scrollTop;
+          const dH=d.documentElement.scrollHeight-window.innerHeight;
+          const sP=dH>0?(sT/dH)*100:0;
+          if(scrollProgressBar)scrollProgressBar.style.width=sP+'%';
+          if(headerNav)headerNav.classList.toggle('scrolled',sT>50);
+        }, {passive:true});
 
-        // ** Intersection Observer para paneles **
+        // Listeners para Menú Hamburguesa y Overlay de Filtro
+        if(hamburgerBtn && filterOverlay){
+          hamburgerBtn.addEventListener('click',(e)=>{
+            e.stopPropagation();
+            const a=hamburgerBtn.classList.toggle('active');
+            filterOverlay.classList.toggle('active',a);
+            bodyElement.style.overflow=a?'hidden':'';
+            playSound(audioClick); // <--- Sonido al clickear hamburguesa
+            const pP = preferencesPanel, pTB = preferencesToggleBtn; // Re-declarar aquí o hacerlas globales si se usan mucho
+            if(pP && pP.classList.contains('open')){ // Cerrar panel de preferencias si está abierto
+                pP.classList.remove('open');
+                if (pTB) pTB.querySelector('i').style.transform='';
+            }
+          });
+          filterOverlay.addEventListener('click',(e)=>{
+            if(e.target===filterOverlay){ // Cerrar solo si se clickea el fondo del overlay
+              hamburgerBtn.classList.remove('active');
+              filterOverlay.classList.remove('active');
+              bodyElement.style.overflow='';
+              playSound(audioClick); // <--- Sonido al cerrar overlay
+            }
+          });
+          filterLinks.forEach(l=>{
+            l.addEventListener('mouseenter',()=> playSound(audioHover)); // <--- Sonido al hacer hover en links del menu
+            l.addEventListener('click',()=>{ // Cerrar menu al clickear un link
+              hamburgerBtn.classList.remove('active');
+              filterOverlay.classList.remove('active');
+              bodyElement.style.overflow='';
+              playSound(audioClick); // <--- Sonido al clickear un link del menu
+            });
+          });
+          if(themeToggleMenu){ // Listener para botón de ciclar tema dentro del menu
+            themeToggleMenu.addEventListener('click', cycleTheme); // cycleTheme ya tiene su propio playSound(audioClick)
+          }
+        }
+
+        // Listeners para Panel de Preferencias
+        const pP = preferencesPanel, pTB = preferencesToggleBtn;
+        if(pP && pTB){
+          pTB.addEventListener('click',()=>{ // Botón para abrir/cerrar panel
+            const o=pP.classList.toggle('open');
+            pTB.querySelector('i').style.transform=o?'rotate(180deg)':'rotate(0deg)';
+            playSound(audioClick); // <--- Sonido al abrir/cerrar preferencias
+          });
+          // Listeners para los checkboxes de preferencias
+          [pT,sT,SndT,aT].forEach(t=>{
+            if(t){
+              t.addEventListener('change',e=>{
+                switch(e.target.id){
+                  case'particlesToggle': pE=e.target.checked; break;
+                  case'scanlinesToggle': scE=e.target.checked; break;
+                  case'soundsToggle':    sE=e.target.checked; break; // Actualiza estado global de sonido
+                  case'animationsToggle':aE=e.target.checked; break;
+                }
+                playSound(audioClick); // <--- Sonido al cambiar una preferencia
+                applyPreferences(); // Aplicar los cambios
+              });
+            }
+          });
+        }
+
+        // Listener para Easter Egg
+        if(easterEggMsg){
+          d.addEventListener('keydown',e=>{
+            if(e.key==='x'&&e.altKey&&e.ctrlKey){
+              eC++;
+              if(eC===1){ // Solo al primer combo detectado
+                easterEggMsg.style.display='block';
+                showNotification("SECRET NODE DETECTED // Access Granted!","success"); // showNotification ya tiene sonido
+                // playSound(audioNotify, 0.8); // No es necesario, showNotification lo hace
+                setTimeout(()=>{easterEggMsg.style.display='none';},4000);
+                eC=0; // Resetear contador
+              }
+            } else {
+              eC=0; // Resetear si se presiona otra tecla
+            }
+          });
+        }
+
+        // ** Intersection Observer para animaciones de paneles **
         function initPanelObserver() {
             const observerElements = d.querySelectorAll('.animation-trigger');
             if (observerElements.length === 0 || typeof IntersectionObserver === 'undefined') return;
             const observer = new IntersectionObserver(entries => {
                 entries.forEach(entry => {
-                     if (entry.isIntersecting) { // Entra en la vista
-                        if (aE) { // Solo animar si está activado
+                     if (entry.isIntersecting) { // Elemento entra en la vista
+                        if (aE) { // Solo animar si las animaciones están activadas
                             entry.target.classList.add('visible-animate');
-                        } else { // Si animaciones están desactivadas, solo mostrar
-                            entry.target.style.opacity = 1; // Forzar visibilidad sin transición
+                        } else { // Si animaciones están desactivadas, solo mostrar sin transición
+                            entry.target.style.opacity = 1;
                             entry.target.style.transform = 'none';
                         }
-                        // observer.unobserve(entry.target); // Para animar solo una vez
-                     } else { // Sale de la vista
+                        // Opcional: Descomentar para animar solo una vez
+                        // observer.unobserve(entry.target);
+                     } else { // Elemento sale de la vista
+                        // Si se quiere que la animación se repita al volver a scrollear:
                         entry.target.classList.remove('visible-animate');
-                         // No resetear opacity/transform aquí si animas solo una vez
+                        // Resetear estilos si no se usa la clase y las animaciones están activadas
+                        // if (aE) {
+                        //    entry.target.style.opacity = 0;
+                           // entry.target.style.transform = '...'; // Resetear al estado inicial de la animación
+                        // }
                      }
                 });
-            }, { threshold: 0.15, rootMargin: "0px 0px -60px 0px" }); // Ajustar margen
+            }, { threshold: 0.15, rootMargin: "0px 0px -60px 0px" }); // Ajustar margen para disparar un poco antes de que entre completamente
              observerElements.forEach(el => { observer.observe(el); });
         }
 
 
         // --- INICIO ---
-        loadPreferences(); loadInitialTheme(); loadParticles();
-        runBootSequence();
+        loadPreferences();      // Cargar preferencias guardadas (incluye estado de sonido sE)
+        loadInitialTheme();     // Aplicar tema guardado o default
+        loadParticles();        // Cargar partículas si están activadas
+        runBootSequence();      // Iniciar la secuencia de carga de la terminal (con sonidos)
 
     }); // Fin DOMContentLoaded
    </script>

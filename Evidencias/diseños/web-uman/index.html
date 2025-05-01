@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INV. UMAN - Universidad</title>
+    <!-- Optional: Link to a professional font (using system font by default) -->
+    <!-- <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"> -->
+    <!-- Optional: Font Awesome for icons (like the presentation icon, social media, and menu toggle) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        /* === Estilos CSS === */
+        /* UMAN Color Scheme Variables */
+        :root {
+            --color-uman-blue: #1a237e; /* Dark Indigo Blue */
+            --color-uman-orange: #ff9800; /* Standard Orange */
+            --color-uman-grey: #424242; /* Dark Grey */
+            --color-uman-black: #212121; /* Very Dark Grey/Black */
+            --color-uman-light-grey: #eeeeee; /* Light Grey for backgrounds/borders */
+            --color-uman-light-blue-bg: #e3f2fd; /* Very Light Blue for body background */
+            --color-text-dark: var(--color-uman-black);
+            --color-text-medium: var(--color-uman-grey);
+            --color-text-light: #f5f5f5; /* Off-white for contrast */
+            --color-overlay-bg: rgba(26, 35, 126, 0.95); /* Semi-transparent UMAN Blue for overlay */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: sans-serif; /* Using system sans-serif */
+            line-height: 1.6;
+            color: var(--color-text-dark);
+            background: linear-gradient(to bottom, var(--color-uman-light-blue-bg), #bbdefb); /* Gentle blue gradient */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+
+        /* Top Bar */
+        .top-bar {
+            text-align: center;
+            padding: 8px;
+            background-color: rgba(255, 255, 255, 0.95);
+            font-size: 0.85em;
+            color: var(--color-text-medium);
+            border-bottom: 1px solid var(--color-uman-light-grey);
+            position: relative; /* Ensure it establishes stacking context */
+            z-index: 1; /* Ensure it's above potential background elements */
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(to right, var(--color-uman-blue), #303f9f);
+            color: var(--color-text-light);
+            padding: 15px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+            position: relative; /* Needed for absolute/fixed positioning of mobile nav */
+            z-index: 100; /* Ensure header is always on top */
+        }
+
+        header .header-title {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px; /* Adjust spacing */
+            flex-wrap: wrap;
+        }
+
+        header .header-title h1 {
+            font-size: 1.8em;
+            margin: 0;
+            flex-shrink: 0;
+            font-weight: bold;
+        }
+
+        header .presentation-visual {
+            display: flex;
+            align-items: center;
+            font-style: italic;
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 5px;
+            flex-grow: 1;
+            justify-content: flex-end;
+        }
+         header .presentation-visual i {
+             margin-right: 5px;
+         }
+         @media (min-width: 768px) {
+              header .presentation-visual {
+                  margin-top: 0;
+                  flex-grow: 0;
+              }
+         }
+
+        /* Navigation (Desktop) */
+        nav ul {
+            list-style: none;
+            display: flex; /* Default: flex for desktop */
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 0;
+            width: 100%;
+            margin-top: 10px;
+            /* Desktop specific styles */
+            position: static; /* Override mobile positioning */
+            top: auto;
+            left: auto;
+            right: auto;
+            bottom: auto;
+            background-color: transparent; /* No background on desktop */
+            z-index: auto;
+            overflow-y: visible;
+            transition: none; /* No transition on desktop */
+        }
+
+        nav ul li {
+            margin: 5px 8px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: var(--color-text-light);
+            padding: 10px 18px;
+            border-radius: 20px;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            display: block;
+            font-size: 0.95em;
+            font-weight: normal;
+        }
+
+        nav ul li a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        nav ul li a.active {
+            background-color: rgba(255, 255, 255, 0.35);
+            font-weight: bold;
+        }
+
+
+        /* Menu Toggle Button (Hamburger) */
+        .menu-toggle {
+            display: none; /* Hidden by default on desktop */
+            background: none;
+            border: none;
+            color: var(--color-text-light);
+            font-size: 1.8em;
+            cursor: pointer;
+            padding: 5px;
+            margin-left: 15px; /* Space from title/visual */
+             z-index: 110; /* Ensure toggle button is above everything in header */
+        }
+         .menu-toggle:focus {
+             outline: 2px solid rgba(255, 255, 255, 0.5);
+             outline-offset: 2px;
+         }
+
+
+        /* Mobile Specific Styles (Applied below 768px) */
+         @media (max-width: 768px) {
+             header {
+                 flex-direction: row; /* Align title and button horizontally */
+                 justify-content: space-between;
+                 align-items: center;
+                 padding: 10px 15px; /* Reduced padding */
+                 flex-wrap: wrap; /* Allow wrapping if needed */
+                 position: sticky; /* Make header sticky */
+                 top: 0;
+                 /* z-index: 100; /* Already set on header */
+             }
+
+             header .header-title {
+                 margin-bottom: 0; /* Remove margin */
+                 flex-grow: 1; /* Allow title area to grow */
+                 align-items: center;
+             }
+             header .header-title h1 {
+                 font-size: 1.5em; /* Reduced size */
+             }
+             header .presentation-visual {
+                  display: none; /* Hide visual text on small screens */
+             }
+
+
+             .menu-toggle {
+                 display: block; /* Show the hamburger button */
+             }
+
+             nav ul {
+                 /* Mobile Navigation Styles (Overlay) */
+                 display: flex; /* Use flex to stack items */
+                 flex-direction: column;
+                 position: fixed; /* Fixed position relative to viewport */
+                 top: 0; /* Align to top */
+                 right: -100%; /* Start off-screen to the right */
+                 width: 70%; /* Cover 70% of the screen width */
+                 max-width: 300px; /* Max width for very wide phones */
+                 height: 100vh; /* Full viewport height */
+                 background-color: var(--color-overlay-bg); /* Semi-transparent blue */
+                 z-index: 99; /* Below header, above main content */
+                 padding: 60px 20px 20px 20px; /* Padding from top (below header), and sides */
+                 overflow-y: auto; /* Allow scrolling if menu is long */
+                 transition: right 0.3s ease-in-out; /* Smooth slide-in transition */
+                 box-shadow: -3px 0 8px rgba(0, 0, 0, 0.3); /* Shadow on the left side */
+             }
+
+             nav ul.open {
+                 right: 0; /* Slide in to the right */
+             }
+
+             nav ul li {
+                 margin: 10px 0; /* More vertical margin */
+                 border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* Separator */
+                 padding-bottom: 10px;
+             }
+              nav ul li:last-child {
+                  border-bottom: none;
+                  padding-bottom: 0;
+              }
+
+
+             nav ul li a {
+                 color: var(--color-text-light); /* White text for links */
+                 padding: 12px 15px; /* More padding */
+                 border-radius: 5px; /* Less rounded corners */
+                 font-size: 1.1em; /* Larger font size */
+                 text-align: left; /* Align text left */
+                 width: 100%; /* Make links full width */
+             }
+
+             nav ul li a:hover {
+                 background-color: rgba(255, 255, 255, 0.1);
+             }
+
+              nav ul li a.active {
+                 background-color: rgba(255, 255, 255, 0.25);
+                 color: white;
+             }
+
+             /* Add a dimming overlay behind the mobile menu */
+             body::after {
+                 content: '';
+                 position: fixed;
+                 top: 0;
+                 left: 0;
+                 right: 0;
+                 bottom: 0;
+                 background-color: rgba(0, 0, 0, 0.5);
+                 z-index: 90; /* Below menu (99), above main (1) */
+                 display: none; /* Hidden by default */
+             }
+              body.nav-open::after {
+                  display: block; /* Show overlay when menu is open */
+              }
+
+
+         } /* End of @media (max-width: 768px) */
+
+
+        /* Main Content Area */
+        main {
+            flex-grow: 1;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.85);
+            border-radius: 8px;
+            margin: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+            min-height: 400px;
+            /* Ensure main content is above the mobile menu overlay (z-index: 90) */
+            z-index: 1; /* Set a z-index lower than menu/header but higher than overlay */
+        }
+         @media (max-width: 768px) {
+             main {
+                 margin: 10px;
+                 padding: 15px;
+             }
+         }
+
+        /* --- Estilos Específicos por Sección (mantienen los estilos de color UMAN y responsividad) --- */
+
+        /* Inicio */
+        #section-inicio .inicio-banner {
+            background-image: url('placeholder_banner.jpg');
+            background-size: cover;
+            background-position: center;
+            height: 300px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            position: relative;
+            color: white;
+            text-align: center;
+            overflow: hidden;
+        }
+        #section-inicio .inicio-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to right, rgba(26, 35, 126, 0.7), rgba(48, 63, 159, 0.7));
+            z-index: 1;
+        }
+        #section-inicio .inicio-banner h2 {
+            font-size: 4.5em;
+            margin: 0;
+            z-index: 2;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+            letter-spacing: 4px;
+            font-weight: bold;
+        }
+        @media (max-width: 768px) {
+            #section-inicio .inicio-banner { height: 250px; }
+            #section-inicio .inicio-banner h2 { font-size: 3.5em; letter-spacing: 2px; }
+        }
+         @media (max-width: 480px) {
+            #section-inicio .inicio-banner { height: 200px; }
+             #section-inicio .inicio-banner h2 { font-size: 2.5em; letter-spacing: 1px; }
+         }
+
+
+        #section-inicio .inicio-bottom {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            align-items: start;
+            padding: 0 5px;
+        }
+         @media (max-width: 320px) {
+             #section-inicio .inicio-bottom { grid-template-columns: 1fr; }
+         }
+
+        #section-inicio .inicio-bottom .col {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--color-uman-light-grey);
+        }
+
+        #section-inicio .inicio-bottom .col img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        #section-inicio .inicio-bottom .col h3 {
+            color: var(--color-uman-blue);
+            font-size: 2.2em;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+            line-height: 1.2;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+         #section-inicio .inicio-bottom .col:nth-child(2) h3 { color: var(--color-uman-orange); }
+         @media (max-width: 480px) {
+             #section-inicio .inicio-bottom .col h3 { font-size: 1.8em; }
+         }
+
+
+        /* Calendar Specific Styles */
+        .calendar-box {
+            border: 1px solid var(--color-uman-light-grey);
+            border-radius: 8px;
+            padding: 15px;
+            background-color: #fff;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+        }
+        .calendar-box h4 {
+            text-align: center;
+            margin-bottom: 15px;
+            color: var(--color-uman-blue);
+            font-size: 1.3em;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            text-align: center;
+            font-size: 0.95em;
+        }
+         .calendar-grid div {
+             padding: 6px 4px;
+             border-radius: 4px;
+         }
+        .calendar-grid .day-name {
+            font-weight: bold;
+            color: var(--color-uman-grey);
+            font-size: 0.85em;
+        }
+        .calendar-grid .day-number {
+            background-color: var(--color-uman-light-grey);
+            cursor: pointer;
+             transition: background-color 0.2s ease;
+             font-weight: normal;
+        }
+         .calendar-grid .day-number:hover { background-color: #bdbdbd; }
+
+        .calendar-grid .day-number.highlight {
+            background-color: var(--color-uman-orange);
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+         .calendar-grid .day-number.highlight:hover { background-color: #fb8c00; }
+         @media (max-width: 400px) {
+             .calendar-grid { gap: 3px; }
+             .calendar-grid div { padding: 4px 2px; font-size: 0.85em; }
+         }
+
+         /* Objetivo */
+        #section-objetivo {
+             padding: 20px;
+        }
+         @media (max-width: 768px) { #section-objetivo { padding: 15px; } }
+        #section-objetivo h2 {
+            color: var(--color-uman-blue);
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            border-bottom: 2px solid var(--color-uman-light-grey);
+            padding-bottom: 10px;
+            font-weight: bold;
+        }
+         @media (max-width: 480px) {
+             #section-objetivo h2 { font-size: 2em; margin-bottom: 15px; }
+         }
+        #section-objetivo p {
+            font-size: 1.1em;
+            color: var(--color-text-medium);
+            margin-bottom: 25px;
+            line-height: 1.8;
+        }
+         @media (max-width: 480px) {
+             #section-objetivo p { font-size: 1em; line-height: 1.6; }
+         }
+
+
+        /* Galeria, Jornada C, Congreso - Layout with Sidebar */
+        .content-with-sidebar {
+             display: flex;
+             gap: 20px;
+             padding: 10px 0;
+             flex-wrap: wrap;
+        }
+        .sidebar {
+             width: 280px;
+             flex-shrink: 0;
+             background-color: rgba(255, 255, 255, 0.9);
+             border-radius: 8px;
+             padding: 15px;
+             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+             align-self: start;
+        }
+        .sidebar ul { list-style: none; padding: 0; }
+        .sidebar ul li {
+             margin-bottom: 10px;
+             border-bottom: 1px solid var(--color-uman-light-grey);
+             padding-bottom: 8px;
+         }
+         .sidebar ul li:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+
+        .sidebar ul li a {
+             text-decoration: none;
+             color: var(--color-text-dark);
+             padding: 10px 12px;
+             border-radius: 5px;
+             display: block;
+             transition: background-color 0.2s ease;
+             font-weight: 500;
+        }
+        .sidebar ul li a:hover { background-color: var(--color-uman-light-grey); color: var(--color-uman-blue); }
+
+        .sidebar ul li ul {
+             margin-top: 8px;
+             padding-left: 20px;
+             border-left: 2px solid var(--color-uman-light-grey);
+        }
+        .sidebar ul li ul li { margin-bottom: 5px; padding-bottom: 0; border-bottom: none; }
+         .sidebar ul li ul li a { font-size: 0.95em; color: var(--color-text-medium); padding: 5px 8px; font-weight: normal; }
+         .sidebar ul li ul li a:hover { background-color: rgba(0, 0, 0, 0.03); color: var(--color-uman-blue); }
+
+
+        .main-content-area {
+             flex-grow: 1;
+             background-color: rgba(255, 255, 255, 0.9);
+             border-radius: 8px;
+             padding: 20px;
+             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+             overflow: hidden;
+             border: 1px solid var(--color-uman-light-grey);
+        }
+        @media (max-width: 768px) {
+            .content-with-sidebar { flex-direction: column; gap: 15px; }
+            .sidebar { width: 100%; margin-bottom: 0; }
+            .main-content-area { padding: 15px; }
+        }
+
+
+        /* Galeria Specific Styles */
+        #section-galeria .galeria-content {
+             display: grid;
+             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+             gap: 12px;
+             padding: 10px;
+        }
+         @media (max-width: 480px) {
+              #section-galeria .galeria-content { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; padding: 5px; }
+         }
+        #section-galeria .galeria-content img {
+             width: 100%; height: auto; object-fit: cover; border-radius: 5px;
+             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+             transition: transform 0.2s ease, box-shadow 0.2s ease;
+             display: block;
+        }
+         #section-galeria .galeria-content img:hover { transform: scale(1.03); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2); }
+
+         /* Jornada C Specific Styles */
+         #section-jornada .main-content-area img {
+             max-width: 100%; height: auto; display: block; margin: 0 auto;
+             border: 1px solid var(--color-uman-light-grey); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+         }
+          #section-jornada .sidebar ul li ul li a { color: var(--color-uman-blue); text-decoration: underline; }
+          #section-jornada .sidebar ul li ul li a:hover { color: #0d47a1; background-color: transparent; }
+
+        /* CEDIAMET Specific Styles */
+        #section-cediamet { display: flex; justify-content: center; align-items: center; padding: 50px 20px; min-height: 400px; }
+         @media (max-width: 768px) { #section-cediamet { padding: 30px 15px; } }
+
+        #section-cediamet .cediamet-logo {
+            max-width: 500px; width: 100%; text-align: center;
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 40px; border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--color-uman-light-grey);
+        }
+         @media (max-width: 480px) { #section-cediamet .cediamet-logo { padding: 25px; } }
+
+         /* Style for the placeholder SVG */
+         #section-cediamet .cediamet-logo svg { display: block; margin: 0 auto 20px auto; max-width: 180px; height: auto; }
+         #section-cediamet .cediamet-logo svg circle { stroke: var(--color-uman-blue); stroke-width: 8; }
+          #section-cediamet .cediamet-logo svg path { stroke: var(--color-uman-orange); stroke-width: 6; fill: none; }
+         @media (max-width: 480px) { #section-cediamet .cediamet-logo svg { max-width: 120px; } }
+
+
+        #section-cediamet .cediamet-logo p {
+            font-size: 1.4em; color: var(--color-text-medium);
+            font-weight: bold; line-height: 1.5;
+        }
+         @media (max-width: 480px) { #section-cediamet .cediamet-logo p { font-size: 1.1em; } }
+
+
+        /* Congreso Specific Styles */
+         #section-congreso .main-content-area img {
+             max-width: 450px; height: auto; display: block; margin: 0 auto;
+             border: 1px solid var(--color-uman-light-grey); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+         }
+         @media (max-width: 600px) { #section-congreso .main-content-area img { max-width: 300px; } }
+
+
+        /* Constancias Specific Styles */
+        #section-constancias { display: flex; flex-direction: column; align-items: center; padding: 50px 20px; min-height: 400px; }
+         @media (max-width: 768px) { #section-constancias { padding: 30px 15px; } }
+
+        #section-constancias .constancias-form {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 10px; padding: 30px; text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            max-width: 450px; width: 100%; border: 1px solid var(--color-uman-light-grey);
+        }
+         @media (max-width: 480px) { #section-constancias .constancias-form { padding: 20px; } }
+
+
+        #section-constancias .constancias-form p {
+            font-size: 1.1em; color: var(--color-text-medium); margin-bottom: 25px; line-height: 1.6;
+        }
+         @media (max-width: 480px) { #section-constancias .constancias-form p { font-size: 1em; margin-bottom: 20px; } }
+
+
+        #section-constancias .input-group {
+            display: flex; align-items: center;
+            border: 2px solid var(--color-uman-blue);
+            border-radius: 25px; overflow: hidden; background-color: #fff;
+            margin-bottom: 15px; box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #section-constancias input[type="text"] {
+            border: none; outline: none;
+            padding: 12px 18px; flex-grow: 1; font-size: 1.1em;
+        }
+         @media (max-width: 480px) { #section-constancias input[type="text"] { padding: 10px 15px; font-size: 1em; } }
+
+
+        #section-constancias button {
+            background-color: var(--color-uman-blue); border: none; outline: none;
+            padding: 12px 20px; color: white; font-size: 1.4em;
+            cursor: pointer; transition: background-color 0.3s ease;
+            border-radius: 0 23px 23px 0;
+        }
+
+        #section-constancias button:hover { background-color: #0d47a1; }
+
+
+        /* Inicio Sesion / Registro */
+        #section-inicio-registro { display: flex; justify-content: center; align-items: center; gap: 30px; padding: 50px 20px; flex-wrap: wrap; min-height: 400px; }
+         @media (max-width: 768px) { #section-inicio-registro { padding: 30px 15px; gap: 20px; } }
+
+        #section-inicio-registro .action-button {
+            display: block; background-color: rgba(255, 255, 255, 0.95);
+            border: 2px solid var(--color-uman-blue); border-radius: 10px;
+            padding: 40px 30px; text-align: center; text-decoration: none;
+            color: var(--color-text-dark); font-size: 1.5em; font-weight: bold;
+            transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+            min-width: 260px; flex-grow: 1; max-width: 400px; cursor: pointer;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+         @media (max-width: 480px) {
+             #section-inicio-registro .action-button {
+                 padding: 30px 20px; font-size: 1.3em;
+                 min-width: unset; width: 100%; max-width: 350px;
+             }
+         }
+
+        #section-inicio-registro .action-button:hover {
+            background-color: #fff; border-color: var(--color-uman-orange); color: var(--color-uman-orange);
+            transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+
+
+        /* Footer */
+        footer {
+            background: linear-gradient(to right, #303f9f, var(--color-uman-blue));
+            color: var(--color-text-light); padding: 20px; margin-top: auto; text-align: center;
+            display: flex; flex-direction: column; align-items: center;
+            box-shadow: 0 -3px 6px rgba(0, 0, 0, 0.2);
+            position: relative; /* Needed for z-index */
+            z-index: 1; /* Ensure footer is above potential background elements */
+        }
+
+        footer .social-icons { margin-bottom: 15px; }
+        footer .social-icons a {
+            margin: 0 15px; color: var(--color-text-light); text-decoration: none;
+            font-size: 2.2em; transition: color 0.3s ease, transform 0.3s ease;
+            display: inline-block;
+        }
+        footer .social-icons a:hover { color: var(--color-uman-orange); transform: translateY(-3px); }
+         @media (max-width: 400px) { footer .social-icons a { margin: 0 10px; font-size: 1.8em; } }
+
+
+        footer .contact-info { font-size: 0.95em; color: rgba(255, 255, 255, 0.9); }
+        footer .contact-info p { margin: 5px 0; }
+
+        /* Utility Class */
+        .hidden { display: none !important; }
+
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">Congresoctreynosa.com</div>
+
+    <header>
+        <div class="header-title">
+            <h1>INV. UMAN</h1>
+            <div class="presentation-visual">
+                <i class="fas fa-tv"></i> Propuesta de presentacion visual
+            </div>
+             <!-- Menu Toggle Button -->
+             <button class="menu-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+                 <i class="fas fa-bars"></i> <!-- Hamburger icon -->
+             </button>
+        </div>
+        <nav id="main-nav"> <!-- Added ID for easy selection -->
+            <ul>
+                <li><a href="#" data-section="inicio" class="active">Inicio</a></li>
+                <li><a href="#" data-section="galeria">Galeria</a></li>
+                <li><a href="#" data-section="cediamet">CEDIAMET</a></li>
+                <li><a href="#" data-section="jornada">Jornada C</a></li>
+                <li><a href="#" data-section="congreso">Congreso</a></li>
+                <li><a href="#" data-section="constancias">Constancias</a></li>
+                <li><a href="#" data-section="inicio-registro">Inicio de secion/Registro</a></li>
+                 <li><a href="#" data-section="objetivo">Objetivo</a></li> <!-- Added link for Objetivo -->
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Las secciones de contenido se mostrarán/ocultarán con JavaScript -->
+
+        <section id="section-inicio" class="content-section active">
+            <div class="inicio-banner">
+                <h2>UMAN</h2>
+            </div>
+            <div class="inicio-bottom">
+                <div class="col">
+                    <img src="placeholder_student1.jpg" alt="Convocatorias Image"> <!-- Reemplazar -->
+                    <h3>Convoca torias</h3>
+                </div>
+                <div class="col">
+                    <h3>¡UNIDOS<br>POR EL<br>CONOCIMIENTO!</h3>
+                </div>
+                <div class="col calendar-box">
+                    <h4>AUGUST 2022</h4>
+                    <div class="calendar-grid">
+                        <div class="day-name">Dom</div>
+                        <div class="day-name">Lun</div>
+                        <div class="day-name">Mar</div>
+                        <div class="day-name">Mié</div>
+                        <div class="day-name">Jue</div>
+                        <div class="day-name">Vie</div>
+                        <div class="day-name">Sáb</div>
+                        <div></div><div></div><div></div><div></div><div></div><div></div><div class="day-number">1</div>
+                        <div class="day-number">2</div><div class="day-number">3</div><div class="day-number">4</div><div class="day-number">5</div><div class="day-number">6</div>
+                        <div class="day-number">7</div><div class="day-number">8</div><div class="day-number">9</div><div class="day-number">10</div><div class="day-number">11</div><div class="day-number">12</div><div class="day-number">13</div>
+                        <div class="day-number highlight">14</div><div class="day-number highlight">15</div><div class="day-number highlight">16</div><div class="day-number highlight">17</div><div class="day-number highlight">18</div><div class="day-number highlight">19</div><div class="day-number highlight">20</div>
+                        <div class="day-number">21</div><div class="day-number">22</div><div class="day-number">23</div><div class="day-number">24</div><div class="day-number">25</div><div class="day-number">26</div><div class="day-number">27</div>
+                        <div class="day-number">28</div><div class="day-number">29</div><div class="day-number">30</div><div class="day-number">31</div><div></div><div></div><div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+         <!-- Objetivo section -->
+         <section id="section-objetivo" class="content-section">
+            <h2>Objetivo</h2>
+            <p>Brindar un espacio digital accesible y eficiente donde estudiantes, docentes e investigadores puedan consultar y gestionar información relevante sobre convocatorias, congresos, jornadas científicas, constancias y registros. Además, facilitar la difusión de eventos académicos y el acceso a una galería de recuerdos, fortaleciendo la comunidad universitaria y su participación en actividades institucionales.</p>
+         </section>
+
+
+        <section id="section-galeria" class="content-section content-with-sidebar">
+            <div class="sidebar galeria-sidebar">
+                <ul>
+                    <li>
+                       <a href="#">Jornada Científica</a>
+                       <ul>
+                           <li><a href="#">2023</a></li>
+                           <li><a href="#">2024</a></li>
+                           <li><a href="#">2025</a></li>
+                       </ul>
+                    </li>
+                    <li><a href="#">Congreso</a></li>
+                </ul>
+            </div>
+            <div class="main-content-area galeria-content">
+                <!-- Imágenes de la galería -->
+                <img src="placeholder_student_grid1.jpg" alt="Foto Estudiante 1"> <!-- Reemplazar -->
+                <img src="placeholder_student_grid2.jpg" alt="Foto Estudiante 2">
+                <img src="placeholder_student_grid3.jpg" alt="Foto Estudiante 3">
+                <img src="placeholder_student_grid4.jpg" alt="Foto Estudiante 4">
+                <img src="placeholder_student_grid5.jpg" alt="Foto Estudiante 5">
+                <img src="placeholder_student_grid6.jpg" alt="Foto Estudiante 6">
+                <img src="placeholder_student_grid7.jpg" alt="Foto Estudiante 7">
+                <img src="placeholder_student_grid8.jpg" alt="Foto Estudiante 8">
+                <img src="placeholder_student_grid9.jpg" alt="Foto Estudiante 9">
+                <img src="placeholder_student_grid10.jpg" alt="Foto Estudiante 10">
+                <img src="placeholder_student_grid11.jpg" alt="Foto Estudiante 11">
+                <img src="placeholder_student_grid12.jpg" alt="Foto Estudiante 12">
+                <!-- Añadir más imágenes según sea necesario -->
+            </div>
+        </section>
+
+        <section id="section-cediamet" class="content-section">
+             <div class="cediamet-logo">
+                 <!-- Placeholder para logo de CEDIAMET - Reemplazar con imagen real -->
+                 <svg viewBox="0 0 100 100">
+                     <circle cx="50" cy="50" r="45" fill="none" stroke="var(--color-uman-blue)" stroke-width="8"></circle>
+                     <path d="M 25 50 Q 35 30 50 50 T 75 50" fill="none" stroke="var(--color-uman-orange)" stroke-width="6"/>
+                     <path d="M 50 50 L 60 40 L 70 50 L 80 40" fill="none" stroke="var(--color-uman-orange)" stroke-width="6"/>
+                 </svg>
+                 <p>CENTRO ESPECIALIZADO EN<br>DIABETES Y METABOLISMO</p>
+             </div>
+        </section>
+
+        <section id="section-jornada" class="content-section content-with-sidebar">
+             <div class="sidebar jornada-sidebar">
+                <ul>
+                     <li><a href="#">Memorias</a></li>
+                     <li><a href="#">Comite</a></li>
+                     <li>
+                        <a href="#">Investigaciones</a>
+                         <ul>
+                             <li><a href="path/to/Investigacion_1.pdf" target="_blank">Investigación 1.pdf</a></li>
+                             <li><a href="path/to/Investigacion_2.pdf" target="_blank">Investigación 2.pdf</a></li>
+                             <li><a href="path/to/Investigacion_3.pdf" target="_blank">Investigación 3.pdf</a></li>
+                             <li><a href="path/to/Investigacion_4.pdf" target="_blank">Investigación 4.pdf</a></li>
+                             <li><a href="path/to/Investigacion_5.pdf" target="_blank">Investigación 5.pdf</a></li>
+                             <li><a href="path/to/Investigacion_6.pdf" target="_blank">Investigación 6.pdf</a></li>
+                             <li><a href="path/to/Investigacion_7.pdf" target="_blank">Investigación 7.pdf</a></li>
+                             <li><a href="path/to/Investigacion_8.pdf" target="_blank">Investigación 8.pdf</a></li>
+                             <li><a href="path/to/Investigacion_9.pdf" target="_blank">Investigación 9.pdf</a></li>
+                         </ul>
+                     </li>
+                     <li><a href="#">Publicaciones Científicas</a></li>
+                 </ul>
+             </div>
+            <div class="main-content-area jornada-content">
+                 <img src="placeholder_document.jpg" alt="Documento Microbioma Pulmonar"> <!-- Placeholder - Reemplazar -->
+             </div>
+        </section>
+
+        <section id="section-congreso" class="content-section content-with-sidebar">
+             <div class="sidebar congreso-sidebar">
+                <ul>
+                     <li><a href="#">Secuones de trabajo</a></li>
+                     <li><a href="#">Cronograma</a></li>
+                     <li><a href="#">Invitación</a></li>
+                 </ul>
+             </div>
+            <div class="main-content-area congreso-content">
+                 <img src="placeholder_poster_congreso.jpg" alt="Poster Congreso 2025"> <!-- Placeholder - Reemplazar -->
+             </div>
+        </section>
+
+
+        <section id="section-constancias" class="content-section">
+            <div class="constancias-form">
+                 <p>Tu número de matrícula es clave para acceder a tus documentos académicos. Ingrésalo para continuar</p>
+                 <div class="input-group">
+                     <input type="text" id="matricula-input" placeholder="Ingresa tu matrícula">
+                     <button id="constancias-button">➔</button> <!-- Flecha derecha -->
+                 </div>
+                 <!-- Área para mostrar resultados o mensajes -->
+                 <div id="constancias-results" style="margin-top: 20px; color: green; font-size: 0.9em;"></div>
+            </div>
+        </section>
+
+        <section id="section-inicio-registro" class="content-section">
+             <a href="#" class="action-button" onclick="alert('Acción para ir a Inicio de Sesión'); return false;">
+                 CLICK AQUÍ<br>PARA INICIO DE<br>SESION
+             </a>
+             <a href="#" class="action-button" onclick="alert('Acción para ir a Registro'); return false;">
+                 CLICK AQUÍ<br>PARA REGISTRARTE
+             </a>
+        </section>
+
+
+    </main>
+
+    <footer>
+         <div class="social-icons">
+             <!-- Usando iconos de Font Awesome si se enlaza -->
+             <a href="#" title="TikTok"><i class="fab fa-tiktok"></i></a>
+             <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+             <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+         </div>
+         <div class="contact-info">
+             <p>CONTACTO</p>
+             <p>(04) 298 3985 2092</p>
+             <p>+76 209 1092 4095</p>
+             <p>umam.@ edu.mx</p>
+         </div>
+    </footer>
+
+    <script>
+        // === JavaScript para Navegación y Toggle de Menú ===
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('#main-nav ul li a[data-section]');
+            const sections = document.querySelectorAll('main .content-section');
+            const mainContent = document.querySelector('main');
+            const menuToggle = document.querySelector('.menu-toggle');
+            const mainNav = document.getElementById('main-nav');
+            const body = document.body; // Reference to the body
+
+            // Función para mostrar una sección específica y ocultar las otras
+            function showSection(sectionId) {
+                sections.forEach(section => {
+                    section.classList.remove('active');
+                    section.classList.add('hidden');
+                });
+                const targetSection = document.getElementById(sectionId);
+                if (targetSection) {
+                    targetSection.classList.add('active');
+                    targetSection.classList.remove('hidden');
+
+                    // Opcional: Scroll suave al inicio del contenido principal
+                    mainContent.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            }
+
+            // Función para actualizar la clase 'active' en la navegación
+            function updateNavActive(activeLink) {
+                navLinks.forEach(link => link.classList.remove('active'));
+                activeLink.classList.add('active');
+            }
+
+            // Función para cerrar el menú móvil
+            function closeMobileMenu() {
+                 mainNav.classList.remove('open');
+                 menuToggle.setAttribute('aria-expanded', 'false');
+                 // Change the icon back to hamburger
+                 menuToggle.querySelector('i').classList.remove('fa-times');
+                 menuToggle.querySelector('i').classList.add('fa-bars');
+                 body.classList.remove('nav-open'); // Remove body overlay class
+            }
+
+            // Toggle del menú móvil al hacer clic en el botón
+            menuToggle.addEventListener('click', function() {
+                const isOpen = mainNav.classList.contains('open');
+                if (isOpen) {
+                    closeMobileMenu();
+                } else {
+                    mainNav.classList.add('open');
+                    this.setAttribute('aria-expanded', 'true');
+                    // Change icon
+                    this.querySelector('i').classList.remove('fa-bars');
+                    this.querySelector('i').classList.add('fa-times'); // 'X' icon
+                    body.classList.add('nav-open'); // Add body overlay class
+                }
+            });
+
+            // Agregar listeners de eventos a los enlaces de la navegación principal
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    const targetSectionId = this.dataset.section;
+                    showSection(`section-${targetSectionId}`);
+                    updateNavActive(this);
+
+                    // Cerrar el menú móvil si está abierto (solo relevante en móvil)
+                    // Comprobamos si el menú está abierto (basado en el ancho de pantalla implícitamente por CSS)
+                    if (window.innerWidth <= 768) { // Check if we are likely in mobile view
+                         closeMobileMenu();
+                    }
+                });
+            });
+
+            // Manejo básico del botón de Constancias (ejemplo)
+            const constanciasButton = document.getElementById('constancias-button');
+            const constanciasInput = document.getElementById('matricula-input');
+            const constanciasResultsDiv = document.getElementById('constancias-results');
+
+            if (constanciasButton && constanciasInput && constanciasResultsDiv) {
+                constanciasButton.addEventListener('click', function() {
+                    const matricula = constanciasInput.value.trim();
+                    if (matricula) {
+                        constanciasResultsDiv.style.color = 'orange'; // Use UMAN orange for loading
+                        constanciasResultsDiv.textContent = `Buscando documentos para matrícula: ${matricula}...`;
+
+                        setTimeout(() => {
+                            if (matricula === '003367') { // Example: hardcoded success for one number
+                                constanciasResultsDiv.style.color = 'green';
+                                constanciasResultsDiv.textContent = `Documentos para matrícula ${matricula} encontrados. (Simulado)`;
+                                // You could add logic here to show download links
+                            } else {
+                                constanciasResultsDiv.style.color = 'red';
+                                constanciasResultsDiv.textContent = `No se encontraron documentos para matrícula ${matricula}. (Simulado)`;
+                            }
+
+                        }, 1500);
+                    } else {
+                        constanciasResultsDiv.style.color = 'red';
+                        constanciasResultsDiv.textContent = 'Por favor, ingresa tu número de matrícula.';
+                    }
+                });
+            }
+
+             // Close menu if clicking outside when it's open (optional but good UX)
+             // Add listener to the overlay itself if it exists, or to body checking click target
+             document.body.addEventListener('click', function(event) {
+                 // Check if the click is outside the menu and not the toggle button, AND the menu is open
+                 if (mainNav.classList.contains('open') && !mainNav.contains(event.target) && !menuToggle.contains(event.target)) {
+                     closeMobileMenu();
+                 }
+             });
+
+             // Close menu on window resize (helps prevent layout issues if resizing from mobile to desktop)
+             window.addEventListener('resize', function() {
+                 if (window.innerWidth > 768 && mainNav.classList.contains('open')) {
+                     closeMobileMenu();
+                 }
+             });
+
+
+            // Estado inicial: mostrar la sección 'inicio' al cargar la página
+            showSection('section-inicio');
+            updateNavActive(document.querySelector('#main-nav ul li a[data-section="inicio"]'));
+
+            // Note: Sidebar links within sections are not filtered by the main nav toggle.
+            // Their behavior (e.g., filtering gallery images, showing specific PDFs)
+            // would require additional JavaScript logic specific to each section's needs.
+        });
+    </script>
+
+</body>
+</html>
