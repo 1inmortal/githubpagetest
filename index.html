@@ -23,6 +23,7 @@
   <!-- CSS Styles (Enhanced Visual Details)                         -->
   <!-- ============================================================ -->
   <style>
+    
     /* ============================================================
        :root VARIABLES & THEMES
        ------------------------------------------------------------
@@ -49,10 +50,6 @@
       --color-border: hsla(var(--hue), var(--saturation), calc(var(--brightness-accent) / 2), 0.3);
       --color-glass-bg: hsla(var(--hue), 30%, 15%, 0.15); /* Slightly more opaque glass */
       --color-glass-hover: hsla(var(--hue), 40%, 20%, 0.25); /* Glass background on hover */
-
-      --color-feedback-success: hsla(120, 70%, var(--brightness-feedback-success), 1);
-      --color-feedback-error: hsla(0, 100%, var(--brightness-feedback-error), 1);
-      --color-feedback-warning: hsla(45, 100%, var(--brightness-feedback-warning), 1);
 
       /* RGB for Shadows/Glows */
       --color-accent-rgb: 0, 255, 170;
@@ -392,9 +389,14 @@
     .hud-corner::before {
         content: '';
         position: absolute;
-        background-color: var(--hud-data-streak-color); /* Using streak color for these */
-        opacity: 0.8;
-        animation: corner-scan var(--hud-scan-speed) linear infinite;
+        background: repeating-linear-gradient(
+          to right,
+          var(--hud-dot-color) 0 2px,
+          transparent 2px 4px
+        );
+        width: var(--hud-scan-width);
+        height: var(--hud-line-thickness);
+        animation: corner-scan var(--hud-scan-speed) ease-in-out infinite;
     }
      /* Specific positioning and animation for each corner's pseudo-element */
     .hud-corner.top-left::before {
@@ -436,7 +438,7 @@
       }
       @keyframes corner-scan-br {
           0% { transform: translateY(0); }
-          100% { transform: translateY(calc(var(--hud-corner-size) + var(--hud-border-width)))); }
+          100% { transform: translateY(calc(var(--hud-corner-size) + var(--hud-border-width))); }
       }
 
 
@@ -497,9 +499,19 @@
     .hud-line::before {
         content: '';
         position: absolute;
-        background-color: var(--hud-data-streak-color);
-        opacity: 0.7;
-        animation: line-streak 3s linear infinite;
+        background: linear-gradient(
+          to right,
+          transparent 0%,
+          var(--color-accent-glow) 50%,
+          transparent 100%
+        );
+        opacity: 0.6;
+        animation: line-burst 1.5s ease-in-out infinite;
+    }
+    @keyframes line-burst {
+      0%   { transform: translateX(-100%); opacity: 0; }
+      50%  { opacity: 1; }
+      100% { transform: translateX(100%); opacity: 0; }
     }
      .hud-line.top::before, .hud-line.bottom::before {
          width: 10px; height: 100%;
@@ -654,6 +666,7 @@
       transition: transform var(--transition-medium), box-shadow var(--transition-medium), background-color var(--transition-medium), border-color var(--transition-fast);
       position: relative; /* Needed for potential pseudo-elements */
       overflow: hidden; /* Hide scanline overflow */
+      animation: readout-buffer 6s infinite ease-in-out;
     }
     .content-box:hover {
       transform: translateY(-8px); /* More pronounced hover */
@@ -664,6 +677,25 @@
      /* Subtle animated scanline on hover */
      /* Removed redundant scanlines from content-box, keeping it simple or using a different effect */
      /* Let's stick to border/shadow transitions for content-box hover for simplicity */
+
+    .content-box::before {
+      content:'';
+      position:absolute;
+      top:0; left:0; width:100%; height:3px;
+      background: var(--color-accent);
+      transform: scaleX(0);
+      transform-origin: left center;
+      opacity: 0;
+    }
+    .content-box:hover::before,
+    .content-box.scanned::before {
+      animation: box-scan 0.6s ease-out forwards;
+    }
+    @keyframes box-scan {
+      0%   { transform: scaleX(0); opacity: 0; }
+      30%  { opacity: 1; }
+      100% { transform: scaleX(1); opacity: 0; }
+    }
 
 
     /* ============================================================
@@ -885,12 +917,39 @@
       color: var(--color-accent);
       text-shadow: var(--hud-glow); letter-spacing: 2px; text-transform: uppercase;
     }
-    .section-title::before, .section-title::after { /* Decorative lines */
-      content: ''; position: absolute; left: 50%; transform: translateX(-50%);
-      height: 2px; background: var(--color-border); width: 50%;
+    /* Define los símbolos que aparecerán */
+    .section-title::before,
+    .section-title::after {
+      content: '///';
+      opacity: 0;
+      color: var(--color-accent);
+      font-size: 0.8em;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      transition: none;
     }
-    .section-title::before { top: -15px; width: 25%; }
-    .section-title::after { bottom: -15px; }
+    .section-title::before { left: -2em; }
+    .section-title::after  { right: -2em; }
+
+    /* Animación de parpadeo */
+    @keyframes header-flash {
+      0%,100% { opacity: 0; }
+      10%,30% { opacity: 1; }
+      20%,40% { opacity: 0; }
+    }
+    /* Al hacerse visible la sección, disparar la animación una vez */
+    .section-container.visible .section-title::before,
+    .section-container.visible .section-title::after {
+      animation: header-flash 1s ease-out 1;
+    }
+    /* Reduce el movimiento si el usuario prefiere poca animación */
+    @media (prefers-reduced-motion: reduce) {
+      .section-title::before,
+      .section-title::after {
+        animation: none;
+      }
+    }
 
     /* --- ABOUT --- */
     .about-content {
@@ -954,15 +1013,18 @@
     }
      /* Subtle animated sparkle effect on the fill bar */
      .progress-fill::after {
-         content: '';
-         position: absolute;
-         top: 0; bottom: 0; right: 0; /* Position at the end of the bar */
-         width: 10px; /* Width of the sparkle */
-         background: radial-gradient(circle at center, rgba(255, 255, 255, 0.8) 0%, rgba(var(--color-accent-rgb), 0.5) 50%, transparent 100%);
-         opacity: 0; /* Hidden by default */
-         transform: translateX(50%); /* Start outside the bar */
-         animation: sparkle 1s linear infinite;
-         animation-play-state: paused; /* Paused initially */
+         content:'';
+         position:absolute; top:0; right:0;
+         width:12px; height:100%;
+         background: radial-gradient(
+           circle at center,
+           rgba(255,255,255,0.8) 0%,
+           rgba(var(--color-accent-rgb),0.5) 50%,
+           transparent 100%
+         );
+         transform: translateX(100%);
+         animation: sparkle 1.2s ease-out forwards;
+         animation-delay: 0.3s;
      }
       .progress-bar-container.animate-fill .progress-fill::after {
           animation-play-state: running; /* Run when fill animates */
@@ -1035,8 +1097,23 @@
     }
     /* Vertical line */
     .timeline-list::before {
-      content: ''; position: absolute; top: 0; bottom: 0; left: 15px; /* Adjusted position */
-      width: 2px; background: linear-gradient(to bottom, transparent 0%, var(--color-border) 10%, var(--color-border) 90%, transparent 100%); /* Faded ends */
+      content:'';
+      position:absolute;
+      top:0; bottom:0; left:15px;
+      width:2px;
+      background: linear-gradient(
+        to bottom,
+        transparent 0%, var(--color-border) 20%, var(--color-border) 80%, transparent 100%
+      );
+      background-size: 100% 200%;
+      animation: timeline-flow 10s linear infinite;
+    }
+    @keyframes timeline-flow {
+      0%   { background-position: 0% 0%; }
+      100% { background-position: 0% 100%; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .timeline-list::before { animation: none; }
     }
     .timeline-item {
       padding: 15px; /* Less padding inside */
@@ -1505,7 +1582,15 @@
       .branding a { font-size: 1.3rem; }
       .header-controls { gap: 5px; }
       #muteButton { padding: 6px; }
-      .filter-panel { width: 95%; max-width: 95%; max-height: 80vh;}
+      .filter-panel {
+        position: fixed; top:0; left:0;
+        width:75vw; max-width:300px;
+        transform: translateX(-100%); opacity:0;
+        transition: transform .3s ease, opacity .2s ease;
+      }
+      .filter-panel.open {
+        transform: translateX(0); opacity:1;
+      }
       .hero { padding: 80px 5% 40px 5%; margin-top: -70px;}
       .hero h1 { font-size: clamp(2rem, 7vw, 4rem); letter-spacing: 0.02em; margin-bottom: 15px; }
       .hero p { font-size: clamp(0.9rem, 2vw, 1.1rem); }
@@ -1584,6 +1669,156 @@
         .modal-content p { font-size: 0.9rem; }
     }
 
+    body::before {
+      content:'';
+      position:fixed; inset:0;
+      pointer-events:none;
+      z-index:-1; /* justo encima del fondo */
+      background-image:
+        linear-gradient(rgba(var(--color-accent-rgb),0.05) 1px, transparent 1px),
+        linear-gradient(to right, rgba(var(--color-accent-rgb),0.05) 1px, transparent 1px);
+      background-size: 50px 50px;
+      animation: grid-shift 60s linear infinite;
+    }
+    @keyframes grid-shift {
+      0%   { background-position: 0   0; }
+      100% { background-position: 100px 100px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      body::before { animation: none; }
+    }
+
+    /* Track */
+    ::-webkit-scrollbar {
+      width: 8px;
+      background: rgba(var(--color-bg),0.3);
+    }
+    /* Thumb */
+    ::-webkit-scrollbar-thumb {
+      background: var(--color-accent);
+      border-radius: 4px;
+      box-shadow: 0 0 5px var(--color-accent-glow);
+    }
+    /* Hover */
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--color-accent-dark);
+    }
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      scrollbar-color: var(--color-accent) rgba(var(--color-bg),0.3);
+      scrollbar-width: thin;
+    }
+
+    /* ESTILOS PARA LISTA DE DATOS DE CERTIFICADOS */
+    .cert-data-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-main);
+    }
+    .cert-list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 15px;
+      border-bottom: 1px solid var(--color-border);
+      transition: background var(--transition-fast), color var(--transition-fast);
+      position: relative;
+    }
+    .cert-list-item .cert-name {
+      font-family: var(--font-heading);
+      color: var(--color-accent);
+      margin-right: 10px;
+    }
+    .cert-list-item span {
+      margin-right: 10px;
+    }
+    .cert-list-item .cert-status {
+      font-weight: bold;
+    }
+    .cert-list-item:hover {
+      background: rgba(var(--color-accent-rgb), 0.1);
+      color: var(--color-accent);
+    }
+    .cert-list-item:hover::before {
+      content: '>';
+      position: absolute;
+      left: 5px;
+      color: var(--color-accent);
+    }
+
+    /* Split layout y panel de estadísticas en About */
+    #about .about-content {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 30px;
+      align-items: start;
+    }
+    @media (max-width: var(--tablet-break)) {
+      #about .about-content {
+        display: flex;
+        flex-direction: column;
+      }
+    }
+    .about-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .about-stats h3 {
+      font-family: var(--font-heading);
+      font-size: 1.2rem;
+      color: var(--color-accent);
+      text-shadow: var(--hud-text-shadow);
+      margin-bottom: 8px;
+    }
+    .about-stats .stat-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      font-family: var(--font-main);
+      font-size: 0.9rem;
+      color: var(--color-text);
+      border-bottom: 1px solid var(--color-border);
+    }
+    .about-stats .stat-item:last-child {
+      border-bottom: none;
+    }
+
+    /* Overlays temáticos para la imagen */
+    .about-image {
+      position: relative;
+      overflow: hidden;
+    }
+    .about-image::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(to right, transparent, rgba(var(--color-accent-rgb), 0.3) 50%, transparent);
+      transform: skewX(-25deg);
+      opacity: 0;
+      pointer-events: none;
+    }
+    .about.visible .about-image::before,
+    .about-image:hover::before {
+      animation: profile-image-scan 0.8s linear forwards;
+    }
+    @keyframes profile-image-scan {
+      0%   { left: -100%; opacity: 0; }
+      10%  { opacity: 0.5; }
+      100% { left: 100%; opacity: 0; }
+    }
+    .about-image::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border: 1px dashed var(--color-accent);
+      pointer-events: none;
+      box-shadow: var(--hud-glow);
+    }
   </style>
 
 </head>
@@ -1747,13 +1982,23 @@
           >
           <div class="image-hud-overlay">ID_SCAN: ARMANDO</div>
         </div>
+        <div class="about-stats content-box" id="aboutStats">
+          <h3>Perfil del Sistema</h3>
+          <div class="stat-item"><span>UID:</span><span>INMORTAL_v2.5</span></div>
+          <div class="stat-item"><span>SISTEMA:</span><span class="hud-ok">ONLINE</span></div>
+          <div class="stat-item"><span>Carga Actual:</span><span>45%</span></div>
+          <div class="progress-bar-container" data-label="45"><div class="progress-bar-fill" data-skill-level="45"></div></div>
+          <div class="stat-item"><span>Componentes Verificados:</span></div>
+          <div class="tech-tags"><span>HTML5</span><span>CSS3</span><span>JS</span><span>React</span></div>
+        </div>
       </div>
     </section>
 
     <!-- SKILLS -->
-    <section class="skills section-container reveal" id="skills">
+    <section class="skills section-container reveal" id="skills" style="position: relative;">
+      <canvas id="skillsVis" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:1; opacity:0.1;"></canvas>
       <h2 class="section-title glitch-text" data-text="Habilidades /// Skill_Matrix">Habilidades /// Skill_Matrix</h2>
-      <div class="skills-grid">
+      <div class="skills-grid" style="position: relative; z-index:2;">
         <div class="skill-item content-box">
           <img data-src="IMG/HABILIDADES/html-5.png" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="HTML5" loading="lazy">
           <h3>HTML5</h3>
@@ -1897,52 +2142,36 @@
     <!-- CERTIFICATES -->
     <section class="certificados section-container reveal" id="certificados">
       <h2 class="section-title glitch-text" data-text="Certificados Digitales /// Credential_Vault">Certificados Digitales /// Credential_Vault</h2>
-      <div class="certifications-grid">
-         <div class="certification-item content-box">
-             <img data-src="Certificados/src/img/html-css-js.jpeg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Certificado HTML, CSS, JavaScript" class="certification-image" loading="lazy">
-             <div class="certification-overlay">
-                 <div class="overlay-info">
-                     <h3>[IBM] Web Dev Foundations</h3>
-                     <p>HTML, CSS, JavaScript Essentials.</p>
-                     <p>Emitido: 05/03/2025</p>
-                     <button class="hud-button small modal-trigger" data-modal-id="modal-cert1">Ver Credencial</button>
-                 </div>
-             </div>
-         </div>
-         <div class="certification-item content-box">
-             <img data-src="Certificados/src/img/Generative AI-Elevate your Software Development.jpeg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Certificado Generative AI" loading="lazy">
-              <div class="certification-overlay">
-                 <div class="overlay-info">
-                     <h3>[IBM] Generative AI Dev</h3>
-                     <p>AI aplicada a Software Engineering.</p>
-                     <p>Emitido: 10/04/2025</p>
-                     <button class="hud-button small modal-trigger" data-modal-id="modal-cert2">Ver Credencial</button>
-                 </div>
-             </div>
-         </div>
-          <div class="certification-item content-box">
-             <img data-src="Certificados/src/img/Getting Started with Git and GitHub.jpeg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Certificado Git y GitHub" loading="lazy">
-              <div class="certification-overlay">
-                 <div class="overlay-info">
-                     <h3>[IBM] Git & GitHub Mastery</h3>
-                     <p>Version Control & Collaboration.</p>
-                     <p>Emitido: 15/04/2025</p>
-                     <button class="hud-button small modal-trigger" data-modal-id="modal-cert3">Ver Credencial</button>
-                 </div>
-             </div>
-         </div>
-          <div class="certification-item content-box">
-             <img data-src="Certificados/src/img/Certificado Ciberseguridad.jpeg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Certificado Ciberseguridad" loading="lazy">
-              <div class="certification-overlay">
-                 <div class="overlay-info">
-                     <h3>[Google] Cybersecurity Foundations</h3>
-                     <p>Protecting Digital Assets.</p>
-                     <p>Emitido: 28/03/2025</p>
-                     <button class="hud-button small modal-trigger" data-modal-id="modal-cert4">Ver Credencial</button>
-                 </div>
-             </div>
-         </div>
-      </div>
+      <ul class="cert-data-list content-box">
+         <li class="cert-list-item" data-modal-id="modal-cert1">
+             <span class="cert-name">[IBM] Web Dev Foundations</span>
+             <span class="cert-issuer">IBM</span>
+             <span class="cert-date">2025-03-05</span>
+             <span class="cert-status hud-ok">[VERIFIED]</span>
+             <button class="hud-button small modal-trigger" data-modal-id="modal-cert1">[VER]</button>
+         </li>
+         <li class="cert-list-item" data-modal-id="modal-cert2">
+             <span class="cert-name">[IBM] Generative AI Dev</span>
+             <span class="cert-issuer">IBM</span>
+             <span class="cert-date">2025-04-10</span>
+             <span class="cert-status hud-ok">[VERIFIED]</span>
+             <button class="hud-button small modal-trigger" data-modal-id="modal-cert2">[VER]</button>
+         </li>
+          <li class="cert-list-item" data-modal-id="modal-cert3">
+             <span class="cert-name">[IBM] Git & GitHub Mastery</span>
+             <span class="cert-issuer">IBM</span>
+             <span class="cert-date">2025-04-15</span>
+             <span class="cert-status hud-ok">[VERIFIED]</span>
+             <button class="hud-button small modal-trigger" data-modal-id="modal-cert3">[VER]</button>
+         </li>
+          <li class="cert-list-item" data-modal-id="modal-cert4">
+             <span class="cert-name">[Google] Cybersecurity Foundations</span>
+             <span class="cert-issuer">Google</span>
+             <span class="cert-date">2025-03-28</span>
+             <span class="cert-status hud-ok">[VERIFIED]</span>
+             <button class="hud-button small modal-trigger" data-modal-id="modal-cert4">[VER]</button>
+         </li>
+      </ul>
     </section>
 
     <!-- PROCESS -->
@@ -2884,7 +3113,7 @@
             '#about .section-title': { es: 'Sobre Mí /// User_Profile', en: 'About Me /// User_Profile' },
             'aboutText': {
                 es: `<p>Soy un desarrollador apasionado por la creación de experiencias digitales innovadoras. Con una sólida formación en diseño y programación, me especializo en fusionar estética y funcionalidad para ofrecer soluciones que no solo son visualmente atractivas sino también altamente eficientes.</p><p>Mi enfoque se centra en entender las necesidades de mis clientes y usuarios para desarrollar proyectos que superen sus expectativas. Siempre busco estar al día con las últimas tendencias y tecnologías para asegurar que cada proyecto sea relevante y de vanguardia.</p>`,
-                en: `<p>I am a developer passionate about creating innovative digital experiences. With a solid background in design and programming, I specialize in merging aesthetics and functionality to provide solutions that are not only visually appealing but also highly efficient.</p><p>My approach focuses on understanding clients’ and users’ needs to develop projects that exceed their expectations. I always seek to stay up-to-date with the latest trends and technologies to ensure each project is relevant and cutting-edge.</p>`
+                en: `<p>I am a developer passionate about creating innovative digital experiences. With a solid background in design and programming, I specialize in merging aesthetics and functionality to provide solutions that are not only visually appealing but also highly efficient.</p><p>My approach focuses on understanding clients' and users' needs to develop projects that exceed their expectations. I always seek to stay up-to-date with the latest trends and technologies to ensure each project is relevant and cutting-edge.</p>`
             },
             '#skills .section-title': { es: 'Habilidades /// Skill_Matrix', en: 'Skills /// Skill_Matrix'},
             '.skill-level': { 'Nivel: Experto // 90%': { es: 'Nivel: Experto // 90%', en: 'Level: Expert // 90%'}, 'Nivel: Avanzado // 85%': { es: 'Nivel: Avanzado // 85%', en: 'Level: Advanced // 85%'}, 'Nivel: Avanzado // 80%': { es: 'Nivel: Avanzado // 80%', en: 'Level: Advanced // 80%'}, 'Nivel: Intermedio // 75%': { es: 'Nivel: Intermedio // 75%', en: 'Level: Intermediate // 75%'}, 'Nivel: Intermedio // 70%': { es: 'Nivel: Intermedio // 70%', en: 'Level: Intermediate // 70%'}, 'Nivel: En Progreso // 60%': { es: 'Nivel: En Progreso // 60%', en: 'Level: In Progress // 60%'}, 'Nivel: Experto // 90%': { es: 'Nivel: Experto // 90%', en: 'Level: Expert // 90%'}, 'Nivel: Avanzado // 80%': { es: 'Nivel: Avanzado // 80%', en: 'Level: Advanced // 80%'}}, // More granular skill level translation
@@ -3285,7 +3514,211 @@
 
 
         console.log("System Interface Initialized.");
+
+        function animateDataFlow() {
+          if (window.innerWidth <= mobileBreak) return;
+          // Creamos un "río" de streaks
+          const river = document.createElement('div');
+          river.className = 'data-river';
+          hudOverlay.appendChild(river);
+          // Tras 4s lo eliminamos y reiniciamos
+          setTimeout(() => {
+            river.remove();
+            animateDataFlow();
+          }, 4000);
+        }
+        animateDataFlow();
+
+        function animateGlitchPixels() {
+          if (window.innerWidth <= mobileBreak) return;
+          if (Math.random() > 0.92) {
+            const count = Math.floor(Math.random()*5 + 1);
+            for (let i=0; i<count; i++) {
+              const g = document.createElement('div');
+              g.className = 'hud-dynamic-bit glitch';
+              g.style.left = Math.random()*window.innerWidth + 'px';
+              g.style.top  = Math.random()*window.innerHeight + 'px';
+              hudOverlay.appendChild(g);
+              setTimeout(()=> g.remove(), 200);
+            }
+          }
+          setTimeout(animateGlitchPixels, Math.random()*150 + 50);
+        }
+        animateGlitchPixels();
+
+        function createClickWave(x,y) {
+          const w = document.createElement('div');
+          w.className = 'click-wave';
+          w.style.left = x+'px'; w.style.top = y+'px';
+          hudOverlay.appendChild(w);
+          w.addEventListener('animationend',()=>w.remove(),{once:true});
+        }
+        document.addEventListener('click', e=>{
+          if (window.innerWidth>mobileBreak) createClickWave(e.clientX,e.clientY);
+        });
+
+        function animateCounter(el, target, duration=800) {
+          let start = 0;
+          const step = Math.ceil(target / (duration / 16));
+          const tick = () => {
+            start = Math.min(start + step, target);
+            el.textContent = start + (el.dataset.suffix||'');
+            if (start < target) requestAnimationFrame(tick);
+          };
+          tick();
+        }
+        // Ejemplo: al revelar loaderPercentage
+        revealObserver = new IntersectionObserver(entries=>{
+          entries.forEach(en=>{
+            if(en.isIntersecting && en.target.id==='loaderPercentage') {
+              const val = parseInt(en.target.textContent);
+              animateCounter(en.target,val,1000);
+              revealObserver.unobserve(en.target);
+            }
+          });
+        });
+        revealObserver.observe(document.getElementById('loaderPercentage'));
+
+        document.addEventListener('touchend', e=>{
+          const burst = document.createElement('div');
+          burst.className = 'touch-burst';
+          burst.style.left = `${e.changedTouches[0].clientX}px`;
+          burst.style.top  = `${e.changedTouches[0].clientY}px`;
+          document.body.append(burst);
+          burst.addEventListener('animationend', ()=>burst.remove(), { once:true });
+        });
+
+        document.querySelectorAll('.project-item video').forEach(video=>{
+          if(window.innerWidth<=tabletBreak){
+            video.addEventListener('click', ()=>{
+              const src = video.dataset.src;  // usar data-src en el source
+              if(!video.src){
+                video.src = src;
+                video.load();
+                video.play().catch(()=>{/* manejo errores */});
+              }
+            }, { once:true });
+          }
+        });
+
+        function createDataStreak(x,y) {
+          const streak = document.createElement('div');
+          streak.classList.add('hud-dynamic-bit','streak');
+          streak.style.left = `${x}px`;
+          streak.style.top  = `${y}px`;
+          // Variables CSS para la trayectoria (ya definidos en tu CSS)
+          streak.style.setProperty('--move-x', `${Math.random()*(-100)+50}px`);
+          streak.style.setProperty('--move-y', `${Math.random()*(-100)+50}px`);
+          hudOverlay.append(streak);
+          streak.addEventListener('animationend', ()=>streak.remove());
+        }
+        // Adjuntarlo a eventos:
+        document.querySelectorAll('.hud-button.primary').forEach(btn =>
+          btn.addEventListener('click', e => createDataStreak(e.clientX,e.clientY))
+        );
+
+        // CURSOR TRAIL (Canvas)
+        if (window.innerWidth > mobileBreak && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            const trailCanvas = document.createElement('canvas');
+            trailCanvas.id = 'cursorTrail';
+            document.body.appendChild(trailCanvas);
+            const trailCtx = trailCanvas.getContext('2d');
+
+            function resizeTrailCanvas() {
+                trailCanvas.width = window.innerWidth;
+                trailCanvas.height = window.innerHeight;
+            }
+            trailCanvas.style.position = 'fixed';
+            trailCanvas.style.top = '0';
+            trailCanvas.style.left = '0';
+            trailCanvas.style.width = '100%';
+            trailCanvas.style.height = '100%';
+            trailCanvas.style.pointerEvents = 'none';
+            trailCanvas.style.zIndex = '999';
+            resizeTrailCanvas();
+            window.addEventListener('resize', resizeTrailCanvas);
+
+            window.addEventListener('mousemove', (e) => {
+                trailCtx.globalCompositeOperation = 'source-over';
+                trailCtx.fillStyle = 'rgba(var(--color-accent-rgb), 0.8)';
+                trailCtx.beginPath();
+                trailCtx.arc(e.clientX, e.clientY, 3, 0, Math.PI * 2);
+                trailCtx.fill();
+            });
+
+            function animateCursorTrail() {
+                requestAnimationFrame(animateCursorTrail);
+                trailCtx.globalCompositeOperation = 'destination-out';
+                trailCtx.fillStyle = 'rgba(0,0,0,0.05)';
+                trailCtx.fillRect(0, 0, trailCanvas.width, trailCanvas.height);
+            }
+            animateCursorTrail();
+        }
+
+        // DECORATIVE_DATA_VIS: Animación de barras en Skills
+        const skillsSection = document.getElementById('skills');
+        const skillsCanvas = document.getElementById('skillsVis');
+        if (skillsSection && skillsCanvas && window.innerWidth > mobileBreak) {
+            const skCtx = skillsCanvas.getContext('2d');
+            function resizeSkillsCanvas() {
+                skillsCanvas.width = skillsSection.clientWidth;
+                skillsCanvas.height = skillsSection.clientHeight;
+            }
+            resizeSkillsCanvas();
+            window.addEventListener('resize', resizeSkillsCanvas);
+
+            let bars = [];
+            const numBars = 10;
+            function initBars() {
+                bars = [];
+                for (let i = 0; i < numBars; i++) {
+                    bars.push({
+                        x: (i + 0.5) * skillsCanvas.width / numBars,
+                        width: skillsCanvas.width / (numBars * 2),
+                        height: Math.random() * skillsCanvas.height,
+                        speed: Math.random() * 0.5 + 0.2,
+                        dir: Math.random() > 0.5 ? 1 : -1
+                    });
+                }
+            }
+            function animateSkillsVis() {
+                skCtx.clearRect(0, 0, skillsCanvas.width, skillsCanvas.height);
+                bars.forEach(bar => {
+                    bar.height += bar.speed * bar.dir;
+                    if (bar.height < skillsCanvas.height * 0.1 || bar.height > skillsCanvas.height) bar.dir *= -1;
+                    skCtx.fillStyle = 'rgba(var(--color-accent-rgb), 0.3)';
+                    skCtx.fillRect(bar.x - bar.width / 2, skillsCanvas.height - bar.height, bar.width, bar.height);
+                });
+                requestAnimationFrame(animateSkillsVis);
+            }
+            const skillsObserver = new IntersectionObserver((entries, obs) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        initBars();
+                        animateSkillsVis();
+                        obs.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.3 });
+            skillsObserver.observe(skillsSection);
+        }
+
+        // Aplicar efecto typewriter al texto de About
+        const aboutTextEl = document.getElementById('aboutText');
+        const fullText = aboutTextEl.textContent.trim();
+        aboutTextEl.textContent = '';
+        function typeBio(i) {
+          if (i <= fullText.length) {
+            aboutTextEl.textContent = fullText.slice(0, i);
+            setTimeout(() => typeBio(i + 1), 20);
+          }
+        }
+        if (document.querySelector('.about.visible')) {
+          typeBio(0);
+        }
     });
+
+    
   </script>
 
 </body>
