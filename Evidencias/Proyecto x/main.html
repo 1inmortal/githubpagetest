@@ -985,6 +985,43 @@
   </style>
 </head>
 <body>
+  <!-- Plantillas para contenido dinámico -->
+  <template id="tpl-data-item">
+    <div class="data-item" data-id="" data-type="">
+      <div class="program-name"></div>
+      <div class="program-desc"></div>
+      <div class="new-flag"></div>
+    </div>
+  </template>
+  <template id="tpl-mission-item">
+    <div class="mission-item" data-id="">
+      <div class="subroutine-name"></div>
+      <div class="subroutine-threat"></div>
+      <div class="mission-progress">
+        <div class="progress-bar"><div class="progress-fill"></div></div>
+        <span class="progress-text"></span>
+      </div>
+      <div class="new-flag"></div>
+    </div>
+  </template>
+  <template id="tpl-chat-message">
+    <div class="chat-message" data-author="" data-timestamp="">
+      <span class="author"></span>: <span class="message"></span>
+    </div>
+  </template>
+  <template id="tpl-history-entry">
+    <li class="history-entry" data-timestamp=""><span class="entry-text"></span></li>
+  </template>
+  <template id="tpl-notification">
+    <div class="cyber-notification" data-type="">
+      <i class="icon"></i><span class="text"></span>
+    </div>
+  </template>
+  <template id="tpl-integration-item">
+    <li class="integration-item" data-status="">
+      <i class="icon"></i><span class="integration-text"></span>
+    </li>
+  </template>
   <!-- Overlay de Carga -->
   <div id="loading-overlay">
     <div class="loader"></div>
@@ -1318,33 +1355,33 @@
 
         // --- DATOS DE EJEMPLO ---
         const projectData = { // Active Runs
-             neonui: { id:'neonui', title: "Neon Core UI", subtitle: "Core visual interface daemon.", description: `<strong>Process ID:</strong> 774-UI-CORE<br><strong>Status:</strong> Stable<br><strong>Description:</strong> Renders the primary Cyberdeck OS visual matrix using accelerated hardware paths. Optimized for low-latency neural feedback.<br><strong>Dependencies:</strong> [gfx_driver_v4.dll], [neural_link_api.sys]`, image: "src/img/celestial.jpg", video: "src/video/preview1.mp4" }, // Ejemplo con video
-             hackingpanel: { id:'hackingpanel', title: "ICE Breaker Suite", subtitle: "Active netrunning toolkit.", description: `<strong>Process ID:</strong> 901-ICE-BRK<br><strong>Status:</strong> Active Scan<br><strong>Description:</strong> Suite of intrusion countermeasures electronic (ICE) penetration tools. Currently scanning target node [192.168.77.101]. Includes 'Wraith', 'Spectre', and 'Hammer' modules.<br><strong>Warning:</strong> High risk of counter-intrusion detected.`, image: "https://i.pinimg.com/736x/5f/05/21/5f0521673937e41576b3e8e68071acdd.jpg" },
-             braininterface: { id:'braininterface', title: "Project Chimera (BCI)", subtitle: "Neural interface bridge.", description: `<strong>Process ID:</strong> 003-BCI-LINK<br><strong>Status:</strong> Linked<br><strong>Description:</strong> Experimental Brain-Computer Interface protocol for direct data transfer and system control via neural implant. Calibration required for optimal bandwidth.<br><strong>Bio-Monitor:</strong> Neural stress levels nominal.` /* Sin imagen por defecto */ }
+             neonui: { id:'neonui', manifestMode:'network', title: "Neon Core UI", subtitle: "Core visual interface daemon.", description: `<strong>Process ID:</strong> 774-UI-CORE<br><strong>Status:</strong> Stable<br><strong>Description:</strong> Renders the primary Cyberdeck OS visual matrix using accelerated hardware paths. Optimized for low-latency neural feedback.<br><strong>Dependencies:</strong> [gfx_driver_v4.dll], [neural_link_api.sys]`, image: "src/img/celestial.jpg", video: "src/video/preview1.mp4" },
+             hackingpanel: { id:'hackingpanel', manifestMode:'network', title: "ICE Breaker Suite", subtitle: "Active netrunning toolkit.", description: `<strong>Process ID:</strong> 901-ICE-BRK<br><strong>Status:</strong> Active Scan<br><strong>Description:</strong> Suite of intrusion countermeasures electronic (ICE) penetration tools. Currently scanning target node [192.168.77.101]. Includes 'Wraith', 'Spectre', and 'Hammer' modules.<br><strong>Warning:</strong> High risk of counter-intrusion detected.`, image: "https://i.pinimg.com/736x/5f/05/21/5f0521673937e41576b3e8e68071acdd.jpg" },
+             braininterface: { id:'braininterface', manifestMode:'network', title: "Project Chimera (BCI)", subtitle: "Neural interface bridge.", description: `<strong>Process ID:</strong> 003-BCI-LINK<br><strong>Status:</strong> Linked<br><strong>Description:</strong> Experimental Brain-Computer Interface protocol for direct data transfer and system control via neural implant. Calibration required for optimal bandwidth.<br><strong>Bio-Monitor:</strong> Neural stress levels nominal.` }
         };
         const missionData = { // Subroutines
-             badlands: { id:'badlands', title: "Data Heist: Badlands Relay", image: "src/img/chica red.jpg", danger: "Threat Level: High", newFlag: true, progress: 100 },
-             "the-glen": { id:'the-glen', title: "Trace Route: The Glen Node", image: "src/img/chica red 2.jpg", danger: "Threat Level: High", newFlag: true, progress: 50 },
-             northside: { id:'northside', title: "System Scan: Northside District", image: "src/img/gotic.jpg", danger: "Threat Level: Moderate", newFlag: false, progress: 75 },
-             rancho: { id:'rancho', title: "Counter-Hack: Rancho Server Farm", image: "src/img/blanca como la nieve.jpg", danger: "Threat Level: Extreme", newFlag: true, progress: 40 }
+             badlands: { id:'badlands', manifestMode:'network', title: "Data Heist: Badlands Relay", image: "src/img/chica red.jpg", danger: "Threat Level: High", newFlag: true, progress: 100 },
+             "the-glen": { id:'the-glen', manifestMode:'network', title: "Trace Route: The Glen Node", image: "src/img/chica red 2.jpg", danger: "Threat Level: High", newFlag: true, progress: 50 },
+             northside: { id:'northside', manifestMode:'network', title: "System Scan: Northside District", image: "src/img/gotic.jpg", danger: "Threat Level: Moderate", newFlag: false, progress: 75 },
+             rancho: { id:'rancho', manifestMode:'network', title: "Counter-Hack: Rancho Server Farm", image: "src/img/blanca como la nieve.jpg", danger: "Threat Level: Extreme", newFlag: true, progress: 40 }
         };
         const sampleData = { // Para Utilities, Logs, Intel, Fragments
           herramientas: [ // Utilities
-            { id: 'tool1', title: "Packet Sniffer v7.2", subtitle: "Real-time network traffic analysis.", description: `<strong>Utility Type:</strong> Network Scanner<br><strong>Features:</strong> Deep packet inspection, protocol spoofing, passive/active modes. Supports encrypted streams (requires valid key).`, image:"src/img/tool1.png"},
-            { id: 'tool2', title: "Code Weaver IDE (Cracked)", subtitle: "AI-assisted development environment.", description: `<strong>Utility Type:</strong> Code Editor<br><strong>Features:</strong> Predictive syntax, automated debugging subroutines, direct neural coding interface (beta, unstable). Bypasses corporate licensing.`, image:"src/img/tool2.png"}
+            { id: 'tool1', manifestMode:'code', title: "Packet Sniffer v7.2", subtitle: "Real-time network traffic analysis.", description: `<strong>Utility Type:</strong> Network Scanner<br><strong>Features:</strong> Deep packet inspection, protocol spoofing, passive/active modes. Supports encrypted streams (requires valid key).`, image:"src/img/tool1.png"},
+            { id: 'tool2', manifestMode:'code', title: "Code Weaver IDE (Cracked)", subtitle: "AI-assisted development environment.", description: `<strong>Utility Type:</strong> Code Editor<br><strong>Features:</strong> Predictive syntax, automated debugging subroutines, direct neural coding interface (beta, unstable). Bypasses corporate licensing.`, image:"src/img/tool2.png"}
           ],
           logros: [ // Access Logs
-            { id: 'log1', title: "Initial Connection", subtitle: "Cyberdeck OS successfully booted.", description: `<strong>Timestamp:</strong> [System Boot Time]<br><strong>Event:</strong> Core system modules loaded. Neural link established.` },
-            { id: 'log2', title: "UI Matrix Reconfigured", subtitle: "Deck interface theme customized.", description: `<strong>Timestamp:</strong> [Theme Save Time]<br><strong>Event:</strong> User applied custom color matrix via Deck Settings.` },
-            { id: 'log3', title: "Subroutine Started", subtitle: "Executed 'Trace Route: The Glen Node'.", description: `<strong>Timestamp:</strong> [Execution Time]<br><strong>Event:</strong> Initiated subroutine against target node. Progress 0%.` }
+            { id: 'log1', manifestMode:'log', title: "Initial Connection", subtitle: "Cyberdeck OS successfully booted.", description: `<strong>Timestamp:</strong> [System Boot Time]<br><strong>Event:</strong> Core system modules loaded. Neural link established.` },
+            { id: 'log2', manifestMode:'log', title: "UI Matrix Reconfigured", subtitle: "Deck interface theme customized.", description: `<strong>Timestamp:</strong> [Theme Save Time]<br><strong>Event:</strong> User applied custom color matrix via Deck Settings.` },
+            { id: 'log3', manifestMode:'log', title: "Subroutine Started", subtitle: "Executed 'Trace Route: The Glen Node'.", description: `<strong>Timestamp:</strong> [Execution Time]<br><strong>Event:</strong> Initiated subroutine against target node. Progress 0%.` }
           ],
           contenido: [ // Intel
-             { id: 'intel1', title: "Arasaka Security Memo (Intercepted)", subtitle: "Increased patrols near Sector 7G.", description: `<strong>Source:</strong> Encrypted Comms Sniffer<br><strong>Reliability:</strong> B+<br><strong>Content:</strong> Internal Arasaka memo detailing heightened security drone patrols in Sector 7G following recent data breaches. Avoid aerial approaches.`, image: "src/img/intel1.png" },
-             { id: 'intel2', title: "Militech Weapon Spec (Leaked)", subtitle: "M-10AF Lexington - Prototype schematics.", description: `<strong>Source:</strong> Darknet Data Dump<br><strong>Reliability:</strong> A-<br><strong>Content:</strong> Partial schematics and performance data for the unreleased Militech Lexington pistol variant. Notes indicate experimental smart-link integration.` }
+             { id: 'intel1', manifestMode:'network', title: "Arasaka Security Memo (Intercepted)", subtitle: "Increased patrols near Sector 7G.", description: `<strong>Source:</strong> Encrypted Comms Sniffer<br><strong>Reliability:</strong> B+<br><strong>Content:</strong> Internal Arasaka memo detailing heightened security drone patrols in Sector 7G following recent data breaches. Avoid aerial approaches.`, image: "src/img/intel1.png" },
+             { id: 'intel2', manifestMode:'network', title: "Militech Weapon Spec (Leaked)", subtitle: "M-10AF Lexington - Prototype schematics.", description: `<strong>Source:</strong> Darknet Data Dump<br><strong>Reliability:</strong> A-<br><strong>Content:</strong> Partial schematics y performance data para el arma...` }
           ],
           ideas: [ // Fragments
-             { id: 'idea1', title: "ICE 'Black Wall' Bypass Theory", subtitle: "Potential exploit using buffer overflow.", description: `<strong>Concept:</strong> Theorized vulnerability in Arasaka's 'Black Wall' ICE. Requires precise timing and packet manipulation. High risk, high reward.`, image: "src/img/idea1.png" },
-             { id: 'idea2', title: "Neural Mod: 'Adrenaline Surge'", subtitle: "Concept for combat bio-mod.", description: `<strong>Concept:</strong> Software modification for existing combat implants to trigger controlled adrenaline release on demand. Requires firmware root access.` }
+             { id: 'idea1', manifestMode:'schematic', title: "ICE 'Black Wall' Bypass Theory", subtitle: "Potential exploit using buffer overflow.", description: `<strong>Concept:</strong> Theorized vulnerability en el ICE 'Black Wall'.`, image: "src/img/idea1.png" },
+             { id: 'idea2', manifestMode:'schematic', title: "Neural Mod: 'Adrenaline Surge'", subtitle: "Concept for combat bio-mod.", description: `<strong>Concept:</strong> Software mod para implantes de combate que...` }
           ]
         };
 
@@ -1665,6 +1702,9 @@
         // Manejar Selección de Item (Izquierda)
         function handleItemSelection(element, itemData, type) {
              if (!element || !itemData || !itemData.id) return; // Check
+
+            // Enrutamos al modo correspondiente en el panel central
+            renderManifest(itemData);
 
             document.querySelectorAll('.data-item.selected, .mission-item.selected').forEach(el => el.classList.remove('selected'));
             element.classList.add('selected');
