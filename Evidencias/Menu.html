@@ -1761,7 +1761,8 @@
              .social-links a.hud-link.social i { font-size: 1rem;}
         }
 
-    </style>
+      /* Aquí termina el CSS puro. El JS de efectos visuales y menú lateral se moverá a <script> al final del <body> */
+      </style>
 
 </head>
 
@@ -2109,14 +2110,48 @@
         <button class="preferences-toggle" id="preferencesToggleBtn" aria-label="Toggle Preferences Panel">
           <i class="fas fa-chevron-left"></i>
         </button>
-         <!-- Mantiene estructura y IDs de los form-check -->
         <h4><i class="fas fa-cog"></i> Interface Config</h4>
         <div class="form-check"><input class="form-check-input" type="checkbox" id="particlesToggle"><label class="form-check-label" for="particlesToggle">Data Particles</label></div>
         <div class="form-check"><input class="form-check-input" type="checkbox" id="scanlinesToggle"><label class="form-check-label" for="scanlinesToggle">Scanlines FX</label></div>
         <div class="form-check"><input class="form-check-input" type="checkbox" id="soundsToggle"><label class="form-check-label" for="soundsToggle">Auditory Feedback</label></div>
         <div class="form-check"><input class="form-check-input" type="checkbox" id="animationsToggle"><label class="form-check-label" for="animationsToggle">Panel Animations</label></div>
-          <!-- Idea: Añadir un selector de HUD Style si hubiera varios (ej. V.1 / V2) -->
-           <!-- <div class="form-check"><label class="form-check-label" for="hudStyle">HUD Style:</label><select id="hudStyle"><option value="v1">V1</option><option value="v2">V2</option></select></div> -->
+        <!-- NUEVOS TOGGLES Y SECCIONES AVANZADAS -->
+        <hr>
+        <h4><i class="fas fa-palette"></i> Temas y Accesibilidad</h4>
+        <div class="form-check"><input class="form-check-input" type="checkbox" id="highContrastToggle"><label class="form-check-label" for="highContrastToggle">Modo Alto Contraste</label></div>
+        <div class="form-check"><input class="form-check-input" type="checkbox" id="hudMinimalToggle"><label class="form-check-label" for="hudMinimalToggle">HUD Minimalista</label></div>
+        <div class="form-check"><input class="form-check-input" type="checkbox" id="hudCustomToggle"><label class="form-check-label" for="hudCustomToggle">HUD Personalizado</label></div>
+        <div class="form-check"><input class="form-check-input" type="checkbox" id="themeMatrixToggle"><label class="form-check-label" for="themeMatrixToggle">Tema Matrix</label></div>
+        <div class="form-check"><input class="form-check-input" type="checkbox" id="themeRedAlertToggle"><label class="form-check-label" for="themeRedAlertToggle">Tema Red Alert</label></div>
+        <hr>
+        <h4><i class="fas fa-gamepad"></i> Gamificación</h4>
+        <div class="form-check"><input class="form-check-input" type="checkbox" id="showAchievementsToggle"><label class="form-check-label" for="showAchievementsToggle">Mostrar Logros</label></div>
+        <div class="form-check"><input class="form-check-input" type="checkbox" id="showProgressToggle"><label class="form-check-label" for="showProgressToggle">Mostrar Progreso</label></div>
+        <div class="form-check"><input class="form-check-input" type="checkbox" id="showTipsToggle"><label class="form-check-label" for="showTipsToggle">Mostrar Tips de Uso</label></div>
+        <hr>
+        <h4><i class="fas fa-universal-access"></i> Accesibilidad</h4>
+        <div class="form-check"><input class="form-check-input" type="checkbox" id="keyboardNavToggle"><label class="form-check-label" for="keyboardNavToggle">Navegación por Teclado</label></div>
+        <div class="form-check"><input class="form-check-input" type="checkbox" id="showShortcutsToggle"><label class="form-check-label" for="showShortcutsToggle">Mostrar Atajos</label></div>
+        <hr>
+        <h4><i class="fas fa-map"></i> Navegación</h4>
+        <div class="form-check"><input class="form-check-input" type="checkbox" id="sideNavToggle"><label class="form-check-label" for="sideNavToggle">Mini-mapa Lateral</label></div>
+        <div class="form-check"><input class="form-check-input" type="checkbox" id="historyNavToggle"><label class="form-check-label" for="historyNavToggle">Historial de Navegación</label></div>
+        <hr>
+        <h4><i class="fas fa-bolt"></i> Efectos Cyberpunk</h4>
+        <div class="form-check"><input class="form-check-input" type="checkbox" id="glitchEffectsToggle"><label class="form-check-label" for="glitchEffectsToggle">Efectos Glitch</label></div>
+        <div class="form-check"><input class="form-check-input" type="checkbox" id="bgReactiveToggle"><label class="form-check-label" for="bgReactiveToggle">Fondo Reactivo</label></div>
+        <div class="form-check"><input class="form-check-input" type="checkbox" id="musicVisualizerToggle"><label class="form-check-label" for="musicVisualizerToggle">Visualizador de Música Avanzado</label></div>
+        <hr>
+        <h4><i class="fas fa-trophy"></i> Logros Desbloqueados</h4>
+        <ul id="achievementsList" class="hud-list">
+          <!-- Aquí se mostrarán los logros desbloqueados dinámicamente -->
+        </ul>
+        <hr>
+        <h4><i class="fas fa-tasks"></i> Progreso de Exploración</h4>
+        <div id="progressBarContainer" class="progress-bar-container">
+          <div id="progressBar" class="progress-bar-fill" style="width:0%"></div>
+        </div>
+        <div id="progressText" class="hud-readout" style="margin-top:8px; text-align:center;">0% explorado</div>
       </div>
 
         <!-- FOOTER (Del 1er archivo) - Estilizado con clase .main-footer del 2do archivo -->
@@ -3955,6 +3990,41 @@
 
 
     }); // Fin de DOMContentLoaded
+  </script>
+
+  <!-- Inyección dinámica de estilos para menú lateral y efectos visuales avanzados -->
+  <script>
+    // ...
+    // (Coloca aquí el bloque de estilos JS que antes estaba dentro de <style>)
+    const style = document.createElement('style');
+    style.innerHTML = `
+    .side-nav-compact { position:fixed; left:0; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.7); border-radius:0 8px 8px 0; z-index:1200; display:flex; flex-direction:column; gap:10px; padding:8px 4px; box-shadow:2px 0 10px #0006; transition:left 0.3s, box-shadow 0.3s; }
+    .side-nav-compact a { color:var(--color-accent); font-size:1.3rem; margin:2px 0; display:flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:50%; transition:background 0.2s; }
+    .side-nav-compact a:hover { background:var(--color-accent); color:var(--color-bg); }
+    .side-nav-toggle-btn { position:fixed; left:10px; bottom:20px; z-index:1300; background:var(--color-accent); color:var(--color-bg); border:none; border-radius:50%; width:44px; height:44px; font-size:1.5rem; box-shadow:0 2px 8px #0008; display:none; }
+    @media (max-width: 900px) { .side-nav-compact { left:-60px; } .side-nav-compact.open { left:0; box-shadow:2px 0 20px #000a; } .side-nav-toggle-btn { display:block; } }
+    @media (max-width: 600px) { .side-nav-compact { top:auto; bottom:70px; left:0; flex-direction:row; border-radius:0 0 8px 8px; padding:4px 8px; } }
+    .glitch-anim { animation:glitch-anim 1.2s infinite linear alternate; }
+    @keyframes glitch-anim { 0%{text-shadow:2px 0 #0ff, -2px 0 #f0f, 0 2px #fff;} 20%{text-shadow:-2px 0 #0ff,2px 0 #f0f,0 -2px #fff;} 40%{text-shadow:2px 2px #0ff,-2px -2px #f0f;} 60%{text-shadow:-2px 2px #0ff,2px -2px #f0f;} 80%{text-shadow:0 0 8px #fff;} 100%{text-shadow:2px 0 #0ff, -2px 0 #f0f, 0 2px #fff;} }
+    .music-visualizer.advanced .bar { animation:wave 0.7s infinite alternate !important; background:linear-gradient(90deg,#0ff,#f0f,#fff); }
+    body.high-contrast { filter:contrast(1.5) brightness(1.1); }
+    body.hud-minimal .hud-readout, body.hud-minimal .hud-corner, body.hud-minimal .hud-line { display:none!important; }
+    #particles-bg { pointer-events:none; z-index:0; }
+    body.bg-reactive { transition:background 0.5s; }
+    `;
+    document.head.appendChild(style);
+    // ...
+  </script>
+
+  <!-- El bloque de funciones JS de efectos visuales y menú lateral se mueve aquí, dentro de <script> -->
+  <script>
+  // =============================
+  // EFECTOS VISUALES AVANZADOS Y HOOKS
+  // =============================
+  // (Pega aquí todo el bloque de funciones JS de efectos visuales, menú lateral y la inyección dinámica de estilos)
+  // ...
+  // (El código JS que antes estaba dentro de <style> va aquí, después de DOMContentLoaded o donde corresponda)
+  // ...
   </script>
 
 </body>
