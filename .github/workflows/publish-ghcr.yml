@@ -6,13 +6,16 @@ on:
     branches:
       - main
     paths:
-      - Dockerfile
+      - 'Evidencias/Proyecto x/Dockerfile'
       - '**/*.py'
       - '**/*.js'
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -36,9 +39,20 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ghcr.io/${{ github.repository }}/mydockerimage:${{ github.sha }} \
-            .
+          docker build \
+            -t ghcr.io/${{ github.repository }}/githubpagetest:${{ github.sha }} \
+            -f "Evidencias/Proyecto x/Dockerfile" \
+            "Evidencias/Proyecto x/"
 
       - name: Push Docker image to GitHub Container Registry
         run: |
-          docker push ghcr.io/${{ github.repository }}/mydockerimage:${{ github.sha }}
+          docker push \
+            ghcr.io/${{ github.repository }}/githubpagetest:${{ github.sha }}
+
+      - name: Tag and push latest
+        run: |
+          docker tag \
+            ghcr.io/${{ github.repository }}/githubpagetest:${{ github.sha }} \
+            ghcr.io/${{ github.repository }}/githubpagetest:latest
+          docker push \
+            ghcr.io/${{ github.repository }}/githubpagetest:latest
