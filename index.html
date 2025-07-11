@@ -982,10 +982,230 @@
     }
 
     /* --- SKILLS --- */
+    /* Esconde la cuadrícula original si aún existe */
     .skills-grid {
-      display: grid; gap: 25px;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      display: none;
     }
+
+    /* --- SLIDER PRINCIPAL DE HABILIDADES --- */
+    .skills-slider-container {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      /* La magia del desvanecimiento lateral */
+      -webkit-mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent);
+      mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent);
+    }
+
+    .skills-slider-track {
+      display: flex;
+      gap: 25px;
+      width: calc(280px * 16 + 25px * 15); /* (Ancho item * num items total) + (gap * (num items - 1)) */
+      /* Animación del bucle infinito */
+      animation: scroll-skills 40s linear infinite;
+    }
+
+    /* Pausar animación al pasar el ratón */
+    .skills-slider-container:hover .skills-slider-track {
+      animation-play-state: paused;
+    }
+
+    @keyframes scroll-skills {
+      0% {
+        transform: translateX(0);
+      }
+      100% {
+        transform: translateX(calc(-280px * 8 - 25px * 8)); /* Mover la mitad del track */
+      }
+    }
+
+    .skills-slider-track .skill-item {
+      width: 280px; /* Ancho fijo para cada tarjeta */
+      flex-shrink: 0;
+      text-align: center;
+      transition: transform 0.4s ease, filter 0.4s ease;
+      filter: grayscale(80%) brightness(0.7);
+      transform: scale(0.9);
+    }
+
+    .skills-slider-container:hover .skill-item {
+      filter: grayscale(0) brightness(1);
+      transform: scale(1);
+    }
+
+    .skills-slider-track .skill-item img {
+      width: 50px;
+      height: 50px;
+      margin: 0 auto 15px auto;
+      transition: filter 0.3s ease;
+    }
+
+    /* --- SLIDER SECUNDARIO DE LOGOS (VERSIÓN MEJORADA CON MÁSCARAS CSS) --- */
+    .subsection-title {
+      font-family: var(--font-main);
+      font-size: 1rem;
+      color: var(--color-muted);
+      text-transform: uppercase;
+      text-align: center;
+      margin-top: 60px;
+      margin-bottom: 20px;
+      letter-spacing: 2px;
+    }
+
+    .tech-logo-scroller {
+      max-width: 900px;
+      margin: auto;
+      overflow: hidden;
+      -webkit-mask-image: linear-gradient(90deg, transparent, #fff 10%, #fff 90%, transparent);
+      mask-image: linear-gradient(90deg, transparent, #fff 10%, #fff 90%, transparent);
+    }
+
+    .tech-logo-scroller .scroller__inner {
+      display: flex;
+      flex-wrap: nowrap;
+      width: max-content;
+      gap: 50px; /* Aumentamos el espacio */
+      animation: scroll-logos 30s linear infinite;
+    }
+
+    @keyframes scroll-logos {
+      to {
+        transform: translate(calc(-50% - 25px)); /* Mover la mitad del track y la mitad del gap */
+      }
+    }
+
+    .tech-logo-scroller .tag-list {
+      padding-left: 0;
+      margin: 0;
+      list-style: none;
+      display: flex; /* Añadido para que los li se comporten como flex items */
+      align-items: center;
+    }
+
+    .tech-logo-scroller .tag-list li {
+      width: 40px;  /* Ancho del icono */
+      height: 40px; /* Alto del icono */
+      position: relative;
+      
+      /* ¡Aquí está la magia! */
+      background-color: var(--color-muted); /* Color por defecto del logo */
+      -webkit-mask-size: contain;
+      mask-size: contain;
+      -webkit-mask-position: center;
+      mask-position: center;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    /* Al pasar el ratón, cambiamos el color de fondo (que es el color del logo) */
+    .tech-logo-scroller .tag-list li:hover {
+      background-color: var(--color-accent); /* El logo se vuelve del color de acento */
+      transform: scale(1.1);
+    }
+
+    /* Tooltip para los logos */
+    .tech-logo-scroller .logo-tooltip {
+      position: absolute;
+      bottom: 120%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--color-accent);
+      color: var(--color-bg);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+      pointer-events: none;
+    }
+
+    .tech-logo-scroller .tag-list li:hover .logo-tooltip {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* --- RESPONSIVE DESIGN PARA LOS SLIDERS --- */
+    @media (max-width: 768px) {
+      .skills-slider-container {
+        -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+        mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+      }
+
+      .skills-slider-track {
+        gap: 15px;
+        width: calc(200px * 16 + 15px * 15);
+        animation: scroll-skills 30s linear infinite;
+      }
+
+      .skills-slider-track .skill-item {
+        width: 200px;
+      }
+
+      @keyframes scroll-skills {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          transform: translateX(calc(-200px * 8 - 15px * 8));
+        }
+      }
+
+      .tech-logo-scroller {
+        max-width: 100%;
+      }
+
+      .tech-logo-scroller .scroller__inner {
+        gap: 30px;
+        animation: scroll-logos 20s linear infinite;
+      }
+
+      .tech-logo-scroller .tag-list li {
+        width: 35px;
+        height: 35px;
+      }
+
+      .subsection-title {
+        font-size: 0.9rem;
+        margin-top: 40px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .skills-slider-track {
+        gap: 10px;
+        width: calc(150px * 16 + 10px * 15);
+        animation: scroll-skills 25s linear infinite;
+      }
+
+      .skills-slider-track .skill-item {
+        width: 150px;
+      }
+
+      @keyframes scroll-skills {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          transform: translateX(calc(-150px * 8 - 10px * 8));
+        }
+      }
+
+      .tech-logo-scroller .scroller__inner {
+        gap: 20px;
+        animation: scroll-logos 15s linear infinite;
+      }
+
+      .tech-logo-scroller .tag-list li {
+        width: 30px;
+        height: 30px;
+      }
+    }
+
+    /* Estilos originales mantenidos para compatibilidad */
     .skill-item { text-align: center; }
     .skill-item img {
       width: 50px; height: 50px; margin: 0 auto 15px auto;
@@ -1069,12 +1289,213 @@
         outline: none;
     }
     .internal-search input::placeholder { color: var(--color-muted); }
+
+    /* --- VISTA PREVIA FLOTANTE DE PROYECTOS --- */
+    .project-grid-interactive {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 25px;
+      margin: 30px 0;
+    }
+
+    .project-card {
+      position: relative;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      border: 2px solid var(--color-accent);
+      border-radius: 12px;
+      padding: 25px;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .project-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(45deg, transparent 30%, rgba(var(--color-accent-rgb), 0.05) 50%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .project-card:hover::before {
+      opacity: 1;
+    }
+
+    .project-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(var(--color-accent-rgb), 0.3);
+      border-color: var(--color-accent);
+    }
+
+    .project-card-content {
+      position: relative;
+      z-index: 2;
+      transition: opacity 0.3s ease;
+    }
+
+    .project-card:hover .project-card-content {
+      opacity: 0;
+    }
+
+    .project-card-content h3 {
+      color: var(--color-accent);
+      font-size: 20px;
+      margin-bottom: 15px;
+      font-weight: bold;
+      text-shadow: var(--hud-text-shadow);
+    }
+
+    .project-card-content p {
+      color: var(--color-text);
+      line-height: 1.6;
+      margin-bottom: 20px;
+      opacity: 0.9;
+    }
+
+    .tech-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tech-tags span {
+      background: rgba(var(--color-accent-rgb), 0.2);
+      color: var(--color-accent);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      border: 1px solid rgba(var(--color-accent-rgb), 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .tech-tags span:hover {
+      background: rgba(var(--color-accent-rgb), 0.3);
+      transform: scale(1.05);
+    }
+
+    /* Panel de Vista Previa (Singleton) */
+    .project-preview-panel {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      opacity: 0;
+      transform: scale(0.9);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      backdrop-filter: blur(10px);
+    }
+
+    .project-preview-panel.visible {
+      opacity: 1;
+      transform: scale(1);
+      border-color: var(--color-accent);
+      box-shadow: 0 0 30px rgba(var(--color-accent-rgb), 0.5);
+    }
+
+    .project-preview-panel video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Filtro de Búsqueda */
+    .internal-search {
+      margin: 20px 0;
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(20, 20, 20, 0.9));
+      border: 2px solid var(--color-accent);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .internal-search input {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid var(--color-accent);
+      color: var(--color-text);
+      padding: 12px 15px;
+      border-radius: 6px;
+      font-family: var(--font-main);
+      font-size: 14px;
+    }
+
+    .internal-search input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .internal-search input:focus {
+      outline: none;
+      border-color: var(--color-accent);
+      box-shadow: 0 0 10px rgba(var(--color-accent-rgb), 0.3);
+    }
+
+    /* Diseño Responsivo */
+    @media (max-width: 768px) {
+      .project-grid-interactive {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .project-card {
+        min-height: 180px;
+        padding: 20px;
+      }
+
+      .project-content h3 {
+        font-size: 18px;
+      }
+
+      .internal-search {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .internal-search input {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .project-card {
+        padding: 15px;
+      }
+
+      .project-content h3 {
+        font-size: 16px;
+      }
+
+      .tech-tags span {
+        font-size: 11px;
+        padding: 3px 8px;
+      }
+    }
+
+    /* Estilos originales mantenidos para compatibilidad */
     .project-grid {
       display: grid; gap: 30px;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     }
     .project-item { display: flex; flex-direction: column; }
-    .project-item h3 { font-size: 1.3rem; color: var(--color-accent); margin-bottom: 10px; text-shadow: var(--hud-text-shadow); } /* Add text shadow */
+    .project-item h3 { font-size: 1.3rem; color: var(--color-accent); margin-bottom: 10px; text-shadow: var(--hud-text-shadow); }
     .project-item video { border-radius: 3px; margin-bottom: 15px; border: 1px solid var(--color-border); }
     .project-item p { color: var(--color-muted); font-size: 0.9rem; line-height: 1.5; flex-grow: 1; margin-bottom: 15px;}
     .tech-tags {
@@ -1083,8 +1504,8 @@
     .tech-tags span {
       background: rgba(var(--color-accent-rgb), 0.15);
       color: var(--color-accent);
-      padding: 4px 8px; font-size: 0.75rem; /* Slightly larger */
-      border-radius: 3px; border: 1px solid rgba(var(--color-accent-rgb), 0.3); /* Softer border */
+      padding: 4px 8px; font-size: 0.75rem;
+      border-radius: 3px; border: 1px solid rgba(var(--color-accent-rgb), 0.3);
     }
 
     /* --- TIMELINE --- */
@@ -2298,6 +2719,408 @@
         margin-bottom: 10px;
       }
     }
+
+    /* --- ARCHIVO DE PROYECTOS HOLOGRÁFICOS --- */
+    
+    /* Índice Alfabético */
+    .alphabetic-index {
+      margin: 20px 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      border: 2px solid var(--color-accent);
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    .index-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--color-accent);
+    }
+
+    .index-title {
+      color: var(--color-accent);
+      font-family: var(--font-main);
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .index-status {
+      color: #00ff00;
+      font-size: 12px;
+      padding: 4px 8px;
+      background: rgba(0, 255, 0, 0.2);
+      border-radius: 4px;
+    }
+
+    .index-letters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .letter {
+      display: inline-block;
+      width: 30px;
+      height: 30px;
+      line-height: 30px;
+      text-align: center;
+      background: rgba(var(--color-accent-rgb), 0.1);
+      color: var(--color-accent);
+      border: 1px solid rgba(var(--color-accent-rgb), 0.3);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: var(--font-main);
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .letter:hover {
+      background: rgba(var(--color-accent-rgb), 0.3);
+      transform: scale(1.1);
+      box-shadow: 0 0 10px rgba(var(--color-accent-rgb), 0.5);
+    }
+
+    .letter.inactive {
+      opacity: 0.3;
+      color: var(--color-muted);
+      cursor: not-allowed;
+    }
+
+    /* Tabla de Datos Maestra */
+    .data-table-container {
+      margin: 30px 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      border: 2px solid var(--color-accent);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .table-header {
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr 1.5fr 1fr;
+      background: var(--color-accent);
+      color: var(--color-bg);
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    .header-cell {
+      padding: 12px 8px;
+      text-align: left;
+      font-family: var(--font-main);
+      border-right: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .header-cell:last-child {
+      border-right: none;
+    }
+
+    .table-body {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .table-row {
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr 1.5fr 1fr;
+      border-bottom: 1px solid rgba(var(--color-accent-rgb), 0.2);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .table-row:hover {
+      background: rgba(var(--color-accent-rgb), 0.1);
+      box-shadow: 0 0 15px rgba(var(--color-accent-rgb), 0.3);
+    }
+
+    .table-row::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: transparent;
+      transition: background 0.3s ease;
+    }
+
+    .table-row:hover::before {
+      background: var(--color-accent);
+    }
+
+    .cell {
+      padding: 12px 8px;
+      font-family: var(--font-main);
+      font-size: 12px;
+      color: var(--color-text);
+      border-right: 1px solid rgba(var(--color-accent-rgb), 0.1);
+      display: flex;
+      align-items: center;
+    }
+
+    .cell:last-child {
+      border-right: none;
+    }
+
+    .status-online {
+      color: #00ff00;
+      font-weight: bold;
+    }
+
+    .status-archived {
+      color: #ffaa00;
+      font-weight: bold;
+    }
+
+    .status-development {
+      color: #0088ff;
+      font-weight: bold;
+    }
+
+    /* Contenedor de Flujo de Datos */
+    .data-flow-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    #dataFlowCanvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Panel de Estadísticas HUD */
+    .statistics-hud {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.8);
+      background: rgba(0, 0, 0, 0.95);
+      backdrop-filter: blur(15px);
+      border: 2px solid var(--color-accent);
+      border-radius: 12px;
+      padding: 25px;
+      min-width: 400px;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 1000;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .statistics-hud.visible {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+      pointer-events: auto;
+    }
+
+    .hud-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--color-accent);
+    }
+
+    .hud-title {
+      color: var(--color-accent);
+      font-family: var(--font-main);
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .hud-status {
+      color: #00ff00;
+      font-size: 12px;
+      animation: blink 1s infinite;
+    }
+
+    .hud-content {
+      color: var(--color-text);
+      font-family: var(--font-main);
+      font-size: 14px;
+    }
+
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      padding: 8px 0;
+    }
+
+    .stat-label {
+      color: var(--color-muted);
+    }
+
+    .stat-value {
+      color: var(--color-accent);
+      font-weight: bold;
+    }
+
+    .tech-distribution {
+      margin: 20px 0;
+    }
+
+    .distribution-chart {
+      margin-top: 10px;
+      height: 60px;
+      background: rgba(var(--color-accent-rgb), 0.1);
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .loading-stream {
+      margin-top: 20px;
+      padding: 10px;
+      background: rgba(var(--color-accent-rgb), 0.1);
+      border-radius: 4px;
+    }
+
+    .loading-text {
+      color: var(--color-accent);
+    }
+
+    .loading-cursor {
+      color: var(--color-accent);
+      animation: blink 1s infinite;
+    }
+
+    /* Panel Holográfico de Vista Previa */
+    .holographic-preview-panel {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      background: rgba(0, 0, 0, 0.9);
+      backdrop-filter: blur(20px);
+      border: 2px solid var(--color-accent);
+      border-radius: 12px;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 1001;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      min-width: 500px;
+      min-height: 300px;
+    }
+
+    .holographic-preview-panel.visible {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+      pointer-events: auto;
+      box-shadow: 0 0 40px rgba(var(--color-accent-rgb), 0.6);
+    }
+
+    .panel-info {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 5px;
+    }
+
+    .project-id {
+      color: var(--color-accent);
+      font-size: 12px;
+      font-weight: bold;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+    .project-status {
+      color: #00ff00;
+      font-size: 10px;
+      background: rgba(0, 255, 0, 0.2);
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+
+    .holographic-preview-panel video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Animaciones */
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    @keyframes dataFlow {
+      0% { transform: translateX(-100%); opacity: 0; }
+      50% { opacity: 1; }
+      100% { transform: translateX(100%); opacity: 0; }
+    }
+
+    /* Diseño Responsivo */
+    @media (max-width: 768px) {
+      .table-header,
+      .table-row {
+        grid-template-columns: 1fr 1.5fr 1fr 1fr 1fr;
+        font-size: 11px;
+      }
+
+      .cell {
+        padding: 8px 4px;
+      }
+
+      .statistics-hud {
+        min-width: 300px;
+        margin: 20px;
+      }
+
+      .holographic-preview-panel {
+        min-width: 90vw;
+        min-height: 50vh;
+      }
+
+      .index-letters {
+        gap: 4px;
+      }
+
+      .letter {
+        width: 25px;
+        height: 25px;
+        line-height: 25px;
+        font-size: 10px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .table-header,
+      .table-row {
+        grid-template-columns: 1fr 1.2fr 0.8fr 1fr 0.8fr;
+        font-size: 10px;
+      }
+
+      .cell {
+        padding: 6px 2px;
+      }
+
+      .statistics-hud {
+        min-width: 280px;
+        padding: 15px;
+      }
+    }
   </style>
 
 </head>
@@ -2481,90 +3304,288 @@
     <section class="skills section-container reveal" id="skills" style="position: relative;">
       <canvas id="skillsVis" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:1; opacity:0.1;"></canvas>
       <h2 class="section-title glitch-text" data-text="Habilidades /// Skill_Matrix">Habilidades /// Skill_Matrix</h2>
-      <div class="skills-grid" style="position: relative; z-index:2;">
-        <div class="skill-item content-box">
-          <img data-src="assets/img/HABILIDADES/html-5.png" src="assets/img/HABILIDADES/html-5.png" alt="HTML5" loading="lazy">
-          <h3>HTML5</h3>
-          <div class="progress-bar-container" data-label="90"><div class="progress-bar-fill" data-skill-level="90"></div></div>
-          <div class="skill-level">Nivel: Experto // 90%</div>
+
+      <!-- MEJORA 1: SLIDER PRINCIPAL DE HABILIDADES -->
+      <div class="skills-slider-container">
+        <div class="skills-slider-track">
+          <!-- Los items originales, duplicados para el bucle infinito -->
+          <!-- Set 1 -->
+          <div class="skill-item content-box">
+            <img src="assets/img/HABILIDADES/html-5.png" alt="HTML5">
+            <h3>HTML5</h3>
+            <div class="progress-bar-container" data-label="90"><div class="progress-bar-fill" data-skill-level="90"></div></div>
+            <div class="skill-level">Nivel: Experto // 90%</div>
+          </div>
+          <div class="skill-item content-box">
+            <img src="assets/img/HABILIDADES/css-3.png" alt="CSS3">
+            <h3>CSS3</h3>
+            <div class="progress-bar-container" data-label="85"><div class="progress-bar-fill" data-skill-level="85"></div></div>
+            <div class="skill-level">Nivel: Avanzado // 85%</div>
+          </div>
+          <div class="skill-item content-box">
+            <img src="assets/img/HABILIDADES/js.png" alt="JavaScript">
+            <h3>JavaScript</h3>
+            <div class="progress-bar-container" data-label="80"><div class="progress-bar-fill" data-skill-level="80"></div></div>
+            <div class="skill-level">Nivel: Avanzado // 80%</div>
+          </div>
+          <div class="skill-item content-box">
+            <img src="assets/img/HABILIDADES/REACT.png" alt="React">
+            <h3>React</h3>
+            <div class="progress-bar-container" data-label="75"><div class="progress-bar-fill" data-skill-level="75"></div></div>
+            <div class="skill-level">Nivel: Intermedio // 75%</div>
+          </div>
+          <div class="skill-item content-box">
+            <img src="assets/img/HABILIDADES/NODE.png" alt="Node.js">
+            <h3>Node.js</h3>
+            <div class="progress-bar-container" data-label="70"><div class="progress-bar-fill" data-skill-level="70"></div></div>
+            <div class="skill-level">Nivel: Intermedio // 70%</div>
+          </div>
+          <div class="skill-item content-box">
+            <img src="assets/img/HABILIDADES/piyton.png" alt="Python">
+            <h3>Python</h3>
+            <div class="progress-bar-container" data-label="60"><div class="progress-bar-fill" data-skill-level="60"></div></div>
+            <div class="skill-level">Nivel: En Progreso // 60%</div>
+          </div>
+          <div class="skill-item content-box">
+            <img src="assets/img/HABILIDADES/git.png" alt="Git">
+            <h3>Git</h3>
+            <div class="progress-bar-container" data-label="90"><div class="progress-bar-fill" data-skill-level="90"></div></div>
+            <div class="skill-level">Nivel: Experto // 90%</div>
+          </div>
+          <div class="skill-item content-box">
+            <img src="assets/img/HABILIDADES/ui-ux-.jpg" alt="UI/UX">
+            <h3>UI/UX</h3>
+            <div class="progress-bar-container" data-label="80"><div class="progress-bar-fill" data-skill-level="80"></div></div>
+            <div class="skill-level">Nivel: Avanzado // 80%</div>
+          </div>
+          <!-- Set 2 (Copia exacta para el bucle) -->
+          <div class="skill-item content-box">
+            <img src="assets/img/HABILIDADES/html-5.png" alt="HTML5">
+            <h3>HTML5</h3>
+            <div class="progress-bar-container" data-label="90"><div class="progress-bar-fill" data-skill-level="90"></div></div>
+            <div class="skill-level">Nivel: Experto // 90%</div>
+          </div>
+          <div class="skill-item content-box">
+            <img src="assets/img/HABILIDADES/css-3.png" alt="CSS3">
+            <h3>CSS3</h3>
+            <div class="progress-bar-container" data-label="85"><div class="progress-bar-fill" data-skill-level="85"></div></div>
+            <div class="skill-level">Nivel: Avanzado // 85%</div>
+          </div>
+          <div class="skill-item content-box">
+            <img src="assets/img/HABILIDADES/js.png" alt="JavaScript">
+            <h3>JavaScript</h3>
+            <div class="progress-bar-container" data-label="80"><div class="progress-bar-fill" data-skill-level="80"></div></div>
+            <div class="skill-level">Nivel: Avanzado // 80%</div>
+          </div>
+          <div class="skill-item content-box">
+            <img src="assets/img/HABILIDADES/REACT.png" alt="React">
+            <h3>React</h3>
+            <div class="progress-bar-container" data-label="75"><div class="progress-bar-fill" data-skill-level="75"></div></div>
+            <div class="skill-level">Nivel: Intermedio // 75%</div>
+          </div>
+          <div class="skill-item content-box">
+            <img src="assets/img/HABILIDADES/NODE.png" alt="Node.js">
+            <h3>Node.js</h3>
+            <div class="progress-bar-container" data-label="70"><div class="progress-bar-fill" data-skill-level="70"></div></div>
+            <div class="skill-level">Nivel: Intermedio // 70%</div>
+          </div>
+          <div class="skill-item content-box">
+            <img src="assets/img/HABILIDADES/piyton.png" alt="Python">
+            <h3>Python</h3>
+            <div class="progress-bar-container" data-label="60"><div class="progress-bar-fill" data-skill-level="60"></div></div>
+            <div class="skill-level">Nivel: En Progreso // 60%</div>
+          </div>
+          <div class="skill-item content-box">
+            <img src="assets/img/HABILIDADES/git.png" alt="Git">
+            <h3>Git</h3>
+            <div class="progress-bar-container" data-label="90"><div class="progress-bar-fill" data-skill-level="90"></div></div>
+            <div class="skill-level">Nivel: Experto // 90%</div>
+          </div>
+          <div class="skill-item content-box">
+            <img src="assets/img/HABILIDADES/ui-ux-.jpg" alt="UI/UX">
+            <h3>UI/UX</h3>
+            <div class="progress-bar-container" data-label="80"><div class="progress-bar-fill" data-skill-level="80"></div></div>
+            <div class="skill-level">Nivel: Avanzado // 80%</div>
+          </div>
         </div>
-        <div class="skill-item content-box">
-          <img data-src="assets/img/HABILIDADES/css-3.png" src="assets/img/HABILIDADES/css-3.png" alt="CSS3" loading="lazy">
-          <h3>CSS3</h3>
-          <div class="progress-bar-container" data-label="85"><div class="progress-bar-fill" data-skill-level="85"></div></div>
-          <div class="skill-level">Nivel: Avanzado // 85%</div>
-        </div>
-         <div class="skill-item content-box">
-          <img data-src="assets/img/HABILIDADES/js.png" src="assets/img/HABILIDADES/js.png" alt="JavaScript" loading="lazy">
-          <h3>JavaScript</h3>
-          <div class="progress-bar-container" data-label="80"><div class="progress-bar-fill" data-skill-level="80"></div></div>
-          <div class="skill-level">Nivel: Avanzado // 80%</div>
-        </div>
-        <div class="skill-item content-box">
-          <img data-src="assets/img/HABILIDADES/REACT.png" src="assets/img/HABILIDADES/REACT.png" alt="React" loading="lazy">
-          <h3>React</h3>
-          <div class="progress-bar-container" data-label="75"><div class="progress-bar-fill" data-skill-level="75"></div></div>
-          <div class="skill-level">Nivel: Intermedio // 75%</div>
-        </div>
-        <div class="skill-item content-box">
-          <img data-src="assets/img/HABILIDADES/NODE.png" src="assets/img/HABILIDADES/NODE.png" alt="Node.js" loading="lazy">
-          <h3>Node.js</h3>
-          <div class="progress-bar-container" data-label="70"><div class="progress-bar-fill" data-skill-level="70"></div></div>
-          <div class="skill-level">Nivel: Intermedio // 70%</div>
-        </div>
-        <div class="skill-item content-box">
-          <img data-src="assets/img/HABILIDADES/piyton.png" src="assets/img/HABILIDADES/piyton.png" alt="Python" loading="lazy">
-          <h3>Python</h3>
-          <div class="progress-bar-container" data-label="60"><div class="progress-bar-fill" data-skill-level="60"></div></div>
-          <div class="skill-level">Nivel: En Progreso // 60%</div>
-        </div>
-        <div class="skill-item content-box">
-          <img data-src="assets/img/HABILIDADES/git.png" src="assets/img/HABILIDADES/git.png" alt="Git" loading="lazy">
-          <h3>Git</h3>
-          <div class="progress-bar-container" data-label="90"><div class="progress-bar-fill" data-skill-level="90"></div></div>
-          <div class="skill-level">Nivel: Experto // 90%</div>
-        </div>
-        <div class="skill-item content-box">
-          <img data-src="assets/img/HABILIDADES/ui-ux-.jpg" src="assets/img/HABILIDADES/ui-ux-.jpg" alt="UI/UX" loading="lazy">
-          <h3>UI/UX</h3>
-          <div class="progress-bar-container" data-label="80"><div class="progress-bar-fill" data-skill-level="80"></div></div>
-          <div class="skill-level">Nivel: Avanzado // 80%</div>
-        </div>
+      </div>
+      
+      <!-- MEJORA 2: SLIDER SECUNDARIO DE TECNOLOGÍAS -->
+      <h3 class="subsection-title">Otras Herramientas /// Tech_Arsenal</h3>
+      <div class="tech-logo-scroller" data-speed="slow">
+        <ul class="tag-list scroller__inner">
+          <!-- Usaremos estos <li> directamente para mostrar los logos -->
+          <!-- Asegúrate de que los archivos SVG existan en esta ruta -->
+          <li data-logo-url="assets/img/LOGOS/google-cloud.svg"><span class="logo-tooltip">Google Cloud</span></li>
+          <li data-logo-url="assets/img/LOGOS/flutter.svg"><span class="logo-tooltip">Flutter</span></li>
+          <li data-logo-url="assets/img/LOGOS/docker.svg"><span class="logo-tooltip">Docker</span></li>
+          <li data-logo-url="assets/img/LOGOS/figma.svg"><span class="logo-tooltip">Figma</span></li>
+          <li data-logo-url="assets/img/LOGOS/mongodb.svg"><span class="logo-tooltip">MongoDB</span></li>
+          <li data-logo-url="assets/img/LOGOS/typescript.svg"><span class="logo-tooltip">TypeScript</span></li>
+          <li data-logo-url="assets/img/LOGOS/kubernetes.svg"><span class="logo-tooltip">Kubernetes</span></li>
+          <li data-logo-url="assets/img/LOGOS/aws.svg"><span class="logo-tooltip">AWS</span></li>
+          <li data-logo-url="assets/img/LOGOS/tensorflow.svg"><span class="logo-tooltip">TensorFlow</span></li> <!-- Icono extra -->
+        </ul>
       </div>
     </section>
 
-    <!-- PROYECTOS -->
+    <!-- ARCHIVO DE PROYECTOS HOLOGRÁFICOS -->
     <section class="projects section-container reveal" id="proyectos">
-      <h2 class="section-title glitch-text" data-text="Proyectos Destacados /// Portfolio_Data">Proyectos Destacados /// Portfolio_Data</h2>
-      <div class="internal-search content-box">
-        <input type="text" id="searchProjectInput" placeholder="Filtrar proyectos por nombre/descripción..." />
-        <button id="searchProjectBtn" class="hud-button small">Buscar</button>
+      <h2 class="section-title glitch-text" data-text="Archivo Central de Proyectos /// CyberLab_DB">Archivo Central de Proyectos /// CyberLab_DB</h2>
+      
+      <!-- Alphabetic Index -->
+      <div class="alphabetic-index content-box">
+        <div class="index-header">
+          <span class="index-title">ÍNDICE ALFABÉTICO</span>
+          <span class="index-status">ACTIVO</span>
+        </div>
+        <div class="index-letters" id="alphabeticIndex">
+          <span class="letter" data-letter="A">A</span>
+          <span class="letter" data-letter="B">B</span>
+          <span class="letter" data-letter="C">C</span>
+          <span class="letter" data-letter="D">D</span>
+          <span class="letter" data-letter="E">E</span>
+          <span class="letter" data-letter="F">F</span>
+          <span class="letter" data-letter="G">G</span>
+          <span class="letter" data-letter="H">H</span>
+          <span class="letter" data-letter="I">I</span>
+          <span class="letter" data-letter="J">J</span>
+          <span class="letter" data-letter="K">K</span>
+          <span class="letter" data-letter="L">L</span>
+          <span class="letter" data-letter="M">M</span>
+          <span class="letter" data-letter="N">N</span>
+          <span class="letter" data-letter="O">O</span>
+          <span class="letter" data-letter="P">P</span>
+          <span class="letter" data-letter="Q">Q</span>
+          <span class="letter" data-letter="R">R</span>
+          <span class="letter" data-letter="S">S</span>
+          <span class="letter" data-letter="T">T</span>
+          <span class="letter" data-letter="U">U</span>
+          <span class="letter" data-letter="V">V</span>
+          <span class="letter" data-letter="W">W</span>
+          <span class="letter" data-letter="X">X</span>
+          <span class="letter" data-letter="Y">Y</span>
+          <span class="letter" data-letter="Z">Z</span>
+        </div>
       </div>
-      <div class="project-grid" id="projectGrid">
-        <div class="project-item content-box">
-          <h3>Proyecto A</h3>
-          <video controls muted preload="metadata" poster="IMG/posterA.png">
-            <source src="MP4/Proyectos/P-1.mp4" type="video/mp4">
-          </video>
-          <p>Este menú está diseñado para ofrecer una experiencia segura y amigable.</p>
-           <div class="tech-tags"><span>HTML</span><span>CSS</span><span>JS</span></div>
+      
+      <!-- Master Data Table -->
+      <div class="data-table-container content-box">
+        <div class="table-header">
+          <div class="header-cell">ID_PROYECTO</div>
+          <div class="header-cell">NOMBRE_CLAVE</div>
+          <div class="header-cell">CLASE</div>
+          <div class="header-cell">FECHA_COMPILACIÓN</div>
+          <div class="header-cell">STATUS</div>
         </div>
-        <div class="project-item content-box">
-           <h3>Proyecto B</h3>
-           <video controls muted preload="metadata" poster="IMG/posterB.png">
-               <source src="MP4/Proyectos/P-2.mp4" type="video/mp4">
-           </video>
-           <p>Una experiencia única con nuestra interfaz esférica intuitiva y dinámica.</p>
-           <div class="tech-tags"><span>Three.js</span><span>WebGL</span><span>UI</span></div>
+        
+        <div class="table-body" id="projectTableBody">
+          <div class="table-row" 
+               data-project-id="CL-PRJ-001"
+               data-video-src="MP4/Proyectos/P-1.mp4" 
+               data-poster-src="assets/img/posterA.png"
+               data-title="Menú de Seguridad Biométrico"
+               data-description="Este menú está diseñado para ofrecer una experiencia segura y amigable con autenticación biométrica avanzada."
+               data-technologies="HTML,CSS,JS,Biometrics"
+               data-lines-of-code="2847"
+               data-tech-distribution="50,30,15,5">
+            <div class="cell">CL-PRJ-001</div>
+            <div class="cell">PROYECTO: CERBERUS</div>
+            <div class="cell">UI/UX</div>
+            <div class="cell">2024.10.28</div>
+            <div class="cell status-online">ONLINE</div>
+          </div>
+          
+          <div class="table-row" 
+               data-project-id="CL-PRJ-002"
+               data-video-src="MP4/Proyectos/P-2.mp4" 
+               data-poster-src="assets/img/posterB.png"
+               data-title="Interfaz Esférica de Navegación"
+               data-description="Una experiencia única con nuestra interfaz esférica intuitiva y dinámica que revoluciona la navegación web."
+               data-technologies="Three.js,WebGL,UI,3D"
+               data-lines-of-code="5123"
+               data-tech-distribution="40,35,15,10">
+            <div class="cell">CL-PRJ-002</div>
+            <div class="cell">PROYECTO: SPHERE</div>
+            <div class="cell">Fullstack</div>
+            <div class="cell">2024.11.15</div>
+            <div class="cell status-online">ONLINE</div>
+          </div>
+          
+          <div class="table-row" 
+               data-project-id="CL-PRJ-003"
+               data-video-src="MP4/Proyectos/P-3.mp4" 
+               data-poster-src="assets/img/posterC.png"
+               data-title="Landing Page con IA Generativa"
+               data-description="Landing page con tipografía deformable y espectros cromáticos, impulsada por inteligencia artificial."
+               data-technologies="AI,JS,Canvas,Creative Coding"
+               data-lines-of-code="3891"
+               data-tech-distribution="25,45,20,10">
+            <div class="cell">CL-PRJ-003</div>
+            <div class="cell">PROYECTO: NEURAL</div>
+            <div class="cell">AI</div>
+            <div class="cell">2024.12.03</div>
+            <div class="cell status-archived">ARCHIVADO</div>
+          </div>
+          
+          <div class="table-row" 
+               data-project-id="CL-PRJ-004"
+               data-video-src="MP4/Proyectos/P-1.mp4" 
+               data-poster-src="assets/img/posterA.png"
+               data-title="Visualizador de Datos Neurales"
+               data-description="Sistema avanzado de visualización de datos neuronales con interfaz holográfica y análisis en tiempo real."
+               data-technologies="Neural Networks,Data Viz,Real-time,Holographic UI"
+               data-lines-of-code="7234"
+               data-tech-distribution="30,25,25,20">
+            <div class="cell">CL-PRJ-004</div>
+            <div class="cell">PROYECTO: HOLOGRAPH</div>
+            <div class="cell">AI/ML</div>
+            <div class="cell">2024.12.20</div>
+            <div class="cell status-development">EN_DESARROLLO</div>
+          </div>
         </div>
-        <div class="project-item content-box">
-            <h3>Proyecto C</h3>
-            <video controls muted preload="metadata" poster="IMG/posterC.png">
-               <source src="MP4/Proyectos/P-3.mp4" type="video/mp4">
-           </video>
-            <p>Landing page con tipografía deformable y espectros cromáticos, impulsada por IA.</p>
-            <div class="tech-tags"><span>AI</span><span>JS</span><span>Canvas</span><span>Creative Coding</span></div>
+      </div>
+      
+      <!-- Data Flow Animation Container -->
+      <div class="data-flow-container" id="dataFlowContainer">
+        <canvas id="dataFlowCanvas"></canvas>
+      </div>
+      
+      <!-- Statistics HUD Panel -->
+      <div class="statistics-hud" id="statisticsHud">
+        <div class="hud-header">
+          <span class="hud-title">ANÁLISIS DE PROYECTO</span>
+          <span class="hud-status">PROCESANDO...</span>
         </div>
+        <div class="hud-content">
+          <div class="stat-item">
+            <span class="stat-label">LÍNEAS DE CÓDIGO:</span>
+            <span class="stat-value" id="linesOfCode">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">TASA DE ÉXITO:</span>
+            <span class="stat-value">99.9%</span>
+          </div>
+          <div class="tech-distribution">
+            <span class="stat-label">DISTRIBUCIÓN DE TECNOLOGÍAS:</span>
+            <div class="distribution-chart" id="techDistribution"></div>
+          </div>
+          <div class="loading-stream">
+            <span class="loading-text">CARGANDO STREAM DE VIDEO...</span>
+            <span class="loading-cursor">_</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Holographic Preview Panel -->
+      <div class="holographic-preview-panel" id="holographicPreviewPanel">
+        <div class="panel-info">
+          <span class="project-id" id="panelProjectId">CL-PRJ-001</span>
+          <span class="project-status" id="panelProjectStatus">ONLINE</span>
+        </div>
+        <video id="previewVideo" muted loop preload="metadata">
+          <!-- Video source will be set dynamically -->
+        </video>
       </div>
     </section>
 
@@ -4210,6 +5231,349 @@
   });
   </script>
 
+  <!-- Script para el Archivo de Proyectos Holográficos -->
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // --- ARCHIVO DE PROYECTOS HOLOGRÁFICOS ---
+    const alphabeticIndex = document.getElementById('alphabeticIndex');
+    const projectTableBody = document.getElementById('projectTableBody');
+    const dataFlowContainer = document.getElementById('dataFlowContainer');
+    const dataFlowCanvas = document.getElementById('dataFlowCanvas');
+    const statisticsHud = document.getElementById('statisticsHud');
+    const holographicPreviewPanel = document.getElementById('holographicPreviewPanel');
+    const previewVideo = document.getElementById('previewVideo');
+    const linesOfCodeElement = document.getElementById('linesOfCode');
+    const techDistributionElement = document.getElementById('techDistribution');
+    const panelProjectId = document.getElementById('panelProjectId');
+    const panelProjectStatus = document.getElementById('panelProjectStatus');
+
+    // Variables de estado
+    let currentHoveredRow = null;
+    let isAnimationActive = false;
+    let audioContext = null;
+    let gainNode = null;
+
+    // Inicializar audio context
+    function initAudio() {
+      try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        gainNode = audioContext.createGain();
+        gainNode.connect(audioContext.destination);
+        gainNode.gain.value = 0.3;
+      } catch (e) {
+        console.log('Audio context no disponible');
+      }
+    }
+
+    // Función para reproducir sonidos
+    function playSound(frequency = 800, duration = 0.1, type = 'sine') {
+      if (!audioContext) return;
+      
+      try {
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        
+        oscillator.connect(gain);
+        gain.connect(gainNode);
+        
+        oscillator.frequency.value = frequency;
+        oscillator.type = type;
+        
+        gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + duration);
+      } catch (e) {
+        console.log('Error reproduciendo sonido');
+      }
+    }
+
+    // Función para crear flujo de datos en canvas
+    function createDataFlow(startX, startY, endX, endY) {
+      const ctx = dataFlowCanvas.getContext('2d');
+      dataFlowCanvas.width = window.innerWidth;
+      dataFlowCanvas.height = window.innerHeight;
+
+      const particles = [];
+      const numParticles = 20;
+
+      for (let i = 0; i < numParticles; i++) {
+        particles.push({
+          x: startX,
+          y: startY,
+          vx: (endX - startX) / 30,
+          vy: (endY - startY) / 30,
+          life: 1,
+          decay: 0.02
+        });
+      }
+
+      function animateParticles() {
+        ctx.clearRect(0, 0, dataFlowCanvas.width, dataFlowCanvas.height);
+        
+        let activeParticles = 0;
+        
+        particles.forEach(particle => {
+          if (particle.life > 0) {
+            particle.x += particle.vx;
+            particle.y += particle.vy;
+            particle.life -= particle.decay;
+            
+            ctx.beginPath();
+            ctx.arc(particle.x, particle.y, 2, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(0, 255, 255, ${particle.life})`;
+            ctx.fill();
+            
+            activeParticles++;
+          }
+        });
+
+        if (activeParticles > 0) {
+          requestAnimationFrame(animateParticles);
+        } else {
+          ctx.clearRect(0, 0, dataFlowCanvas.width, dataFlowCanvas.height);
+        }
+      }
+
+      animateParticles();
+    }
+
+    // Función para mostrar estadísticas HUD
+    function showStatisticsHud(projectData) {
+      const linesOfCode = parseInt(projectData.linesOfCode);
+      const techDistribution = projectData.techDistribution.split(',').map(Number);
+      const technologies = projectData.technologies.split(',');
+
+      // Animar contador de líneas de código
+      let currentLines = 0;
+      const increment = linesOfCode / 50;
+      const counterInterval = setInterval(() => {
+        currentLines += increment;
+        if (currentLines >= linesOfCode) {
+          currentLines = linesOfCode;
+          clearInterval(counterInterval);
+        }
+        linesOfCodeElement.textContent = Math.floor(currentLines);
+      }, 20);
+
+      // Crear gráfico de distribución de tecnologías
+      techDistributionElement.innerHTML = '';
+      technologies.forEach((tech, index) => {
+        const percentage = techDistribution[index];
+        const bar = document.createElement('div');
+        bar.style.cssText = `
+          height: ${percentage}%;
+          background: var(--color-accent);
+          margin: 2px;
+          border-radius: 2px;
+          transition: height 0.5s ease;
+          position: relative;
+          display: inline-block;
+          width: 20px;
+        `;
+        bar.style.height = '0%';
+        techDistributionElement.appendChild(bar);
+        
+        setTimeout(() => {
+          bar.style.height = `${percentage}%`;
+        }, index * 100);
+      });
+
+      // Mostrar HUD
+      statisticsHud.classList.add('visible');
+      playSound(600, 0.3, 'square');
+    }
+
+    // Función para mostrar panel holográfico
+    function showHolographicPanel(projectData) {
+      // Actualizar información del panel
+      panelProjectId.textContent = projectData.projectId;
+      panelProjectStatus.textContent = projectData.status;
+      panelProjectStatus.className = `project-status status-${projectData.status.toLowerCase()}`;
+
+      // Actualizar video
+      previewVideo.src = projectData.videoSrc;
+      previewVideo.poster = projectData.posterSrc;
+
+      // Mostrar panel
+      holographicPreviewPanel.classList.add('visible');
+
+      // Reproducir video
+      previewVideo.play().catch(error => {
+        console.log('Autoplay bloqueado:', error);
+      });
+
+      playSound(800, 0.2, 'sawtooth');
+    }
+
+    // Función para ocultar todo
+    function hideAll() {
+      statisticsHud.classList.remove('visible');
+      holographicPreviewPanel.classList.remove('visible');
+      
+      // Pausar video
+      previewVideo.pause();
+      previewVideo.src = '';
+      previewVideo.poster = '';
+
+      // Limpiar canvas
+      const ctx = dataFlowCanvas.getContext('2d');
+      ctx.clearRect(0, 0, dataFlowCanvas.width, dataFlowCanvas.height);
+    }
+
+    // Event listeners para filas de la tabla
+    projectTableBody.addEventListener('mouseenter', function(e) {
+      const row = e.target.closest('.table-row');
+      if (!row || isAnimationActive) return;
+
+      isAnimationActive = true;
+      currentHoveredRow = row;
+
+      const projectData = {
+        projectId: row.dataset.projectId,
+        videoSrc: row.dataset.videoSrc,
+        posterSrc: row.dataset.posterSrc,
+        title: row.dataset.title,
+        description: row.dataset.description,
+        technologies: row.dataset.technologies,
+        linesOfCode: row.dataset.linesOfCode,
+        techDistribution: row.dataset.techDistribution,
+        status: row.querySelector('.cell:last-child').textContent
+      };
+
+      // Fase 1: Extracción de datos (0-0.5s)
+      const rowRect = row.getBoundingClientRect();
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      
+      createDataFlow(rowRect.left + rowRect.width / 2, rowRect.top + rowRect.height / 2, centerX, centerY);
+      playSound(400, 0.5, 'sawtooth');
+
+      // Fase 2: Panel de estadísticas (0.5-1.2s)
+      setTimeout(() => {
+        showStatisticsHud(projectData);
+      }, 500);
+
+      // Fase 3: Panel holográfico (1.2-1.5s)
+      setTimeout(() => {
+        statisticsHud.classList.remove('visible');
+        setTimeout(() => {
+          showHolographicPanel(projectData);
+          isAnimationActive = false;
+        }, 300);
+      }, 1200);
+    });
+
+    // Event listener para mouseleave en la tabla
+    projectTableBody.addEventListener('mouseleave', function(e) {
+      if (currentHoveredRow && !isAnimationActive) {
+        hideAll();
+        currentHoveredRow = null;
+        playSound(300, 0.2);
+      }
+    });
+
+    // Event listeners para índice alfabético
+    alphabeticIndex.addEventListener('click', function(e) {
+      const letter = e.target.closest('.letter');
+      if (!letter || letter.classList.contains('inactive')) return;
+
+      const selectedLetter = letter.dataset.letter;
+      playSound(500, 0.1);
+
+      // Filtrar proyectos
+      const rows = document.querySelectorAll('.table-row');
+      let visibleCount = 0;
+
+      rows.forEach(row => {
+        const projectName = row.querySelector('.cell:nth-child(2)').textContent;
+        if (projectName.includes(`PROYECTO: ${selectedLetter}`)) {
+          row.style.display = 'grid';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      // Actualizar estado de letras
+      document.querySelectorAll('.letter').forEach(l => {
+        l.classList.remove('active');
+      });
+      letter.classList.add('active');
+
+      // Mostrar mensaje de resultados
+      console.log(`Proyectos encontrados para la letra ${selectedLetter}: ${visibleCount}`);
+    });
+
+    // Función para actualizar estado de letras del índice
+    function updateAlphabeticIndex() {
+      const rows = document.querySelectorAll('.table-row');
+      const projectNames = Array.from(rows).map(row => 
+        row.querySelector('.cell:nth-child(2)').textContent.split(': ')[1]
+      );
+
+      document.querySelectorAll('.letter').forEach(letter => {
+        const letterChar = letter.dataset.letter;
+        const hasProjects = projectNames.some(name => name.startsWith(letterChar));
+        
+        if (hasProjects) {
+          letter.classList.remove('inactive');
+        } else {
+          letter.classList.add('inactive');
+        }
+      });
+    }
+
+    // Inicialización
+    initAudio();
+    updateAlphabeticIndex();
+
+    // Manejar redimensionamiento
+    window.addEventListener('resize', function() {
+      if (dataFlowCanvas) {
+        dataFlowCanvas.width = window.innerWidth;
+        dataFlowCanvas.height = window.innerHeight;
+      }
+    });
+  });
+  </script>
+
+  <!-- Script para el scroller de logos infinito -->
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // --- SCRIPT PARA APLICAR MÁSCARAS DE LOGOS SVG DINÁMICAMENTE ---
+    const logoItems = document.querySelectorAll(".tech-logo-scroller .tag-list li[data-logo-url]");
+    if (logoItems.length > 0) {
+      logoItems.forEach(item => {
+        const logoUrl = item.dataset.logoUrl;
+        if (logoUrl) {
+          item.style.webkitMaskImage = `url(${logoUrl})`;
+          item.style.maskImage = `url(${logoUrl})`;
+        }
+      });
+    }
+
+    // --- SCRIPT PARA EL SCROLLER DE LOGOS INFINITO ---
+    const scrollers = document.querySelectorAll(".tech-logo-scroller");
+
+    if (scrollers.length > 0) {
+      scrollers.forEach((scroller) => {
+        const scrollerInner = scroller.querySelector(".scroller__inner");
+        if (scrollerInner) {
+          const scrollerContent = Array.from(scrollerInner.children);
+
+          scrollerContent.forEach((item) => {
+            const duplicatedItem = item.cloneNode(true);
+            duplicatedItem.setAttribute("aria-hidden", true);
+            scrollerInner.appendChild(duplicatedItem);
+          });
+        }
+      });
+    }
+  });
+  </script>
+
   <!-- Estilos adicionales para la animación del menú -->
   <style>
   /* Efecto de pulso para menú abierto */
@@ -4272,5 +5636,40 @@
     }
   }
   </style>
+  <script>
+    // Función para actualizar estado de letras del índice
+    function updateAlphabeticIndex() {
+      const rows = document.querySelectorAll('.table-row');
+      const projectNames = Array.from(rows).map(row => 
+        row.querySelector('.cell:nth-child(2)').textContent.split(': ')[1]
+      );
+
+      document.querySelectorAll('.letter').forEach(letter => {
+        const letterChar = letter.dataset.letter;
+        const hasProjects = projectNames.some(name => name.startsWith(letterChar));
+        
+        if (hasProjects) {
+          letter.classList.remove('inactive');
+        } else {
+          letter.classList.add('inactive');
+        }
+      });
+    }
+
+    // Inicialización
+    initAudio();
+    updateAlphabeticIndex();
+
+    // Manejar redimensionamiento
+    window.addEventListener('resize', function() {
+      if (dataFlowCanvas) {
+        dataFlowCanvas.width = window.innerWidth;
+        dataFlowCanvas.height = window.innerHeight;
+      }
+    });
+  </script>
+ 
+  
+
 </body>
 </html>
