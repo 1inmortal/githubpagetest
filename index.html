@@ -1680,27 +1680,278 @@
     }
     .blog-coming-soon h3 { font-size: 1.5rem; color: var(--color-accent); margin-bottom: 15px; text-shadow: var(--hud-text-shadow); }
 
-    /* --- TESTIMONIALS --- */
-    .testimonials-carousel { max-width: 800px; margin: 0 auto; position: relative; padding: 30px; min-height: 200px; /* Increased min-height */}
-    .testimonial {
-      position: absolute; width: calc(100% - 60px); left: 30px; top: 30px;
-      opacity: 0; transform: translateX(30px) scale(0.95);
-      transition: opacity var(--transition-medium) ease, transform var(--transition-medium) ease;
-      text-align: center;
+    /* --- TESTIMONIALS INTERFACE --- */
+    .testimonials-interface {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 30px;
+      max-width: 1200px;
+      margin: 0 auto;
+      min-height: 400px;
     }
-    .testimonial.active {
-      opacity: 1; transform: translateX(0) scale(1);
-      position: relative; left: 0; top: 0;
+    
+    /* Panel Izquierdo: Selector de Transmisiones */
+    .transmission-selector {
+      background: var(--color-glass-bg);
+      border: 1px solid var(--color-border);
+      border-radius: 5px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
     }
-    .testimonial p { font-size: 1.1rem; /* Larger text */ color: var(--color-text); margin-bottom: 20px; font-style: italic; }
-    .testimonial cite { font-style: normal; font-weight: bold; color: var(--color-accent); display: block; margin-top: 15px; font-size: 1rem; /* Larger cite */ }
-    .carousel-controls { margin-top: 30px; display: flex; justify-content: center; gap: 12px; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); }
-    .carousel-controls button {
-      width: 12px; height: 12px; /* Larger buttons */ background: var(--color-border); border: none; border-radius: 50%; cursor: pointer; opacity: 0.6; transition: var(--transition-fast);
-      outline: none;
+    
+    .transmission-selector::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--color-accent), transparent);
+      animation: scan-line 2s linear infinite;
     }
-    .carousel-controls button.active { opacity: 1; background: var(--color-accent); transform: scale(1.3); box-shadow: var(--hud-glow); }
-     .carousel-controls button:focus { outline: 1px dashed var(--color-text); }
+    
+    .interface-title {
+      font-family: var(--font-heading);
+      font-size: 1.2rem;
+      color: var(--color-accent);
+      margin-bottom: 20px;
+      text-shadow: var(--hud-text-shadow);
+      border-bottom: 1px solid var(--color-border);
+      padding-bottom: 10px;
+    }
+    
+    .transmission-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .transmission-item {
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--color-border);
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .transmission-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, var(--color-accent-glow), transparent);
+      transition: left var(--transition-medium);
+    }
+    
+    .transmission-item:hover {
+      border-color: var(--color-accent);
+      background: rgba(0, 0, 0, 0.5);
+      transform: translateX(5px);
+    }
+    
+    .transmission-item:hover::before {
+      left: 100%;
+    }
+    
+    .transmission-item.active {
+      border-color: var(--color-accent);
+      background: rgba(var(--color-accent-rgb), 0.1);
+      box-shadow: 0 0 10px var(--color-accent-glow);
+    }
+    
+    .transmission-item.active::before {
+      left: 100%;
+    }
+    
+    .transmission-id {
+      display: block;
+      font-family: var(--font-main);
+      font-size: 0.9rem;
+      color: var(--color-text);
+      margin-bottom: 5px;
+    }
+    
+    .transmission-status {
+      display: block;
+      font-family: var(--font-heading);
+      font-size: 0.8rem;
+      color: var(--color-accent);
+      text-shadow: var(--hud-text-shadow);
+    }
+    
+    .transmission-item.active .transmission-status {
+      animation: status-pulse 2s ease-in-out infinite;
+    }
+    
+    .transmission-item:not(.active) .transmission-status {
+      animation: standby-pulse 3s ease-in-out infinite;
+    }
+    
+    /* Panel Derecho: Visualizador de Transmisiones */
+    .transmission-viewer {
+      background: var(--color-glass-bg);
+      border: 1px solid var(--color-border);
+      border-radius: 5px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .transmission-viewer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--color-accent), transparent);
+      animation: scan-line 2s linear infinite;
+    }
+    
+    .transmission-viewer::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(var(--color-accent-rgb), 0.1), transparent);
+      animation: scan-sweep 3s ease-in-out infinite;
+      pointer-events: none;
+    }
+    
+    .viewer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--color-border);
+    }
+    
+    .viewer-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .status-indicator {
+      color: var(--color-accent);
+      font-size: 1.2rem;
+      animation: status-pulse 1s ease-in-out infinite;
+    }
+    
+    .status-text {
+      font-family: var(--font-heading);
+      font-size: 0.9rem;
+      color: var(--color-accent);
+      text-shadow: var(--hud-text-shadow);
+    }
+    
+    /* Canvas para la onda de datos */
+    .waveform-container {
+      height: 100px;
+      margin-bottom: 20px;
+      position: relative;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .transmission-waveform {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    
+    /* Área de contenido del testimonio */
+    .transmission-content {
+      min-height: 150px;
+    }
+    
+    .content-text {
+      margin-bottom: 20px;
+    }
+    
+    .testimonial-text {
+      font-size: 1.1rem;
+      color: var(--color-text);
+      line-height: 1.6;
+      font-style: italic;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity var(--transition-medium), transform var(--transition-medium);
+    }
+    
+    .testimonial-text.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .content-source {
+      border-top: 1px solid var(--color-border);
+      padding-top: 15px;
+    }
+    
+    .testimonial-source {
+      font-style: normal;
+      font-weight: bold;
+      color: var(--color-accent);
+      font-size: 1rem;
+      display: block;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity var(--transition-medium), transform var(--transition-medium);
+    }
+    
+    .testimonial-source.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    /* Animaciones */
+    @keyframes scan-line {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    
+    @keyframes scan-sweep {
+      0% { transform: translateX(-100%); }
+      50% { transform: translateX(100%); }
+      100% { transform: translateX(100%); }
+    }
+    
+    @keyframes status-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    @keyframes standby-pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 0.3; }
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .testimonials-interface {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      
+      .transmission-selector {
+        order: 2;
+      }
+      
+      .transmission-viewer {
+        order: 1;
+      }
+    }
 
 
     /* --- SERVICES --- */
@@ -2063,9 +2314,11 @@
        .blog-item p { font-size: 0.85rem; }
        .blog-coming-soon { padding: 20px; }
        .blog-coming-soon h3 { font-size: 1.3rem; }
-        .testimonials-carousel { min-height: 150px; padding: 20px;}
-        .testimonial p { font-size: 1rem; margin-bottom: 15px;}
-        .testimonial cite { font-size: 0.85rem; margin-top: 10px;}
+            .testimonials-interface { gap: 20px; min-height: 300px; }
+    .transmission-selector { padding: 15px; }
+    .transmission-viewer { padding: 15px; }
+    .testimonial-text { font-size: 1rem; }
+    .testimonial-source { font-size: 0.9rem; }
         .carousel-controls { gap: 8px; bottom: -5px; }
         .carousel-controls button { width: 8px; height: 8px; }
         .service-card h4 { font-size: 1.6rem; }
@@ -3744,23 +3997,50 @@
     <!-- TESTIMONIALS -->
     <section class="testimonials section-container reveal" id="testimonials">
        <h2 class="section-title glitch-text" data-text="Testimonios /// Client_Feedback_Log" id="testimonialsTitle">Testimonios /// Client_Feedback_Log</h2>
-       <div class="testimonials-carousel content-box">
-           <div class="testimonial active">
-               <p>"Increíble trabajo, el resultado superó todas mis expectativas. La interfaz es de otro mundo."</p>
-               <cite>— Juan Pérez [Ref: JP_Feedback]</cite>
+       <div class="testimonials-interface content-box">
+           <!-- Panel Izquierdo: Selector de Transmisiones -->
+           <div class="transmission-selector">
+               <h3 class="interface-title">[TRANSMISSION_SELECTOR]</h3>
+               <div class="transmission-list">
+                   <div class="transmission-item active" data-transmission="0">
+                       <span class="transmission-id">[TRANSMISSION: JP_Feedback]</span>
+                       <span class="transmission-status">ACTIVE</span>
+                   </div>
+                   <div class="transmission-item" data-transmission="1">
+                       <span class="transmission-id">[TRANSMISSION: ML_Feedback]</span>
+                       <span class="transmission-status">STANDBY</span>
+                   </div>
+                   <div class="transmission-item" data-transmission="2">
+                       <span class="transmission-id">[TRANSMISSION: CG_Feedback]</span>
+                       <span class="transmission-status">STANDBY</span>
+                   </div>
+               </div>
            </div>
-           <div class="testimonial">
-               <p>"Profesional, creativo y fácil de colaborar. Una visión verdaderamente futurista aplicada con maestría."</p>
-               <cite>— María López [Ref: ML_Feedback]</cite>
-           </div>
-           <div class="testimonial">
-               <p>"El diseño y las animaciones elevaron nuestro producto a un nivel completamente nuevo. Impacto inmediato."</p>
-               <cite>— Carlos Gómez [Ref: CG_Feedback]</cite>
-           </div>
-           <div class="carousel-controls">
-               <button class="active" aria-label="Mostrar Testimonio 1"></button>
-               <button aria-label="Mostrar Testimonio 2"></button>
-               <button aria-label="Mostrar Testimonio 3"></button>
+           
+           <!-- Panel Derecho: Visualizador de Transmisiones -->
+           <div class="transmission-viewer">
+               <div class="viewer-header">
+                   <h3 class="interface-title">[TRANSMISSION_VIEWER]</h3>
+                   <div class="viewer-status">
+                       <span class="status-indicator">●</span>
+                       <span class="status-text">DECODING</span>
+                   </div>
+               </div>
+               
+               <!-- Canvas para la onda de datos -->
+               <div class="waveform-container">
+                   <canvas id="transmissionWaveform" class="transmission-waveform"></canvas>
+               </div>
+               
+               <!-- Área de contenido del testimonio -->
+               <div class="transmission-content">
+                   <div class="content-text">
+                       <p class="testimonial-text" id="testimonialText"></p>
+                   </div>
+                   <div class="content-source">
+                       <cite class="testimonial-source" id="testimonialSource"></cite>
+                   </div>
+               </div>
            </div>
        </div>
     </section>
@@ -3982,8 +4262,7 @@
         const modalTriggers = document.querySelectorAll('.modal-trigger');
         const modals = document.querySelectorAll('.modal');
         const closeModals = document.querySelectorAll('.close-modal');
-        const testimonials = document.querySelectorAll('.testimonial');
-        const carouselButtons = document.querySelectorAll('.carousel-controls button');
+
         const timelineItems = document.querySelectorAll('.timeline-item'); // Added for timeline beacon
         const hudCornerElements = hudOverlay ? hudOverlay.querySelectorAll('.hud-corner') : []; // For JS dot/noise animations
         const hudLineElements = hudOverlay ? hudOverlay.querySelectorAll('.hud-line') : []; // For JS streak animations
@@ -4598,29 +4877,188 @@
 
 
         // ============================================================
-        // TESTIMONIALS CAROUSEL
+        // TESTIMONIALS INTERFACE
         // ============================================================
-        let currentTestimonialIndex = 0;
-
-        function changeTestimonial(index) {
-            if (index === currentTestimonialIndex || testimonials.length === 0) return;
-            playSound('click', 0.4);
-            testimonials[currentTestimonialIndex].classList.remove('active');
-            if(carouselButtons[currentTestimonialIndex]) carouselButtons[currentTestimonialIndex].classList.remove('active');
-            currentTestimonialIndex = index;
-            testimonials[currentTestimonialIndex].classList.add('active');
-            if(carouselButtons[currentTestimonialIndex]) carouselButtons[currentTestimonialIndex].classList.add('active');
-             // Ensure visibility if carousel is inside a reveal section
-             // The reveal observer should handle showing the section. Testimonial activation is internal.
+        const transmissionItems = document.querySelectorAll('.transmission-item');
+        const testimonialText = document.getElementById('testimonialText');
+        const testimonialSource = document.getElementById('testimonialSource');
+        const waveformCanvas = document.getElementById('transmissionWaveform');
+        const statusText = document.querySelector('.status-text');
+        
+        // Datos de testimonios
+        const testimonialsData = [
+            {
+                text: '"Increíble trabajo, el resultado superó todas mis expectativas. La interfaz es de otro mundo."',
+                source: '— Juan Pérez [Ref: JP_Feedback]'
+            },
+            {
+                text: '"Profesional, creativo y fácil de colaborar. Una visión verdaderamente futurista aplicada con maestría."',
+                source: '— María López [Ref: ML_Feedback]'
+            },
+            {
+                text: '"El diseño y las animaciones elevaron nuestro producto a un nivel completamente nuevo. Impacto inmediato."',
+                source: '— Carlos Gómez [Ref: CG_Feedback]'
+            }
+        ];
+        
+        let currentTransmissionIndex = 0;
+        let waveformAnimation = null;
+        
+        // Función para animar la onda de datos
+        function animateWaveform(intensity = 1) {
+            if (!waveformCanvas) return;
+            
+            const ctx = waveformCanvas.getContext('2d');
+            const width = waveformCanvas.width;
+            const height = waveformCanvas.height;
+            
+            // Limpiar canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Configurar estilo
+            ctx.strokeStyle = `hsla(${getComputedStyle(document.documentElement).getPropertyValue('--hue')}, 100%, 50%, ${intensity})`;
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            
+            // Dibujar onda
+            ctx.beginPath();
+            for (let x = 0; x < width; x += 2) {
+                const time = Date.now() * 0.001;
+                const frequency = 0.02;
+                const amplitude = height * 0.3 * intensity;
+                const y = height / 2 + Math.sin(x * frequency + time * 2) * amplitude * Math.random();
+                
+                if (x === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+            
+            // Efecto de partículas
+            for (let i = 0; i < 5 * intensity; i++) {
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                const size = Math.random() * 3 * intensity;
+                
+                ctx.fillStyle = `hsla(${getComputedStyle(document.documentElement).getPropertyValue('--hue')}, 100%, 50%, ${0.8 * intensity})`;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Efecto de corrupción de datos ocasional
+            if (Math.random() < 0.02) {
+                ctx.strokeStyle = `hsla(${getComputedStyle(document.documentElement).getPropertyValue('--hue')}, 100%, 70%, 0.8)`;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                for (let x = 0; x < width; x += 10) {
+                    const y = Math.random() * height;
+                    if (x === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.stroke();
+            }
         }
-
-        if(testimonials.length > 0 && carouselButtons.length > 0) {
-            carouselButtons.forEach((btn, i) => {
-                btn.addEventListener('click', () => changeTestimonial(i));
+        
+        // Función para cambiar transmisión
+        function changeTransmission(index) {
+            if (index === currentTransmissionIndex || index >= testimonialsData.length) return;
+            
+            playSound('click', 0.4);
+            
+            // Actualizar elementos activos
+            transmissionItems[currentTransmissionIndex].classList.remove('active');
+            transmissionItems[currentTransmissionIndex].querySelector('.transmission-status').textContent = 'STANDBY';
+            
+            currentTransmissionIndex = index;
+            
+            transmissionItems[currentTransmissionIndex].classList.add('active');
+            transmissionItems[currentTransmissionIndex].querySelector('.transmission-status').textContent = 'ACTIVE';
+            
+            // Actualizar estado del visualizador
+            statusText.textContent = 'DECODING';
+            
+            // Limpiar contenido anterior
+            testimonialText.classList.remove('visible');
+            testimonialSource.classList.remove('visible');
+            
+            // Animar onda con intensidad alta
+            if (waveformAnimation) {
+                clearInterval(waveformAnimation);
+            }
+            
+            let pulseCount = 0;
+            waveformAnimation = setInterval(() => {
+                const intensity = pulseCount < 5 ? 1.5 : 0.8;
+                animateWaveform(intensity);
+                pulseCount++;
+                
+                if (pulseCount >= 10) {
+                    clearInterval(waveformAnimation);
+                    waveformAnimation = setInterval(() => animateWaveform(0.8), 50);
+                }
+            }, 100);
+            
+            // Simular decodificación del texto
+            setTimeout(() => {
+                statusText.textContent = 'DECODED';
+                
+                // Animar aparición del texto carácter por carácter
+                const text = testimonialsData[index].text;
+                testimonialText.textContent = '';
+                testimonialText.classList.add('visible');
+                
+                let charIndex = 0;
+                const typeInterval = setInterval(() => {
+                    if (charIndex < text.length) {
+                        // Efecto de glitch ocasional
+                        if (Math.random() < 0.05) {
+                            testimonialText.style.textShadow = '0 0 5px var(--color-accent)';
+                            setTimeout(() => {
+                                testimonialText.style.textShadow = '';
+                            }, 100);
+                        }
+                        
+                        testimonialText.textContent += text.charAt(charIndex);
+                        charIndex++;
+                    } else {
+                        clearInterval(typeInterval);
+                        
+                        // Animar aparición de la fuente después
+                        setTimeout(() => {
+                            testimonialSource.textContent = testimonialsData[index].source;
+                            testimonialSource.classList.add('visible');
+                        }, 500);
+                    }
+                }, 50);
+                
+            }, 2000);
+        }
+        
+        // Inicializar interfaz
+        if (transmissionItems.length > 0) {
+            transmissionItems.forEach((item, i) => {
+                item.addEventListener('click', () => changeTransmission(i));
             });
-            // Initial state
-            testimonials[0].classList.add('active');
-            carouselButtons[0].classList.add('active');
+            
+            // Configurar canvas
+            if (waveformCanvas) {
+                function resizeCanvas() {
+                    waveformCanvas.width = waveformCanvas.offsetWidth;
+                    waveformCanvas.height = waveformCanvas.offsetHeight;
+                }
+                
+                resizeCanvas();
+                window.addEventListener('resize', resizeCanvas);
+                
+                // Inicializar con primera transmisión
+                changeTransmission(0);
+            }
         }
 
 
