@@ -9,19 +9,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Theme Toggle
     if (themeToggle) {
-        // Initialize theme from localStorage or default to dark
-        const currentTheme = localStorage.getItem('portfolioTheme') || 'dark';
+        // Siempre inicia en oscuro (verde) salvo que el usuario seleccione claro manualmente
+        let currentTheme = 'dark';
+        if (localStorage.getItem('portfolioTheme') === 'light') {
+            currentTheme = 'light';
+        }
         htmlEl.setAttribute('data-theme', currentTheme);
         updateThemeButton(currentTheme);
 
         themeToggle.addEventListener('click', () => {
             const currentTheme = htmlEl.getAttribute('data-theme');
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            
             htmlEl.setAttribute('data-theme', newTheme);
             localStorage.setItem('portfolioTheme', newTheme);
             updateThemeButton(newTheme);
-            
             if (window.playSound) window.playSound('click');
         });
     }
@@ -42,14 +43,10 @@ document.addEventListener('DOMContentLoaded', () => {
         langToggle.addEventListener('click', () => {
             const currentLang = langToggle.textContent === 'EN' ? 'es' : 'en';
             const newLang = currentLang === 'es' ? 'en' : 'es';
-            
             localStorage.setItem('portfolioLanguage', newLang);
             updateLanguageButton(newLang);
-            
             if (window.playSound) window.playSound('click');
-            
-            // Here you could implement actual language switching logic
-            // For now, we just update the button
+            // Aquí podrías implementar la lógica real de cambio de idioma
         });
     }
 
