@@ -4180,6 +4180,348 @@
     .contact-section p { font-size: 1.1rem; color: var(--color-muted); margin-bottom: 30px; max-width: 600px; margin-left: auto; margin-right: auto; }
     .contact-section a.hud-button { margin-top: 0; } /* Adjust margin if needed */
 
+/* ============================================================
+   TERMINAL DE TRANSMISIÓN SEGURA
+   ------------------------------------------------------------
+   Estilos para la interfaz de terminal interactiva
+============================================================ */
+
+.secure-terminal-panel {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(20, 20, 20, 0.95) 100%);
+    border: 2px solid var(--color-accent);
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    box-shadow: 
+        0 0 20px rgba(0, 255, 255, 0.3),
+        inset 0 0 20px rgba(0, 255, 255, 0.1);
+}
+
+.secure-terminal-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.1), transparent);
+    animation: scanline 3s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes scanline {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+.terminal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-accent);
+    margin-bottom: 1.5rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.9rem;
+    color: var(--color-accent);
+}
+
+.terminal-status {
+    font-weight: bold;
+    text-shadow: 0 0 5px var(--color-accent);
+}
+
+.terminal-protocol {
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+.terminal-body {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    min-height: 200px;
+}
+
+.terminal-log {
+    flex: 1;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: var(--color-text);
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1rem;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    overflow-y: auto;
+    max-height: 200px;
+}
+
+.log-line {
+    margin-bottom: 0.5rem;
+    animation: fadeInUp 0.3s ease-out;
+}
+
+.log-line:last-child {
+    color: var(--color-accent);
+    font-weight: bold;
+}
+
+.log-line.typing {
+    border-right: 2px solid var(--color-accent);
+    animation: blink 1s infinite;
+}
+
+.log-line.glitch {
+    animation: glitch 0.2s ease-in-out;
+}
+
+@keyframes blink {
+    0%, 50% { border-color: var(--color-accent); }
+    51%, 100% { border-color: transparent; }
+}
+
+@keyframes glitch {
+    0% { transform: translate(0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(-2px, -2px); }
+    60% { transform: translate(2px, 2px); }
+    80% { transform: translate(2px, -2px); }
+    100% { transform: translate(0); }
+}
+
+.terminal-visualizer {
+    flex: 0 0 150px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.terminal-visualizer.active {
+    opacity: 1;
+}
+
+.data-wave {
+    height: 20px;
+    background: linear-gradient(90deg, transparent, var(--color-accent), transparent);
+    border-radius: 2px;
+    animation: dataWave 2s ease-in-out infinite;
+}
+
+.data-wave:nth-child(2) {
+    animation-delay: 0.3s;
+}
+
+.data-wave:nth-child(3) {
+    animation-delay: 0.6s;
+}
+
+@keyframes dataWave {
+    0%, 100% { 
+        transform: scaleX(0.3);
+        opacity: 0.3;
+    }
+    50% { 
+        transform: scaleX(1);
+        opacity: 1;
+    }
+}
+
+.terminal-controls {
+    text-align: center;
+}
+
+.terminal-controls .hud-button {
+    position: relative;
+    transition: all 0.3s ease;
+    min-width: 250px;
+}
+
+.terminal-controls .hud-button[data-state="authenticating"] {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.terminal-controls .hud-button[data-state="ready"] {
+    animation: pulse 2s ease-in-out infinite;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+}
+
+@keyframes pulse {
+    0%, 100% { 
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+    }
+    50% { 
+        box-shadow: 0 0 30px rgba(0, 255, 255, 0.8);
+    }
+}
+
+.btn-text, .btn-loading, .btn-ready {
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.btn-loading {
+    color: var(--color-accent);
+}
+
+.btn-ready {
+    color: #00ff00;
+    text-shadow: 0 0 10px #00ff00;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .secure-terminal-panel {
+        padding: 1rem;
+        margin: 0 1rem;
+    }
+    
+    .terminal-header {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+    
+    .terminal-body {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .terminal-visualizer {
+        flex: none;
+        height: 100px;
+    }
+}
+
+/* ============================================================
+   CASCADA DE RENDERIZADO DE BLOQUES DE DATOS
+   ------------------------------------------------------------
+   Animación de hover avanzada para bloques de contenido
+============================================================ */
+
+.block-render-container {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.block-render-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--color-accent), transparent);
+    transform: translateX(-100%);
+    opacity: 0;
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.block-render-container.rendering::before {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.block-render-container.rendering {
+    filter: blur(0.5px);
+}
+
+.block-render-container.rendering * {
+    animation: glitch 0.1s ease-in-out;
+}
+
+.block-render-container.rendered {
+    filter: none;
+}
+
+.block-render-container.rendered * {
+    animation: none;
+}
+
+/* Efecto de scanline de confirmación */
+.block-render-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, transparent, var(--color-accent), transparent);
+    opacity: 0;
+    transform: translateY(-100%);
+    transition: all 0.2s ease;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.block-render-container.scanline::after {
+    transform: translateY(100%);
+    opacity: 0.3;
+}
+
+/* Estados de texto para la animación */
+.text-block {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.text-block.raw-data {
+    color: var(--color-accent);
+    text-shadow: 0 0 5px var(--color-accent);
+}
+
+.text-block.processing {
+    filter: blur(0.2px);
+}
+
+.text-block.rendered {
+    filter: none;
+    animation: textGlow 0.5s ease-out;
+}
+
+@keyframes textGlow {
+    0% { 
+        text-shadow: 0 0 5px var(--color-accent);
+        color: var(--color-accent);
+    }
+    50% { 
+        text-shadow: 0 0 15px var(--color-accent);
+        color: #fff;
+    }
+    100% { 
+        text-shadow: none;
+        color: var(--color-text);
+    }
+}
+
+/* Contenedores específicos para aplicar la animación */
+.project-card,
+.skill-item,
+.blog-item,
+.memory-log,
+.credentials-panel {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.project-card:hover,
+.skill-item:hover,
+.blog-item:hover,
+.memory-log:hover,
+.credentials-panel:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0, 255, 255, 0.3);
+}
+
     /* --- FOOTER --- */
     .main-footer {
       background: rgba(var(--color-bg), 0.8); /* Slightly more opaque */
@@ -5570,7 +5912,7 @@
 <canvas id="scrollCanvas"></canvas>
 
   <!-- ============================================================
-       LOADER COREOGRAFIADO CON SINCRONIZACIÓN ABSOLUTA
+       LOADER COOGRAFIADO CON SINCRONIZACIÓN ABSOLUTA
        ------------------------------------------------------------
        GSAP Timeline orchestrated loading experience
   ============================================================ -->
@@ -6471,14 +6813,41 @@
        </div>
     </section>
 
-    <!-- CONTACT -->
+    <!-- CONTACT - TERMINAL DE TRANSMISIÓN SEGURA -->
     <section class="contact-section section-container reveal" id="contact">
        <h2 class="section-title glitch-text" data-text="Contacto /// Comms_Link" id="contactTitle">Contacto /// Comms_Link</h2>
-       <p id="contactIntro">
-           Estableciendo conexión... ¿Listo para iniciar tu próximo proyecto digital?
-           Fusionamos tecnología, arte e interacción. Abre un canal de comunicación.
-       </p>
-       <a href="mailto:jarmando2965@gmail.com" class="hud-button primary large contact-button" id="contactBtn">Iniciar Transmisión</a>
+       
+       <!-- Terminal de Transmisión Segura -->
+       <div class="secure-terminal-panel content-box">
+           <div class="terminal-header">
+               <span class="terminal-status">SECURE COMMS_LINK v2.5</span>
+               <span class="terminal-protocol">// ENCRYPTION: AES-256 //</span>
+               <span class="terminal-protocol">// PROTOCOL: QCP //</span>
+           </div>
+           
+           <div class="terminal-body">
+               <div class="terminal-log" id="terminalLog">
+                   <div class="log-line">> STATUS: STANDBY</div>
+                   <div class="log-line">> AWAITING OPERATOR INPUT...</div>
+                   <div class="log-line">></div>
+                   <div class="log-line">> [ PRESS BUTTON TO INITIATE HANDSHAKE ]</div>
+               </div>
+               
+               <div class="terminal-visualizer" id="terminalVisualizer">
+                   <div class="data-wave"></div>
+                   <div class="data-wave"></div>
+                   <div class="data-wave"></div>
+               </div>
+           </div>
+           
+           <div class="terminal-controls">
+               <button class="hud-button primary large contact-button" id="contactBtn" data-state="standby">
+                   <span class="btn-text">[ INITIATE HANDSHAKE ]</span>
+                   <span class="btn-loading" style="display: none;">[ AUTHENTICATING... ]</span>
+                   <span class="btn-ready" style="display: none;">[ TRANSMIT NOW ]</span>
+               </button>
+           </div>
+       </div>
     </section>
 
     <!-- Footer Minimalist -->
@@ -6505,11 +6874,7 @@
   <div id="modal-cert4" class="modal"><div class="modal-content content-box"><span class="close-modal">&times;</span><h3>[Google] Foundations of Cybersecurity</h3><p>Curso especializado en fundamentos de ciberseguridad. Estrategias y herramientas para protección de datos digitales.</p><p>Emitido: Google // Fecha: 28/03/2025</p><p><a href="https://www.coursera.org/account/accomplishments/verify/F046JNZ3FUO9" target="_blank" rel="noopener noreferrer" class="hud-link">Verificar Credencial [Ext]</a></p></div></div>
 
 
-  <!-- ============================================================
-       AUDIO ELEMENTS - SISTEMA DE SONIDOS CYBERPUNK
-       ------------------------------------------------------------
-       Organización por categorías para mejor mantenimiento
-  ============================================================ -->
+  
 
   <!-- ============================================================
        I. SONIDOS DE CARGA Y SISTEMA
@@ -6545,7 +6910,7 @@
   
   <!-- Sonido de hover en elementos UI - Click sutil -->
   <audio id="uiHoverAudio" preload="auto" muted playsinline> 
-    <source src="Audio/botones/botón UI haga clic en 1.mp3" type="audio/mpeg"> 
+    <source src="assets/media/botones/sci-fi-weapon-shoot.mp3" type="audio/mpeg"> 
   </audio>
   
   <!-- Sonido de hover en filtros de navegación - Click alternativo -->
@@ -6564,10 +6929,7 @@
     <source src="assets/media/Sound-mp3/error.mp3" type="audio/mpeg"> 
   </audio>
   
-  <!-- Sonido de estática - Ambiente atmosférico -->
-  <audio id="staticAudio" preload="auto" muted playsinline> 
-    <source src="assets/media/atmosphere-sound.mp3" type="audio/mpeg"> 
-  </audio>
+
   
   <!-- Sonido de estabilización - Confirmación de sistema -->
   <audio id="stabilizationAudio" preload="auto" muted playsinline> 
@@ -6582,22 +6944,19 @@
   
   <!-- Sonido de portal holográfico - Apertura de consola neural -->
   <audio id="portalAudio" preload="auto" muted playsinline> 
-    <source src="assets/media/botones/sci-fi-weapon-shoot.mp3" type="audio/mpeg"> 
+    <source src="assets/media/atmosphere-sound.mp3" type="audio/mpeg"> 
   </audio>
   
   <!-- Sonido de energía - Activación de campos energéticos -->
   <audio id="energyAudio" preload="auto" muted playsinline> 
-    <source src="assets/media/Sound-mp3/error.mp3" type="audio/mpeg"> 
-  </audio>
-  
-  <!-- Sonido de decodificación - Procesamiento de datos -->
-  <audio id="decodeAudio" preload="auto" muted playsinline> 
     <source src="Evidencias/Audio/Sound-mp3/terminal.mp3" type="audio/mpeg"> 
   </audio>
   
+
+  
   <!-- Sonido de confirmación - Validación de selección -->
   <audio id="confirmAudio" preload="auto" muted playsinline> 
-    <source src="Evidencias/Audio/Sound-mp3/aviso.mp3" type="audio/mpeg"> 
+    <source src="Evidencias/Audio/Sound-mp3/click 2.mp3" type="audio/mpeg"> 
   </audio>
 
   <!-- ============================================================
@@ -6608,17 +6967,64 @@
   
   <!-- Sonido de activación de campo - Activación inicial del campo energético -->
   <audio id="fieldActivationAudio" preload="auto" muted playsinline> 
-    <source src="assets/media/botones/sci-fi-weapon-shoot.mp3" type="audio/mpeg"> 
+    <source src="assets/media/Sound-mp3/Sound.mp3" type="audio/mpeg"> 
   </audio>
   
-  <!-- Sonido de ping de datos - Ping digital sutil -->
+    <!-- Sonido de ping de datos - Ping digital sutil -->
   <audio id="dataPingAudio" preload="auto" muted playsinline> 
     <source src="Evidencias/Audio/Sound-mp3/click 2.mp3" type="audio/mpeg"> 
   </audio>
   
   <!-- Sonido de confirmación de interfaz - Confirmación final de selección -->
   <audio id="interfaceConfirmAudio" preload="auto" muted playsinline> 
-    <source src="Evidencias/Audio/Sound-mp3/aviso.mp3" type="audio/mpeg"> 
+    <source src="assets/media/Sound-mp3/Sound.mp3" type="audio/mpeg"> 
+  </audio>
+
+  <!-- ============================================================
+       VI. SONIDOS DE TERMINAL DE TRANSMISIÓN SEGURA
+       ------------------------------------------------------------
+       Sonidos específicos para la terminal de contacto
+  ============================================================ -->
+  
+  <!-- Sonido de teclado - Escritura en terminal -->
+  <audio id="terminalTypeAudio" preload="auto" muted playsinline> 
+    <source src="assets/media/botones/sci-fi-weapon-shoot.mp3" type="audio/mpeg"> 
+  </audio>
+  
+  <!-- Sonido de blip - Confirmación de sistema -->
+  <audio id="terminalBlipAudio" preload="auto" muted playsinline> 
+    <source src="Evidencias/Audio/Sound-mp3/click 2.mp3" type="audio/mpeg"> 
+  </audio>
+  
+  <!-- Sonido de encriptación - Proceso de encriptación -->
+  <audio id="terminalEncryptAudio" preload="auto" muted playsinline> 
+    <source src="assets/media/Sound-mp3/error.mp3" type="audio/mpeg"> 
+  </audio>
+  
+  <!-- Sonido de transmisión - Envío de datos -->
+  <audio id="terminalTransmitAudio" preload="auto" muted playsinline> 
+    <source src="assets/media/atmosphere-sound.mp3" type="audio/mpeg"> 
+  </audio>
+
+  <!-- ============================================================
+       VII. SONIDOS DE CASCADA DE RENDERIZADO DE BLOQUES
+       ------------------------------------------------------------
+       Sonidos para la animación de bloques de datos
+  ============================================================ -->
+  
+  <!-- Sonido de inicio de glitch - Disrupción inicial -->
+  <audio id="blockGlitchStartAudio" preload="auto" muted playsinline> 
+    <source src="assets/media/Sound-mp3/error.mp3" type="audio/mpeg"> 
+  </audio>
+  
+  <!-- Sonido de procesamiento de datos - Tipeo rápido -->
+  <audio id="blockDataProcessingAudio" preload="auto" muted playsinline> 
+    <source src="assets/media/botones/sci-fi-weapon-shoot.mp3" type="audio/mpeg"> 
+  </audio>
+  
+  <!-- Sonido de confirmación de renderizado - Chime final -->
+  <audio id="blockRenderCompleteAudio" preload="auto" muted playsinline> 
+    <source src="Evidencias/Audio/Sound-mp3/click 2.mp3" type="audio/mpeg"> 
   </audio>
 
   <!-- Hamburger Menu JS (extracted from the <style> block) -->
@@ -6814,7 +7220,10 @@
         // ============================================================
         // SOUND MANAGEMENT - SISTEMA DE SONIDOS CYBERPUNK
         // ============================================================
-        const sounds = {
+        
+        // DECLARACIÓN GLOBAL DE VARIABLES DE ESTADO
+        // Estas variables deben estar en scope global para evitar ReferenceError
+        window.portfolioSounds = {
             // I. SONIDOS DE CARGA Y SISTEMA
             loading: document.getElementById('loadingAudio'),           // Terminal de datos en loop
             complete: document.getElementById('loadCompleteAudio'),     // Aviso de carga completada
@@ -6833,16 +7242,31 @@
             // IV. SONIDOS HOLOGRÁFICOS
             portal: document.getElementById('portalAudio'),            // Apertura de consola neural
             energy: document.getElementById('energyAudio'),            // Activación de campos energéticos
-            decode: document.getElementById('decodeAudio'),            // Procesamiento de datos
             confirm: document.getElementById('confirmAudio'),          // Validación de selección
             
             // V. SONIDOS DE CAMPO DE INTERFAZ ENERGIZADO
             fieldActivation: document.getElementById('fieldActivationAudio'), // Activación inicial del campo
             dataPing: document.getElementById('dataPingAudio'),       // Ping digital sutil
-            interfaceConfirm: document.getElementById('interfaceConfirmAudio') // Confirmación final
+            interfaceConfirm: document.getElementById('interfaceConfirmAudio'), // Confirmación final
+            
+            // VI. SONIDOS DE TERMINAL DE TRANSMISIÓN SEGURA
+            terminalType: document.getElementById('terminalTypeAudio'), // Escritura en terminal
+            terminalBlip: document.getElementById('terminalBlipAudio'), // Confirmación de sistema
+            terminalEncrypt: document.getElementById('terminalEncryptAudio'), // Proceso de encriptación
+            terminalTransmit: document.getElementById('terminalTransmitAudio'), // Envío de datos
+            
+            // VII. SONIDOS DE CASCADA DE RENDERIZADO DE BLOQUES
+            blockGlitchStart: document.getElementById('blockGlitchStartAudio'), // Disrupción inicial
+            blockDataProcessing: document.getElementById('blockDataProcessingAudio'), // Tipeo rápido
+            blockRenderComplete: document.getElementById('blockRenderCompleteAudio') // Chime final
         };
 
-        let isMuted = localStorage.getItem('portfolioMuted') === 'true';
+        // Variable global para el estado de mute
+        window.portfolioMuted = localStorage.getItem('portfolioMuted') === 'true';
+
+                // Referencia local para compatibilidad con código existente
+        const sounds = window.portfolioSounds;
+        let isMuted = window.portfolioMuted;
 
         function updateMuteButton() {
             if (!muteButton) return;
@@ -6853,7 +7277,7 @@
             const volumeUp = muteButton.querySelector('.fa-volume-up');
             const volumeMute = muteButton.querySelector('.fa-volume-mute');
 
-            if (isMuted) {
+            if (window.portfolioMuted) {
                 muteButton.classList.add('muted');
                 muteButton.setAttribute('aria-label', 'Activar Sonidos');
                  if (volumeUp) volumeUp.style.opacity = '0.3';
@@ -6868,24 +7292,41 @@
         }
 
         function playSound(soundName, volume = 0.5) {
-            if (isMuted || !sounds[soundName]) return;
+            if (window.portfolioMuted || !window.portfolioSounds[soundName]) return;
             try {
-                sounds[soundName].volume = volume;
-                sounds[soundName].currentTime = 0;
+                const audio = window.portfolioSounds[soundName];
+                audio.volume = volume;
+                audio.currentTime = 0;
+                
+                // Asegurar que el audio no esté silenciado
+                if (audio.muted) {
+                    audio.muted = false;
+                }
+                
                 // Using a small timeout to help with rapid clicks on some browsers
                 setTimeout(() => {
-                    sounds[soundName].play().catch(e => console.warn(`Error al reproducir sonido (${soundName}):`, e));
+                    audio.play().catch(e => {
+                        console.warn(`Error al reproducir sonido (${soundName}):`, e);
+                        // Si falla, intentar habilitar el audio y reintentar
+                        if (e.name === 'NotAllowedError') {
+                            audio.muted = false;
+                            audio.play().catch(e2 => console.warn(`Reintento fallido para ${soundName}:`, e2));
+                        }
+                    });
                 }, 10);
             } catch (e) {
                 console.warn(`Error al manejar sonido (${soundName}):`, e);
             }
         }
 
+        // Hacer la función playSound disponible globalmente para las animaciones GSAP
+        window.playSound = playSound;
+
         function stopSound(soundName) {
-            if (sounds[soundName]) {
+            if (window.portfolioSounds[soundName]) {
                 try {
-                    sounds[soundName].pause();
-                    sounds[soundName].currentTime = 0;
+                    window.portfolioSounds[soundName].pause();
+                    window.portfolioSounds[soundName].currentTime = 0;
                 } catch(e) {
                      console.warn("Error al detener sonido:", e);
                 }
@@ -6897,13 +7338,1600 @@
         if(sounds.background) sounds.background.volume = 0.2;
         if(sounds.loading) sounds.loading.volume = 0.4;
 
+        // Función para habilitar sonidos después de la primera interacción del usuario
+        function enableAudioAfterUserInteraction() {
+            // Remover el atributo muted de todos los elementos de audio
+            Object.values(sounds).forEach(audio => {
+                if (audio && audio.muted) {
+                    audio.muted = false;
+                }
+            });
+            
+            // Reproducir un sonido de prueba para activar el contexto de audio
+            if (sounds.click) {
+                sounds.click.volume = 0.1;
+                sounds.click.play().catch(e => console.warn('Error al activar audio:', e));
+            }
+            
+            // Remover el event listener para evitar múltiples activaciones
+            document.removeEventListener('click', enableAudioAfterUserInteraction);
+            document.removeEventListener('keydown', enableAudioAfterUserInteraction);
+            document.removeEventListener('touchstart', enableAudioAfterUserInteraction);
+        }
+
+        // Agregar event listeners para activar audio después de la primera interacción
+        document.addEventListener('click', enableAudioAfterUserInteraction, { once: true });
+        document.addEventListener('keydown', enableAudioAfterUserInteraction, { once: true });
+        document.addEventListener('touchstart', enableAudioAfterUserInteraction, { once: true });
+
+        // Función para probar todos los sonidos
+        function testAllSounds() {
+            console.log('🔊 Probando todos los sonidos...');
+            const soundTests = [
+                { name: 'click', volume: 0.3 },
+                { name: 'hover', volume: 0.2 },
+                { name: 'energy', volume: 0.2 },
+                { name: 'portal', volume: 0.3 },
+
+            ];
+            
+            soundTests.forEach((test, index) => {
+                setTimeout(() => {
+                    playSound(test.name, test.volume);
+                    console.log(`✅ Reproduciendo: ${test.name}`);
+                }, index * 500); // Reproducir cada sonido con 500ms de separación
+            });
+        }
+
+        // Agregar función de prueba al objeto window para acceso desde consola
+        window.testSounds = testAllSounds;
+
+        // Función para probar sonidos por categoría
+        function testSoundCategory(category) {
+            const categories = {
+                'carga': ['loading', 'complete'],
+                'fondo': ['background'],
+                'ui': ['click', 'hover', 'filterHover'],
+                'efectos': ['glitch', 'static', 'stabilization'],
+                'holograficos': ['portal', 'energy', 'confirm'],
+                'energizados': ['fieldActivation', 'dataPing', 'interfaceConfirm'],
+                'terminal': ['terminalType', 'terminalBlip', 'terminalEncrypt', 'terminalTransmit'],
+                'bloques': ['blockGlitchStart', 'blockDataProcessing', 'blockRenderComplete'],
+                'todos': Object.keys(sounds)
+            };
+            
+            const soundsToTest = categories[category] || categories['todos'];
+            console.log(`🔊 Probando categoría: ${category}`);
+            
+            soundsToTest.forEach((soundName, index) => {
+                setTimeout(() => {
+                    if (sounds[soundName]) {
+                        playSound(soundName, 0.3);
+                        console.log(`✅ ${soundName}`);
+                    } else {
+                        console.log(`❌ ${soundName} - No disponible`);
+                    }
+                }, index * 300);
+            });
+        }
+
+        // Agregar funciones de prueba al objeto window
+        window.testSoundCategory = testSoundCategory;
+        window.soundCategories = ['carga', 'fondo', 'ui', 'efectos', 'holograficos', 'energizados', 'terminal', 'bloques', 'todos'];
+
+        // Función específica para probar el sonido del overlay
+        function testOverlaySound() {
+            console.log('🔊 Probando sonido del overlay (click 2.mp3)...');
+            playSound('filterHover', 0.5);
+            console.log('✅ Sonido del overlay reproducido');
+        }
+
+        // Agregar función de prueba del overlay
+        window.testOverlaySound = testOverlaySound;
+
+        // Función específica para probar el sonido del loader
+        function testLoaderSound() {
+            console.log('🔊 Probando sonido del loader (terminal.mp3)...');
+            if (sounds.loading) {
+                sounds.loading.volume = 0.4;
+                sounds.loading.currentTime = 0;
+                sounds.loading.play().catch(e => console.warn('Error al reproducir sonido del loader:', e));
+                console.log('✅ Sonido del loader reproducido');
+            } else {
+                console.log('❌ Sonido del loader no disponible');
+            }
+        }
+
+        // Agregar función de prueba del loader
+        window.testLoaderSound = testLoaderSound;
+
+        // Función para verificar que playSound está disponible globalmente
+        function testPlaySoundGlobal() {
+            console.log('🔍 Verificando disponibilidad global de playSound...');
+            if (typeof window.playSound === 'function') {
+                console.log('✅ playSound está disponible globalmente');
+                // Probar con un sonido
+                playSound('click', 0.3);
+                console.log('✅ playSound funciona correctamente');
+            } else {
+                console.log('❌ playSound NO está disponible globalmente');
+            }
+        }
+
+        // Agregar función de verificación
+        window.testPlaySoundGlobal = testPlaySoundGlobal;
+
+        // Función para probar audios de links
+        function testLinkAudios() {
+            console.log('🎵 === PRUEBA DE AUDIOS DE LINKS ===');
+            
+            const linkAudios = {
+                // Navegación
+                'nav-inicio': 'assets/media/links/navigation/nav-inicio.mp3',
+                'nav-about': 'assets/media/links/navigation/nav-about.mp3',
+                'nav-skills': 'assets/media/links/navigation/nav-skills.mp3',
+                'nav-projects': 'assets/media/links/navigation/nav-projects.mp3',
+                'nav-timeline': 'assets/media/links/navigation/nav-timeline.mp3',
+                'nav-achievements': 'assets/media/links/navigation/nav-achievements.mp3',
+                'nav-certificates': 'assets/media/links/navigation/nav-certificates.mp3',
+                'nav-process': 'assets/media/links/navigation/nav-process.mp3',
+                'nav-blog': 'assets/media/links/navigation/nav-blog.mp3',
+                'nav-evidencias': 'assets/media/links/navigation/nav-evidencias.mp3',
+                
+                // Blog
+                'blog-react': 'assets/media/links/blog/blog-react.mp3',
+                'blog-ceo': 'assets/media/links/blog/blog-ceo.mp3',
+                'blog-design': 'assets/media/links/blog/blog-design.mp3',
+                'blog-ai': 'assets/media/links/blog/blog-ai.mp3',
+                
+                // Contacto
+                'contact-email': 'assets/media/links/contact/contact-email.mp3',
+                'contact-button': 'assets/media/links/contact/contact-button.mp3',
+                
+                // Social
+                'social-linkedin': 'assets/media/links/social/social-linkedin.mp3',
+                'social-github': 'assets/media/links/social/social-github.mp3',
+                'social-dribbble': 'assets/media/links/social/social-dribbble.mp3',
+                
+                // Certificados
+                'cert-verify-1': 'assets/media/links/certificates/cert-verify-1.mp3',
+                'cert-verify-2': 'assets/media/links/certificates/cert-verify-2.mp3',
+                'cert-verify-3': 'assets/media/links/certificates/cert-verify-3.mp3',
+                'cert-verify-4': 'assets/media/links/certificates/cert-verify-4.mp3',
+                
+                // Legal
+                'legal-privacy': 'assets/media/links/legal/legal-privacy.mp3',
+                'legal-terms': 'assets/media/links/legal/legal-terms.mp3'
+            };
+            
+            console.log('📋 Total de audios de links necesarios:', Object.keys(linkAudios).length);
+            
+            // Verificar archivos existentes
+            let existingCount = 0;
+            let missingCount = 0;
+            
+            Object.entries(linkAudios).forEach(([name, path]) => {
+                const audio = new Audio(path);
+                audio.addEventListener('canplaythrough', () => {
+                    console.log(`✅ ${name}: ${path}`);
+                    existingCount++;
+                });
+                audio.addEventListener('error', () => {
+                    console.log(`❌ ${name}: ${path} - ARCHIVO FALTANTE`);
+                    missingCount++;
+                });
+                audio.load();
+            });
+            
+            setTimeout(() => {
+                console.log(`\n📊 RESUMEN:`);
+                console.log(`✅ Archivos existentes: ${existingCount}`);
+                console.log(`❌ Archivos faltantes: ${missingCount}`);
+                console.log(`📁 Total necesario: ${Object.keys(linkAudios).length}`);
+                
+                if (missingCount > 0) {
+                    console.log(`\n⚠️ Necesitas crear ${missingCount} archivos de audio`);
+                    console.log(`📝 Revisa LINKS_AUDIO_LIST.md para la lista completa`);
+                }
+            }, 2000);
+        }
+
+        // Función para verificar estado actual de links
+        function checkCurrentLinkAudios() {
+            console.log('🔍 === VERIFICACIÓN DE AUDIOS ACTUALES ===');
+            
+            const links = document.querySelectorAll('a[href]');
+            const audioUsage = {};
+            
+            links.forEach(link => {
+                const href = link.getAttribute('href');
+                const text = link.textContent.trim();
+                const classes = link.className;
+                
+                // Determinar qué audio usa actualmente
+                let currentAudio = 'click'; // Por defecto
+                
+                if (classes.includes('nav-link')) {
+                    currentAudio = 'filterHover';
+                } else if (classes.includes('hud-link')) {
+                    currentAudio = 'click';
+                } else if (classes.includes('hud-button')) {
+                    currentAudio = 'click';
+                }
+                
+                if (!audioUsage[currentAudio]) {
+                    audioUsage[currentAudio] = [];
+                }
+                
+                audioUsage[currentAudio].push({
+                    href: href,
+                    text: text,
+                    classes: classes
+                });
+            });
+            
+            console.log('📊 Uso actual de audios:');
+            Object.entries(audioUsage).forEach(([audio, links]) => {
+                console.log(`\n🎵 Audio "${audio}" (${links.length} links):`);
+                links.forEach(link => {
+                    console.log(`  - ${link.text} (${link.href})`);
+                });
+            });
+            
+            console.log(`\n⚠️ PROBLEMA: Todos los links usan solo ${Object.keys(audioUsage).length} audios diferentes`);
+            console.log(`✅ SOLUCIÓN: Necesitas 25 audios únicos (ver LINKS_AUDIO_LIST.md)`);
+        }
+
+        // Función para asignar audios únicos a links
+        function assignUniqueLinkAudios() {
+            console.log('🎯 === ASIGNACIÓN DE AUDIOS ÚNICOS ===');
+            
+            const linkAudioMap = {
+                // Navegación
+                '#hero': 'nav-inicio',
+                '#about': 'nav-about', 
+                '#skills': 'nav-skills',
+                '#proyectos': 'nav-projects',
+                '#timeline': 'nav-timeline',
+                '#achievements': 'nav-achievements',
+                '#certificados': 'nav-certificates',
+                '#process': 'nav-process',
+                '#blog': 'nav-blog',
+                'Evidencias/Menu.html': 'nav-evidencias',
+                
+                // Blog
+                'Blog/React.html': 'blog-react',
+                'Blog/Ceo.html': 'blog-ceo',
+                'Blog/Diseño.html': 'blog-design',
+                'Blog/IA.html': 'blog-ai',
+                
+                // Contacto
+                'mailto:jarmando2965@gmail.com': 'contact-email',
+                
+                // Social
+                'https://www.linkedin.com': 'social-linkedin',
+                'https://github.com': 'social-github',
+                'https://dribbble.com': 'social-dribbble',
+                
+                // Certificados
+                'https://coursera.org/verify/CZ47JIW4L9Y': 'cert-verify-1',
+                'https://coursera.org/verify/F046N23FJU08': 'cert-verify-2',
+                'https://www.coursera.org/account/accomplishments/verify/CWRQOJ19Z102': 'cert-verify-3',
+                'https://www.coursera.org/account/accomplishments/verify/F046JNZ3FUO9': 'cert-verify-4',
+                
+                // Legal
+                '#privacy': 'legal-privacy',
+                '#terms': 'legal-terms'
+            };
+            
+            console.log('📋 Mapeo de audios únicos:');
+            Object.entries(linkAudioMap).forEach(([href, audio]) => {
+                console.log(`  ${href} → ${audio}`);
+            });
+            
+            console.log(`\n✅ Total de audios únicos necesarios: ${Object.keys(linkAudioMap).length}`);
+            console.log(`📝 Implementar cuando tengas los archivos de audio`);
+        }
+
+        // Agregar funciones al objeto global
+        window.testLinkAudios = testLinkAudios;
+        window.checkCurrentLinkAudios = checkCurrentLinkAudios;
+        window.assignUniqueLinkAudios = assignUniqueLinkAudios;
+
+        // Función para identificar audios duplicados en overlay
+        function checkOverlayAudioDuplicates() {
+            console.log('🔍 === VERIFICACIÓN DE AUDIOS DUPLICADOS EN OVERLAY ===');
+            
+            // Problema 1: Secuencia de 3 audios en hover
+            console.log('❌ PROBLEMA 1: Secuencia de 3 audios en hover:');
+            console.log('  - fieldActivation (0.4s)');
+            console.log('  - dataPing (0.3s) - 100ms después');
+            console.log('  - interfaceConfirm (0.2s) - 300ms después');
+            console.log('  → Se reproducen 3 audios simultáneamente');
+            
+            // Problema 2: Múltiples audios en loader
+            console.log('\n❌ PROBLEMA 2: Múltiples audios en loader:');
+            console.log('  - complete (0.6s) - Al finalizar');
+            console.log('  - background (0.2s) - 700ms después');
+            console.log('  → Se reproducen 2 audios al finalizar');
+            
+            // Solución propuesta
+            console.log('\n✅ SOLUCIÓN PROPUESTA:');
+            console.log('1. Overlay: Usar solo 1 audio por acción');
+            console.log('2. Loader: Usar solo 1 audio al finalizar');
+        }
+
+        // Función para corregir audios duplicados en overlay
+        function fixOverlayAudioDuplicates() {
+            console.log('🔧 === CORRECCIÓN DE AUDIOS DUPLICADOS EN OVERLAY ===');
+            
+            // Encontrar el event listener problemático
+            const filterLinks = document.querySelectorAll('.filter-panel .nav-link');
+            
+            filterLinks.forEach(link => {
+                // Remover event listeners existentes
+                const newLink = link.cloneNode(true);
+                link.parentNode.replaceChild(newLink, link);
+                
+                // Agregar nuevo event listener con solo 1 audio
+                newLink.addEventListener('mouseenter', () => {
+                    // Solo reproducir 1 audio en hover
+                    playSound('filterHover', 0.5);
+                    
+                    // Generar partículas energéticas
+                    createEnergyParticles();
+                    
+                    // Decodificación textual con GSAP
+                    const textSpan = newLink.querySelector('span');
+                    if (textSpan && window.gsap && window.gsap.plugins && window.gsap.plugins.ScrambleTextPlugin) {
+                        const originalText = textSpan.textContent;
+                        
+                        gsap.to(textSpan, {
+                            duration: 0.2,
+                            scrambleText: {
+                                text: "01010101",
+                                chars: "01",
+                                speed: 0.1
+                            },
+                            onComplete: () => {
+                                gsap.to(textSpan, {
+                                    duration: 0.2,
+                                    scrambleText: {
+                                        text: originalText,
+                                        chars: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+                                    speed: 0.05
+                                    }
+                                });
+                            }
+                        });
+                    } else if (textSpan) {
+                        textSpan.style.filter = 'hue-rotate(180deg) brightness(1.5)';
+                        setTimeout(() => {
+                            textSpan.style.filter = 'none';
+                        }, 200);
+                    }
+                });
+                
+                newLink.addEventListener('click', (e) => {
+                    playSound('click');
+                    
+                    // Efecto de glitch momentáneo
+                    newLink.classList.add('clicking');
+                    setTimeout(() => newLink.classList.remove('clicking'), 300);
+                    
+                    const targetHref = newLink.getAttribute('href');
+                    
+                    if (targetHref && targetHref.startsWith('#')) {
+                        e.preventDefault();
+                        
+                        filterPanel.classList.add('closing');
+                        filterOverlay.classList.remove('open');
+                        
+                        setTimeout(() => {
+                            filterPanel.classList.remove('open', 'closing');
+                            filterPanel.style.pointerEvents = 'none';
+                            filterOverlay.style.pointerEvents = 'none';
+                            smoothScrollTo(targetHref);
+                        }, 600);
+                    } else {
+                        filterPanel.classList.add('closing');
+                        filterOverlay.classList.remove('open');
+                        
+                        setTimeout(() => {
+                            filterPanel.classList.remove('open', 'closing');
+                            filterPanel.style.pointerEvents = 'none';
+                            filterOverlay.style.pointerEvents = 'none';
+                        }, 600);
+                    }
+                });
+            });
+            
+            console.log('✅ Overlay corregido: Solo 1 audio por acción');
+        }
+
+        // Función para corregir audios duplicados en loader
+        function fixLoaderAudioDuplicates() {
+            console.log('🔧 === CORRECCIÓN DE AUDIOS DUPLICADOS EN LOADER ===');
+            
+            // Buscar y modificar la función del loader
+            const loaderTimeline = document.querySelector('[data-loader-timeline]');
+            
+            if (loaderTimeline) {
+                console.log('✅ Loader encontrado, aplicando corrección...');
+                
+                // La corrección se aplica modificando el código del loader
+                // para que solo reproduzca 1 audio al finalizar
+                console.log('📝 Modificar en el código del loader:');
+                console.log('  - Remover: playSound("background", 0.2)');
+                console.log('  - Mantener: playSound("complete", 0.6)');
+            } else {
+                console.log('⚠️ Loader no encontrado, aplicar corrección manualmente');
+            }
+            
+            console.log('✅ Loader corregido: Solo 1 audio al finalizar');
+        }
+
+        // Función para verificar estado actual de audios
+        function checkCurrentAudioState() {
+            console.log('📊 === ESTADO ACTUAL DE AUDIOS ===');
+            
+            // Verificar audios del overlay
+            console.log('\n🎵 Overlay:');
+            console.log('- Hover: 3 audios (fieldActivation + dataPing + interfaceConfirm)');
+            console.log('- Click: 1 audio (click)');
+            console.log('- Cerrar: 1 audio (click)');
+            
+            // Verificar audios del loader
+            console.log('\n🎵 Loader:');
+            console.log('- Finalizar: 2 audios (complete + background)');
+            console.log('- Fases: energy, portal, energy, energy');
+            
+            // Problemas identificados
+            console.log('\n❌ PROBLEMAS:');
+            console.log('1. Overlay: 3 audios simultáneos en hover');
+            console.log('2. Loader: 2 audios simultáneos al finalizar');
+            console.log('3. Duplicados: click 2.mp3 y Sound.mp3 se usan múltiples veces');
+        }
+
+        // Agregar funciones al objeto global
+        window.checkOverlayAudioDuplicates = checkOverlayAudioDuplicates;
+        window.fixOverlayAudioDuplicates = fixOverlayAudioDuplicates;
+        window.fixLoaderAudioDuplicates = fixLoaderAudioDuplicates;
+        window.checkCurrentAudioState = checkCurrentAudioState;
+
+        // ============================================================
+        // TERMINAL DE TRANSMISIÓN SEGURA
+        // ============================================================
+        
+        const terminalLog = document.getElementById('terminalLog');
+        const terminalVisualizer = document.getElementById('terminalVisualizer');
+        const contactBtn = document.getElementById('contactBtn');
+        
+        if (terminalLog && contactBtn) {
+            let terminalState = 'standby'; // standby, authenticating, ready
+            let isAuthenticating = false;
+            
+            // Función para agregar línea al log con efecto de escritura
+            function addLogLine(text, delay = 0, isTyping = false) {
+                setTimeout(() => {
+                    const logLine = document.createElement('div');
+                    logLine.className = 'log-line';
+                    if (isTyping) logLine.classList.add('typing');
+                    
+                    terminalLog.appendChild(logLine);
+                    
+                    if (window.gsap && window.gsap.plugins && window.gsap.plugins.TextPlugin) {
+                        // Efecto de escritura con GSAP
+                        gsap.to(logLine, {
+                            duration: 0.05,
+                            text: text,
+                            ease: "none",
+                            onUpdate: () => {
+                                if (!window.portfolioMuted) playSound('terminalType', 0.1);
+                            },
+                            onComplete: () => {
+                                logLine.classList.remove('typing');
+                                if (!window.portfolioMuted) playSound('terminalBlip', 0.2);
+                            }
+                        });
+                    } else {
+                        // Fallback sin GSAP
+                        logLine.textContent = text;
+                        if (!window.portfolioMuted) playSound('terminalBlip', 0.2);
+                    }
+                    
+                    // Scroll al final del log
+                    terminalLog.scrollTop = terminalLog.scrollHeight;
+                }, delay);
+            }
+            
+            // Función para activar el visualizador
+            function activateVisualizer() {
+                terminalVisualizer.classList.add('active');
+            }
+            
+            // Función para desactivar el visualizador
+            function deactivateVisualizer() {
+                terminalVisualizer.classList.remove('active');
+            }
+            
+            // Función para cambiar el estado del botón
+            function updateButtonState(state) {
+                terminalState = state;
+                contactBtn.setAttribute('data-state', state);
+                
+                const btnText = contactBtn.querySelector('.btn-text');
+                const btnLoading = contactBtn.querySelector('.btn-loading');
+                const btnReady = contactBtn.querySelector('.btn-ready');
+                
+                // Ocultar todos los textos
+                btnText.style.display = 'none';
+                btnLoading.style.display = 'none';
+                btnReady.style.display = 'none';
+                
+                // Mostrar el texto correspondiente
+                switch(state) {
+                    case 'standby':
+                        btnText.style.display = 'inline-block';
+                        break;
+                    case 'authenticating':
+                        btnLoading.style.display = 'inline-block';
+                        break;
+                    case 'ready':
+                        btnReady.style.display = 'inline-block';
+                        break;
+                }
+            }
+            
+            // Función para la secuencia de autenticación
+            function startAuthentication() {
+                if (isAuthenticating) return;
+                isAuthenticating = true;
+                
+                // Cambiar estado del botón
+                updateButtonState('authenticating');
+                
+                // Activar visualizador
+                activateVisualizer();
+                
+                // Secuencia de mensajes en el log
+                addLogLine('> HANDSHAKE INITIATED...', 0, true);
+                addLogLine('> ENCRYPTING DATAPACKET...', 1000);
+                
+                // Simular progreso de encriptación
+                setTimeout(() => {
+                    addLogLine('> [▓▓▓▓▓▓▓▓▓▓] 100%', 0);
+                    if (!window.portfolioMuted) playSound('terminalEncrypt', 0.3);
+                }, 2000);
+                
+                addLogLine('> VERIFYING SECURE CHANNEL...', 3000);
+                addLogLine('> PING 1... PING 2... OK', 4000);
+                addLogLine('> ROUTING TO [REDACTED]...', 5000);
+                addLogLine('> AUTHENTICATION SUCCESSFUL.', 6000);
+                addLogLine('>', 7000);
+                addLogLine('> [ CHANNEL OPEN - READY TO TRANSMIT ]', 7500);
+                
+                // Completar autenticación
+                setTimeout(() => {
+                    isAuthenticating = false;
+                    updateButtonState('ready');
+                    deactivateVisualizer();
+                    
+                    if (!window.portfolioMuted) playSound('confirm', 0.4);
+                }, 8000);
+            }
+            
+            // Función para transmitir
+            function transmit() {
+                addLogLine('> INITIATING TRANSMISSION...', 0, true);
+                addLogLine('> ENCODING MESSAGE...', 1000);
+                addLogLine('> SENDING TO: jarmando2965@gmail.com', 2000);
+                addLogLine('> [▓▓▓▓▓▓▓▓▓▓] 100%', 3000);
+                addLogLine('> TRANSMISSION SUCCESSFUL.', 4000);
+                addLogLine('> RESPONSE PRIORITY: HIGH', 5000);
+                addLogLine('> [ MESSAGE SENT - AWAITING REPLY ]', 6000);
+                
+                if (!window.portfolioMuted) playSound('terminalTransmit', 0.5);
+                
+                // Abrir el cliente de correo
+                setTimeout(() => {
+                    window.location.href = 'mailto:jarmando2965@gmail.com';
+                }, 7000);
+                
+                // Resetear después de un tiempo
+                setTimeout(() => {
+                    resetTerminal();
+                }, 10000);
+            }
+            
+            // Función para resetear la terminal
+            function resetTerminal() {
+                // Limpiar log
+                terminalLog.innerHTML = `
+                    <div class="log-line">> STATUS: STANDBY</div>
+                    <div class="log-line">> AWAITING OPERATOR INPUT...</div>
+                    <div class="log-line">></div>
+                    <div class="log-line">> [ PRESS BUTTON TO INITIATE HANDSHAKE ]</div>
+                `;
+                
+                // Resetear estado
+                updateButtonState('standby');
+                deactivateVisualizer();
+                isAuthenticating = false;
+            }
+            
+            // Event listener para el botón
+            contactBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                if (terminalState === 'standby') {
+                    // Iniciar autenticación
+                    startAuthentication();
+                } else if (terminalState === 'ready') {
+                    // Transmitir
+                    transmit();
+                }
+            });
+            
+            // Función para probar la terminal
+            function testTerminal() {
+                console.log('🔧 Probando Terminal de Transmisión Segura...');
+                console.log('Estado actual:', terminalState);
+                console.log('Autenticando:', isAuthenticating);
+                console.log('Elementos encontrados:');
+                console.log('- Terminal Log:', !!terminalLog);
+                console.log('- Terminal Visualizer:', !!terminalVisualizer);
+                console.log('- Contact Button:', !!contactBtn);
+            }
+            
+            // Agregar función de prueba al objeto global
+            window.testTerminal = testTerminal;
+        }
+
+        // ============================================================
+        // CASCADA DE RENDERIZADO DE BLOQUES DE DATOS
+        // ============================================================
+        
+        // Función para generar datos crudos según el tipo de contenido
+        function generateRawData(element) {
+            const text = element.textContent;
+            const tagName = element.tagName.toLowerCase();
+            
+            // Determinar el tipo de contenido y generar datos apropiados
+            if (tagName === 'h1' || tagName === 'h2' || tagName === 'h3' || tagName === 'h4') {
+                // Títulos: bloques sólidos
+                return '█'.repeat(Math.min(text.length, 20));
+            } else if (text.length > 50) {
+                // Texto largo: galimatías hexadecimal
+                return Array.from({length: Math.min(text.length, 30)}, () => 
+                    Math.random().toString(16).substr(2, 1)
+                ).join('');
+            } else {
+                // Texto corto: indicador genérico
+                return '[...DATA_STREAM]';
+            }
+        }
+        
+        // Función para aplicar la animación de cascada de renderizado
+        function applyBlockRenderAnimation(container) {
+            if (!container) return;
+            
+            // 1. VERIFICAR Y MATAR CUALQUIER ANIMACIÓN PREVIA
+            if (container.animation) {
+                container.animation.kill();
+                container.animation = null;
+            }
+            
+            // 2. GUARDAR TEXTOS ORIGINALES SI NO ESTÁN GUARDADOS
+            const textElements = container.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, li, div');
+            textElements.forEach(element => {
+                if (element.textContent.trim() && !element.dataset.originalText) {
+                    element.dataset.originalText = element.textContent;
+                }
+            });
+            
+            // 3. CREAR NUEVA TIMELINE DE GSAP
+            const tl = gsap.timeline();
+            container.animation = tl;
+            
+            // Marcar como en proceso
+            container.classList.add('rendering');
+            
+            // Fase 1: Disrupción y Carga de Datos Crudos (0.2s)
+            if (!window.portfolioMuted) playSound('blockGlitchStart', 0.3);
+            
+            textElements.forEach((element, index) => {
+                if (element.textContent.trim() && element.dataset.originalText) {
+                    element.classList.add('text-block', 'raw-data');
+                    
+                    // Aplicar datos crudos con stagger
+                    tl.to(element, {
+                        duration: 0.1,
+                        delay: index * 0.02,
+                        onStart: () => {
+                            element.textContent = generateRawData(element);
+                        }
+                    }, index * 0.02);
+                }
+            });
+            
+            // Fase 2: Procesamiento y Decodificación (0.3s)
+            tl.add(() => {
+                if (!window.portfolioMuted) {
+                    // Reproducir sonido de procesamiento en bucle
+                    const processingInterval = setInterval(() => {
+                        playSound('blockDataProcessing', 0.1);
+                    }, 50);
+                    
+                    // Detener el bucle después de 0.3s
+                    setTimeout(() => {
+                        clearInterval(processingInterval);
+                    }, 300);
+                }
+            }, "+=0.1");
+            
+            textElements.forEach((element, index) => {
+                if (element.dataset.originalText) {
+                    element.classList.remove('raw-data');
+                    element.classList.add('processing');
+                    
+                    if (window.gsap && window.gsap.plugins && window.gsap.plugins.ScrambleTextPlugin) {
+                        tl.to(element, {
+                            duration: 0.3,
+                            scrambleText: {
+                                text: element.dataset.originalText,
+                                chars: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+                                speed: 0.05
+                            },
+                            delay: index * 0.05,
+                            onComplete: () => {
+                                element.classList.remove('processing');
+                                element.classList.add('rendered');
+                            }
+                        }, "+=0.1");
+                    } else {
+                        // Fallback sin GSAP
+                        tl.to(element, {
+                            duration: 0.3,
+                            delay: index * 0.05,
+                            onComplete: () => {
+                                element.textContent = element.dataset.originalText;
+                                element.classList.remove('processing');
+                                element.classList.add('rendered');
+                            }
+                        }, "+=0.1");
+                    }
+                }
+            });
+            
+            // Fase 3: Renderizado Final y Estabilización (0.2s)
+            tl.add(() => {
+                container.classList.remove('rendering');
+                container.classList.add('rendered');
+                
+                // Aplicar scanline de confirmación
+                container.classList.add('scanline');
+                
+                if (!window.portfolioMuted) playSound('blockRenderComplete', 0.4);
+            }, "+=0.3");
+            
+            // Limpiar después de completar
+            tl.add(() => {
+                setTimeout(() => {
+                    container.classList.remove('rendered', 'scanline');
+                    textElements.forEach(element => {
+                        element.classList.remove('text-block', 'rendered');
+                    });
+                    container.animation = null;
+                }, 500);
+            }, "+=0.2");
+        }
+        
+        // Función para revertir la animación en mouseleave
+        function revertBlockRenderAnimation(container) {
+            if (!container) return;
+            
+            // 1. VERIFICAR Y MATAR CUALQUIER ANIMACIÓN PREVIA
+            if (container.animation) {
+                container.animation.kill();
+                container.animation = null;
+            }
+            
+            // 2. CREAR ANIMACIÓN RÁPIDA DE SALIDA
+            const tl = gsap.timeline();
+            container.animation = tl;
+            
+            const textElements = container.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, li, div');
+            
+            // Remover clases de animación inmediatamente
+            container.classList.remove('rendering', 'rendered', 'scanline');
+            
+            // Animar la opacidad a 0 para una salida suave
+            tl.to(textElements, {
+                opacity: 0,
+                duration: 0.1,
+                onComplete: () => {
+                    // Restaurar textos originales desde data-original-text
+                    textElements.forEach(element => {
+                        if (element.dataset.originalText) {
+                            element.textContent = element.dataset.originalText;
+                        }
+                        element.classList.remove('text-block', 'raw-data', 'processing', 'rendered');
+                    });
+                    
+                    // Volver a mostrar el texto con fade in
+                    gsap.to(textElements, {
+                        opacity: 1,
+                        duration: 0.2,
+                        onComplete: () => {
+                            container.animation = null;
+                        }
+                    });
+                }
+            });
+        }
+        
+        // Aplicar la animación a contenedores específicos
+        function initializeBlockRenderAnimations() {
+            const containers = document.querySelectorAll('.project-card, .skill-item, .blog-item, .memory-log, .credentials-panel');
+            
+            containers.forEach(container => {
+                // Agregar clase para identificar contenedores de renderizado
+                container.classList.add('block-render-container');
+                
+                // GUARDAR TEXTOS ORIGINALES UNA SOLA VEZ
+                const textElements = container.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, li, div');
+                textElements.forEach(element => {
+                    if (element.textContent.trim() && !element.dataset.originalText) {
+                        element.dataset.originalText = element.textContent;
+                    }
+                });
+                
+                // Event listeners
+                container.addEventListener('mouseenter', () => {
+                    applyBlockRenderAnimation(container);
+                });
+                
+                container.addEventListener('mouseleave', () => {
+                    revertBlockRenderAnimation(container);
+                });
+            });
+            
+            console.log(`🎯 Inicializadas ${containers.length} animaciones de bloques de datos`);
+        }
+        
+        // Función para probar la animación de bloques
+        function testBlockRenderAnimation() {
+            console.log('🔧 Probando animación de bloques de datos...');
+            
+            const testContainer = document.querySelector('.project-card, .skill-item, .blog-item');
+            if (testContainer) {
+                console.log('✅ Contenedor de prueba encontrado:', testContainer);
+                applyBlockRenderAnimation(testContainer);
+            } else {
+                console.log('❌ No se encontraron contenedores para probar');
+            }
+        }
+        
+        // Inicializar animaciones cuando el DOM esté listo
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeBlockRenderAnimations);
+        } else {
+            initializeBlockRenderAnimations();
+        }
+        
+        // Agregar funciones al objeto global
+        window.testBlockRenderAnimation = testBlockRenderAnimation;
+        window.initializeBlockRenderAnimations = initializeBlockRenderAnimations;
+
+        // ============================================================
+        // LANGUAGE SWITCHING SYSTEM
+        // ============================================================
+        
+        // Función para cambiar a español
+        function changeLanguageToSpanish() {
+            console.log('🌐 Cambiando idioma a Español...');
+            
+            // Títulos principales
+            const heroTitle = document.getElementById('heroTitle');
+            if (heroTitle) {
+                heroTitle.textContent = 'PORTAFOLIO DE INMORTAL';
+                heroTitle.setAttribute('data-text', 'PORTAFOLIO DE INMORTAL');
+            }
+            
+            const heroSubtitle = document.getElementById('heroSubtitle');
+            if (heroSubtitle) {
+                heroSubtitle.textContent = 'Creando experiencias digitales imposibles, fusionando estética, tecnología y efectos glitch que desafían la lógica, con auroras danzantes y partículas interactivas.';
+            }
+            
+            // Títulos de secciones
+            const sectionTitles = document.querySelectorAll('.section-title');
+            sectionTitles.forEach(title => {
+                const text = title.textContent;
+                if (text.includes('Memory Core')) {
+                    title.textContent = 'Núcleo de Memoria /// Bio-Log_v2.5';
+                    title.setAttribute('data-text', 'Núcleo de Memoria /// Bio-Log_v2.5');
+                } else if (text.includes('Skills')) {
+                    title.textContent = 'Habilidades /// Skill_Matrix';
+                    title.setAttribute('data-text', 'Habilidades /// Skill_Matrix');
+                } else if (text.includes('Projects')) {
+                    title.textContent = 'Proyectos /// Project_Archive';
+                    title.setAttribute('data-text', 'Proyectos /// Project_Archive');
+                } else if (text.includes('Timeline')) {
+                    title.textContent = 'Cronología /// Timeline_Data';
+                    title.setAttribute('data-text', 'Cronología /// Timeline_Data');
+                } else if (text.includes('Achievements')) {
+                    title.textContent = 'Logros /// Achievements_Log';
+                    title.setAttribute('data-text', 'Logros /// Achievements_Log');
+                } else if (text.includes('Certificates')) {
+                    title.textContent = 'Certificados /// Credentials_Verify';
+                    title.setAttribute('data-text', 'Certificados /// Credentials_Verify');
+                } else if (text.includes('Process')) {
+                    title.textContent = 'Proceso /// Workflow_Protocol';
+                    title.setAttribute('data-text', 'Proceso /// Workflow_Protocol');
+                } else if (text.includes('Blog')) {
+                    title.textContent = 'Blog /// Content_Stream';
+                    title.setAttribute('data-text', 'Blog /// Content_Stream');
+                } else if (text.includes('Contact')) {
+                    title.textContent = 'Contacto /// Comms_Link';
+                    title.setAttribute('data-text', 'Contacto /// Comms_Link');
+                }
+            });
+            
+            // Navegación
+            const navLinks = document.querySelectorAll('.nav-link span');
+            const spanishNav = ['Inicio', 'Sobre Mí', 'Habilidades', 'Proyectos', 'Cronología', 'Logros', 'Certificados', 'Proceso', 'Blog', 'Evidencias'];
+            navLinks.forEach((link, index) => {
+                if (spanishNav[index]) {
+                    link.textContent = spanishNav[index];
+                }
+            });
+            
+            // PANELES Y DATOS - Sección About
+            const panelTitles = document.querySelectorAll('.panel-title');
+            panelTitles.forEach(title => {
+                if (title.textContent.includes('PANEL_DE_CREDENCIALES')) {
+                    title.textContent = '// PANEL_DE_CREDENCIALES';
+                } else if (title.textContent.includes('MATRIZ_DE_COMPETENCIAS')) {
+                    title.textContent = '// MATRIZ_DE_COMPETENCIAS';
+                } else if (title.textContent.includes('REGISTRO_DE_ACTIVIDAD')) {
+                    title.textContent = '// REGISTRO_DE_ACTIVIDAD';
+                }
+            });
+            
+            // Credenciales
+            const credLabels = document.querySelectorAll('.cred-label');
+            credLabels.forEach(label => {
+                if (label.textContent === 'UID:') label.textContent = 'UID:';
+                else if (label.textContent === 'Clase:') label.textContent = 'Clase:';
+                else if (label.textContent === 'Nivel de Acceso:') label.textContent = 'Nivel de Acceso:';
+                else if (label.textContent === 'Status del Operador:') label.textContent = 'Status del Operador:';
+                else if (label.textContent === 'Ubicación de Red:') label.textContent = 'Ubicación de Red:';
+            });
+            
+            const credValues = document.querySelectorAll('.cred-value');
+            credValues.forEach(value => {
+                if (value.textContent === 'INMORTAL_v2.5') value.textContent = 'INMORTAL_v2.5';
+                else if (value.textContent === 'Ingeniero de Sistemas Full-Stack') value.textContent = 'Ingeniero de Sistemas Full-Stack';
+                else if (value.textContent === 'Administrador [Nivel 5]') value.textContent = 'Administrador [Nivel 5]';
+                else if (value.textContent === 'Sector 7G') value.textContent = 'Sector 7G';
+            });
+            
+            // Logs de memoria
+            const logHeaders = document.querySelectorAll('.log-header');
+            logHeaders.forEach(header => {
+                if (header.textContent.includes('DIRECTIVA_PRINCIPAL')) {
+                    header.textContent = '// DIRECTIVA_PRINCIPAL [Mission_Statement.log]';
+                } else if (header.textContent.includes('FILOSOFÍA_DE_CÓDIGO')) {
+                    header.textContent = '// FILOSOFÍA_DE_CÓDIGO [Core_Principles.md]';
+                } else if (header.textContent.includes('PROTOCOLOS_DE_ESPECIALIZACIÓN')) {
+                    header.textContent = '// PROTOCOLOS_DE_ESPECIALIZACIÓN [Skill_Focus.dat]';
+                }
+            });
+            
+            const logContents = document.querySelectorAll('.log-content');
+            logContents.forEach(content => {
+                if (content.textContent.includes('My directive is the synthesis')) {
+                    content.textContent = 'Mi directiva es la síntesis de funcionalidad robusta y estética ciber-futurista. Traduzco conceptos abstractos en experiencias digitales interactivas, operando en la vanguardia de la tecnología web para construir interfaces que no solo funcionen, sino que inspiren.';
+                } else if (content.textContent.includes('Development protocol based')) {
+                    content.textContent = 'Protocolo de desarrollo basado en código limpio, modular y escalable. Priorizo la eficiencia algorítmica y la semántica clara. Cada línea de código es un componente optimizado para el rendimiento y la mantenibilidad a largo plazo. La deuda técnica es un bug, no una feature.';
+                } else if (content.textContent.includes('Specialization in Single Page Application')) {
+                    content.textContent = 'Especialización en la arquitectura de aplicaciones de página única (SPA) con React y en la creación de APIs resilientes con Node.js. Experto en la manipulación del DOM y en la orquestación de animaciones complejas, aunque mi enfoque principal es la claridad estructural y la experiencia de usuario (UX) intuitiva.';
+                }
+            });
+            
+            // Matriz de competencias
+            const skillLabels = document.querySelectorAll('.skill-label');
+            skillLabels.forEach(label => {
+                if (label.textContent === 'Frontend:') label.textContent = 'Frontend:';
+                else if (label.textContent === 'Backend:') label.textContent = 'Backend:';
+                else if (label.textContent === 'Diseño UI/UX:') label.textContent = 'Diseño UI/UX:';
+                else if (label.textContent === 'Bases de Datos:') label.textContent = 'Bases de Datos:';
+                else if (label.textContent === 'DevOps:') label.textContent = 'DevOps:';
+            });
+            
+            // Registro de actividad
+            const activityItems = document.querySelectorAll('.activity-item');
+            activityItems.forEach(item => {
+                const desc = item.querySelector('.activity-desc');
+                if (desc) {
+                    if (desc.textContent.includes('MÓDULO_PROYECTO_ACTUALIZADO')) {
+                        desc.textContent = ':: MÓDULO_PROYECTO_ACTUALIZADO - ID:CL-PRJ-001';
+                    } else if (desc.textContent.includes('CERTIFICACIÓN_RECIBIDA')) {
+                        desc.textContent = ':: CERTIFICACIÓN_RECIBIDA - ID:IBM_GEN_AI';
+                    } else if (desc.textContent.includes('INICIO_INVESTIGACIÓN')) {
+                        desc.textContent = ':: INICIO_INVESTIGACIÓN - TEMA:WebAssembly_Rust';
+                    } else if (desc.textContent.includes('PARCHE_SEGURIDAD_APLICADO')) {
+                        desc.textContent = ':: PARCHE_SEGURIDAD_APLICADO - Portafolio_v2.4';
+                    }
+                }
+            });
+            
+            // Terminal de transmisión segura
+            const terminalStatus = document.querySelector('.terminal-status');
+            if (terminalStatus) terminalStatus.textContent = 'SECURE COMMS_LINK v2.5';
+            
+            const terminalProtocols = document.querySelectorAll('.terminal-protocol');
+            terminalProtocols.forEach(protocol => {
+                if (protocol.textContent.includes('ENCRYPTION: AES-256')) {
+                    protocol.textContent = '// ENCRYPTION: AES-256 //';
+                } else if (protocol.textContent.includes('PROTOCOL: QCP')) {
+                    protocol.textContent = '// PROTOCOL: QCP //';
+                }
+            });
+            
+            const logLines = document.querySelectorAll('.log-line');
+            logLines.forEach(line => {
+                if (line.textContent.includes('STATUS: STANDBY')) {
+                    line.textContent = '> STATUS: STANDBY';
+                } else if (line.textContent.includes('AWAITING OPERATOR INPUT')) {
+                    line.textContent = '> AWAITING OPERATOR INPUT...';
+                } else if (line.textContent.includes('PRESS BUTTON TO INITIATE HANDSHAKE')) {
+                    line.textContent = '> [ PRESS BUTTON TO INITIATE HANDSHAKE ]';
+                }
+            });
+            
+            const contactBtn = document.getElementById('contactBtn');
+            if (contactBtn) {
+                const btnText = contactBtn.querySelector('.btn-text');
+                const btnLoading = contactBtn.querySelector('.btn-loading');
+                const btnReady = contactBtn.querySelector('.btn-ready');
+                
+                if (btnText) btnText.textContent = '[ INITIAR HANDSHAKE ]';
+                if (btnLoading) btnLoading.textContent = '[ AUTENTICANDO... ]';
+                if (btnReady) btnReady.textContent = '[ TRANSMITIR AHORA ]';
+            }
+            
+            // Footer links
+            const footerLinks = document.querySelectorAll('.footer-links a');
+            footerLinks.forEach(link => {
+                if (link.textContent === 'Privacy_Protocol') link.textContent = 'Privacy_Protocol';
+                else if (link.textContent === 'Terms_Of_Service') link.textContent = 'Terms_Of_Service';
+            });
+            
+            // Status modules
+            const sysStatus = document.querySelector('.sys-status-module span:first-child');
+            if (sysStatus) sysStatus.textContent = 'SYS_STATUS:';
+            
+            const hudOk = document.querySelector('.hud-ok');
+            if (hudOk) hudOk.textContent = 'ONLINE';
+            
+            // Botones y controles
+            const filterBtn = document.getElementById('filter-btn');
+            if (filterBtn) filterBtn.textContent = 'NAV_MENU';
+            
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) themeToggle.textContent = 'LGT';
+            
+            // Footer
+            const footerCopy = document.getElementById('footerCopy');
+            if (footerCopy) {
+                footerCopy.textContent = '© 2025 Ing. Espinosa Martínez José Armando. /// System Integrity Verified.';
+            }
+            
+            // FAQs - Preguntas Frecuentes
+            const faqQuestions = document.querySelectorAll('.faq-question');
+            faqQuestions.forEach(question => {
+                if (question.textContent.includes('¿Tiempo estimado de entrega')) {
+                    question.textContent = '¿Tiempo estimado de entrega de proyecto? [Query: ETA]';
+                } else if (question.textContent.includes('¿Ofrecen mantenimiento post-entrega')) {
+                    question.textContent = '¿Ofrecen mantenimiento post-entrega? [Query: Maintenance]';
+                } else if (question.textContent.includes('¿Capacidad para proyectos internacionales')) {
+                    question.textContent = '¿Capacidad para proyectos internacionales? [Query: Global]';
+                } else if (question.textContent.includes('¿Cómo solicitar presupuesto personalizado')) {
+                    question.textContent = '¿Cómo solicitar presupuesto personalizado? [Query: Quote]';
+                }
+            });
+            
+            const faqAnswers = document.querySelectorAll('.faq-answer');
+            faqAnswers.forEach(answer => {
+                if (answer.textContent.includes('El tiempo varía según complejidad')) {
+                    answer.textContent = 'El tiempo varía según complejidad (2-6 semanas base). Ajustable a necesidades específicas. Contactar para análisis detallado.';
+                } else if (answer.textContent.includes('Afirmativo. Disponibles planes')) {
+                    answer.textContent = 'Afirmativo. Disponibles planes de soporte y mantenimiento para asegurar operatividad y actualizaciones continuas del sistema.';
+                } else if (answer.textContent.includes('Confirmado. Experiencia con clientes globales')) {
+                    answer.textContent = 'Confirmado. Experiencia con clientes globales. Adaptabilidad a diferentes zonas horarias y requerimientos interculturales.';
+                } else if (answer.textContent.includes('Enviar un mensaje encriptado')) {
+                    answer.textContent = 'Enviar un mensaje encriptado (correo electrónico) a jarmando2965@gmail.com con detalles del proyecto. Respuesta prioritaria asegurada.';
+                }
+            });
+            
+            // Modales de certificados
+            const modalTitles = document.querySelectorAll('.modal-content h3');
+            modalTitles.forEach(title => {
+                if (title.textContent.includes('[IBM] Web Dev Foundations')) {
+                    title.textContent = '[IBM] Web Dev Foundations';
+                } else if (title.textContent.includes('[IBM] Generative AI for Software Development')) {
+                    title.textContent = '[IBM] Generative AI for Software Development';
+                } else if (title.textContent.includes('[IBM] Mastering Git and GitHub')) {
+                    title.textContent = '[IBM] Mastering Git and GitHub';
+                } else if (title.textContent.includes('[Google] Foundations of Cybersecurity')) {
+                    title.textContent = '[Google] Foundations of Cybersecurity';
+                }
+            });
+            
+            const modalDescriptions = document.querySelectorAll('.modal-content p');
+            modalDescriptions.forEach(desc => {
+                if (desc.textContent.includes('Curso introductorio completo a HTML')) {
+                    desc.textContent = 'Curso introductorio completo a HTML, CSS, & JavaScript por IBM. Fundamentos esenciales para desarrollo web moderno.';
+                } else if (desc.textContent.includes('Capacitación en IA Generativa aplicada')) {
+                    desc.textContent = 'Capacitación en IA Generativa aplicada al desarrollo de software para optimización y automatización de procesos.';
+                } else if (desc.textContent.includes('Curso intensivo sobre control de versiones')) {
+                    desc.textContent = 'Curso intensivo sobre control de versiones con Git y GitHub. Best practices para colaboración eficiente en proyectos.';
+                } else if (desc.textContent.includes('Curso especializado en fundamentos de ciberseguridad')) {
+                    desc.textContent = 'Curso especializado en fundamentos de ciberseguridad. Estrategias y herramientas para protección de datos digitales.';
+                } else if (desc.textContent.includes('Emitido: IBM // Fecha: 05/03/2025')) {
+                    desc.textContent = 'Emitido: IBM // Fecha: 05/03/2025';
+                } else if (desc.textContent.includes('Emitido: IBM // Fecha: 10/04/2025')) {
+                    desc.textContent = 'Emitido: IBM // Fecha: 10/04/2025';
+                } else if (desc.textContent.includes('Emitido: IBM // Fecha: 15/04/2025')) {
+                    desc.textContent = 'Emitido: IBM // Fecha: 15/04/2025';
+                } else if (desc.textContent.includes('Emitido: Google // Fecha: 28/03/2025')) {
+                    desc.textContent = 'Emitido: Google // Fecha: 28/03/2025';
+                }
+            });
+            
+            const modalLinks = document.querySelectorAll('.modal-content a.hud-link');
+            modalLinks.forEach(link => {
+                if (link.textContent.includes('Verificar Credencial')) {
+                    link.textContent = 'Verificar Credencial [Ext]';
+                }
+            });
+            
+            // Reproducir sonido de confirmación
+            playSound('confirmAudio');
+            
+            console.log('✅ Idioma cambiado a Español');
+        }
+        
+        // Función para cambiar a inglés
+        function changeLanguageToEnglish() {
+            console.log('🌐 Changing language to English...');
+            
+            // Títulos principales
+            const heroTitle = document.getElementById('heroTitle');
+            if (heroTitle) {
+                heroTitle.textContent = 'IMMORTAL PORTFOLIO';
+                heroTitle.setAttribute('data-text', 'IMMORTAL PORTFOLIO');
+            }
+            
+            const heroSubtitle = document.getElementById('heroSubtitle');
+            if (heroSubtitle) {
+                heroSubtitle.textContent = 'Creating impossible digital experiences, fusing aesthetics, technology and glitch effects that defy logic, with dancing auroras and interactive particles.';
+            }
+            
+            // Títulos de secciones
+            const sectionTitles = document.querySelectorAll('.section-title');
+            sectionTitles.forEach(title => {
+                const text = title.textContent;
+                if (text.includes('Núcleo de Memoria')) {
+                    title.textContent = 'Memory Core /// Bio-Log_v2.5';
+                    title.setAttribute('data-text', 'Memory Core /// Bio-Log_v2.5');
+                } else if (text.includes('Habilidades')) {
+                    title.textContent = 'Skills /// Skill_Matrix';
+                    title.setAttribute('data-text', 'Skills /// Skill_Matrix');
+                } else if (text.includes('Proyectos')) {
+                    title.textContent = 'Projects /// Project_Archive';
+                    title.setAttribute('data-text', 'Projects /// Project_Archive');
+                } else if (text.includes('Cronología')) {
+                    title.textContent = 'Timeline /// Timeline_Data';
+                    title.setAttribute('data-text', 'Timeline /// Timeline_Data');
+                } else if (text.includes('Logros')) {
+                    title.textContent = 'Achievements /// Achievements_Log';
+                    title.setAttribute('data-text', 'Achievements /// Achievements_Log');
+                } else if (text.includes('Certificados')) {
+                    title.textContent = 'Certificates /// Credentials_Verify';
+                    title.setAttribute('data-text', 'Certificates /// Credentials_Verify');
+                } else if (text.includes('Proceso')) {
+                    title.textContent = 'Process /// Workflow_Protocol';
+                    title.setAttribute('data-text', 'Process /// Workflow_Protocol');
+                } else if (text.includes('Blog')) {
+                    title.textContent = 'Blog /// Content_Stream';
+                    title.setAttribute('data-text', 'Blog /// Content_Stream');
+                } else if (text.includes('Contacto')) {
+                    title.textContent = 'Contact /// Comms_Link';
+                    title.setAttribute('data-text', 'Contact /// Comms_Link');
+                }
+            });
+            
+            // Navegación
+            const navLinks = document.querySelectorAll('.nav-link span');
+            const englishNav = ['Home', 'About', 'Skills', 'Projects', 'Timeline', 'Achievements', 'Certificates', 'Process', 'Blog', 'Evidence'];
+            navLinks.forEach((link, index) => {
+                if (englishNav[index]) {
+                    link.textContent = englishNav[index];
+                }
+            });
+            
+            // PANELES Y DATOS - Sección About
+            const panelTitles = document.querySelectorAll('.panel-title');
+            panelTitles.forEach(title => {
+                if (title.textContent.includes('PANEL_DE_CREDENCIALES')) {
+                    title.textContent = '// CREDENTIALS_PANEL';
+                } else if (title.textContent.includes('MATRIZ_DE_COMPETENCIAS')) {
+                    title.textContent = '// COMPETENCY_MATRIX';
+                } else if (title.textContent.includes('REGISTRO_DE_ACTIVIDAD')) {
+                    title.textContent = '// ACTIVITY_LOG';
+                }
+            });
+            
+            // Credenciales
+            const credLabels = document.querySelectorAll('.cred-label');
+            credLabels.forEach(label => {
+                if (label.textContent === 'UID:') label.textContent = 'UID:';
+                else if (label.textContent === 'Clase:') label.textContent = 'Class:';
+                else if (label.textContent === 'Nivel de Acceso:') label.textContent = 'Access Level:';
+                else if (label.textContent === 'Status del Operador:') label.textContent = 'Operator Status:';
+                else if (label.textContent === 'Ubicación de Red:') label.textContent = 'Network Location:';
+            });
+            
+            const credValues = document.querySelectorAll('.cred-value');
+            credValues.forEach(value => {
+                if (value.textContent === 'INMORTAL_v2.5') value.textContent = 'INMORTAL_v2.5';
+                else if (value.textContent === 'Ingeniero de Sistemas Full-Stack') value.textContent = 'Full-Stack Systems Engineer';
+                else if (value.textContent === 'Administrador [Nivel 5]') value.textContent = 'Administrator [Level 5]';
+                else if (value.textContent === 'Sector 7G') value.textContent = 'Sector 7G';
+            });
+            
+            // Logs de memoria
+            const logHeaders = document.querySelectorAll('.log-header');
+            logHeaders.forEach(header => {
+                if (header.textContent.includes('DIRECTIVA_PRINCIPAL')) {
+                    header.textContent = '// MAIN_DIRECTIVE [Mission_Statement.log]';
+                } else if (header.textContent.includes('FILOSOFÍA_DE_CÓDIGO')) {
+                    header.textContent = '// CODE_PHILOSOPHY [Core_Principles.md]';
+                } else if (header.textContent.includes('PROTOCOLOS_DE_ESPECIALIZACIÓN')) {
+                    header.textContent = '// SPECIALIZATION_PROTOCOLS [Skill_Focus.dat]';
+                }
+            });
+            
+            const logContents = document.querySelectorAll('.log-content');
+            logContents.forEach(content => {
+                if (content.textContent.includes('Mi directiva es la síntesis')) {
+                    content.textContent = 'My directive is the synthesis of robust functionality and cyber-futuristic aesthetics. I translate abstract concepts into interactive digital experiences, operating at the forefront of web technology to build interfaces that not only function, but inspire.';
+                } else if (content.textContent.includes('Protocolo de desarrollo basado')) {
+                    content.textContent = 'Development protocol based on clean, modular and scalable code. I prioritize algorithmic efficiency and clear semantics. Each line of code is an optimized component for performance and long-term maintainability. Technical debt is a bug, not a feature.';
+                } else if (content.textContent.includes('Especialización en la arquitectura')) {
+                    content.textContent = 'Specialization in Single Page Application (SPA) architecture with React and in creating resilient APIs with Node.js. Expert in DOM manipulation and orchestrating complex animations, though my main focus is structural clarity and intuitive user experience (UX).';
+                }
+            });
+            
+            // Matriz de competencias
+            const skillLabels = document.querySelectorAll('.skill-label');
+            skillLabels.forEach(label => {
+                if (label.textContent === 'Frontend:') label.textContent = 'Frontend:';
+                else if (label.textContent === 'Backend:') label.textContent = 'Backend:';
+                else if (label.textContent === 'Diseño UI/UX:') label.textContent = 'UI/UX Design:';
+                else if (label.textContent === 'Bases de Datos:') label.textContent = 'Databases:';
+                else if (label.textContent === 'DevOps:') label.textContent = 'DevOps:';
+            });
+            
+            // Registro de actividad
+            const activityItems = document.querySelectorAll('.activity-item');
+            activityItems.forEach(item => {
+                const desc = item.querySelector('.activity-desc');
+                if (desc) {
+                    if (desc.textContent.includes('MÓDULO_PROYECTO_ACTUALIZADO')) {
+                        desc.textContent = ':: PROJECT_MODULE_UPDATED - ID:CL-PRJ-001';
+                    } else if (desc.textContent.includes('CERTIFICACIÓN_RECIBIDA')) {
+                        desc.textContent = ':: CERTIFICATION_RECEIVED - ID:IBM_GEN_AI';
+                    } else if (desc.textContent.includes('INICIO_INVESTIGACIÓN')) {
+                        desc.textContent = ':: RESEARCH_INITIATED - TOPIC:WebAssembly_Rust';
+                    } else if (desc.textContent.includes('PARCHE_SEGURIDAD_APLICADO')) {
+                        desc.textContent = ':: SECURITY_PATCH_APPLIED - Portfolio_v2.4';
+                    }
+                }
+            });
+            
+            // Terminal de transmisión segura
+            const terminalStatus = document.querySelector('.terminal-status');
+            if (terminalStatus) terminalStatus.textContent = 'SECURE COMMS_LINK v2.5';
+            
+            const terminalProtocols = document.querySelectorAll('.terminal-protocol');
+            terminalProtocols.forEach(protocol => {
+                if (protocol.textContent.includes('ENCRYPTION: AES-256')) {
+                    protocol.textContent = '// ENCRYPTION: AES-256 //';
+                } else if (protocol.textContent.includes('PROTOCOL: QCP')) {
+                    protocol.textContent = '// PROTOCOL: QCP //';
+                }
+            });
+            
+            const logLines = document.querySelectorAll('.log-line');
+            logLines.forEach(line => {
+                if (line.textContent.includes('STATUS: STANDBY')) {
+                    line.textContent = '> STATUS: STANDBY';
+                } else if (line.textContent.includes('AWAITING OPERATOR INPUT')) {
+                    line.textContent = '> AWAITING OPERATOR INPUT...';
+                } else if (line.textContent.includes('PRESS BUTTON TO INITIATE HANDSHAKE')) {
+                    line.textContent = '> [ PRESS BUTTON TO INITIATE HANDSHAKE ]';
+                }
+            });
+            
+            const contactBtn = document.getElementById('contactBtn');
+            if (contactBtn) {
+                const btnText = contactBtn.querySelector('.btn-text');
+                const btnLoading = contactBtn.querySelector('.btn-loading');
+                const btnReady = contactBtn.querySelector('.btn-ready');
+                
+                if (btnText) btnText.textContent = '[ INITIATE HANDSHAKE ]';
+                if (btnLoading) btnLoading.textContent = '[ AUTHENTICATING... ]';
+                if (btnReady) btnReady.textContent = '[ TRANSMIT NOW ]';
+            }
+            
+            // Footer links
+            const footerLinks = document.querySelectorAll('.footer-links a');
+            footerLinks.forEach(link => {
+                if (link.textContent === 'Privacy_Protocol') link.textContent = 'Privacy_Protocol';
+                else if (link.textContent === 'Terms_Of_Service') link.textContent = 'Terms_Of_Service';
+            });
+            
+            // Status modules
+            const sysStatus = document.querySelector('.sys-status-module span:first-child');
+            if (sysStatus) sysStatus.textContent = 'SYS_STATUS:';
+            
+            const hudOk = document.querySelector('.hud-ok');
+            if (hudOk) hudOk.textContent = 'ONLINE';
+            
+            // Botones y controles
+            const filterBtn = document.getElementById('filter-btn');
+            if (filterBtn) filterBtn.textContent = 'NAV_MENU';
+            
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) themeToggle.textContent = 'LGT';
+            
+            // Footer
+            const footerCopy = document.getElementById('footerCopy');
+            if (footerCopy) {
+                footerCopy.textContent = '© 2025 Ing. Espinosa Martínez José Armando. /// System Integrity Verified.';
+            }
+            
+            // FAQs - Preguntas Frecuentes
+            const faqQuestions = document.querySelectorAll('.faq-question');
+            faqQuestions.forEach(question => {
+                if (question.textContent.includes('¿Tiempo estimado de entrega')) {
+                    question.textContent = 'Estimated project delivery time? [Query: ETA]';
+                } else if (question.textContent.includes('¿Ofrecen mantenimiento post-entrega')) {
+                    question.textContent = 'Do you offer post-delivery maintenance? [Query: Maintenance]';
+                } else if (question.textContent.includes('¿Capacidad para proyectos internacionales')) {
+                    question.textContent = 'Capacity for international projects? [Query: Global]';
+                } else if (question.textContent.includes('¿Cómo solicitar presupuesto personalizado')) {
+                    question.textContent = 'How to request custom quote? [Query: Quote]';
+                }
+            });
+            
+            const faqAnswers = document.querySelectorAll('.faq-answer');
+            faqAnswers.forEach(answer => {
+                if (answer.textContent.includes('El tiempo varía según complejidad')) {
+                    answer.textContent = 'Time varies by complexity (2-6 weeks base). Adjustable to specific needs. Contact for detailed analysis.';
+                } else if (answer.textContent.includes('Afirmativo. Disponibles planes')) {
+                    answer.textContent = 'Affirmative. Support and maintenance plans available to ensure system operability and continuous updates.';
+                } else if (answer.textContent.includes('Confirmado. Experiencia con clientes globales')) {
+                    answer.textContent = 'Confirmed. Experience with global clients. Adaptability to different time zones and intercultural requirements.';
+                } else if (answer.textContent.includes('Enviar un mensaje encriptado')) {
+                    answer.textContent = 'Send encrypted message (email) to jarmando2965@gmail.com with project details. Priority response guaranteed.';
+                }
+            });
+            
+            // Modales de certificados
+            const modalTitles = document.querySelectorAll('.modal-content h3');
+            modalTitles.forEach(title => {
+                if (title.textContent.includes('[IBM] Web Dev Foundations')) {
+                    title.textContent = '[IBM] Web Dev Foundations';
+                } else if (title.textContent.includes('[IBM] Generative AI for Software Development')) {
+                    title.textContent = '[IBM] Generative AI for Software Development';
+                } else if (title.textContent.includes('[IBM] Mastering Git and GitHub')) {
+                    title.textContent = '[IBM] Mastering Git and GitHub';
+                } else if (title.textContent.includes('[Google] Foundations of Cybersecurity')) {
+                    title.textContent = '[Google] Foundations of Cybersecurity';
+                }
+            });
+            
+            const modalDescriptions = document.querySelectorAll('.modal-content p');
+            modalDescriptions.forEach(desc => {
+                if (desc.textContent.includes('Curso introductorio completo a HTML')) {
+                    desc.textContent = 'Complete introductory course to HTML, CSS, & JavaScript by IBM. Essential fundamentals for modern web development.';
+                } else if (desc.textContent.includes('Capacitación en IA Generativa aplicada')) {
+                    desc.textContent = 'Training in Generative AI applied to software development for process optimization and automation.';
+                } else if (desc.textContent.includes('Curso intensivo sobre control de versiones')) {
+                    desc.textContent = 'Intensive course on version control with Git and GitHub. Best practices for efficient project collaboration.';
+                } else if (desc.textContent.includes('Curso especializado en fundamentos de ciberseguridad')) {
+                    desc.textContent = 'Specialized course in cybersecurity fundamentals. Strategies and tools for digital data protection.';
+                } else if (desc.textContent.includes('Emitido: IBM // Fecha: 05/03/2025')) {
+                    desc.textContent = 'Issued: IBM // Date: 05/03/2025';
+                } else if (desc.textContent.includes('Emitido: IBM // Fecha: 10/04/2025')) {
+                    desc.textContent = 'Issued: IBM // Date: 10/04/2025';
+                } else if (desc.textContent.includes('Emitido: IBM // Fecha: 15/04/2025')) {
+                    desc.textContent = 'Issued: IBM // Date: 15/04/2025';
+                } else if (desc.textContent.includes('Emitido: Google // Fecha: 28/03/2025')) {
+                    desc.textContent = 'Issued: Google // Date: 28/03/2025';
+                }
+            });
+            
+            const modalLinks = document.querySelectorAll('.modal-content a.hud-link');
+            modalLinks.forEach(link => {
+                if (link.textContent.includes('Verificar Credencial')) {
+                    link.textContent = 'Verify Credential [Ext]';
+                }
+            });
+            
+            // Reproducir sonido de confirmación
+            playSound('confirmAudio');
+            
+            console.log('✅ Language changed to English');
+        }
+        
+        // Función para probar el cambio de idioma
+        function testLanguageSwitch() {
+            console.log('🔧 Probando cambio de idioma...');
+            const currentLang = langToggle ? langToggle.textContent : 'EN';
+            console.log('Idioma actual:', currentLang);
+            
+            if (currentLang === 'EN') {
+                changeLanguageToSpanish();
+            } else {
+                changeLanguageToEnglish();
+            }
+        }
+        
+        // Agregar funciones al objeto global
+        window.testLanguageSwitch = testLanguageSwitch;
+        window.changeLanguageToSpanish = changeLanguageToSpanish;
+        window.changeLanguageToEnglish = changeLanguageToEnglish;
+
+        // Función para verificar duplicados de audio
+        function checkAudioDuplicates() {
+            console.log('🔍 Verificando duplicados de audio...');
+            
+            const audioElements = {
+                'loadingAudio': 'Evidencias/Audio/Sound-mp3/terminal.mp3',
+                'loadCompleteAudio': 'Evidencias/Audio/Sound-mp3/aviso.mp3',
+                'backgroundAudio': 'assets/media/Hybrid & Dark.mp3',
+                'uiClickAudio': 'assets/media/botones/sci-fi-weapon-shoot.mp3',
+                'uiHoverAudio': 'assets/media/botones/sci-fi-weapon-shoot.mp3',
+                'filterHoverAudio': 'Evidencias/Audio/Sound-mp3/click 2.mp3',
+                'glitchAudio': 'assets/media/Sound-mp3/error.mp3',
+                'staticAudio': 'assets/media/atmosphere-sound.mp3',
+                'stabilizationAudio': 'assets/media/Sound-mp3/Sound.mp3',
+                'portalAudio': 'assets/media/atmosphere-sound.mp3',
+                'energyAudio': 'Evidencias/Audio/Sound-mp3/terminal.mp3',
+
+                'confirmAudio': 'Evidencias/Audio/Sound-mp3/click 2.mp3',
+                'fieldActivationAudio': 'assets/media/Sound-mp3/Sound.mp3',
+                'dataPingAudio': 'Evidencias/Audio/Sound-mp3/click 2.mp3',
+                'interfaceConfirmAudio': 'assets/media/Sound-mp3/Sound.mp3'
+            };
+            
+            const fileUsage = {};
+            
+            // Contar uso de cada archivo
+            Object.entries(audioElements).forEach(([elementId, filePath]) => {
+                if (!fileUsage[filePath]) {
+                    fileUsage[filePath] = [];
+                }
+                fileUsage[filePath].push(elementId);
+            });
+            
+            // Mostrar resultados
+            console.log('📊 Análisis de uso de archivos de audio:');
+            Object.entries(fileUsage).forEach(([filePath, elements]) => {
+                if (elements.length > 1) {
+                    console.log(`⚠️  DUPLICADO: ${filePath} usado en ${elements.length} elementos:`, elements);
+                } else {
+                    console.log(`✅ ÚNICO: ${filePath} usado solo en ${elements[0]}`);
+                }
+            });
+            
+            // Verificar que todos los elementos existen
+            Object.entries(audioElements).forEach(([elementId, filePath]) => {
+                const element = document.getElementById(elementId);
+                if (!element) {
+                    console.log(`❌ ELEMENTO FALTANTE: ${elementId}`);
+                } else {
+                    console.log(`✅ ELEMENTO OK: ${elementId}`);
+                }
+            });
+        }
+
+        // Agregar función de verificación de duplicados
+        window.checkAudioDuplicates = checkAudioDuplicates;
+
+        // Función para verificar el audio de fondo
+        function checkBackgroundAudio() {
+            console.log('🎵 Verificando audio de fondo...');
+            
+            const backgroundAudio = document.getElementById('backgroundAudio');
+            const loadingAudio = document.getElementById('loadingAudio');
+            
+            if (backgroundAudio) {
+                console.log('✅ Audio de fondo encontrado:', backgroundAudio.src);
+                console.log('📁 Archivo:', 'assets/media/Hybrid & Dark.mp3');
+                console.log('🔄 Loop:', backgroundAudio.loop);
+                console.log('🔇 Muted:', backgroundAudio.muted);
+            } else {
+                console.log('❌ Audio de fondo NO encontrado');
+            }
+            
+            if (loadingAudio) {
+                console.log('⚠️  Audio de carga (temporal):', loadingAudio.src);
+                console.log('📁 Archivo:', 'Evidencias/Audio/Sound-mp3/terminal.mp3');
+                console.log('🔄 Loop:', loadingAudio.loop);
+            }
+            
+            // Verificar que no hay otros elementos de audio con loop
+            const allAudioElements = document.querySelectorAll('audio[loop]');
+            console.log(`📊 Total de elementos de audio con loop: ${allAudioElements.length}`);
+            
+            allAudioElements.forEach((audio, index) => {
+                console.log(`${index + 1}. ${audio.id}: ${audio.src}`);
+            });
+            
+            // Verificar que backgroundAudio es el único permanente
+            const permanentBackgroundAudios = Array.from(allAudioElements).filter(audio => 
+                audio.id !== 'loadingAudio' && audio.loop
+            );
+            
+            if (permanentBackgroundAudios.length === 1 && permanentBackgroundAudios[0].id === 'backgroundAudio') {
+                console.log('✅ Solo hay UN audio de fondo permanente');
+            } else {
+                console.log('⚠️  Hay múltiples audios de fondo permanentes:', permanentBackgroundAudios.map(a => a.id));
+            }
+        }
+
+        // Agregar función de verificación de audio de fondo
+        window.checkBackgroundAudio = checkBackgroundAudio;
+
+        // Función para verificar que decodeAudio fue eliminado
+        function checkDecodeAudioRemoved() {
+            console.log('🔍 Verificando que decodeAudio fue eliminado...');
+            
+            const decodeAudioElement = document.getElementById('decodeAudio');
+            if (decodeAudioElement) {
+                console.log('❌ ERROR: decodeAudio aún existe en el DOM');
+            } else {
+                console.log('✅ decodeAudio fue eliminado correctamente del DOM');
+            }
+            
+            // Verificar que no hay referencias en el objeto sounds
+            if (sounds.decode) {
+                console.log('❌ ERROR: decode aún existe en el objeto sounds');
+            } else {
+                console.log('✅ decode fue eliminado del objeto sounds');
+            }
+            
+            // Verificar que no hay llamadas a playSound('decode')
+            console.log('✅ No hay llamadas a playSound("decode") en el código');
+        }
+
+        // Agregar función de verificación
+        window.checkDecodeAudioRemoved = checkDecodeAudioRemoved;
+
 
         if (muteButton) {
             muteButton.addEventListener('click', () => {
-                isMuted = !isMuted;
-                localStorage.setItem('portfolioMuted', isMuted);
+                window.portfolioMuted = !window.portfolioMuted;
+                localStorage.setItem('portfolioMuted', window.portfolioMuted);
                 updateMuteButton();
-                if (isMuted) {
+                if (window.portfolioMuted) {
                     stopSound('background');
                     stopSound('loading');
                 } else if (loaderOverlayEl && loaderOverlayEl.classList.contains('active')) {
@@ -6994,9 +9022,8 @@
                             if(mainContent) mainContent.classList.add('visible');
                             if(hudOverlay) hudOverlay.classList.add('visible');
                             
-                            if (!isMuted && sounds.background) {
-                                playSound('background', 0.2);
-                            }
+                            // Solo reproducir 1 audio al finalizar (corregido)
+                            // Removido: playSound('background', 0.2) para evitar duplicados
                             
                             triggerVisibleReveals();
                             startClock();
@@ -7031,7 +9058,7 @@
                 opacity: 1,
                 ease: "back.out(1.7)",
                 onStart: () => {
-                    if (!isMuted) playSound('energy', 0.3);
+                    if (!window.portfolioMuted) playSound('energy', 0.3);
                 }
             }, 0.5); // Position at 0.5s
 
@@ -7043,7 +9070,7 @@
                 stagger: 0.2,
                 ease: "power2.out",
                 onStart: () => {
-                    if (!isMuted) playSound('portal', 0.4);
+                    if (!window.portfolioMuted) playSound('portal', 0.4);
                 }
             }, 0.8); // Position at 0.8s
 
@@ -7053,7 +9080,7 @@
                 text: "BOOTING KERNEL...",
                 ease: "none",
                 onStart: () => {
-                    if (!isMuted) playSound('decode', 0.5);
+                    if (!window.portfolioMuted) playSound('energy', 0.3);
                 }
             }, 1.0); // Position at 1.0s
 
@@ -7100,7 +9127,7 @@
                 filter: "brightness(2)",
                 ease: "power2.out",
                 onStart: () => {
-                    if (!isMuted) playSound('energy', 0.6);
+                    if (!window.portfolioMuted) playSound('energy', 0.6);
                 }
             }, 4.5)
             .to(coreNucleus, {
@@ -7132,9 +9159,8 @@
             if(mainContent) mainContent.classList.add('visible');
             if(hudOverlay) hudOverlay.classList.add('visible');
             
-            if (!isMuted && sounds.background) {
-                playSound('background', 0.2);
-            }
+            // Solo reproducir 1 audio al finalizar (corregido)
+            // Removido: playSound('background', 0.2) para evitar duplicados
             
             triggerVisibleReveals();
             startClock();
@@ -7355,7 +9381,19 @@
 
             // Interaction detection
             function handleInteraction(event) {
+                // VERIFICACIÓN DE SEGURIDAD: Asegurar que target es un elemento válido
                 const target = event.target;
+                
+                // Verificar que target es un nodo de elemento válido
+                if (!target || target.nodeType !== Node.ELEMENT_NODE) {
+                    return; // Salir silenciosamente si no es un elemento válido
+                }
+                
+                // Verificar que target tiene el método closest antes de usarlo
+                if (typeof target.closest !== 'function') {
+                    return; // Salir silenciosamente si no tiene el método closest
+                }
+                
                 const interactiveElements = target.closest('button, a, .nav-link, .hud-button, .filter-btn');
                 
                 if (interactiveElements) {
@@ -7506,7 +9544,7 @@
                         
                         // Agregar clase de decodificación después de un pequeño delay
                         setTimeout(() => {
-                            playSound('decode', 0.5);
+                            playSound('energy', 0.3);
                             filterPanel.classList.add('decoding');
                             setTimeout(() => {
                                 filterPanel.classList.remove('decoding');
@@ -7596,11 +9634,8 @@
                 }
                 // Efectos de hover con decodificación textual
                 link.addEventListener('mouseenter', () => {
-                    playSound('fieldActivation', 0.4);
-                    
-                    // Secuencia de sonidos para el campo energizado
-                    setTimeout(() => playSound('dataPing', 0.3), 100);
-                    setTimeout(() => playSound('interfaceConfirm', 0.2), 300);
+                    // Solo reproducir 1 audio en hover (corregido)
+                    playSound('filterHover', 0.5);
                     
                     // Generar partículas energéticas
                     createEnergyParticles();
@@ -8677,8 +10712,8 @@
       }
     }
 
-    // Función para reproducir sonidos
-    function playSound(frequency = 800, duration = 0.1, type = 'sine') {
+    // Función para reproducir sonidos sintéticos
+    function playSyntheticSound(frequency = 800, duration = 0.1, type = 'sine') {
       if (!audioContext) return;
       
       try {
@@ -8697,7 +10732,7 @@
         oscillator.start(audioContext.currentTime);
         oscillator.stop(audioContext.currentTime + duration);
       } catch (e) {
-        console.log('Error reproduciendo sonido');
+        console.log('Error reproduciendo sonido sintético');
       }
     }
 
@@ -8794,7 +10829,7 @@
 
       // Mostrar HUD
       statisticsHud.classList.add('visible');
-      playSound(600, 0.3, 'square');
+      playSyntheticSound(600, 0.3, 'square');
     }
 
     // Función para mostrar panel holográfico
@@ -8816,7 +10851,7 @@
         console.log('Autoplay bloqueado:', error);
       });
 
-      playSound(800, 0.2, 'sawtooth');
+      playSyntheticSound(800, 0.2, 'sawtooth');
     }
 
     // Función para ocultar todo
@@ -8860,7 +10895,7 @@
       const centerY = window.innerHeight / 2;
       
       createDataFlow(rowRect.left + rowRect.width / 2, rowRect.top + rowRect.height / 2, centerX, centerY);
-      playSound(400, 0.5, 'sawtooth');
+      playSyntheticSound(400, 0.5, 'sawtooth');
 
       // Fase 2: Panel de estadísticas (0.5-1.2s)
       setTimeout(() => {
@@ -8882,7 +10917,7 @@
       if (currentHoveredRow && !isAnimationActive) {
         hideAll();
         currentHoveredRow = null;
-        playSound(300, 0.2);
+        playSyntheticSound(300, 0.2);
       }
     });
 
@@ -8892,7 +10927,7 @@
       if (!letter || letter.classList.contains('inactive')) return;
 
       const selectedLetter = letter.dataset.letter;
-      playSound(500, 0.1);
+              playSyntheticSound(500, 0.1);
 
       // Filtrar proyectos
       const rows = document.querySelectorAll('.table-row');
@@ -9243,6 +11278,24 @@
       langToggle.addEventListener('click', () => {
         languageChanged = true;
         
+        // Cambiar el idioma
+        const currentLang = langToggle.textContent;
+        if (currentLang === 'EN') {
+          // Cambiar a español
+          langToggle.textContent = 'ES';
+          langToggle.setAttribute('aria-label', 'Switch to English');
+          changeLanguageToSpanish();
+        } else {
+          // Cambiar a inglés
+          langToggle.textContent = 'EN';
+          langToggle.setAttribute('aria-label', 'Cambiar a Español');
+          changeLanguageToEnglish();
+        }
+        
+        // Reproducir sonido de confirmación
+        if (!window.portfolioMuted) {
+          playSound('confirm', 0.3);
+        }
         
         if (themeChanged && languageChanged) {
           unlockAchievement('tinkerer');
@@ -10798,7 +12851,7 @@
      ------------------------------------------------------------
      Sistema de tres capas: Matriz de Datos, Partículas Flotantes, 
      y Elementos Reactivos para crear profundidad visual
-  ============================================================ */
+  ============================================================ -->
 
   /* Capa 1: La Matriz de Datos (Fondo Sutil) */
   .holographic-background {
