@@ -660,6 +660,207 @@
       }
     }
 
+    /* ============================================================
+       NÚCLEO NEURONAL INTERACTIVO
+       ------------------------------------------------------------
+       El cerebro central de la interfaz con reactividad dinámica
+    ============================================================ */
+    .neural-core-container {
+      position: fixed;
+      bottom: 120px;
+      right: 30px;
+      width: 80px;
+      height: 80px;
+      z-index: 1000;
+      pointer-events: none;
+      opacity: 0;
+      transform: scale(0.8);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .neural-core-container.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .neural-core-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(var(--color-accent-rgb), 0.1) 0%, transparent 70%);
+      box-shadow: 
+        0 0 20px rgba(var(--color-accent-rgb), 0.3),
+        inset 0 0 20px rgba(var(--color-accent-rgb), 0.1);
+    }
+
+    /* Partículas energéticas */
+    .particle-container {
+      position: absolute;
+      top: -20px;
+      left: -20px;
+      width: 120px;
+      height: 120px;
+      pointer-events: none;
+    }
+
+    .energy-particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: var(--color-accent);
+      border-radius: 50%;
+      box-shadow: 0 0 4px var(--color-accent-glow);
+      opacity: 0;
+      animation: particle-float 3s infinite ease-in-out;
+    }
+
+    @keyframes particle-float {
+      0% {
+        opacity: 0;
+        transform: translate(40px, 40px) scale(0);
+      }
+      20% {
+        opacity: 1;
+        transform: translate(40px, 40px) scale(1);
+      }
+      80% {
+        opacity: 1;
+        transform: translate(var(--particle-x), var(--particle-y)) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(var(--particle-x), var(--particle-y)) scale(0);
+      }
+    }
+
+    /* Trazadores de luz para interacciones */
+    .light-tracers {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    .light-tracer {
+      position: absolute;
+      height: 1px;
+      background: linear-gradient(90deg, var(--color-accent) 0%, transparent 100%);
+      box-shadow: 0 0 4px var(--color-accent-glow);
+      opacity: 0;
+      transform-origin: left center;
+      animation: tracer-pulse 0.6s ease-out;
+    }
+
+    @keyframes tracer-pulse {
+      0% {
+        opacity: 0;
+        transform: scaleX(0);
+      }
+      50% {
+        opacity: 1;
+        transform: scaleX(1);
+      }
+      100% {
+        opacity: 0;
+        transform: scaleX(1);
+      }
+    }
+
+    /* Indicadores de estado */
+    .neural-status-indicators {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      display: flex;
+      gap: 2px;
+    }
+
+    .status-indicator {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--color-accent);
+      opacity: 0.3;
+      transition: opacity 0.3s ease, background-color 0.3s ease;
+    }
+
+    .status-indicator.active {
+      opacity: 1;
+      animation: status-pulse 1s infinite alternate;
+    }
+
+    @keyframes status-pulse {
+      0% { opacity: 0.3; }
+      100% { opacity: 1; }
+    }
+
+    /* Estados específicos del núcleo */
+    .neural-core-container.scroll-fast {
+      animation: neural-excite 0.5s ease-out;
+    }
+
+    .neural-core-container.interaction-active {
+      animation: neural-focus 0.3s ease-out;
+    }
+
+    .neural-core-container.content-aware {
+      animation: neural-analyze 2s infinite ease-in-out;
+    }
+
+    .neural-core-container.system-active {
+      animation: neural-operate 1s infinite ease-in-out;
+    }
+
+    @keyframes neural-excite {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes neural-focus {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes neural-analyze {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.05) rotate(180deg); }
+    }
+
+    @keyframes neural-operate {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
+    }
+
+    /* Responsive para el núcleo neuronal */
+    @media (max-width: 768px) {
+      .neural-core-container {
+        bottom: 140px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+      }
+      
+      .neural-core-canvas {
+        width: 60px;
+        height: 60px;
+      }
+      
+      .particle-container {
+        width: 100px;
+        height: 100px;
+        top: -20px;
+        left: -20px;
+      }
+    }
+
 
     /* ============================================================
        HUD OVERLAY STYLES
@@ -5249,6 +5450,38 @@
 
 </head>
 <body>
+
+  <!-- ============================================================
+       ECOSISTEMA DE INTERFAZ HOLOGRÁFICA ADAPTATIVA
+       ------------------------------------------------------------
+       Sistema de tres capas para crear profundidad visual
+  ============================================================ -->
+
+  <!-- Capa 1: La Matriz de Datos (Fondo Sutil) -->
+  <div class="holographic-background">
+    <div class="matrix-grid"></div>
+    <canvas id="matrixRain" class="matrix-rain"></canvas>
+  </div>
+
+  <!-- Capa 2: Partículas Flotantes (Plano Medio) -->
+  <div class="holographic-particles">
+    <canvas id="particleSystem"></canvas>
+  </div>
+
+  <!-- Capa 3: Elementos Reactivos (Interfaz Activa) -->
+  <div class="holographic-interface">
+    <!-- Escáner de Contenido -->
+    <div class="scan-line" id="scanLine"></div>
+    
+    <!-- Información Contextual -->
+    <div class="context-info" id="contextInfo"></div>
+    
+    <!-- Data Burst Container -->
+    <div class="data-burst" id="dataBurst"></div>
+    
+    <!-- Indicadores de Carga -->
+    <div class="load-indicator" id="loadIndicator"></div>
+  </div>
   <!-- ============================================================
        CIRCUIT MESH LAYER
        ------------------------------------------------------------
@@ -5408,6 +5641,31 @@
     </div>
     
 
+  </div>
+
+  <!-- ============================================================
+       NÚCLEO NEURONAL INTERACTIVO
+       ------------------------------------------------------------
+       El cerebro central de la interfaz que reacciona dinámicamente
+       a scroll, interacciones, contenido visible y estado del sistema
+  ============================================================ -->
+  <div class="neural-core-container" id="neuralCoreContainer">
+    <!-- Canvas para el núcleo neuronal -->
+    <canvas class="neural-core-canvas" id="neuralCoreCanvas" width="80" height="80"></canvas>
+    
+    <!-- Contenedor de partículas -->
+    <div class="particle-container" id="particleContainer"></div>
+    
+    <!-- Trazadores de luz para interacciones -->
+    <div class="light-tracers" id="lightTracers"></div>
+    
+    <!-- Indicadores de estado -->
+    <div class="neural-status-indicators">
+      <div class="status-indicator scroll-status" id="scrollStatus"></div>
+      <div class="status-indicator interaction-status" id="interactionStatus"></div>
+      <div class="status-indicator content-status" id="contentStatus"></div>
+      <div class="status-indicator system-status" id="systemStatus"></div>
+    </div>
   </div>
 
   <!-- ============================================================
@@ -6880,6 +7138,337 @@
             
             triggerVisibleReveals();
             startClock();
+        }
+
+        // ============================================================
+        // NÚCLEO NEURONAL INTERACTIVO - EL CEREBRO DE LA INTERFAZ
+        // ============================================================
+        
+        // Get neural core elements
+        const neuralCoreContainer = document.getElementById('neuralCoreContainer');
+        const neuralCoreCanvas = document.getElementById('neuralCoreCanvas');
+        const particleContainer = document.getElementById('particleContainer');
+        const lightTracers = document.getElementById('lightTracers');
+        const scrollStatus = document.getElementById('scrollStatus');
+        const interactionStatus = document.getElementById('interactionStatus');
+        const contentStatus = document.getElementById('contentStatus');
+        const systemStatus = document.getElementById('systemStatus');
+
+        // Neural Core State Management
+        const neuralState = {
+            scrollVelocity: 0,
+            lastScrollY: 0,
+            lastScrollTime: 0,
+            isInteracting: false,
+            currentSection: null,
+            systemMode: 'dark', // 'dark' or 'light'
+            pulseRate: 1,
+            particleCount: 3
+        };
+
+        // Initialize Neural Core
+        if (neuralCoreContainer && neuralCoreCanvas) {
+            const ctx = neuralCoreCanvas.getContext('2d');
+            let animationId;
+            let lastTime = 0;
+
+            // Initialize canvas
+            function initNeuralCanvas() {
+                neuralCoreCanvas.width = 80;
+                neuralCoreCanvas.height = 80;
+                ctx.clearRect(0, 0, 80, 80);
+            }
+
+            // Draw neural network pattern
+            function drawNeuralPattern(time) {
+                ctx.clearRect(0, 0, 80, 80);
+                
+                const centerX = 40;
+                const centerY = 40;
+                const radius = 30;
+                
+                // Draw outer glow
+                const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+                gradient.addColorStop(0, `rgba(${neuralState.systemMode === 'dark' ? '0, 255, 170' : '255, 200, 100'}, 0.3)`);
+                gradient.addColorStop(1, 'transparent');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, 80, 80);
+                
+                // Draw neural nodes
+                const nodeCount = 8;
+                const nodes = [];
+                
+                for (let i = 0; i < nodeCount; i++) {
+                    const angle = (i / nodeCount) * Math.PI * 2 + (time * 0.001);
+                    const x = centerX + Math.cos(angle) * (radius * 0.6);
+                    const y = centerY + Math.sin(angle) * (radius * 0.6);
+                    nodes.push({ x, y });
+                    
+                    // Draw node
+                    ctx.beginPath();
+                    ctx.arc(x, y, 2, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${neuralState.systemMode === 'dark' ? '0, 255, 170' : '255, 200, 100'}, ${0.8 + Math.sin(time * 0.005 + i) * 0.2})`;
+                    ctx.fill();
+                }
+                
+                // Draw connections
+                for (let i = 0; i < nodes.length; i++) {
+                    for (let j = i + 1; j < nodes.length; j++) {
+                        const distance = Math.sqrt(
+                            Math.pow(nodes[i].x - nodes[j].x, 2) + 
+                            Math.pow(nodes[i].y - nodes[j].y, 2)
+                        );
+                        
+                        if (distance < 35) {
+                            ctx.beginPath();
+                            ctx.moveTo(nodes[i].x, nodes[i].y);
+                            ctx.lineTo(nodes[j].x, nodes[j].y);
+                            ctx.strokeStyle = `rgba(${neuralState.systemMode === 'dark' ? '0, 255, 170' : '255, 200, 100'}, ${0.3 + Math.sin(time * 0.003 + i + j) * 0.2})`;
+                            ctx.lineWidth = 1;
+                            ctx.stroke();
+                        }
+                    }
+                }
+                
+                // Draw central pulse
+                const pulseSize = 15 + Math.sin(time * 0.01) * 5;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, pulseSize, 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(${neuralState.systemMode === 'dark' ? '0, 255, 170' : '255, 200, 100'}, ${0.5 + Math.sin(time * 0.008) * 0.3})`;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            // Animation loop
+            function animateNeuralCore(time) {
+                drawNeuralPattern(time);
+                animationId = requestAnimationFrame(animateNeuralCore);
+            }
+
+            // Start neural core
+            function startNeuralCore() {
+                initNeuralCanvas();
+                animateNeuralCore(0);
+                neuralCoreContainer.classList.add('visible');
+            }
+
+            // Particle system
+            function createParticle() {
+                const particle = document.createElement('div');
+                particle.className = 'energy-particle';
+                
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 20 + Math.random() * 30;
+                const x = Math.cos(angle) * distance;
+                const y = Math.sin(angle) * distance;
+                
+                particle.style.setProperty('--particle-x', x + 'px');
+                particle.style.setProperty('--particle-y', y + 'px');
+                
+                particleContainer.appendChild(particle);
+                
+                setTimeout(() => {
+                    if (particle.parentNode) {
+                        particle.parentNode.removeChild(particle);
+                    }
+                }, 3000);
+            }
+
+            // Create particles periodically
+            function startParticleSystem() {
+                setInterval(() => {
+                    if (neuralCoreContainer.classList.contains('visible')) {
+                        for (let i = 0; i < neuralState.particleCount; i++) {
+                            setTimeout(createParticle, i * 200);
+                        }
+                    }
+                }, 2000);
+            }
+
+            // Light tracer system
+            function createLightTracer(targetElement) {
+                const neuralRect = neuralCoreContainer.getBoundingClientRect();
+                const targetRect = targetElement.getBoundingClientRect();
+                
+                const neuralCenter = {
+                    x: neuralRect.left + neuralRect.width / 2,
+                    y: neuralRect.top + neuralRect.height / 2
+                };
+                
+                const targetCenter = {
+                    x: targetRect.left + targetRect.width / 2,
+                    y: targetRect.top + targetRect.height / 2
+                };
+                
+                const tracer = document.createElement('div');
+                tracer.className = 'light-tracer';
+                
+                const distance = Math.sqrt(
+                    Math.pow(targetCenter.x - neuralCenter.x, 2) + 
+                    Math.pow(targetCenter.y - neuralCenter.y, 2)
+                );
+                
+                const angle = Math.atan2(targetCenter.y - neuralCenter.y, targetCenter.x - neuralCenter.x);
+                
+                tracer.style.left = neuralCenter.x + 'px';
+                tracer.style.top = neuralCenter.y + 'px';
+                tracer.style.width = distance + 'px';
+                tracer.style.transform = `rotate(${angle}rad)`;
+                
+                lightTracers.appendChild(tracer);
+                
+                setTimeout(() => {
+                    if (tracer.parentNode) {
+                        tracer.parentNode.removeChild(tracer);
+                    }
+                }, 600);
+            }
+
+            // Scroll detection
+            let scrollTimeout;
+            function handleScroll() {
+                const currentTime = Date.now();
+                const currentScrollY = window.scrollY;
+                
+                neuralState.scrollVelocity = Math.abs(currentScrollY - neuralState.lastScrollY) / (currentTime - neuralState.lastScrollTime);
+                neuralState.lastScrollY = currentScrollY;
+                neuralState.lastScrollTime = currentTime;
+                
+                // Update scroll status
+                if (neuralState.scrollVelocity > 2) {
+                    scrollStatus.classList.add('active');
+                    neuralCoreContainer.classList.add('scroll-fast');
+                    
+                    // Increase particle emission during fast scroll
+                    neuralState.particleCount = 8;
+                    neuralState.pulseRate = 2;
+                    
+                    clearTimeout(scrollTimeout);
+                    scrollTimeout = setTimeout(() => {
+                        scrollStatus.classList.remove('active');
+                        neuralCoreContainer.classList.remove('scroll-fast');
+                        neuralState.particleCount = 3;
+                        neuralState.pulseRate = 1;
+                    }, 1000);
+                }
+            }
+
+            // Interaction detection
+            function handleInteraction(event) {
+                const target = event.target;
+                const interactiveElements = target.closest('button, a, .nav-link, .hud-button, .filter-btn');
+                
+                if (interactiveElements) {
+                    neuralState.isInteracting = true;
+                    interactionStatus.classList.add('active');
+                    neuralCoreContainer.classList.add('interaction-active');
+                    
+                    if (event.type === 'mouseenter') {
+                        createLightTracer(interactiveElements);
+                    }
+                    
+                    if (event.type === 'click') {
+                        // Intensify effect for clicks
+                        neuralCoreContainer.style.transform = 'scale(1.2)';
+                        setTimeout(() => {
+                            neuralCoreContainer.style.transform = 'scale(1)';
+                        }, 300);
+                    }
+                    
+                    setTimeout(() => {
+                        neuralState.isInteracting = false;
+                        interactionStatus.classList.remove('active');
+                        neuralCoreContainer.classList.remove('interaction-active');
+                    }, 500);
+                }
+            }
+
+            // Content awareness
+            function handleContentVisibility() {
+                const sections = document.querySelectorAll('section[id]');
+                const viewportHeight = window.innerHeight;
+                const scrollY = window.scrollY;
+                
+                sections.forEach(section => {
+                    const rect = section.getBoundingClientRect();
+                    const isVisible = rect.top < viewportHeight * 0.8 && rect.bottom > viewportHeight * 0.2;
+                    
+                    if (isVisible) {
+                        const sectionId = section.id;
+                        if (neuralState.currentSection !== sectionId) {
+                            neuralState.currentSection = sectionId;
+                            contentStatus.classList.add('active');
+                            neuralCoreContainer.classList.add('content-aware');
+                            
+                            // Adjust neural pattern based on section
+                            switch(sectionId) {
+                                case 'proyectos':
+                                    // More structured pattern for projects
+                                    break;
+                                case 'skills':
+                                    // More organic pattern for skills
+                                    break;
+                                case 'about':
+                                    // Analytical pattern for about
+                                    break;
+                            }
+                            
+                            setTimeout(() => {
+                                contentStatus.classList.remove('active');
+                                neuralCoreContainer.classList.remove('content-aware');
+                            }, 2000);
+                        }
+                    }
+                });
+            }
+
+            // System mode detection
+            function handleSystemMode() {
+                const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+                neuralState.systemMode = isDarkMode ? 'dark' : 'light';
+                systemStatus.classList.add('active');
+                
+                setTimeout(() => {
+                    systemStatus.classList.remove('active');
+                }, 1000);
+            }
+
+            // Initialize neural core after loader completion
+            function initializeNeuralCore() {
+                startNeuralCore();
+                startParticleSystem();
+                
+                // Event listeners
+                window.addEventListener('scroll', handleScroll, { passive: true });
+                document.addEventListener('mouseenter', handleInteraction, true);
+                document.addEventListener('click', handleInteraction, true);
+                
+                // Content visibility observer
+                const observer = new IntersectionObserver(handleContentVisibility, {
+                    threshold: 0.2
+                });
+                
+                document.querySelectorAll('section[id]').forEach(section => {
+                    observer.observe(section);
+                });
+                
+                // System mode observer
+                const themeToggle = document.getElementById('themeToggle');
+                if (themeToggle) {
+                    themeToggle.addEventListener('click', handleSystemMode);
+                }
+                
+                // Initial system mode
+                handleSystemMode();
+            }
+
+            // Start neural core after page load
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initializeNeuralCore);
+            } else {
+                // Small delay to ensure loader is complete
+                setTimeout(initializeNeuralCore, 1000);
+            }
         }
 
 
@@ -10203,6 +10792,816 @@
     animation: scroll-logos 30s linear infinite !important;
   }
   /* --- FIN: Anulación para FORZAR Animaciones --- */
+
+  /* ============================================================
+     ECOSISTEMA DE INTERFAZ HOLOGRÁFICA ADAPTATIVA
+     ------------------------------------------------------------
+     Sistema de tres capas: Matriz de Datos, Partículas Flotantes, 
+     y Elementos Reactivos para crear profundidad visual
+  ============================================================ */
+
+  /* Capa 1: La Matriz de Datos (Fondo Sutil) */
+  .holographic-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .matrix-grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+      linear-gradient(rgba(var(--color-accent-rgb), 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(var(--color-accent-rgb), 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    animation: matrix-drift 120s linear infinite;
+  }
+
+  @keyframes matrix-drift {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(50px, 50px); }
+  }
+
+  .matrix-rain {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.15;
+  }
+
+  /* Capa 2: Partículas Flotantes (Plano Medio) */
+  .holographic-particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: var(--color-accent);
+    border-radius: 50%;
+    opacity: 0.3;
+    pointer-events: none;
+    transition: transform 0.1s ease;
+  }
+
+  .particle.large {
+    width: 3px;
+    height: 3px;
+    opacity: 0.5;
+  }
+
+  .particle.small {
+    width: 1px;
+    height: 1px;
+    opacity: 0.2;
+  }
+
+  /* Capa 3: Elementos Reactivos (Interfaz Activa) */
+  .holographic-interface {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  /* Escáner de Contenido */
+  .scan-line {
+    position: absolute;
+    height: 2px;
+    background: linear-gradient(90deg, 
+      transparent 0%, 
+      var(--color-accent) 20%, 
+      var(--color-accent) 80%, 
+      transparent 100%);
+    box-shadow: 0 0 10px var(--color-accent-glow);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 10000;
+  }
+
+  .scan-line::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 2px,
+      var(--color-accent) 2px,
+      var(--color-accent) 4px
+    );
+    animation: scan-glitch 0.1s infinite;
+  }
+
+  @keyframes scan-glitch {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  /* Retículas de Enfoque */
+  .focus-reticle {
+    position: absolute;
+    pointer-events: none;
+    z-index: 10001;
+  }
+
+  .focus-reticle::before,
+  .focus-reticle::after {
+    content: '';
+    position: absolute;
+    background: var(--color-accent);
+    box-shadow: 0 0 5px var(--color-accent-glow);
+  }
+
+  .focus-reticle::before {
+    width: 20px;
+    height: 2px;
+    top: -2px;
+    left: -2px;
+  }
+
+  .focus-reticle::after {
+    width: 2px;
+    height: 20px;
+    top: -2px;
+    left: -2px;
+  }
+
+  .focus-reticle.top-right::before {
+    left: auto;
+    right: -2px;
+  }
+
+  .focus-reticle.top-right::after {
+    left: auto;
+    right: -2px;
+  }
+
+  .focus-reticle.bottom-left::before {
+    top: auto;
+    bottom: -2px;
+  }
+
+  .focus-reticle.bottom-left::after {
+    top: auto;
+    bottom: -2px;
+  }
+
+  .focus-reticle.bottom-right::before {
+    top: auto;
+    bottom: -2px;
+    left: auto;
+    right: -2px;
+  }
+
+  .focus-reticle.bottom-right::after {
+    top: auto;
+    bottom: -2px;
+    left: auto;
+    right: -2px;
+  }
+
+  /* Información Contextual */
+  .context-info {
+    position: fixed;
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid var(--color-accent);
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-family: var(--font-main);
+    font-size: 0.8rem;
+    color: var(--color-accent);
+    pointer-events: none;
+    z-index: 10002;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.2s ease;
+    backdrop-filter: blur(5px);
+  }
+
+  .context-info.active {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* Data Burst */
+  .data-burst {
+    position: absolute;
+    pointer-events: none;
+    z-index: 10003;
+  }
+
+  .burst-particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: var(--color-accent);
+    border-radius: 50%;
+    animation: burst-explode 0.6s ease-out forwards;
+  }
+
+  .burst-line {
+    position: absolute;
+    height: 1px;
+    background: var(--color-accent);
+    animation: burst-explode 0.6s ease-out forwards;
+  }
+
+  @keyframes burst-explode {
+    0% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(0) translate(var(--burst-x), var(--burst-y));
+    }
+  }
+
+  /* Indicadores de Carga */
+  .load-indicator {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid var(--color-feedback-success);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-family: var(--font-main);
+    font-size: 0.7rem;
+    color: var(--color-feedback-success);
+    pointer-events: none;
+    z-index: 10004;
+    animation: load-fade 2s ease-out forwards;
+    backdrop-filter: blur(5px);
+  }
+
+  @keyframes load-fade {
+    0% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    70% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .holographic-particles {
+      display: none; /* Desactivar partículas en móviles */
+    }
+    
+    .context-info {
+      font-size: 0.7rem;
+      padding: 6px 10px;
+    }
+  }
+
+  /* Preferencias de movimiento reducido */
+  @media (prefers-reduced-motion: reduce) {
+    .matrix-grid,
+    .particle,
+    .scan-line,
+    .burst-particle,
+    .burst-line {
+      animation: none;
+    }
+    
+    .holographic-particles {
+      display: none;
+    }
+  }
   </style>
+
+  <!-- ============================================================
+       ECOSISTEMA DE INTERFAZ HOLOGRÁFICA ADAPTATIVA - JAVASCRIPT
+       ------------------------------------------------------------
+       Sistema de tres capas con optimizaciones de rendimiento
+  ============================================================ -->
+  <script>
+  (function() {
+    'use strict';
+
+    // ============================================================
+    // CONFIGURACIÓN Y UTILIDADES
+    // ============================================================
+    
+    const HOLOGRAPHIC_CONFIG = {
+      // Capa 1: Matriz de Datos
+      matrix: {
+        enabled: true,
+        rainSpeed: 0.5,
+        rainOpacity: 0.15,
+        gridOpacity: 0.03
+      },
+      
+      // Capa 2: Partículas Flotantes
+      particles: {
+        enabled: !window.matchMedia('(max-width: 768px)').matches,
+        maxParticles: 150,
+        particleSize: { min: 1, max: 3 },
+        parallaxSensitivity: 0.3,
+        driftSpeed: 0.1
+      },
+      
+      // Capa 3: Elementos Reactivos
+      reactive: {
+        scanLine: { enabled: true, duration: 800 },
+        focusReticles: { enabled: true, duration: 300 },
+        contextInfo: { enabled: true, duration: 200 },
+        dataBurst: { enabled: true, particles: 12, lines: 8 },
+        loadIndicators: { enabled: true, duration: 2000 }
+      }
+    };
+
+    // Detectar preferencias de movimiento reducido
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      HOLOGRAPHIC_CONFIG.particles.enabled = false;
+      HOLOGRAPHIC_CONFIG.matrix.enabled = false;
+    }
+
+    // ============================================================
+    // CAPA 1: LA MATRIZ DE DATOS (Fondo Sutil)
+    // ============================================================
+    
+    class MatrixRain {
+      constructor() {
+        this.canvas = document.getElementById('matrixRain');
+        this.ctx = this.canvas.getContext('2d');
+        this.drops = [];
+        this.characters = '01ABCDEF';
+        this.fontSize = 12;
+        this.columns = 0;
+        this.init();
+      }
+
+      init() {
+        this.resize();
+        this.createDrops();
+        this.animate();
+        
+        window.addEventListener('resize', () => {
+          this.resize();
+          this.createDrops();
+        });
+      }
+
+      resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+        this.columns = Math.floor(this.canvas.width / this.fontSize);
+      }
+
+      createDrops() {
+        this.drops = [];
+        for (let i = 0; i < this.columns; i++) {
+          this.drops[i] = Math.random() * -100;
+        }
+      }
+
+      animate() {
+        if (!HOLOGRAPHIC_CONFIG.matrix.enabled) return;
+
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        this.ctx.fillStyle = getComputedStyle(document.documentElement)
+          .getPropertyValue('--color-accent');
+        this.ctx.font = `${this.fontSize}px monospace`;
+
+        for (let i = 0; i < this.drops.length; i++) {
+          const text = this.characters[Math.floor(Math.random() * this.characters.length)];
+          this.ctx.fillText(text, i * this.fontSize, this.drops[i] * this.fontSize);
+
+          if (this.drops[i] * this.fontSize > this.canvas.height && Math.random() > 0.975) {
+            this.drops[i] = 0;
+          }
+          this.drops[i]++;
+        }
+
+        requestAnimationFrame(() => this.animate());
+      }
+    }
+
+    // ============================================================
+    // CAPA 2: PARTÍCULAS FLOTANTES (Plano Medio)
+    // ============================================================
+    
+    class ParticleSystem {
+      constructor() {
+        this.canvas = document.getElementById('particleSystem');
+        this.ctx = this.canvas.getContext('2d');
+        this.particles = [];
+        this.mouse = { x: 0, y: 0 };
+        this.init();
+      }
+
+      init() {
+        if (!HOLOGRAPHIC_CONFIG.particles.enabled) return;
+        
+        this.resize();
+        this.createParticles();
+        this.animate();
+        
+        window.addEventListener('resize', () => this.resize());
+        document.addEventListener('mousemove', (e) => {
+          this.mouse.x = e.clientX;
+          this.mouse.y = e.clientY;
+        });
+      }
+
+      resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      }
+
+      createParticles() {
+        this.particles = [];
+        const config = HOLOGRAPHIC_CONFIG.particles;
+        
+        for (let i = 0; i < config.maxParticles; i++) {
+          this.particles.push({
+            x: Math.random() * this.canvas.width,
+            y: Math.random() * this.canvas.height,
+            size: Math.random() * (config.particleSize.max - config.particleSize.min) + config.particleSize.min,
+            speedX: (Math.random() - 0.5) * config.driftSpeed,
+            speedY: (Math.random() - 0.5) * config.driftSpeed,
+            opacity: Math.random() * 0.5 + 0.2
+          });
+        }
+      }
+
+      animate() {
+        if (!HOLOGRAPHIC_CONFIG.particles.enabled) return;
+
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        const config = HOLOGRAPHIC_CONFIG.particles;
+        const centerX = this.canvas.width / 2;
+        const centerY = this.canvas.height / 2;
+
+        this.particles.forEach(particle => {
+          // Efecto paralaje con el ratón
+          const deltaX = (this.mouse.x - centerX) * config.parallaxSensitivity;
+          const deltaY = (this.mouse.y - centerY) * config.parallaxSensitivity;
+          
+          particle.x += particle.speedX - deltaX * 0.001;
+          particle.y += particle.speedY - deltaY * 0.001;
+
+          // Mantener partículas en pantalla
+          if (particle.x < 0) particle.x = this.canvas.width;
+          if (particle.x > this.canvas.width) particle.x = 0;
+          if (particle.y < 0) particle.y = this.canvas.height;
+          if (particle.y > this.canvas.height) particle.y = 0;
+
+          // Dibujar partícula
+          this.ctx.beginPath();
+          this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+          this.ctx.fillStyle = `rgba(var(--color-accent-rgb), ${particle.opacity})`;
+          this.ctx.fill();
+        });
+
+        requestAnimationFrame(() => this.animate());
+      }
+    }
+
+    // ============================================================
+    // CAPA 3: ELEMENTOS REACTIVOS (Interfaz Activa)
+    // ============================================================
+    
+    class HolographicInterface {
+      constructor() {
+        this.scanLine = document.getElementById('scanLine');
+        this.contextInfo = document.getElementById('contextInfo');
+        this.dataBurst = document.getElementById('dataBurst');
+        this.loadIndicator = document.getElementById('loadIndicator');
+        this.isScanning = false;
+        this.focusReticles = new Map();
+        this.init();
+      }
+
+      init() {
+        this.initScanLine();
+        this.initFocusReticles();
+        this.initContextInfo();
+        this.initDataBurst();
+        this.initLoadIndicators();
+      }
+
+      // Escáner de Contenido al Scroll
+      initScanLine() {
+        if (!HOLOGRAPHIC_CONFIG.reactive.scanLine.enabled) return;
+
+        let scrollTimeout;
+        const config = HOLOGRAPHIC_CONFIG.reactive.scanLine;
+
+        window.addEventListener('scroll', () => {
+          if (this.isScanning) return;
+          
+          this.isScanning = true;
+          this.scanLine.style.opacity = '1';
+          
+          const direction = window.scrollY > (this.lastScrollY || 0) ? 'down' : 'up';
+          this.lastScrollY = window.scrollY;
+          
+          if (direction === 'down') {
+            this.scanLine.style.top = '0';
+            this.scanLine.style.transform = 'translateY(0)';
+            gsap.to(this.scanLine, {
+              y: window.innerHeight,
+              duration: config.duration / 1000,
+              ease: 'power2.out',
+              onComplete: () => {
+                this.scanLine.style.opacity = '0';
+                this.isScanning = false;
+              }
+            });
+          } else {
+            this.scanLine.style.top = 'auto';
+            this.scanLine.style.bottom = '0';
+            this.scanLine.style.transform = 'translateY(0)';
+            gsap.to(this.scanLine, {
+              y: -window.innerHeight,
+              duration: config.duration / 1000,
+              ease: 'power2.out',
+              onComplete: () => {
+                this.scanLine.style.opacity = '0';
+                this.isScanning = false;
+              }
+            });
+          }
+
+          clearTimeout(scrollTimeout);
+          scrollTimeout = setTimeout(() => {
+            this.scanLine.style.opacity = '0';
+            this.isScanning = false;
+          }, config.duration);
+        });
+      }
+
+      // Retículas de Enfoque al Hover
+      initFocusReticles() {
+        if (!HOLOGRAPHIC_CONFIG.reactive.focusReticles.enabled) return;
+
+        const interactiveElements = document.querySelectorAll('.content-box, button, .nav-link, .skill-item, .project-card');
+        
+        interactiveElements.forEach(element => {
+          element.addEventListener('mouseenter', (e) => {
+            this.showFocusReticles(e.target);
+          });
+          
+          element.addEventListener('mouseleave', (e) => {
+            this.hideFocusReticles(e.target);
+          });
+        });
+      }
+
+      showFocusReticles(element) {
+        const rect = element.getBoundingClientRect();
+        const positions = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
+        
+        positions.forEach(position => {
+          const reticle = document.createElement('div');
+          reticle.className = `focus-reticle ${position}`;
+          reticle.style.left = rect.left + 'px';
+          reticle.style.top = rect.top + 'px';
+          reticle.style.width = rect.width + 'px';
+          reticle.style.height = rect.height + 'px';
+          
+          document.body.appendChild(reticle);
+          this.focusReticles.set(element, this.focusReticles.get(element) || []);
+          this.focusReticles.get(element).push(reticle);
+          
+          gsap.fromTo(reticle, 
+            { opacity: 0, scale: 0.8 },
+            { opacity: 1, scale: 1, duration: 0.3, ease: 'power2.out' }
+          );
+        });
+      }
+
+      hideFocusReticles(element) {
+        const reticles = this.focusReticles.get(element);
+        if (reticles) {
+          reticles.forEach(reticle => {
+            gsap.to(reticle, {
+              opacity: 0,
+              scale: 0.8,
+              duration: 0.2,
+              ease: 'power2.in',
+              onComplete: () => reticle.remove()
+            });
+          });
+          this.focusReticles.delete(element);
+        }
+      }
+
+      // Información Contextual
+      initContextInfo() {
+        if (!HOLOGRAPHIC_CONFIG.reactive.contextInfo.enabled) return;
+
+        const interactiveElements = document.querySelectorAll('.content-box, button, .nav-link, .skill-item, .project-card');
+        
+        interactiveElements.forEach(element => {
+          element.addEventListener('mouseenter', (e) => {
+            this.showContextInfo(e);
+          });
+          
+          element.addEventListener('mouseleave', () => {
+            this.hideContextInfo();
+          });
+        });
+      }
+
+      showContextInfo(event) {
+        const element = event.target;
+        const rect = element.getBoundingClientRect();
+        
+        const infoTexts = [
+          `[ID: 0x${Math.random().toString(16).substr(2, 4).toUpperCase()}]`,
+          `[TYPE: ${element.tagName.toUpperCase()}]`,
+          `[STATUS: AWAITING_INPUT]`,
+          `[CLASS: ${element.className.split(' ')[0] || 'UNKNOWN'}]`
+        ];
+        
+        const randomInfo = infoTexts[Math.floor(Math.random() * infoTexts.length)];
+        
+        this.contextInfo.textContent = randomInfo;
+        this.contextInfo.style.left = (event.clientX + 10) + 'px';
+        this.contextInfo.style.top = (event.clientY - 30) + 'px';
+        this.contextInfo.classList.add('active');
+        
+        // Efecto de máquina de escribir
+        gsap.fromTo(this.contextInfo, 
+          { opacity: 0, scale: 0.8 },
+          { opacity: 1, scale: 1, duration: 0.2, ease: 'power2.out' }
+        );
+      }
+
+      hideContextInfo() {
+        gsap.to(this.contextInfo, {
+          opacity: 0,
+          scale: 0.8,
+          duration: 0.2,
+          ease: 'power2.in',
+          onComplete: () => this.contextInfo.classList.remove('active')
+        });
+      }
+
+      // Data Burst al Clic
+      initDataBurst() {
+        if (!HOLOGRAPHIC_CONFIG.reactive.dataBurst.enabled) return;
+
+        document.addEventListener('click', (e) => {
+          this.createDataBurst(e.clientX, e.clientY);
+        });
+      }
+
+      createDataBurst(x, y) {
+        const config = HOLOGRAPHIC_CONFIG.reactive.dataBurst;
+        
+        // Crear partículas
+        for (let i = 0; i < config.particles; i++) {
+          const particle = document.createElement('div');
+          particle.className = 'burst-particle';
+          particle.style.left = x + 'px';
+          particle.style.top = y + 'px';
+          
+          const angle = (Math.PI * 2 * i) / config.particles;
+          const distance = Math.random() * 50 + 20;
+          const burstX = Math.cos(angle) * distance;
+          const burstY = Math.sin(angle) * distance;
+          
+          particle.style.setProperty('--burst-x', burstX + 'px');
+          particle.style.setProperty('--burst-y', burstY + 'px');
+          
+          this.dataBurst.appendChild(particle);
+          
+          setTimeout(() => particle.remove(), 600);
+        }
+        
+        // Crear líneas
+        for (let i = 0; i < config.lines; i++) {
+          const line = document.createElement('div');
+          line.className = 'burst-line';
+          line.style.left = x + 'px';
+          line.style.top = y + 'px';
+          line.style.width = (Math.random() * 30 + 10) + 'px';
+          line.style.transform = `rotate(${Math.random() * 360}deg)`;
+          
+          const angle = (Math.PI * 2 * i) / config.lines;
+          const distance = Math.random() * 40 + 15;
+          const burstX = Math.cos(angle) * distance;
+          const burstY = Math.sin(angle) * distance;
+          
+          line.style.setProperty('--burst-x', burstX + 'px');
+          line.style.setProperty('--burst-y', burstY + 'px');
+          
+          this.dataBurst.appendChild(line);
+          
+          setTimeout(() => line.remove(), 600);
+        }
+      }
+
+      // Indicadores de Carga
+      initLoadIndicators() {
+        if (!HOLOGRAPHIC_CONFIG.reactive.loadIndicators.enabled) return;
+
+        // Observar imágenes para detectar carga
+        const images = document.querySelectorAll('img');
+        images.forEach(img => {
+          if (img.complete) {
+            this.showLoadIndicator(img, 'OK');
+          } else {
+            img.addEventListener('load', () => {
+              this.showLoadIndicator(img, 'OK');
+            });
+            img.addEventListener('error', () => {
+              this.showLoadIndicator(img, 'ERROR');
+            });
+          }
+        });
+
+        // Observar nuevos elementos
+        const observer = new MutationObserver((mutations) => {
+          mutations.forEach(mutation => {
+            mutation.addedNodes.forEach(node => {
+              if (node.nodeType === 1 && node.tagName === 'IMG') {
+                node.addEventListener('load', () => {
+                  this.showLoadIndicator(node, 'OK');
+                });
+              }
+            });
+          });
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
+      }
+
+      showLoadIndicator(element, status) {
+        const rect = element.getBoundingClientRect();
+        const indicator = document.createElement('div');
+        indicator.className = 'load-indicator';
+        indicator.textContent = `[ ${status} ]`;
+        indicator.style.left = (rect.right + 5) + 'px';
+        indicator.style.top = (rect.top - 5) + 'px';
+        
+        document.body.appendChild(indicator);
+        
+        setTimeout(() => indicator.remove(), 2000);
+      }
+    }
+
+    // ============================================================
+    // INICIALIZACIÓN DEL ECOSISTEMA
+    // ============================================================
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      // Inicializar solo si no hay preferencias de movimiento reducido
+      if (!prefersReducedMotion) {
+        new MatrixRain();
+        new ParticleSystem();
+        new HolographicInterface();
+        
+        console.log('🌐 Ecosistema Holográfico Adaptativo inicializado');
+        console.log('📊 Capa 1: Matriz de Datos', HOLOGRAPHIC_CONFIG.matrix.enabled ? '✅' : '❌');
+        console.log('✨ Capa 2: Partículas Flotantes', HOLOGRAPHIC_CONFIG.particles.enabled ? '✅' : '❌');
+        console.log('⚡ Capa 3: Elementos Reactivos', HOLOGRAPHIC_CONFIG.reactive.scanLine.enabled ? '✅' : '❌');
+      } else {
+        console.log('♿ Ecosistema Holográfico desactivado por preferencias de movimiento reducido');
+      }
+    });
+
+  })();
+  </script>
 </body>
 </html>
