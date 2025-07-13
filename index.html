@@ -1237,36 +1237,513 @@
       }
     }
 
-    /* --- ABOUT --- */
-    .about-content {
-      display: flex; flex-wrap: wrap; gap: 30px; align-items: center;
-    }
-    .about-text { flex: 1 1 55%; min-width: 300px; line-height: 1.7; }
-    .about-text p { margin-bottom: 1em; }
-    .about-image {
-      flex: 1 1 35%; min-width: 250px;
-      position: relative; padding: 0;
-      border: none; background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; /* Ensure backdrop-filter is off if element doesn't need it */
-    }
-    .about-image img {
-      border-radius: 5px;
-      border: 2px solid var(--color-accent); /* Accent border */
-      box-shadow: 0 0 15px rgba(var(--color-accent-rgb), 0.3), inset 0 0 10px rgba(var(--color-accent-rgb), 0.1); /* Glow and inner shadow */
-      width: 100%; aspect-ratio: 1 / 1;
-      transition: box-shadow var(--transition-medium);
-    }
-    .about-image img:hover {
-         box-shadow: 0 0 25px rgba(var(--color-accent-rgb), 0.5), inset 0 0 15px rgba(var(--color-accent-rgb), 0.2);
+    /* --- NÚCLEO DE MEMORIA / BIO-LOG --- */
+    /* Contenedor principal de tres columnas */
+    .user-profile-container {
+      display: grid;
+      grid-template-columns: 1fr 2fr 1.5fr;
+      gap: 30px;
+      margin-top: 2rem;
+      align-items: start;
     }
 
-    .image-hud-overlay {
-      position: absolute; bottom: 10px; right: 10px;
-      background: rgba(var(--color-bg), 0.8); /* More opaque */
-      padding: 3px 8px; font-size: 0.7rem;
-      color: var(--color-accent); border-radius: 3px; font-family: var(--font-main);
+    /* ============================================================
+       ADAPTACIÓN RESPONSIVA - NÚCLEO DE MEMORIA
+       ============================================================ */
+    
+    /* TABLET - Dos columnas */
+    @media (max-width: 1024px) {
+      .user-profile-container {
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-top: 1.5rem;
+      }
+      
+      /* Módulo 1 y 3 en la misma fila */
+      .biometric-module,
+      .system-parameters-module {
+        grid-column: span 1;
+      }
+      
+      /* Módulo 2 ocupa ambas columnas */
+      .memory-core-module {
+        grid-column: 1 / -1;
+        order: 2;
+      }
+      
+      /* Ajustes para Módulo 1 (Foto/Credenciales) */
+      .biometric-module {
+        order: 1;
+      }
+      
+      .biometric-image {
+        max-width: 180px;
+        margin: 0 auto;
+      }
+      
+      .credentials-panel {
+        padding: 15px;
+      }
+      
+      .credentials-panel .panel-title {
+        font-size: 1rem;
+      }
+      
+      .credential-item {
+        font-size: 0.85rem;
+        padding: 5px 0;
+      }
+      
+      /* Ajustes para Módulo 3 (Matriz/Registro) */
+      .system-parameters-module {
+        order: 3;
+      }
+      
+      .competency-matrix,
+      .activity-log {
+        padding: 15px;
+      }
+      
+      .competency-matrix .panel-title,
+      .activity-log .panel-title {
+        font-size: 1rem;
+      }
+      
+      .skill-metric {
+        font-size: 0.85rem;
+        padding: 6px 0;
+      }
+      
+      .activity-item {
+        font-size: 0.85rem;
+      }
+    }
+    
+    /* MÓVIL - Una columna */
+    @media (max-width: 768px) {
+      .user-profile-container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-top: 1rem;
+      }
+      
+      /* Reordenamiento con Flexbox */
+      .biometric-module {
+        order: 1;
+      }
+      
+      .memory-core-module {
+        order: 2;
+      }
+      
+      .system-parameters-module {
+        order: 3;
+      }
+      
+      /* Módulo 1 - Foto circular centrada */
+      .biometric-scan-module {
+        text-align: center;
+      }
+      
+      .biometric-image {
+        max-width: 120px;
+        border-radius: 50%;
+        margin: 0 auto;
+        display: block;
+      }
+      
+      .credentials-panel {
+        padding: 12px;
+        text-align: center;
+      }
+      
+      .credentials-panel .panel-title {
+        font-size: 0.95rem;
+        text-align: center;
+      }
+      
+      .credential-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 5px;
+        font-size: 0.8rem;
+        padding: 8px 0;
+      }
+      
+      .cred-label {
+        font-weight: bold;
+        color: var(--color-accent);
+      }
+      
+      .cred-value {
+        max-width: 100%;
+        text-align: center;
+      }
+      
+      /* Módulo 2 - Texto principal */
+      .memory-log {
+        padding: 15px;
+      }
+      
+      .log-header {
+        font-size: 1rem;
+        text-align: center;
+      }
+      
+      .log-content {
+        font-size: 0.9rem;
+        line-height: 1.5;
+        text-align: left;
+      }
+      
+      /* Módulo 3 - Matriz y registro */
+      .competency-matrix,
+      .activity-log {
+        padding: 12px;
+      }
+      
+      .competency-matrix .panel-title,
+      .activity-log .panel-title {
+        font-size: 0.95rem;
+        text-align: center;
+      }
+      
+      .skill-metric {
+        flex-direction: column;
+        text-align: center;
+        gap: 5px;
+        font-size: 0.8rem;
+        padding: 8px 0;
+      }
+      
+      .skill-label {
+        font-weight: bold;
+        color: var(--color-accent);
+      }
+      
+      .skill-bar {
+        font-size: 0.75rem;
+        word-break: break-all;
+      }
+      
+      .activity-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 3px;
+        font-size: 0.75rem;
+        padding: 6px 0;
+      }
+      
+      .activity-date {
+        font-weight: bold;
+        color: var(--color-accent);
+      }
+      
+      .activity-desc {
+        word-break: break-word;
+      }
+    }
+    
+    /* Móviles muy pequeños */
+    @media (max-width: 480px) {
+      .user-profile-container {
+        gap: 10px;
+        margin-top: 0.5rem;
+      }
+      
+      .biometric-image {
+        max-width: 100px;
+      }
+      
+      .credentials-panel,
+      .memory-log,
+      .competency-matrix,
+      .activity-log {
+        padding: 10px;
+      }
+      
+      .log-content {
+        font-size: 0.85rem;
+      }
+      
+      .skill-metric,
+      .activity-item {
+        font-size: 0.75rem;
+      }
+    }
+    
+    /* Optimizaciones para dispositivos táctiles */
+    @media (hover: none) and (pointer: coarse) {
+      .credential-item,
+      .skill-metric,
+      .activity-item {
+        min-height: 44px; /* Tamaño mínimo para toque */
+        padding: 12px 8px;
+      }
+      
+      .biometric-image {
+        cursor: pointer;
+      }
+      
+      .biometric-image:hover {
+        transform: scale(1.05);
+        transition: transform 0.2s ease;
+      }
+    }
+    
+    /* Mejoras de accesibilidad */
+    @media (prefers-reduced-motion: reduce) {
+      .biometric-image,
+      .credential-item,
+      .skill-metric,
+      .activity-item {
+        transition: none;
+      }
+    }
+    
+    /* Alto contraste para mejor legibilidad */
+    @media (prefers-contrast: high) {
+      .cred-label,
+      .skill-label,
+      .activity-date {
+        color: var(--color-accent);
+        font-weight: bold;
+      }
+      
+      .cred-value,
+      .skill-bar,
+      .activity-desc {
+        color: var(--color-text);
+        font-weight: 500;
+      }
+    }
+
+    /* ============== COLUMNA 1: MÓDULO DE IDENTIFICACIÓN Y BIOMETRÍA ============== */
+    .biometric-module {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Escáner biométrico con efecto de cuadrícula */
+    .biometric-scan-module {
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px;
+      box-shadow: var(--hud-glow);
+      border: 2px solid var(--color-accent);
+    }
+
+    .biometric-image {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1;
+      object-fit: cover;
+      display: block;
+      filter: grayscale(30%) contrast(1.1);
+      transition: filter var(--transition-medium);
+    }
+
+    .biometric-image:hover {
+      filter: grayscale(10%) contrast(1.2);
+    }
+
+    /* Superposición de cuadrícula biométrica */
+    .biometric-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+    }
+
+    .scan-grid {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        linear-gradient(rgba(var(--color-accent-rgb), 0.2) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(var(--color-accent-rgb), 0.2) 1px, transparent 1px);
+      background-size: 20px 20px;
+      opacity: 0.7;
+    }
+
+    .scan-status {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(var(--color-bg), 0.9);
+      padding: 4px 8px;
+      font-size: 0.7rem;
+      color: var(--color-accent);
+      border-radius: 3px;
+      font-family: var(--font-main);
       border: 1px solid var(--color-border);
-      -webkit-backdrop-filter: blur(4px); /* Added prefix */
-      backdrop-filter: blur(4px); /* Subtle blur */
+      backdrop-filter: blur(4px);
+      text-shadow: var(--hud-text-shadow);
+    }
+
+    /* Panel de credenciales */
+    .credentials-panel {
+      padding: 20px;
+    }
+
+    .credentials-panel .panel-title {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      color: var(--color-accent);
+      text-shadow: var(--hud-text-shadow);
+      margin-bottom: 15px;
+      border-bottom: 2px solid var(--color-border);
+      padding-bottom: 8px;
+    }
+
+    .credential-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--color-border);
+      font-family: var(--font-main);
+      font-size: 0.9rem;
+    }
+
+    .credential-item:last-child {
+      border-bottom: none;
+    }
+
+    .cred-label {
+      color: var(--color-muted);
+      font-weight: 500;
+    }
+
+    .cred-value {
+      color: var(--color-text);
+      text-align: right;
+      max-width: 60%;
+    }
+
+    /* ============== COLUMNA 2: NÚCLEO DE MEMORIA (LOG NARRATIVO) ============== */
+    .memory-core-module {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .memory-log {
+      padding: 25px;
+      height: fit-content;
+    }
+
+    .log-section {
+      margin-bottom: 25px;
+    }
+
+    .log-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .log-header {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      color: var(--color-accent);
+      text-shadow: var(--hud-text-shadow);
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--color-border);
+    }
+
+    .log-content {
+      font-family: var(--font-main);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: var(--color-text);
+      margin: 0;
+      text-align: justify;
+    }
+
+    /* ============== COLUMNA 3: PARÁMETROS DEL SISTEMA Y REGISTROS ============== */
+    .system-parameters-module {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .competency-matrix,
+    .activity-log {
+      padding: 20px;
+    }
+
+    .competency-matrix .panel-title,
+    .activity-log .panel-title {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      color: var(--color-accent);
+      text-shadow: var(--hud-text-shadow);
+      margin-bottom: 15px;
+      border-bottom: 2px solid var(--color-border);
+      padding-bottom: 8px;
+    }
+
+    /* Matriz de competencias con barras de texto */
+    .skill-metric {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--color-border);
+      font-family: var(--font-main);
+      font-size: 0.9rem;
+    }
+
+    .skill-metric:last-child {
+      border-bottom: none;
+    }
+
+    .skill-label {
+      color: var(--color-muted);
+      font-weight: 500;
+    }
+
+    .skill-bar {
+      color: var(--color-accent);
+      font-family: var(--font-main);
+      font-size: 0.85rem;
+      text-shadow: var(--hud-text-shadow);
+      background: rgba(var(--color-accent-rgb), 0.1);
+      padding: 2px 6px;
+      border-radius: 3px;
+      border: 1px solid var(--color-border);
+    }
+
+    /* Registro de actividad */
+    .activity-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--color-border);
+      font-family: var(--font-main);
+      font-size: 0.85rem;
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+
+    .activity-date {
+      color: var(--color-accent);
+      font-weight: 600;
+      text-shadow: var(--hud-text-shadow);
+    }
+
+    .activity-desc {
+      color: var(--color-text);
+      line-height: 1.4;
+      margin-left: 10px;
     }
 
     /* --- SKILLS --- */
@@ -2482,8 +2959,7 @@
       .main-content-wrapper { padding-top: 80px; padding-bottom: 60px; }
       #mainHeader { padding: 10px 20px; }
        .section-title { margin-bottom: 40px; font-size: clamp(1.8rem, 4.5vw, 2.5rem); }
-       .about-content { flex-direction: column; gap: 20px; }
-       .about-image { min-width: 200px; flex: 1 1 auto; } /* Allow shrinking slightly */
+           /* Estilos legacy removidos - ahora se usa .user-profile-container */
        .skills-grid { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 20px; }
        .skill-item img { width: 35px; height: 35px; margin-bottom: 10px; }
        .skill-item h3 { font-size: 0.9rem; margin-bottom: 5px;}
@@ -2558,9 +3034,7 @@
        /* Hide section scan on mobile */
        .section-container::before, .section-container::after { display: none; }
       .section-title { margin-bottom: 30px; font-size: clamp(1.5rem, 5vw, 2rem); }
-      .about-content { gap: 15px; }
-      .about-text { min-width: auto; }
-      .about-image { max-width: 200px; }
+          /* Estilos legacy removidos - ahora se usa .user-profile-container responsive */
       .skills-grid { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; }
       .skill-item img { width: 35px; height: 35px; margin-bottom: 10px; }
       .skill-item h3 { font-size: 0.9rem; margin-bottom: 5px;}
@@ -2709,77 +3183,55 @@
       color: var(--color-accent);
     }
 
-    /* Split layout y panel de estadísticas en About */
-    #about .about-content {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr;
-      gap: 30px;
-      align-items: start;
-    }
+    /* Responsive Design para Bio-Log */
     @media (max-width: var(--tablet-break)) {
-      #about .about-content {
-        display: flex;
-        flex-direction: column;
+      .user-profile-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      
+      .biometric-module {
+        order: 1;
+      }
+      
+      .memory-core-module {
+        order: 2;
+      }
+      
+      .system-parameters-module {
+        order: 3;
       }
     }
-    .about-stats {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .about-stats h3 {
-      font-family: var(--font-heading);
-      font-size: 1.2rem;
-      color: var(--color-accent);
-      text-shadow: var(--hud-text-shadow);
-      margin-bottom: 8px;
-    }
-    .about-stats .stat-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 4px 0;
-      font-family: var(--font-main);
-      font-size: 0.9rem;
-      color: var(--color-text);
-      border-bottom: 1px solid var(--color-border);
-    }
-    .about-stats .stat-item:last-child {
-      border-bottom: none;
-    }
 
-    /* Overlays temáticos para la imagen */
-    .about-image {
-      position: relative;
-      overflow: hidden;
-    }
-    .about-image::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 50%;
-      height: 100%;
-      background: linear-gradient(to right, transparent, rgba(var(--color-accent-rgb), 0.3) 50%, transparent);
-      transform: skewX(-25deg);
-      opacity: 0;
-      pointer-events: none;
-    }
-    .about.visible .about-image::before,
-    .about-image:hover::before {
-      animation: profile-image-scan 0.8s linear forwards;
-    }
-    @keyframes profile-image-scan {
-      0%   { left: -100%; opacity: 0; }
-      10%  { opacity: 0.5; }
-      100% { left: 100%; opacity: 0; }
-    }
-    .about-image::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border: 1px dashed var(--color-accent);
-      pointer-events: none;
-      box-shadow: var(--hud-glow);
+    @media (max-width: var(--mobile-break)) {
+      .user-profile-container {
+        gap: 15px;
+      }
+      
+      .credentials-panel,
+      .memory-log,
+      .competency-matrix,
+      .activity-log {
+        padding: 15px;
+      }
+      
+      .log-header,
+      .panel-title {
+        font-size: 1rem;
+      }
+      
+      .log-content {
+        font-size: 0.9rem;
+      }
+      
+      .skill-metric,
+      .credential-item {
+        font-size: 0.85rem;
+      }
+      
+      .activity-item {
+        font-size: 0.8rem;
+      }
     }
 
     /* HEADER MODULE LAYOUT */
@@ -3147,116 +3599,60 @@
        }
     }
 
-    /* Mejora de la sección Sobre Mí para dispositivos móviles */
-    /* Estilos BASE para PC (pantallas grandes) */
-    #about .about-content {
-      display: grid;
-      grid-template-columns: 1.5fr 1fr;
-      gap: 30px;
-      align-items: start;
-    }
-
-    .about-side-content {
-      display: flex;
-      flex-direction: column;
-      gap: 25px;
-    }
-
-    .about-quick-stats {
-      margin-top: 20px;
-      padding-top: 15px;
-      border-top: 1px dashed var(--color-border);
-    }
-
-    .about-text .tech-tag {
-      display: inline-block;
-      background: rgba(var(--color-accent-rgb), 0.15);
-      color: var(--color-accent);
-      padding: 2px 6px;
-      font-size: 0.8rem;
-      border-radius: 3px;
-      border: 1px solid rgba(var(--color-accent-rgb), 0.3);
-      margin: 0 2px;
-    }
-
-    .about-text .highlight-text {
-      color: var(--color-accent);
-      font-weight: bold;
-    }
-
-    /* Imagen para PC */
-    .about-image {
-      max-width: 280px;
-      margin: 0 auto;
-    }
-
-    .about-image img {
-      width: 100%;
-      height: auto;
-      aspect-ratio: 1 / 1;
-      object-fit: cover;
-      box-shadow: 0 0 20px rgba(var(--color-accent-rgb), 0.4);
-      transition: all 0.3s ease;
-    }
-
-    .about-image:hover img {
-      transform: scale(1.05);
-      box-shadow: 0 0 30px rgba(var(--color-accent-rgb), 0.6);
-    }
-
-    /* TABLET: Primera estructura diferente */
-    @media (max-width: 1024px) {
-      #about .about-content {
-        grid-template-columns: 1fr;
-        gap: 25px;
+    /* Mejoras específicas para el Bio-Log en dispositivos móviles */
+    @media (max-width: var(--mobile-break)) {
+      .biometric-scan-module {
+        max-width: 200px;
+        margin: 0 auto;
       }
       
-      .about-side-content {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 25px;
-        margin-top: 20px;
+      .scan-grid {
+        background-size: 15px 15px;
       }
       
-      .about-image {
-        max-width: 220px;
-      }
-    }
-
-    /* MÓVIL: Segunda estructura completamente diferente */
-    @media (max-width: 768px) {
-      #about .about-content {
-        display: flex;
+      .credential-item {
         flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+      }
+      
+      .cred-value {
+        text-align: left;
+        max-width: 100%;
+        font-size: 0.85rem;
+      }
+      
+      .skill-bar {
+        font-size: 0.8rem;
+      }
+      
+      .activity-item {
+        padding: 8px 0;
+      }
+      
+      .activity-date {
+        font-size: 0.8rem;
+      }
+      
+      .activity-desc {
+        font-size: 0.75rem;
+        margin-left: 5px;
+      }
+    }
+
+    /* Optimización específica para tablets */
+    @media (max-width: 1024px) and (min-width: 768px) {
+      .user-profile-container {
+        grid-template-columns: 1fr 1.5fr;
         gap: 25px;
       }
       
-      /* Movemos la imagen arriba en móvil */
-      .about-side-content {
-        flex-direction: column;
-        grid-template-columns: 1fr;
-        order: -1; /* Mueve la imagen y stats arriba del texto en móvil */
+      .system-parameters-module {
+        order: -1;
       }
       
-      .about-image {
-        max-width: 140px;
-        margin: 0 auto 15px auto;
-      }
-      
-      .about-image img {
-        border-radius: 50%; /* Imagen circular en móvil */
-        border: 3px solid var(--color-accent);
-      }
-      
-      /* Ajustamos stats en móvil para que ocupe todo el ancho */
-      .about-stats {
-        width: 100%;
-      }
-      
-      /* Condensamos el contenido de texto */
-      .about-text p {
-        font-size: 0.9rem;
-        margin-bottom: 10px;
+      .biometric-scan-module {
+        max-width: 180px;
       }
     }
 
@@ -3878,52 +4274,128 @@
 
     </section>
 
-    <!-- ABOUT -->
+    <!-- ABOUT - NÚCLEO DE MEMORIA / BIO-LOG -->
     <section class="about section-container reveal" id="about" style="min-height: 100vh; display: flex; flex-direction: column; justify-content: center;">
-      <h2 class="section-title glitch-text gsap-initial" data-text="Sobre Mí /// User_Profile">
-        Sobre Mí /// User_Profile
+      <h2 class="section-title glitch-text gsap-initial" data-text="Núcleo de Memoria /// Bio-Log_v2.5">
+        Núcleo de Memoria /// Bio-Log_v2.5
       </h2>
-      <div class="about-content" style="display: grid; grid-template-columns: 1fr 300px; gap: 2rem; align-items: start; margin-top: 2rem;">
-                  <div class="about-text content-box gsap-initial" id="aboutText">
-          <p>
-            <span class="highlight-text">Desarrollador fullstack e ingeniero especializado en interfaces futuristas</span> con pasión por crear experiencias digitales inmersivas. Fusiono estética vanguardista con código de alta eficiencia para construir soluciones que desafían los límites convencionales.
-          </p>
-          <p>
-            Mi enfoque combina <span class="tech-tag">HTML5</span> <span class="tech-tag">CSS3</span> <span class="tech-tag">JavaScript</span> y <span class="tech-tag">React</span> con técnicas avanzadas de animación y efectos visuales. Cada proyecto es una oportunidad para explorar la intersección entre arte digital y funcionalidad práctica.
-          </p>
-          <p>
-            Como ingeniero de sistemas, implemento arquitecturas robustas que garantizan rendimiento óptimo mientras mantengo un diseño visual impactante. Mi objetivo es crear interfaces que parezcan extraídas del futuro pero sean intuitivas en el presente.
-          </p>
-          <div class="about-quick-stats">
-            <div class="stat-item"><span class="stat-label">Proyecto actual:</span><span class="stat-value">Interfaz neuroadaptativa</span></div>
-            <div class="stat-item"><span class="stat-label">Status:</span><span class="hud-ok">ONLINE</span></div>
-            <div class="stat-item"><span class="stat-label">Carga de sistema:</span><span>45%</span></div>
-            <div class="progress-bar-container" data-label="45">
-              <div class="progress-bar-fill" data-skill-level="45"></div>
-            </div>
-          </div>
-        </div>
-                  <div class="about-side-content" style="display: flex; flex-direction: column; gap: 1rem;">
-            <div class="about-image content-box gsap-initial">
+      
+      <!-- CONTENEDOR PRINCIPAL DE TRES COLUMNAS -->
+      <div class="user-profile-container">
+        
+        <!-- COLUMNA 1: MÓDULO DE IDENTIFICACIÓN Y BIOMETRÍA -->
+        <div class="biometric-module">
+          <div class="biometric-scan-module">
             <img
               src="assets/img/ID/1.jpg"
-              alt="Sobre Mí"
-              id="aboutImage"
-              style="width: 100%; height: auto; border-radius: 8px;"
+              alt="Escáner Biométrico"
+              id="biometricScan"
+              class="biometric-image"
             >
-            <div class="image-hud-overlay">ID_SCAN: ARMANDO</div>
+            <div class="biometric-overlay">
+              <div class="scan-grid"></div>
+              <div class="scan-status">// SCAN: OK // ID: VERIFIED</div>
+            </div>
           </div>
-          <div class="about-stats content-box gsap-initial" id="aboutStats">
-            <h3>Perfil del Sistema</h3>
-            <div class="stat-item"><span>UID:</span><span>INMORTAL_v2.5</span></div>
-            <div class="stat-item"><span>SISTEMA:</span><span class="hud-ok">ONLINE</span></div>
-            <div class="stat-item"><span>Especialidades:</span><span>Frontend | Backend | UX</span></div>
-            <div class="stat-item"><span>Componentes Verificados:</span></div>
-            <div class="tech-tags">
-              <span>HTML5</span><span>CSS3</span><span>JS</span><span>React</span>
+          
+          <div class="credentials-panel content-box">
+            <h3 class="panel-title">// PANEL_DE_CREDENCIALES</h3>
+            <div class="credential-item">
+              <span class="cred-label">UID:</span>
+              <span class="cred-value">INMORTAL_v2.5</span>
+            </div>
+            <div class="credential-item">
+              <span class="cred-label">Clase:</span>
+              <span class="cred-value">Ingeniero de Sistemas Full-Stack</span>
+            </div>
+            <div class="credential-item">
+              <span class="cred-label">Nivel de Acceso:</span>
+              <span class="cred-value">Administrador [Nivel 5]</span>
+            </div>
+            <div class="credential-item">
+              <span class="cred-label">Status del Operador:</span>
+              <span class="hud-ok">ACTIVO / EN LÍNEA</span>
+            </div>
+            <div class="credential-item">
+              <span class="cred-label">Ubicación de Red:</span>
+              <span class="cred-value">Sector 7G</span>
             </div>
           </div>
         </div>
+        
+        <!-- COLUMNA 2: NÚCLEO DE MEMORIA (LOG NARRATIVO) -->
+        <div class="memory-core-module">
+          <div class="memory-log content-box">
+            <div class="log-section">
+              <h3 class="log-header">// DIRECTIVA_PRINCIPAL [Mission_Statement.log]</h3>
+              <p class="log-content">
+                Mi directiva es la síntesis de funcionalidad robusta y estética ciber-futurista. Traduzco conceptos abstractos en experiencias digitales interactivas, operando en la vanguardia de la tecnología web para construir interfaces que no solo funcionen, sino que inspiren.
+              </p>
+            </div>
+            
+            <div class="log-section">
+              <h3 class="log-header">// FILOSOFÍA_DE_CÓDIGO [Core_Principles.md]</h3>
+              <p class="log-content">
+                Protocolo de desarrollo basado en código limpio, modular y escalable. Priorizo la eficiencia algorítmica y la semántica clara. Cada línea de código es un componente optimizado para el rendimiento y la mantenibilidad a largo plazo. La deuda técnica es un bug, no una feature.
+              </p>
+            </div>
+            
+            <div class="log-section">
+              <h3 class="log-header">// PROTOCOLOS_DE_ESPECIALIZACIÓN [Skill_Focus.dat]</h3>
+              <p class="log-content">
+                Especialización en la arquitectura de aplicaciones de página única (SPA) con React y en la creación de APIs resilientes con Node.js. Experto en la manipulación del DOM y en la orquestación de animaciones complejas, aunque mi enfoque principal es la claridad estructural y la experiencia de usuario (UX) intuitiva.
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- COLUMNA 3: PARÁMETROS DEL SISTEMA Y REGISTROS -->
+        <div class="system-parameters-module">
+          <div class="competency-matrix content-box">
+            <h3 class="panel-title">// MATRIZ_DE_COMPETENCIAS</h3>
+            <div class="skill-metric">
+              <span class="skill-label">Frontend:</span>
+              <span class="skill-bar">[||||||||--] 85%</span>
+            </div>
+            <div class="skill-metric">
+              <span class="skill-label">Backend:</span>
+              <span class="skill-bar">[|||||||---] 75%</span>
+            </div>
+            <div class="skill-metric">
+              <span class="skill-label">Diseño UI/UX:</span>
+              <span class="skill-bar">[||||||||--] 80%</span>
+            </div>
+            <div class="skill-metric">
+              <span class="skill-label">Bases de Datos:</span>
+              <span class="skill-bar">[||||||----] 60%</span>
+            </div>
+            <div class="skill-metric">
+              <span class="skill-label">DevOps:</span>
+              <span class="skill-bar">[|||||-----] 50%</span>
+            </div>
+          </div>
+          
+          <div class="activity-log content-box">
+            <h3 class="panel-title">// REGISTRO_DE_ACTIVIDAD</h3>
+            <div class="activity-item">
+              <span class="activity-date">[2024.10.28]</span>
+              <span class="activity-desc">:: MÓDULO_PROYECTO_ACTUALIZADO - ID:CL-PRJ-001</span>
+            </div>
+            <div class="activity-item">
+              <span class="activity-date">[2024.09.15]</span>
+              <span class="activity-desc">:: CERTIFICACIÓN_RECIBIDA - ID:IBM_GEN_AI</span>
+            </div>
+            <div class="activity-item">
+              <span class="activity-date">[2024.08.01]</span>
+              <span class="activity-desc">:: INICIO_INVESTIGACIÓN - TEMA:WebAssembly_Rust</span>
+            </div>
+            <div class="activity-item">
+              <span class="activity-date">[2024.07.20]</span>
+              <span class="activity-desc">:: PARCHE_SEGURIDAD_APLICADO - Portafolio_v2.4</span>
+            </div>
+          </div>
+        </div>
+        
       </div>
     </section>
 
@@ -4569,12 +5041,17 @@
        ------------------------------------------------------------
   ============================================================ -->
 
-  <audio id="loadingAudio" loop preload="auto"> <source src="Evidencias/Audio/Sound-mp3/terminal.mp3" type="audio/mpeg"> </audio>
-  <audio id="loadCompleteAudio" preload="auto"> <source src="Evidencias/Audio/Sound-mp3/aviso.mp3" type="audio/mpeg"> </audio>
-  <audio id="backgroundAudio" loop preload="auto"> <source src="Audio/Hybrid & Dark.mp3" type="audio/mpeg"> </audio>
-  <audio id="uiClickAudio" preload="auto"> <source src="Audio/ui_click.mp3" type="audio/mpeg"> </audio>
-  <audio id="uiHoverAudio" preload="auto"> <source src="Audio/botones/botón UI haga clic en 1.mp3" type="audio/mpeg"> </audio>
-  <audio id="filterHoverAudio" preload="auto"> <source src="Evidencias/Audio/Sound-mp3/click 2.mp3" type="audio/mpeg"> </audio>
+      <audio id="loadingAudio" loop preload="auto"> <source src="Evidencias/Audio/Sound-mp3/terminal.mp3" type="audio/mpeg"> </audio>
+    <audio id="loadCompleteAudio" preload="auto"> <source src="Evidencias/Audio/Sound-mp3/aviso.mp3" type="audio/mpeg"> </audio>
+    <audio id="backgroundAudio" loop preload="auto"> <source src="assets/media/Hybrid & Dark.mp3" type="audio/mpeg"> </audio>
+    <audio id="uiClickAudio" preload="auto"> <source src="assets/media/botones/sci-fi-weapon-shoot.mp3" type="audio/mpeg"> </audio>
+    <audio id="uiHoverAudio" preload="auto"> <source src="Audio/botones/botón UI haga clic en 1.mp3" type="audio/mpeg"> </audio>
+    <audio id="filterHoverAudio" preload="auto"> <source src="Evidencias/Audio/Sound-mp3/click 2.mp3" type="audio/mpeg"> </audio>
+    
+    <!-- Sonidos adicionales para animación del título -->
+    <audio id="glitchAudio" preload="auto"> <source src="assets/media/Sound-mp3/error.mp3" type="audio/mpeg"> </audio>
+    <audio id="staticAudio" preload="auto"> <source src="assets/media/atmosphere-sound.mp3" type="audio/mpeg"> </audio>
+    <audio id="stabilizationAudio" preload="auto"> <source src="assets/media/Sound-mp3/Sound.mp3" type="audio/mpeg"> </audio>
 
   <!-- Hamburger Menu JS (extracted from the <style> block) -->
   <script>
@@ -4692,7 +5169,10 @@
             background: document.getElementById('backgroundAudio'),
             click: document.getElementById('uiClickAudio'),
             hover: document.getElementById('uiHoverAudio'),
-            filterHover: document.getElementById('filterHoverAudio')
+            filterHover: document.getElementById('filterHoverAudio'),
+            glitch: document.getElementById('glitchAudio'),
+            static: document.getElementById('staticAudio'),
+            stabilization: document.getElementById('stabilizationAudio')
         };
 
         let isMuted = localStorage.getItem('portfolioMuted') === 'true';
@@ -6840,23 +7320,104 @@
           stagger: 0.1,
           ease: "power2.out" 
         }, "-=0.3")
-        // 4. Hero title glitch effect
+        // 4. Hero title - Secuencia de Estabilización de Proyección
+        .call(() => {
+          // Estado inicial: preparar título con texto corrupto
+          const heroTitle = document.getElementById('heroTitle');
+          heroTitle.textContent = "█▓▒░◊◘♦♣♠XX##@@!!$$%%00██▓▒░";
+          gsap.set('#heroTitle', {
+            opacity: 0.1,
+            scale: 0.98,
+            filter: 'blur(2px)',
+            textShadow: '0 0 20px rgba(0, 255, 170, 0.3)',
+            color: 'rgba(0, 255, 170, 0.2)'
+          });
+        })
+        // FASE 1: Interferencia y Fragmentación
         .to('#heroTitle', { 
-          opacity: 1, 
-          y: 0, 
-          duration: 0.5,
-          ease: "power2.out" 
+          opacity: 0.6,
+          scale: 1.02,
+          duration: 1.0,
+          ease: "steps(12)",
+          onStart: () => {
+            // Sonido de interferencia glitch
+            playSound('glitch', 0.4);
+            // Sonido de static de fondo
+            playSound('static', 0.2);
+          }
         })
         .to('#heroTitle', { 
-          duration: 0.3,
+          duration: 2.0,
+          text: {
+            value: "X#@!$%01█▓▒░PORTAFOLIO DE INMORTAL░▒▓█10%$!@#X",
+            scrambleText: {
+              chars: "01X%#@!$█▓▒░◊◘♦♣♠",
+              speed: 0.1,
+              tweenLength: true,
+              revealDelay: 0.3
+            }
+          },
+          color: 'rgba(255, 50, 50, 0.8)',
+          textShadow: '0 0 15px rgba(255, 50, 50, 0.6), 0 0 25px rgba(255, 50, 50, 0.4)'
+        }, "-=0.5")
+        // FASE 2: Resolución de Datos
+        .to('#heroTitle', { 
+          duration: 2.5,
           text: {
             value: "PORTAFOLIO DE INMORTAL",
             scrambleText: {
-              chars: "01",
-              speed: 0.3,
-              tweenLength: false
+              chars: "01X%#@!$█▓▒░",
+              speed: 0.05,
+              tweenLength: true,
+              revealDelay: 0.2
+            }
+          },
+          opacity: 0.8,
+          scale: 1,
+          filter: 'blur(0.5px)',
+          color: 'rgba(0, 255, 170, 0.9)',
+          textShadow: '0 0 10px rgba(0, 255, 170, 0.7)',
+          ease: "power2.out",
+          onStart: () => {
+            // Sonido de decodificación
+            playSound('click', 0.4);
+          },
+          onUpdate: function() {
+            // Efecto de "snap" cuando los caracteres se resuelven
+            if (this.progress() > 0.7) {
+              playSound('hover', 0.2);
             }
           }
+        })
+        // FASE 3: Estabilización de Proyección
+        .to('#heroTitle', { 
+          opacity: 1,
+          scale: 1,
+          filter: 'blur(0px)',
+          color: 'rgba(0, 255, 170, 1)',
+          textShadow: '0 0 8px rgba(0, 255, 170, 0.8), 0 0 16px rgba(0, 255, 170, 0.4)',
+          duration: 0.6,
+          ease: "power2.out",
+          onStart: () => {
+            // Sonido de estabilización
+            playSound('stabilization', 0.5);
+          }
+        })
+        // Pulso luminoso de estabilización
+        .to('#heroTitle', { 
+          textShadow: '0 0 20px rgba(0, 255, 170, 1), 0 0 40px rgba(0, 255, 170, 0.6), 0 0 60px rgba(0, 255, 170, 0.3)',
+          scale: 1.05,
+          duration: 0.3,
+          ease: "power2.out",
+          yoyo: true,
+          repeat: 1
+        })
+        // Estado final estabilizado
+        .to('#heroTitle', { 
+          y: 0,
+          textShadow: '0 0 8px rgba(0, 255, 170, 0.8)',
+          duration: 0.4,
+          ease: "power2.out"
         })
         // 5. Hero subtitle appears
         .to('#heroSubtitle', { 

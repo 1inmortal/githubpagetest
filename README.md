@@ -1,4 +1,4 @@
-# Future Interface Manifesto - Personal Portfolio & Blog
+# Future Interface Manifesto - Portfolio Personal y Blog
 
 > Forjando realidades digitales con la arquitectura del futuro.
 
@@ -6,24 +6,33 @@
 
 ## /// Visión Central // Future_Interface_Manifesto
 
-Mi trayectoria como **Frontend Developer** no se limita a la construcción convencional de sitios web. Mi visión se enfoca en la creación de **interfaces digitales avanzadas y futuristas**, arquitecturas web que trascienden la simple presentación de información para convertirse en experiencias inmersivas y highly interactivas.
+Mi trayectoria como **Frontend Developer** no se limita a la construcción convencional de sitios web. Mi visión se enfoca en la creación de **interfaces digitales avanzadas y futuristas**, arquitecturas web que trascienden la simple presentación de información para convertirse en experiencias inmersivas y altamente interactivas.
 
 Estoy especializado en el diseño y la implementación de:
 
--   **HUD (Heads-Up Display) Interfaces:** Construyendo capas visuales que presentan datos críticos de manera no intrusiva, integrando información contextual y elementos interactivos con estéticas que van desde lo minimalista-holográfico hasta lo complejo-cyberpunk.
--   **UI/UX Avanzados:** No solo creo interfaces bonitas, sino sistemas donde la interacción es fluida, la navegación intuitiva y la experiencia del usuario memorable. Mi objetivo es fusionar la estética futurista con principios sólidos de usabilidad para garantizar que incluso las interfaces más complejas se sientan naturales y poderosas en manos del usuario.
--   **Visualizaciones de Datos Dinámicas:** Transformando conjuntos de datos áridos en gráficos interactivos, paneles de control y representaciones visuales que son tanto informativas como estéticamente impactantes, a menudo integrados en la estructura del HUD.
--   **Efectos Visuales y Sonoros:** Incorporando animaciones sutiles o efectos audaces (como el glitch o el neón glow) y paisajes sonoros reactivos para dar vida a la interfaz y reforzar la sensación de estar interactuando con un sistema de vanguardia.
+-   **HUD (Heads-Up Display) Interfaces:** Construyendo capas visuales que presentan datos críticos de manera no intrusiva.
+-   **UI/UX Avanzados:** Fusionando estética futurista con principios sólidos de usabilidad.
+-   **Visualizaciones de Datos Dinámicas:** Transformando datos en representaciones visuales impactantes.
+-   **Efectos Visuales y Sonoros:** Dando vida a la interfaz con animaciones y paisajes sonoros reactivos.
 
-Considero cada proyecto web como la construcción de una nueva terminal o una estación de acceso a datos, donde la interfaz es la puerta de entrada crítica. Mi propósito es diseñar esa puerta para que sea eficiente, segura y, sobre todo, que comunique una sensación de tecnología avanzada y un futuro posible.
+Considero cada proyecto web como la construcción de una nueva terminal. Mi propósito es diseñar esa puerta para que sea eficiente, segura y que comunique una sensación de tecnología avanzada.
 
-Si buscas una presencia digital que destaque, que ofrezca una experiencia de usuario inolvidable y que proyecte una imagen de innovación y futurismo, has encontrado al arquitecto adecuado para tu red.
+---
+
+## Tabla de Contenidos
+
+- [Tecnologías Utilizadas](#tecnologías-utilizadas)
+- [Estructura del Repositorio](#estructura-del-repositorio)
+- [Instalación y Uso](#instalación-y-uso)
+- [Contribuciones](#contribuciones)
+- [Licencia](#licencia)
+- [Agradecimientos](#agradecimientos)
 
 ---
 
 ## Tecnologías Utilizadas
 
-Este proyecto utiliza una variedad de tecnologías modernas para crear una experiencia de usuario rica y dinámica:
+Este proyecto utiliza una variedad de tecnologías modernas:
 
 **Frontend:**
 -   ![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white)
@@ -40,13 +49,15 @@ Este proyecto utiliza una variedad de tecnologías modernas para crear una exper
 
 ---
 
-## Características
+## Estructura del Repositorio
 
--   **Portfolio Interactivo:** Una presentación de mis habilidades y proyectos.
--   **Blog Personal:** Artículos sobre desarrollo, diseño, IA y más.
--   **Sección de Certificados:** Muestra de mis certificaciones y logros.
--   **Login de UI con React:** Un componente de login moderno construido con React.
--   **Experiencia Inmersiva:** Efectos de sonido y visuales para una navegación única.
+Este repositorio es un monorepo que contiene varios subproyectos y componentes. Aquí hay una descripción general de los directorios más importantes:
+
+-   **`/` (raíz):** Contiene el sitio web principal del portafolio (el `index.html` y sus assets).
+-   **`/react-ui-login`:** Un componente de UI para un formulario de inicio de sesión, construido con React. Consulta su [README.md](./react-ui-login/README.md) para más detalles.
+-   **`/Blog`:** Contiene los artículos y los assets del blog.
+-   **`/Evidencias`:** Una colección de proyectos más pequeños y demostraciones técnicas. Cada subdirectorio es un proyecto independiente con su propio `README.md`.
+-   **`/Certificados`:** Muestra de certificaciones y logros.
 
 ---
 
@@ -57,27 +68,16 @@ Para explorar este proyecto en tu entorno local, sigue estos pasos:
 1.  **Clona el repositorio:**
     ```bash
     git clone https://github.com/tu_usuario/githubpagetest.git
-    ```
-2.  **Navega al directorio del proyecto:**
-    ```bash
     cd githubpagetest
     ```
-3.  **Para la parte estática del sitio:**
-    -   Simplemente abre el archivo `index.html` en tu navegador.
 
-4.  **Para el componente de React UI Login:**
-    -   Navega al directorio `react-ui-login`:
-        ```bash
-        cd react-ui-login
-        ```
-    -   Instala las dependencias:
-        ```bash
-        npm install
-        ```
-    -   Inicia la aplicación de desarrollo:
-        ```bash
-        npm start
-        ```
+2.  **Para ver el portafolio principal (sitio estático):**
+    -   Simplemente abre el archivo `index.html` en la raíz del proyecto en tu navegador.
+
+3.  **Para ejecutar los subproyectos de Node.js (como `react-ui-login`):**
+    -   Navega al directorio del subproyecto específico (p. ej., `cd react-ui-login`).
+    -   Instala las dependencias con `npm install`.
+    -   Inicia el servidor de desarrollo con `npm start` o `npm run dev` (consulta el `README.md` del subproyecto para el comando exacto).
 
 ---
 
@@ -89,7 +89,7 @@ Las contribuciones son bienvenidas. Si deseas colaborar, por favor revisa el arc
 
 ## Licencia
 
-Actualmente, el archivo `LICENSE` contiene una declaración de visión del proyecto. Para una mayor claridad y protección legal, se recomienda adoptar una licencia de código abierto estándar como [MIT](https://opensource.org/licenses/MIT) o [Apache 2.0](https://opensource.org/licenses/Apache-2.0).
+Este proyecto se distribuye bajo la **Licencia Pública General de GNU v3.0**. Consulta el archivo [`LICENSE`](LICENSE) para ver el texto completo de la licencia.
 
 ---
 
