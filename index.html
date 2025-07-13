@@ -412,9 +412,9 @@
     }
 
     /* ============================================================
-       LOADER SYSTEM
+       LOADER COREOGRAFIADO CON SINCRONIZACIÓN ABSOLUTA
        ------------------------------------------------------------
-       Optimized loading interface
+       GSAP Timeline orchestrated loading experience
     ============================================================ */
     .loader-overlay {
       position: fixed;
@@ -457,61 +457,160 @@
       animation: scan 3s linear infinite, texture-scan 1s linear infinite;
     }
 
-    .loader-content {
+    /* Holographic Core Elements */
+    .holographic-core {
       position: relative;
+      width: 300px;
+      height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       z-index: 2;
+    }
+
+    /* Central Nucleus */
+    .core-nucleus {
+      position: relative;
+      width: 60px;
+      height: 60px;
+      transform-style: preserve-3d;
+      opacity: 0;
+      transform: scale(0);
+    }
+
+    .nucleus-geometry {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      animation: nucleus-rotate 4s linear infinite;
+    }
+
+    .nucleus-face {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      background: var(--color-accent);
+      border: 2px solid var(--color-accent-glow);
+      opacity: 0.8;
+      box-shadow: 0 0 20px var(--color-accent-glow);
+    }
+
+    .nucleus-face.front { transform: translateZ(30px); }
+    .nucleus-face.back { transform: translateZ(-30px); }
+    .nucleus-face.left { transform: rotateY(-90deg) translateZ(30px); }
+    .nucleus-face.right { transform: rotateY(90deg) translateZ(30px); }
+    .nucleus-face.top { transform: rotateX(90deg) translateZ(30px); }
+    .nucleus-face.bottom { transform: rotateX(-90deg) translateZ(30px); }
+
+    .nucleus-glow {
+      position: absolute;
+      top: -20px;
+      left: -20px;
+      width: 100px;
+      height: 100px;
+      background: radial-gradient(circle, var(--color-accent-glow) 0%, transparent 70%);
+      border-radius: 50%;
+      opacity: 0;
+      filter: blur(10px);
+    }
+
+    /* Orbital Rings */
+    .orbital-rings {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+    }
+
+    .orbital-ring {
+      position: absolute;
+      border: 2px solid var(--color-accent);
+      border-radius: 50%;
+      opacity: 0;
+      box-shadow: 0 0 15px var(--color-accent-glow);
+    }
+
+    .orbital-ring.ring-1 {
+      width: 120px;
+      height: 120px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .orbital-ring.ring-2 {
+      width: 180px;
+      height: 180px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .orbital-ring.ring-3 {
+      width: 240px;
+      height: 240px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    /* Progress Interface */
+    .loader-progress-interface {
+      position: absolute;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
       text-align: center;
-      color: var(--color-accent);
-      max-width: 80%;
+      z-index: 3;
+      width: 400px;
     }
 
-    .loader-logo {
-      font-family: var(--font-heading);
-      font-size: 2rem;
-      margin-bottom: 20px;
-      letter-spacing: 4px;
-      text-shadow: var(--hud-glow);
-      animation: pulse-text 2s infinite alternate;
-    }
-
-    .loader-text, .loader-subtext {
+    .status-text {
       font-family: var(--font-main);
       font-size: 1.2rem;
-      margin-bottom: 15px;
+      color: var(--color-accent);
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+      min-height: 30px;
       position: relative;
-      display: inline-block;
     }
 
-    .loader-text::after, .loader-subtext::after {
+    .status-text::after {
       content: '|';
       color: var(--color-accent);
       display: inline-block;
       animation: cursor-blink 1s steps(1, start) infinite;
     }
 
-    .loader-bar-container {
-      width: 100%; max-width: 400px; height: 10px;
+    .progress-bar-container {
+      width: 100%;
+      height: 12px;
       background: rgba(var(--color-accent-rgb), 0.1);
-      border: 1px solid var(--color-border);
-      border-radius: 2px;
+      border: 2px solid var(--color-border);
+      border-radius: 6px;
       overflow: hidden;
       margin: 15px auto;
-      box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+      box-shadow: inset 0 0 8px rgba(0,0,0,0.5);
+      position: relative;
     }
 
-    .loader-bar {
-      width: 0%; height: 100%;
-      background: var(--color-accent);
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--color-accent) 0%, var(--color-accent-glow) 100%);
       box-shadow: var(--hud-glow);
+      border-radius: 4px;
       transition: width 0.1s linear;
     }
 
-    .loader-percentage {
-      font-family: var(--font-main);
-      font-size: 1rem;
-      margin-bottom: 10px;
+    .percentage-counter {
+      font-family: var(--font-heading);
+      font-size: 1.5rem;
+      color: var(--color-accent);
+      text-shadow: var(--hud-glow);
+      margin-top: 10px;
     }
 
     /* Loader Animations */
@@ -526,14 +625,39 @@
       100% { background-position: 10px 0; }
     }
 
-    @keyframes pulse-text {
-      from { opacity: 0.7; }
-      to { opacity: 1; }
+    @keyframes nucleus-rotate {
+      0% { transform: rotateX(0deg) rotateY(0deg); }
+      100% { transform: rotateX(360deg) rotateY(360deg); }
     }
 
     @keyframes cursor-blink {
       0%, 100% { opacity: 1; }
       50% { opacity: 0; }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .holographic-core {
+        width: 250px;
+        height: 250px;
+      }
+      
+      .orbital-ring.ring-1 { width: 100px; height: 100px; }
+      .orbital-ring.ring-2 { width: 150px; height: 150px; }
+      .orbital-ring.ring-3 { width: 200px; height: 200px; }
+      
+      .loader-progress-interface {
+        width: 300px;
+      }
+      
+      .status-text {
+        font-size: 1rem;
+        letter-spacing: 1px;
+      }
+      
+      .percentage-counter {
+        font-size: 1.2rem;
+      }
     }
 
 
@@ -5213,21 +5337,44 @@
 <canvas id="scrollCanvas"></canvas>
 
   <!-- ============================================================
-       ADVANCED LOADER
+       LOADER COREOGRAFIADO CON SINCRONIZACIÓN ABSOLUTA
        ------------------------------------------------------------
-       New HUD design, scanline, dynamic text.
+       GSAP Timeline orchestrated loading experience
   ============================================================ -->
   <div class="loader-overlay active" id="loaderOverlay">
     <div class="loader-hud-border"></div>
     <div class="loader-scanline"></div>
-    <div class="loader-content">
-      <div class="loader-logo">[ LOGO_INIT ]</div>
-      <div class="loader-text" id="loaderText"></div>
-      <div class="loader-bar-container">
-        <div class="loader-bar" id="loaderBar"></div>
+    
+    <!-- Core Holographic Elements -->
+    <div class="holographic-core">
+      <!-- Central Nucleus -->
+      <div class="core-nucleus" id="coreNucleus">
+        <div class="nucleus-geometry">
+          <div class="nucleus-face front"></div>
+          <div class="nucleus-face back"></div>
+          <div class="nucleus-face left"></div>
+          <div class="nucleus-face right"></div>
+          <div class="nucleus-face top"></div>
+          <div class="nucleus-face bottom"></div>
+        </div>
+        <div class="nucleus-glow"></div>
       </div>
-      <div class="loader-percentage" id="loaderPercentage">0%</div>
-      <div class="loader-subtext" id="loaderSubtext"></div>
+      
+      <!-- Orbital Rings -->
+      <div class="orbital-rings">
+        <div class="orbital-ring ring-1" id="orbitalRing1"></div>
+        <div class="orbital-ring ring-2" id="orbitalRing2"></div>
+        <div class="orbital-ring ring-3" id="orbitalRing3"></div>
+      </div>
+    </div>
+    
+    <!-- Progress Interface -->
+    <div class="loader-progress-interface">
+      <div class="status-text" id="statusText"></div>
+      <div class="progress-bar-container">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      <div class="percentage-counter" id="percentageCounter">0%</div>
     </div>
   </div>
 
@@ -6551,110 +6698,188 @@
 
 
         // ============================================================
-        // LOADER & TYPEWRITER EFFECT
+        // LOADER COREOGRAFIADO CON SINCRONIZACIÓN ABSOLUTA - GSAP
         // ============================================================
-         const typewriterSpeed = 30; // ms per character
-         let typingTimeout;
+        
+        // Get loader elements
+        const coreNucleus = document.getElementById('coreNucleus');
+        const orbitalRing1 = document.getElementById('orbitalRing1');
+        const orbitalRing2 = document.getElementById('orbitalRing2');
+        const orbitalRing3 = document.getElementById('orbitalRing3');
+        const progressBar = document.getElementById('progressBar');
+        const percentageCounter = document.getElementById('percentageCounter');
+        const loaderStatusText = document.getElementById('statusText');
 
-         function typeWriter(element, text, callback) {
-             if (!element) return;
-             element.textContent = ''; // Clear existing text
-             element.classList.remove('typing-complete'); // Remove class if exists
-             let i = 0;
-             function type() {
-                 if (i < text.length) {
-                     element.textContent += text.charAt(i);
-                     i++;
-                     typingTimeout = setTimeout(type, typewriterSpeed);
-                 } else {
-                     element.classList.add('typing-complete'); // Add class when typing is complete
-                     if (callback) callback();
-                 }
-             }
-             type();
-         }
-
-         function stopTypewriter() {
-             clearTimeout(typingTimeout);
-             if(loaderText) loaderText.classList.add('typing-complete');
-             if(loaderSubtext) loaderSubtext.classList.add('typing-complete');
-         }
-
-
-        if (loaderOverlayEl) {
-            let progress = 0;
-            const loadingSteps = [
-                { percent: 15, text: "Booting Kernal", subtext: "Memory check..." },
-                { percent: 30, text: "Loading UI Modules", subtext: "Initializing HUD..." },
-                { percent: 55, text: "Establishing Comms Link", subtext: "Verifying connection..." },
-                { percent: 75, text: "Decrypting Asset Data", subtext: "Processing portfolio..." },
-                { percent: 90, text: "Final System Checks", subtext: "Almost there..." },
-                { percent: 100, text: "SYSTEM ONLINE", subtext: "Welcome." }
-            ];
-            let currentStep = 0;
-            let isTyping = false;
-
-             if (!isMuted && sounds.loading && sounds.background && sounds.background.paused) {
-                 playSound('loading', 0.4);
+        // Initialize holographic core boot sequence with absolute synchronization
+        if (loaderOverlayEl && coreNucleus) {
+            // Play loading sound
+            if (!isMuted && sounds.loading) {
+                playSound('loading', 0.4);
             }
 
+            // Create progress proxy object for absolute synchronization
+            const progressProxy = { value: 0 };
 
-            const simulateLoading = setInterval(() => {
-                progress += Math.random() * 2 + 0.5;
-                progress = Math.min(progress, 100);
-
-                if(loaderBar) loaderBar.style.width = progress + '%';
-                if(loaderPercentage) loaderPercentage.textContent = Math.floor(progress) + '%';
-
-                // Check if we should move to the next step and trigger typing
-                if (currentStep < loadingSteps.length && progress >= loadingSteps[currentStep].percent && !isTyping) {
-                    isTyping = true;
-                    typeWriter(loaderText, loadingSteps[currentStep].text, () => {
-                         typeWriter(loaderSubtext, loadingSteps[currentStep].subtext, () => {
-                             isTyping = false; // Allow next step when subtext typing is done
-                             // currentStep incremented in the callback to ensure sequence
-                              currentStep++;
-                         });
-                    });
-                     // Don't increment currentStep here, it's done in the inner callback
-                     // currentStep++; // REMOVED - this caused skipping steps
-                }
-
-                if (progress >= 100) {
-                    clearInterval(simulateLoading);
-                    stopTypewriter(); // Ensure typing stops
+            // Create main timeline with total duration of 5 seconds
+            const bootTimeline = gsap.timeline({
+                onComplete: () => {
+                    // Final completion
                     stopSound('loading');
                     playSound('complete', 0.6);
-
+                    
                     setTimeout(() => {
                         loaderOverlayEl.classList.remove('active');
-
+                        
                         setTimeout(() => {
                             loaderOverlayEl.style.display = 'none';
                             if(mainHeader) mainHeader.classList.add('visible');
                             if(mainContent) mainContent.classList.add('visible');
                             if(hudOverlay) hudOverlay.classList.add('visible');
-                             if (!isMuted && sounds.background) {
-                                 playSound('background', 0.2);
-                             }
-                             triggerVisibleReveals(); // Trigger animations after content is visible
+                            
+                            if (!isMuted && sounds.background) {
+                                playSound('background', 0.2);
+                            }
+                            
+                            triggerVisibleReveals();
                             startClock();
-                            // startHudAnimations(); // Start JS-based HUD animations
                         }, 700);
                     }, 500);
                 }
-            }, 50);
+            });
+
+            // MAIN PROGRESS ANIMATION - Controls all visual progress
+            // This is the first and longest animation that drives all progress visuals
+            bootTimeline.to(progressProxy, {
+                duration: 5, // Total duration of 5 seconds
+                value: 100,
+                ease: "none",
+                onUpdate: function() {
+                    // Update progress bar width
+                    if(progressBar) {
+                        progressBar.style.width = progressProxy.value + '%';
+                    }
+                    // Update percentage counter
+                    if(percentageCounter) {
+                        percentageCounter.textContent = Math.floor(progressProxy.value) + '%';
+                    }
+                }
+            });
+
+            // PHASE 1: System Deployment (0% -> 30%) - Time 0s to 1.5s
+            // Nucleus appearance at 0.5s (10% progress)
+            bootTimeline.to(coreNucleus, {
+                duration: 1,
+                scale: 1,
+                opacity: 1,
+                ease: "back.out(1.7)",
+                onStart: () => {
+                    if (!isMuted) playSound('energy', 0.3);
+                }
+            }, 0.5); // Position at 0.5s
+
+            // Orbital rings expansion at 0.8s (16% progress)
+            bootTimeline.to([orbitalRing1, orbitalRing2, orbitalRing3], {
+                duration: 0.8,
+                opacity: 1,
+                scale: 1,
+                stagger: 0.2,
+                ease: "power2.out",
+                onStart: () => {
+                    if (!isMuted) playSound('portal', 0.4);
+                }
+            }, 0.8); // Position at 0.8s
+
+            // Status text typing at 1.0s (20% progress)
+            bootTimeline.to(loaderStatusText, {
+                duration: 1.5,
+                text: "BOOTING KERNEL...",
+                ease: "none",
+                onStart: () => {
+                    if (!isMuted) playSound('decode', 0.5);
+                }
+            }, 1.0); // Position at 1.0s
+
+            // PHASE 2: Calibration and Data Loading (30% -> 80%) - Time 1.5s to 4s
+            // Status change at 2.0s (40% progress)
+            bootTimeline.to(loaderStatusText, {
+                duration: 1.5,
+                text: "CALIBRATING HOLOGRAPHIC SHADERS...",
+                ease: "none"
+            }, 2.0); // Position at 2.0s
+
+            // Energy pulse animation at 2.5s (50% progress)
+            const pulseAnimation = gsap.timeline({
+                repeat: -1,
+                yoyo: true
+            });
+            
+            pulseAnimation.to([coreNucleus, orbitalRing1, orbitalRing2, orbitalRing3], {
+                duration: 1,
+                scale: 1.05,
+                filter: "brightness(1.2)",
+                ease: "power2.inOut"
+            });
+
+            bootTimeline.add(pulseAnimation, 2.5); // Start pulse at 2.5s
+
+            // Status change at 3.5s (70% progress)
+            bootTimeline.to(loaderStatusText, {
+                duration: 1.5,
+                text: "VERIFYING DATASTREAM INTEGRITY...",
+                ease: "none"
+            }, 3.5); // Position at 3.5s
+
+            // PHASE 3: Finalization and Synchronization (80% -> 100%) - Time 4s to 5s
+            // Stop pulse animation at 4.5s (90% progress)
+            bootTimeline.call(() => {
+                pulseAnimation.kill(); // Stop the pulse animation
+            }, null, null, 4.5);
+
+            // Final nucleus pulse at 4.5s (90% progress)
+            bootTimeline.to(coreNucleus, {
+                duration: 0.4,
+                scale: 1.5,
+                filter: "brightness(2)",
+                ease: "power2.out",
+                onStart: () => {
+                    if (!isMuted) playSound('energy', 0.6);
+                }
+            }, 4.5)
+            .to(coreNucleus, {
+                duration: 0.2,
+                scale: 1,
+                filter: "brightness(1)",
+                ease: "power2.in"
+            }, 4.9);
+
+            // Final status message at 4.7s (94% progress)
+            bootTimeline.to(loaderStatusText, {
+                duration: 0.8,
+                text: "SYSTEM ONLINE. WELCOME.",
+                ease: "none"
+            }, 4.7);
+
+            // PHASE 4: Exit Transition - Post 100%
+            // Fade out all elements at 5.3s (after 100% completion)
+            bootTimeline.to([coreNucleus, orbitalRing1, orbitalRing2, orbitalRing3, loaderStatusText, percentageCounter], {
+                duration: 0.8,
+                opacity: 0,
+                scale: 0.9,
+                ease: "power2.in"
+            }, 5.3);
+
         } else {
-             // Fallback if loader overlay isn't found
+            // Fallback if loader elements aren't found
             if(mainHeader) mainHeader.classList.add('visible');
             if(mainContent) mainContent.classList.add('visible');
             if(hudOverlay) hudOverlay.classList.add('visible');
-             if (!isMuted && sounds.background) {
-                 playSound('background', 0.2);
-             }
-             triggerVisibleReveals();
+            
+            if (!isMuted && sounds.background) {
+                playSound('background', 0.2);
+            }
+            
+            triggerVisibleReveals();
             startClock();
-             // startHudAnimations(); // Start JS-based HUD animations immediately
         }
 
 
