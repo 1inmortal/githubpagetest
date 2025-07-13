@@ -1032,7 +1032,7 @@
       );
       
       /* Transformación 3D para flotar */
-      transform: translateX(-50%) perspective(1000px) rotateX(2deg);
+      transform: translateX(-50%) perspective(1000px) rotateX(2deg) translateY(0);
       box-shadow: 
         0 0 30px rgba(var(--color-accent-rgb), 0.2),
         0 10px 40px rgba(0, 0, 0, 0.3),
@@ -1044,11 +1044,24 @@
       /* Optimizaciones de rendimiento */
       will-change: transform, box-shadow, filter;
       filter: brightness(0.9) contrast(1.1);
+      
+      /* Transición suave para ocultar/mostrar */
+      transition: transform var(--transition-medium) ease;
+    }
+    
+    /* Estado oculto del header */
+    #mainHeader.header-hidden {
+      transform: translateX(-50%) perspective(1000px) rotateX(2deg) translateY(-100%);
     }
     
     @keyframes header-float {
       0%, 100% { transform: translateX(-50%) perspective(1000px) rotateX(2deg) translateY(0px); }
       50% { transform: translateX(-50%) perspective(1000px) rotateX(2deg) translateY(-3px); }
+    }
+    
+    /* Pausar animación de flotación cuando está oculto */
+    #mainHeader.header-hidden {
+      animation-play-state: paused;
     }
     
     /* Bordes de Energía Activos */
@@ -1351,6 +1364,11 @@
       }
       
       .filter-panel .nav-link span {
+        animation: none;
+      }
+      
+      /* Desactivar animación de flotación del header en móvil */
+      #mainHeader {
         animation: none;
       }
     }
@@ -6308,6 +6326,84 @@
 
          // Get the mobile breakpoint value from CSS
         const mobileBreak = parseInt(getComputedStyle(htmlEl).getPropertyValue('--mobile-break'));
+
+        // ============================================================
+        // HEADER SCROLL BEHAVIOR - OCULTAR/MOSTRAR CON SCROLL
+        // ============================================================
+        let lastScrollTop = 0;
+        let scrollThreshold = 100; // Umbral mínimo para activar la funcionalidad
+        let headerHeight = mainHeader ? mainHeader.offsetHeight : 80; // Altura estimada del header
+        
+        // Función para manejar el scroll del header
+        function handleHeaderScroll() {
+            if (!mainHeader) return;
+            
+            const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollDelta = currentScrollTop - lastScrollTop;
+            
+            // Solo activar si el scroll supera el umbral
+            if (Math.abs(scrollDelta) < 5) return; // Ignorar scrolls muy pequeños
+            
+            // Determinar dirección del scroll
+            if (scrollDelta > 0 && currentScrollTop > scrollThreshold) {
+                // Scroll hacia abajo - ocultar header
+                if (!mainHeader.classList.contains('header-hidden')) {
+                    mainHeader.classList.add('header-hidden');
+                    console.log('Header ocultado - Scroll hacia abajo');
+                }
+            } else if (scrollDelta < 0 || currentScrollTop <= 50) {
+                // Scroll hacia arriba o cerca del top - mostrar header
+                if (mainHeader.classList.contains('header-hidden')) {
+                    mainHeader.classList.remove('header-hidden');
+                    console.log('Header mostrado - Scroll hacia arriba o top');
+                }
+            }
+            
+            lastScrollTop = currentScrollTop;
+        }
+        
+        // Función para actualizar el umbral basado en la altura del header
+        function updateScrollThreshold() {
+            if (mainHeader) {
+                headerHeight = mainHeader.offsetHeight;
+                scrollThreshold = headerHeight + 20; // Umbral = altura del header + margen
+            }
+        }
+        
+        // Event listeners para el scroll
+        if (mainHeader) {
+            // Throttle para optimizar rendimiento
+            let ticking = false;
+            
+            function requestTick() {
+                if (!ticking) {
+                    requestAnimationFrame(() => {
+                        handleHeaderScroll();
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            }
+            
+            // Verificar preferencias de movimiento reducido
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            
+            // Solo activar en dispositivos no móviles y sin preferencias de movimiento reducido
+            if (window.innerWidth > mobileBreak && !prefersReducedMotion) {
+                // Listener de scroll con throttling
+                window.addEventListener('scroll', requestTick, { passive: true });
+                
+                // Actualizar umbral en resize
+                window.addEventListener('resize', updateScrollThreshold, { passive: true });
+                
+                // Inicializar umbral
+                updateScrollThreshold();
+                
+                console.log('Header scroll behavior activado');
+            } else {
+                console.log('Header scroll behavior desactivado - Móvil o preferencias de movimiento reducido');
+            }
+        }
 
 
         // ============================================================
