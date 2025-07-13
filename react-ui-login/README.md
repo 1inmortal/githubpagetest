@@ -1,70 +1,73 @@
-# Getting Started with Create React App
+# React UI Login Component
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Visión General
 
-## Available Scripts
+Este proyecto es un componente de interfaz de usuario (UI) para un formulario de inicio de sesión, construido con React. El objetivo es proporcionar una base moderna, personalizable y fácil de integrar para la autenticación de usuarios en cualquier aplicación web.
 
-In the project directory, you can run:
+Este componente forma parte del proyecto más grande **Future Interface Manifesto**, y su diseño y funcionalidad deben alinearse con la visión futurista y la estética de dicho manifiesto.
 
-### `npm start`
+## Características Planeadas
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+*   **Diseño Moderno y Futurista:** Una interfaz inspirada en elementos de ciencia ficción (HUDs, neón, etc.).
+*   **Componente Reutilizable:** Fácil de integrar en otras aplicaciones React.
+*   **Validación de Formularios:** Validación en tiempo real para campos como email y contraseña.
+*   **Manejo de Estado:** Gestión del estado del formulario (por ejemplo, `isLoading`, `error`).
+*   **Personalizable:** Props para personalizar el estilo y el comportamiento.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Empezando
 
-### `npm test`
+Para levantar este proyecto en un entorno de desarrollo, sigue estos pasos:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Prerrequisitos
 
-### `npm run build`
+*   Node.js (v14 o superior)
+*   npm (v6 o superior)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Instalación
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+1.  **Navega al directorio del proyecto:**
+    ```bash
+    cd react-ui-login
+    ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+2.  **Instala las dependencias:**
+    ```bash
+    npm install
+    ```
 
-### `npm run eject`
+3.  **Inicia el servidor de desarrollo:**
+    ```bash
+    npm start
+    ```
+    La aplicación se abrirá automáticamente en [http://localhost:3000](http://localhost:3000).
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Estructura del Proyecto (Sugerida)
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Para mantener el código organizado, se sugiere la siguiente estructura de archivos:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```
+src/
+|-- components/
+|   |-- LoginForm/
+|   |   |-- LoginForm.js
+|   |   |-- LoginForm.css
+|   |   `-- index.js
+|-- App.js
+|-- App.css
+`-- index.js
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Contribuciones
 
-## Learn More
+Las contribuciones a este componente son bienvenidas. Si deseas colaborar, por favor sigue las directrices del archivo [`CONTRIBUTING.md`](../CONTRIBUTING.md) del repositorio principal.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Algunas áreas en las que puedes contribuir:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+*   Implementar el diseño del formulario de login.
+*   Añadir lógica de validación.
+*   Crear pruebas unitarias para el componente.
+*   Mejorar la accesibilidad.
 
-### Code Splitting
+## Licencia
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Este proyecto, como parte del monorepo "Future Interface Manifesto", se distribuye bajo la **Licencia Pública General de GNU v3.0**. Consulta el archivo [`LICENSE`](../LICENSE) del repositorio principal para ver el texto completo de la licencia.
