@@ -640,24 +640,57 @@
                 
                 // ANÁLISIS Y MEJORA: Funciones de los otros scripts, consolidadas aquí.
                 setupFuturisticTitleEffect() {
-                    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()_+-=[]{}|;':,.<>/?";
-                    const title = document.getElementById("futuristic-title");
-                    if (!title) return;
+                    const typewriterText = document.querySelector('.typewriter-text');
+                    if (!typewriterText) return;
                     
-                    let originalText = title.textContent;
-                    let interval;
-    
-                    title.addEventListener("mouseenter", () => {
-                        let iteration = 0;
-                        clearInterval(interval);
-                        interval = setInterval(() => {
-                            title.textContent = originalText.split("").map((char, i) => {
-                                    if (i < iteration) return originalText[i];
-                                    return letters[Math.floor(Math.random() * letters.length)];
-                                }).join("");
-                            if (iteration >= originalText.length) clearInterval(interval);
-                            iteration += 0.5;
-                        }, 30);
+                    const chars = typewriterText.querySelectorAll('.char');
+                    let currentIndex = 0;
+                    
+                    // Función para animar cada letra
+                    const animateNextChar = () => {
+                        if (currentIndex < chars.length) {
+                            const char = chars[currentIndex];
+                            
+                            // Agregar clase para activar la animación
+                            char.style.animationDelay = `${currentIndex * 0.06}s`;
+                            char.style.animationFillMode = 'forwards';
+                            
+                            // Reproducir sonido de máquina de escribir (si está disponible)
+                            if (this.uiManager && this.uiManager.audioSystem) {
+                                this.uiManager.audioSystem.playSound('typewriter-sound');
+                            }
+                            
+                            currentIndex++;
+                            
+                            // Programar la siguiente letra - más rápido
+                            setTimeout(animateNextChar, 60);
+                        } else {
+                            // Animación completada
+                            setTimeout(() => {
+                                // Agregar efecto de cursor parpadeante
+                                typewriterText.classList.add('typing-complete');
+                            }, 300);
+                        }
+                    };
+                    
+                    // Iniciar la animación cuando la página se carga
+                    setTimeout(() => {
+                        animateNextChar();
+                    }, 1000);
+                    
+                    // Reiniciar animación al hacer hover
+                    typewriterText.addEventListener('mouseenter', () => {
+                        // Reiniciar animación
+                        chars.forEach((char, index) => {
+                            char.style.animation = 'none';
+                            char.offsetHeight; // Trigger reflow
+                            char.style.animation = `typewriter-fade-in 0.08s ease-out ${index * 0.03}s forwards`;
+                        });
+                        
+                        currentIndex = 0;
+                        setTimeout(() => {
+                            animateNextChar();
+                        }, 50);
                     });
                 }
                 setupFooterAnimation() {
