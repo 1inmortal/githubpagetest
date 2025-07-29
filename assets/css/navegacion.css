@@ -1,0 +1,552 @@
+/* ============================================================
+   NAVEGACIÓN CSS - SISTEMA DE NAVEGACIÓN HOLOGRÁFICO
+   ------------------------------------------------------------
+   Estilos del sistema de navegación con consola neural
+============================================================ */
+
+/* ============================================================
+   NAVIGATION CONSOLE SYSTEM - CONSOLA LATERAL RETRÁCTIL
+   ============================================================ */
+
+/* Contenedor Principal de la Consola */
+/* ============================================================
+   MÓDULO DE NAVEGACIÓN CON BOTÓN SVG DE ORIGEN
+   ------------------------------------------------------------
+   El botón SVG es el punto fijo desde donde se expande 
+   horizontalmente el menú de navegación
+============================================================ */
+
+.nav-module-container {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1050;
+  pointer-events: auto;
+}
+
+/* Botón SVG - Punto de Origen con Efectos de Energía */
+.nav-origin-btn {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  background: rgba(var(--color-bg), 0.95);
+  backdrop-filter: blur(15px);
+  border: 2px solid var(--color-accent);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  overflow: visible; /* Permitir efectos de energía */
+  z-index: 1051;
+  box-shadow: 
+    0 4px 20px rgba(var(--color-accent-rgb), 0.3),
+    0 0 0 0 rgba(var(--color-accent-rgb), 0.4);
+}
+
+/* Efectos de energía - ondas concéntricas */
+.nav-origin-btn::before,
+.nav-origin-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--color-accent);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Animación de energía al hacer clic */
+.nav-origin-btn.energy-burst::before {
+  animation: energy-wave 0.6s ease-out forwards;
+}
+
+.nav-origin-btn.energy-burst::after {
+  animation: energy-wave 0.6s ease-out 0.1s forwards;
+}
+
+@keyframes energy-wave {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.5);
+    opacity: 0;
+  }
+}
+
+.nav-origin-btn:hover {
+  background: rgba(var(--color-accent-rgb), 0.1);
+  transform: scale(1.05);
+  box-shadow: 
+    0 8px 30px rgba(var(--color-accent-rgb), 0.4),
+    0 0 0 4px rgba(var(--color-accent-rgb), 0.2),
+    0 0 20px var(--color-accent);
+}
+
+.nav-origin-btn:active {
+  transform: scale(0.95);
+  box-shadow: 
+    0 4px 15px rgba(var(--color-accent-rgb), 0.6),
+    0 0 0 2px rgba(var(--color-accent-rgb), 0.4),
+    0 0 30px var(--color-accent);
+}
+
+/* SVG del Triángulo con Efectos de Energía */
+.triangle-svg {
+  width: 35px;
+  height: 35px;
+  transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  transform: rotate(0deg);
+  filter: drop-shadow(0 0 8px var(--color-accent));
+}
+
+.nav-origin-btn:hover .triangle-svg {
+  filter: drop-shadow(0 0 12px var(--color-accent)) drop-shadow(0 0 20px var(--color-accent));
+  transform: scale(1.1);
+}
+
+/* Rotación y brillo intenso cuando está expandido */
+.nav-module-container.is-expanded .triangle-svg {
+  transform: rotate(90deg) scale(1.05);
+  filter: drop-shadow(0 0 15px var(--color-accent)) drop-shadow(0 0 25px var(--color-accent));
+}
+
+/* Panel de Navegación - Conectado Perfectamente al Botón */
+.nav-expansion-panel {
+  position: absolute;
+  top: 2px; /* Ajuste para conectar con el borde del botón */
+  left: 58px; /* Conecta exactamente con el botón (60px - 2px de borde) */
+  height: 56px; /* Altura interior del botón */
+  width: 0; /* Inicialmente colapsado */
+  background: rgba(var(--color-bg), 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 2px solid var(--color-accent);
+  border-left: none; /* Sin borde izquierdo para conexión perfecta */
+  border-radius: 0 28px 28px 0; /* Radio que conecta con el botón */
+  padding: 0;
+  box-shadow: 
+    4px 0 25px rgba(var(--color-accent-rgb), 0.2),
+    0 0 0 0 rgba(var(--color-accent-rgb), 0.1);
+  font-family: var(--font-main);
+  overflow: hidden;
+  transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+  
+  /* Layout horizontal */
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  white-space: nowrap;
+}
+
+/* Estado Expandido del Panel */
+.nav-module-container.is-expanded .nav-expansion-panel {
+  width: 800px; /* Ancho expandido */
+  padding: 0 30px 0 25px; /* Padding ajustado para la conexión */
+  box-shadow: 
+    4px 0 40px rgba(var(--color-accent-rgb), 0.3),
+    0 0 60px rgba(var(--color-accent-rgb), 0.1),
+    inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+/* Efecto de energía en el panel expandido */
+.nav-module-container.is-expanded .nav-expansion-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    var(--color-accent) 0%, 
+    transparent 30%, 
+    var(--color-accent) 50%, 
+    transparent 70%, 
+    var(--color-accent) 100%);
+  background-size: 300% 100%;
+  animation: energy-flow-expanded 1.5s ease-in-out infinite;
+}
+
+@keyframes energy-flow-expanded {
+  0% { background-position: -300% 0; }
+  50% { background-position: 300% 0; }
+  100% { background-position: -300% 0; }
+}
+
+/* Elementos del Panel - Ocultos por Defecto */
+.nav-branding,
+.nav-menu-section,
+.nav-controls-section {
+  opacity: 0;
+  transform: translateX(-30px);
+  transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+  white-space: nowrap;
+}
+
+/* Estado Visible de Elementos */
+.nav-module-container.is-expanded .nav-branding,
+.nav-module-container.is-expanded .nav-menu-section,
+.nav-module-container.is-expanded .nav-controls-section {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Delays en cascada para la revelación */
+.nav-branding { transition-delay: 0.1s; }
+.nav-menu-section { transition-delay: 0.2s; }
+.nav-controls-section { transition-delay: 0.3s; }
+
+/* Secciones del Panel de Navegación */
+
+/* Logo/Branding */
+.nav-branding {
+  flex-shrink: 0;
+}
+
+.nav-branding a {
+  color: var(--color-accent);
+  text-decoration: none;
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
+  font-family: var(--font-heading);
+  text-shadow: 0 0 10px var(--color-accent-glow);
+  transition: all 0.3s ease;
+  display: block;
+  padding: 8px 12px;
+  border: 1px solid rgba(var(--color-accent-rgb), 0.3);
+  border-radius: 20px;
+  background: rgba(var(--color-accent-rgb), 0.05);
+}
+
+.nav-branding a:hover {
+  color: var(--color-text);
+  text-shadow: 0 0 15px var(--color-accent-glow);
+  background: rgba(var(--color-accent-rgb), 0.1);
+  border-color: var(--color-accent);
+  transform: scale(1.05);
+}
+
+/* Sección del Menú */
+.nav-menu-section {
+  flex-shrink: 0;
+  margin-left: 10px;
+}
+
+/* Sección de Controles */
+.nav-controls-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-left: 15px;
+}
+
+.nav-system-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  background: rgba(var(--color-bg), 0.5);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.nav-status-modules {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-status-modules .sys-status-module,
+.nav-status-modules .system-clock-module {
+  padding: 4px 8px;
+  background: rgba(var(--color-accent-rgb), 0.05);
+  border: 1px solid rgba(var(--color-accent-rgb), 0.2);
+  border-radius: 12px;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  font-family: var(--font-mono);
+}
+
+.filter-btn {
+  width: 100%;
+  max-width: 200px;
+  padding: 12px 20px;
+  font-size: 1rem;
+  background: rgba(var(--color-accent-rgb), 0.1);
+  border: 1px solid var(--color-border);
+  color: var(--color-accent);
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  position: relative;
+  overflow: hidden;
+}
+
+.filter-btn:hover {
+  background: rgba(var(--color-accent-rgb), 0.2);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 15px rgba(var(--color-accent-rgb), 0.3);
+  transform: translateY(-2px);
+}
+
+/* Header Controls */
+.header-modules-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  justify-content: center;
+}
+
+.header-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.header-controls .hud-button {
+  width: 100%;
+  justify-content: center;
+  padding: 12px;
+}
+
+/* System Status Modules */
+.sys-status-module,
+.system-clock-module {
+  padding: 15px;
+  background: rgba(var(--color-accent-rgb), 0.05);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--color-muted);
+  position: relative;
+}
+
+.system-clock-module {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  color: var(--color-accent);
+  background: rgba(var(--color-accent-rgb), 0.1);
+}
+
+/* Efecto de energía en los módulos */
+.sys-status-module::before,
+.system-clock-module::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    var(--color-accent) 50%, 
+    transparent 100%);
+  background-size: 200% 100%;
+  animation: status-scan 2s linear infinite;
+}
+
+@keyframes status-scan {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .nav-module-container.is-expanded .nav-expansion-panel {
+    width: 600px;
+  }
+  
+  .nav-module-container {
+    top: 15px;
+    left: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-origin-btn {
+    width: 55px;
+    height: 55px;
+  }
+
+  .triangle-svg {
+    width: 30px;
+    height: 30px;
+  }
+
+  .nav-expansion-panel {
+    top: 2px;
+    left: 53px; /* 55px - 2px de borde */
+    height: 51px; /* Altura interior del botón */
+    border-radius: 0 25px 25px 0;
+  }
+
+  .nav-module-container.is-expanded .nav-expansion-panel {
+    width: calc(100vw - 90px);
+    padding: 0 20px 0 20px;
+  }
+
+  .nav-controls-section {
+    gap: 10px;
+    margin-left: 10px;
+  }
+
+  .nav-system-controls {
+    gap: 6px;
+    padding: 4px 8px;
+  }
+
+  .nav-branding a {
+    font-size: 1rem;
+    padding: 6px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-module-container {
+    top: 10px;
+    left: 10px;
+  }
+
+  .nav-origin-btn {
+    width: 50px;
+    height: 50px;
+  }
+
+  .triangle-svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .nav-expansion-panel {
+    top: 2px;
+    left: 48px; /* 50px - 2px de borde */
+    height: 46px; /* Altura interior del botón */
+    border-radius: 0 23px 23px 0;
+    gap: 15px;
+  }
+
+  .nav-module-container.is-expanded .nav-expansion-panel {
+    width: calc(100vw - 80px);
+    padding: 0 15px 0 15px;
+  }
+
+  .nav-branding a {
+    font-size: 0.9rem;
+    padding: 5px 8px;
+  }
+
+  .nav-status-modules .sys-status-module,
+  .nav-status-modules .system-clock-module {
+    font-size: 0.75rem;
+    padding: 3px 6px;
+  }
+}
+
+/* Overlay de fondo cuando está abierto */
+.nav-console-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.4s ease;
+  z-index: 1049;
+  pointer-events: none;
+}
+
+.nav-console-wrapper.is-open ~ .nav-console-overlay,
+body.nav-console-open .nav-console-overlay {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* Efectos adicionales en el cuerpo cuando está abierto */
+body.nav-console-open {
+  overflow-x: hidden;
+}
+
+body.nav-console-open .main-content-wrapper {
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  transform: translateX(20px);
+}
+
+/* Scrollbar personalizada para el header */
+#mainHeader::-webkit-scrollbar {
+  width: 4px;
+}
+
+#mainHeader::-webkit-scrollbar-track {
+  background: rgba(var(--color-border), 0.1);
+}
+
+#mainHeader::-webkit-scrollbar-thumb {
+  background: var(--color-accent);
+  border-radius: 2px;
+}
+
+#mainHeader::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent-glow);
+}
+
+/* Transiciones mejoradas para el contenido */
+.nav-item:nth-child(1) { transition-delay: 0.05s; }
+.nav-item:nth-child(2) { transition-delay: 0.1s; }
+.nav-item:nth-child(3) { transition-delay: 0.15s; }
+
+/* Estado de carga del triángulo */
+.triangle-icon {
+  transform-origin: center center;
+}
+
+.nav-toggle-btn:active .triangle-icon {
+  transform: scale(0.9);
+}
+
+/* Efectos de glow adicionales */
+.nav-console-wrapper.is-open #mainHeader {
+  box-shadow: 
+    5px 0 25px rgba(0,0,0,0.15),
+    0 0 50px rgba(var(--color-accent-rgb), 0.1);
+}
+
+/* Estilo para partículas de energía */
+.energy-particle {
+  z-index: 1000;
+  filter: blur(0.5px);
+}
+
+/* Accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+  .nav-origin-btn,
+  .nav-expansion-panel,
+  .nav-branding,
+  .nav-menu-section,
+  .nav-controls-section,
+  .triangle-svg {
+    transition: none;
+  }
+
+  .nav-module-container.is-expanded .nav-expansion-panel::before {
+    animation: none;
+  }
+
+  .nav-origin-btn::before,
+  .nav-origin-btn::after {
+    display: none;
+  }
+} 
