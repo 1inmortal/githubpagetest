@@ -1,0 +1,1304 @@
+
+        document.addEventListener('DOMContentLoaded', () => {
+    
+            /**
+             * Sistema de Audio Inmersivo
+             * Maneja toda la funcionalidad de audio del portafolio
+             */
+            class AudioSystem {
+                constructor(uiManager) {
+                    this.uiManager = uiManager;
+                    this.isAudioEnabled = true;
+                    this.hasUserInteracted = false;
+                    this.backgroundMusic = document.getElementById('background-music');
+                    this.audioToggle = document.getElementById('audio-toggle');
+                    
+                    this.init();
+                }
+                
+                init() {
+                    this.setupAudioToggle();
+                    this.setupBackgroundMusic();
+                    this.setupSoundEffects();
+                    this.setupUserInteraction();
+                }
+                
+                setupAudioToggle() {
+                    if (!this.audioToggle) return;
+                    
+                    this.audioToggle.addEventListener('click', () => {
+                        this.isAudioEnabled = !this.isAudioEnabled;
+                        this.audioToggle.classList.toggle('muted', !this.isAudioEnabled);
+                        
+                        // Agregar efecto visual de confirmación
+                        this.audioToggle.classList.add('active');
+                        setTimeout(() => this.audioToggle.classList.remove('active'), 200);
+                        
+                        if (this.isAudioEnabled) {
+                            if (this.hasUserInteracted) {
+                                this.backgroundMusic.play().catch(e => console.log('Audio play failed:', e));
+                            }
+                        } else {
+                            this.backgroundMusic.pause();
+                        }
+                    });
+                }
+                
+                setupBackgroundMusic() {
+                    if (!this.backgroundMusic) return;
+                    
+                    // Configurar volumen bajo para música de fondo
+                    this.backgroundMusic.volume = 0.3;
+                    
+                    // La música se iniciará con la primera interacción del usuario
+                }
+                
+                setVolume(type, volume) {
+                    const audioElements = {
+                        background: this.backgroundMusic,
+                        effects: document.querySelectorAll('#audio-players audio:not(#background-music)')
+                    };
+                    
+                    if (type === 'background' && audioElements.background) {
+                        audioElements.background.volume = Math.max(0, Math.min(1, volume));
+                    } else if (type === 'effects') {
+                        audioElements.effects.forEach(audio => {
+                            audio.volume = Math.max(0, Math.min(1, volume));
+                        });
+                    }
+                }
+                
+                setupUserInteraction() {
+                    // Detectar la primera interacción del usuario para iniciar la música
+                    const startMusicOnInteraction = () => {
+                        if (!this.hasUserInteracted && this.isAudioEnabled) {
+                            this.hasUserInteracted = true;
+                            this.backgroundMusic.play().catch(e => console.log('Background music failed to start:', e));
+                            
+                            // Remover los event listeners después de la primera interacción
+                            document.removeEventListener('click', startMusicOnInteraction);
+                            document.removeEventListener('keydown', startMusicOnInteraction);
+                            document.removeEventListener('touchstart', startMusicOnInteraction);
+                        }
+                    };
+                    
+                    document.addEventListener('click', startMusicOnInteraction);
+                    document.addEventListener('keydown', startMusicOnInteraction);
+                    document.addEventListener('touchstart', startMusicOnInteraction);
+                }
+                
+                setupSoundEffects() {
+                    // Configurar efectos de sonido para diferentes elementos
+                    this.setupHoverEffects();
+                    this.setupClickEffects();
+                    this.setupAccordionEffects();
+                    this.setupNavigationEffects();
+                    this.setupFormEffects();
+                    this.setupTooltipEffects();
+                }
+                
+                setupHoverEffects() {
+                    // Botones y elementos interactivos
+                    const hoverElements = [
+                        { selector: '.nav-link', sound: 'nav-menu-hover' },
+                        { selector: '.hero h1, .hero h2, .hero p', sound: 'hero-text-hover' },
+                        { selector: '.hero .cta-button', sound: 'hero-button-hover' },
+                        { selector: '.about p, .about h2, .about h3', sound: 'about-text-hover' },
+                        { selector: '.about img', sound: 'about-image-hover' },
+                        { selector: '.skill-item', sound: 'skills-icon-hover' },
+                        { selector: '.skill-category', sound: 'skills-category-hover' },
+                        { selector: '.service-item', sound: 'services-card-hover' },
+                        { selector: '.process-step', sound: 'process-step-hover' },
+                        { selector: '.portfolio-card', sound: 'portfolio-card-hover' },
+                        { selector: '.testimonial-card', sound: 'testimonials-hover' },
+                        { selector: '.faq-question', sound: 'faq-question-hover' },
+                        { selector: 'input, textarea', sound: 'contact-field-hover' },
+                        { selector: '.social-link', sound: 'social-icon-hover' }
+                    ];
+                    
+                    hoverElements.forEach(({ selector, sound }) => {
+                        document.querySelectorAll(selector).forEach(element => {
+                            element.addEventListener('mouseenter', () => this.playSound(sound));
+                        });
+                    });
+                }
+                
+                setupClickEffects() {
+                    // Clics en botones y elementos importantes
+                    const clickElements = [
+                        { selector: '.cta-button', sound: 'hero-button-hover' },
+                        { selector: '.portfolio-card', sound: 'portfolio-click' },
+                        { selector: '.service-header', sound: 'services-click' },
+                        { selector: '.faq-header', sound: 'faq-click' },
+                        { selector: '.social-link', sound: 'social-icon-hover' },
+                        { selector: '.hamburger', sound: 'nav-menu-hover' },
+                        { selector: '.skill-item', sound: 'skills-icon-hover' },
+                        { selector: '.process-step', sound: 'process-step-hover' },
+                        { selector: '.testimonial-card', sound: 'testimonials-hover' }
+                    ];
+                    
+                    clickElements.forEach(({ selector, sound }) => {
+                        document.querySelectorAll(selector).forEach(element => {
+                            element.addEventListener('click', () => this.playSound(sound));
+                        });
+                    });
+                }
+                
+                setupAccordionEffects() {
+                    // Efectos para acordeones (servicios y FAQ)
+                    document.querySelectorAll('.service-header, .faq-header').forEach(header => {
+                        header.addEventListener('click', () => {
+                            const item = header.closest('.service-item, .faq-item');
+                            const isActive = item.classList.contains('active');
+                            this.playSound(isActive ? 'services-click' : 'services-click');
+                        });
+                    });
+                }
+                
+                setupNavigationEffects() {
+                    // Efectos para navegación del portafolio
+                    document.querySelectorAll('#prev-project, #next-project').forEach(btn => {
+                        btn.addEventListener('click', () => this.playSound('portfolio-click'));
+                    });
+                    
+                    document.querySelectorAll('#prev-testimonial, #next-testimonial').forEach(btn => {
+                        btn.addEventListener('click', () => this.playSound('testimonials-hover'));
+                    });
+                }
+                
+                setupFormEffects() {
+                    // Efectos para formularios
+                    document.querySelectorAll('input, textarea').forEach(input => {
+                        input.addEventListener('focus', () => this.playSound('contact-field-hover'));
+                        input.addEventListener('input', () => this.playSound('contact-field-hover'));
+                    });
+                    
+                    // Efecto para el botón de envío
+                    document.querySelectorAll('button[type="submit"], .submit-button').forEach(button => {
+                        button.addEventListener('mouseenter', () => this.playSound('contact-submit-hover'));
+                        button.addEventListener('click', () => this.playSound('contact-submit-hover'));
+                    });
+                    
+                    document.querySelectorAll('form').forEach(form => {
+                        form.addEventListener('submit', () => this.playSound('contact-submit-hover'));
+                    });
+                }
+                
+                setupTooltipEffects() {
+                    // Efectos para tooltips de habilidades
+                    document.querySelectorAll('.skill-item').forEach(skill => {
+                        skill.addEventListener('mouseenter', () => {
+                            // Pequeño delay para que el tooltip aparezca primero
+                            setTimeout(() => this.playSound('skills-icon-hover'), 100);
+                        });
+                    });
+                }
+                
+                playSound(soundId) {
+                    if (!this.isAudioEnabled) return;
+                    
+                    const audio = document.getElementById(soundId);
+                    if (audio) {
+                        try {
+                            // Resetear el audio para permitir reproducción múltiple
+                            audio.currentTime = 0;
+                            audio.volume = 0.5; // Volumen moderado para efectos
+                            
+                            // Usar una promesa para manejar mejor los errores
+                            const playPromise = audio.play();
+                            if (playPromise !== undefined) {
+                                playPromise.catch(error => {
+                                    // Solo loggear errores que no sean de autoplay policy
+                                    if (error.name !== 'NotAllowedError') {
+                                        console.log(`Sound ${soundId} failed to play:`, error);
+                                    }
+                                });
+                            }
+                        } catch (error) {
+                            console.log(`Error playing sound ${soundId}:`, error);
+                        }
+                    }
+                }
+            }
+    
+            /**
+             * Maneja la escena de fondo con Three.js.
+             * (Sin cambios, ya es eficiente y encapsulada).
+             */
+            class ThreeJSScene {
+                constructor(canvasId) {
+                    this.canvas = document.getElementById(canvasId);
+                    if (!this.canvas) {
+                        console.error('Three.js canvas not found!');
+                        return;
+                    }
+                    this.init();
+                }
+                init() {
+                    this.scene = new THREE.Scene();
+                    this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+                    this.camera.position.set(0, 0, 60);
+                    this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true });
+                    this.renderer.setClearColor(0x0a0a1a, 1);
+                    this.renderer.setSize(window.innerWidth, window.innerHeight);
+                    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                    this.createNebula();
+                    window.addEventListener('resize', this.onWindowResize.bind(this));
+                    this.animate(0);
+                }
+                createNebula() {
+                    const bgGeo = new THREE.SphereGeometry(900, 32, 32);
+                    this.nebulaMaterial = new THREE.ShaderMaterial({
+                        uniforms: { time: { value: 0 } },
+                        vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+                        fragmentShader: `uniform float time; varying vec2 vUv; void main() { float n = sin(vUv.x * 12.0 + time) * cos(vUv.y * 8.0 + time * 0.7); vec3 col = mix(vec3(0.05, 0.07, 0.25), vec3(0.4, 0.02, 0.08), n * 0.5 + 0.5); gl_FragColor = vec4(col, 1.0); }`,
+                        side: THREE.BackSide
+                    });
+                    this.scene.add(new THREE.Mesh(bgGeo, this.nebulaMaterial));
+                }
+                onWindowResize() {
+                    this.camera.aspect = window.innerWidth / window.innerHeight;
+                    this.camera.updateProjectionMatrix();
+                    this.renderer.setSize(window.innerWidth, window.innerHeight);
+                }
+                animate(time) {
+                    this.nebulaMaterial.uniforms.time.value = time * 0.0005;
+                    this.renderer.render(this.scene, this.camera);
+                    requestAnimationFrame(this.animate.bind(this));
+                }
+            }
+    
+            /**
+             * Maneja todas las animaciones con GSAP y ScrollTrigger.
+             */
+            class ScrollAnimations {
+                constructor() {
+                    gsap.registerPlugin(ScrollTrigger);
+                    // ANÁLISIS Y MEJORA: Hacemos una propiedad para que el UIManager pueda acceder a ella.
+                    this.portfolioScrollTrigger = null; 
+                    this.init();
+                }
+                init() {
+                    this.revealElements();
+                    this.initHorizontalPortfolio();
+                }
+                revealElements() {
+                    gsap.utils.toArray('.reveal-up').forEach(el => {
+                        gsap.fromTo(el, { opacity: 0, y: 50 }, {
+                            opacity: 1, y: 0, duration: 1, ease: 'power3.out',
+                            scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none none' },
+                        });
+                    });
+                }
+                initHorizontalPortfolio() {
+                    if (window.innerWidth <= 768) return;
+                    let portfolioContainer = document.querySelector("#portfolio-container");
+                    let portfolioGrid = document.querySelector(".portfolio-grid");
+                    
+                    // ANÁLISIS Y MEJORA: Guardamos la instancia de ScrollTrigger en la propiedad de la clase.
+                    // Esto es crucial para que los botones de navegación puedan controlarla.
+                    let tween = gsap.to(portfolioGrid, {
+                        x: () => -(portfolioGrid.scrollWidth - document.documentElement.clientWidth),
+                        ease: "none",
+                        scrollTrigger: {
+                            trigger: portfolioContainer,
+                            pin: true,
+                            scrub: 1,
+                            end: () => "+=" + (portfolioGrid.scrollWidth - document.documentElement.clientWidth),
+                            invalidateOnRefresh: true,
+                            // ANÁLISIS Y MEJORA: Añadimos un onUpdate para sincronizar los indicadores.
+                            onUpdate: self => {
+                                 const progress = self.progress;
+                                 const totalProjects = document.querySelectorAll('.portfolio-card').length;
+                                 const currentIndex = Math.round(progress * (totalProjects - 1));
+                                 document.querySelectorAll('.portfolio-indicators .indicator').forEach((indicator, index) => {
+                                     indicator.classList.toggle('active', index === currentIndex);
+                                 });
+                            }
+                        },
+                    });
+    
+                    // Extraemos el ScrollTrigger de la animación para poder controlarlo externamente.
+                    this.portfolioScrollTrigger = tween.scrollTrigger;
+                }
+            }
+    
+            /**
+             * Maneja todas las interacciones de la interfaz de usuario.
+             */
+            class UIManager {
+                // ANÁLISIS Y MEJORA: Acepta la instancia de scrollAnimations para poder interactuar con ella.
+                constructor(scrollAnimations) {
+                    this.scrollAnimations = scrollAnimations;
+                    this.init();
+                }
+                init() {
+                    this.handleHeaderScroll();
+                    this.setupAccordion('.service-item', '.service-header', '.service-details');
+                    this.setupAccordion('.faq-item', '.faq-header', '.faq-answer');
+                    this.setupMobileNav();
+                    this.setupSkillsMatrix();
+                    this.setupPortfolioNavigation(); // Ahora funcionará correctamente
+                    this.setupTestimonials();
+                    this.setupFuturisticTitleEffect(); // Consolidado aquí
+                    this.setupFooterAnimation(); // Consolidado aquí
+                }
+                handleHeaderScroll() {
+                    const header = document.querySelector('.main-header');
+                    ScrollTrigger.create({
+                        start: 'top -80', end: 99999,
+                        onUpdate: self => header.classList.toggle('scrolled', self.direction === 1 && self.scroll() > 80)
+                    });
+                }
+                setupAccordion(itemSelector, headerSelector, detailsSelector) {
+                    const accordionItems = document.querySelectorAll(itemSelector);
+                    accordionItems.forEach(item => {
+                        const header = item.querySelector(headerSelector);
+                        const details = item.querySelector(detailsSelector);
+                        header.addEventListener('click', () => {
+                            const isActive = item.classList.contains('active');
+                            accordionItems.forEach(otherItem => {
+                                if (otherItem !== item && otherItem.classList.contains('active')) {
+                                    otherItem.classList.remove('active');
+                                    gsap.to(otherItem.querySelector(detailsSelector), { maxHeight: 0, duration: 0.5, ease: 'power2.inOut' });
+                                }
+                            });
+                            item.classList.toggle('active');
+                            gsap.to(details, {
+                                maxHeight: isActive ? 0 : details.scrollHeight + 20,
+                                duration: 0.5, ease: 'power2.inOut'
+                            });
+                        });
+                    });
+                }
+                setupMobileNav() {
+                    const hamburger = document.querySelector('.hamburger');
+                    const mainNav = document.querySelector('.main-nav');
+                    const navLinks = document.querySelectorAll('.main-nav .nav-link');
+                    const body = document.body;
+                    
+                    // Validación de elementos
+                    if (!hamburger || !mainNav) {
+                        console.warn('Elementos de navegación móvil no encontrados');
+                        return;
+                    }
+                    
+                    let isMenuOpen = false;
+                    
+                    // Función para abrir menú
+                    const openMenu = () => {
+                        if (isMenuOpen) return;
+                        
+                        isMenuOpen = true;
+                        hamburger.classList.add('active');
+                        mainNav.classList.add('active');
+                        hamburger.setAttribute('aria-expanded', 'true');
+                        
+                        // Bloquear scroll del body
+                        body.style.overflow = 'hidden';
+                        
+                        // Animación GSAP si está disponible
+                        if (typeof gsap !== 'undefined') {
+                            gsap.fromTo(navLinks, 
+                                { opacity: 0, y: -20 },
+                                { 
+                                    opacity: 1, 
+                                    y: 0, 
+                                    duration: 0.3, 
+                                    stagger: 0.1,
+                                    ease: 'power2.out'
+                                }
+                            );
+                        }
+                        
+                        // Efecto de sonido
+                        const audioSystem = document.querySelector('#audio-toggle')?.closest('.audio-system')?.querySelector('audio[id="nav-menu-hover"]');
+                        if (audioSystem) {
+                            try {
+                                audioSystem.currentTime = 0;
+                                audioSystem.volume = 0.5;
+                                audioSystem.play().catch(e => console.log('Audio play failed:', e));
+                            } catch (error) {
+                                console.log('Error playing sound:', error);
+                            }
+                        }
+                    };
+                    
+                    // Función para cerrar menú
+                    const closeMenu = () => {
+                        if (!isMenuOpen) return;
+                        
+                        isMenuOpen = false;
+                        hamburger.classList.remove('active');
+                        mainNav.classList.remove('active');
+                        hamburger.setAttribute('aria-expanded', 'false');
+                        
+                        // Restaurar scroll del body
+                        body.style.overflow = '';
+                        
+                        // Animación GSAP si está disponible
+                        if (typeof gsap !== 'undefined') {
+                            gsap.to(navLinks, {
+                                opacity: 0,
+                                y: -20,
+                                duration: 0.2,
+                                ease: 'power2.in'
+                            });
+                        }
+                    };
+                    
+                    // Event listener para el botón hamburguesa
+                    hamburger.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        if (isMenuOpen) {
+                            closeMenu();
+                        } else {
+                            openMenu();
+                        }
+                    });
+                    
+                    // Cerrar al hacer click en enlaces
+                    navLinks.forEach(link => {
+                        link.addEventListener('click', () => {
+                            closeMenu();
+                        });
+                    });
+                    
+                    // Cerrar con tecla Escape
+                    document.addEventListener('keydown', (e) => {
+                        if (e.key === 'Escape' && isMenuOpen) {
+                            closeMenu();
+                        }
+                    });
+                    
+                    // Cerrar al hacer click fuera del menú
+                    document.addEventListener('click', (e) => {
+                        if (isMenuOpen && 
+                            !hamburger.contains(e.target) && 
+                            !mainNav.contains(e.target)) {
+                            closeMenu();
+                        }
+                    });
+                    
+                    // Cerrar al cambiar tamaño de ventana (responsive)
+                    window.addEventListener('resize', () => {
+                        if (window.innerWidth > 768 && isMenuOpen) {
+                            closeMenu();
+                        }
+                    });
+                    
+                    // Mejorar accesibilidad
+                    hamburger.setAttribute('aria-label', 'Abrir menú de navegación');
+                    hamburger.setAttribute('aria-expanded', 'false');
+                    hamburger.setAttribute('aria-controls', 'main-nav');
+                    
+                    // Añadir focus management
+                    hamburger.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            hamburger.click();
+                        }
+                    });
+                }
+                
+                // ANÁLISIS Y MEJORA: Se crea una función auxiliar para evitar repetir código.
+                _setupHoverEffect(selector) {
+                    document.querySelectorAll(selector).forEach(item => {
+                        item.addEventListener('mouseenter', () => item.classList.add('active'));
+                        item.addEventListener('mouseleave', () => item.classList.remove('active'));
+                    });
+                }
+                setupSkillsMatrix() {
+                    this._setupHoverEffect('.skill-category');
+                    this._setupHoverEffect('.skill-item');
+                }
+    
+                // ANÁLISIS Y MEJORA: Lógica completamente rehecha para no entrar en conflicto.
+                setupPortfolioNavigation() {
+                    const prevBtn = document.getElementById('prev-project');
+                    const nextBtn = document.getElementById('next-project');
+                    const indicators = document.querySelectorAll('.portfolio-indicators .indicator');
+                    const totalProjects = document.querySelectorAll('.portfolio-card').length;
+                    let currentIndex = 0;
+    
+                    // Si el scrolltrigger no se inicializó (estamos en móvil), no hacer nada.
+                    if (!this.scrollAnimations.portfolioScrollTrigger) return;
+                    
+                    const st = this.scrollAnimations.portfolioScrollTrigger;
+                    const scrollDistancePerProject = (st.end - st.start) / (totalProjects - 1);
+                    
+                    const updateCurrentIndex = () => {
+                         const progress = (st.scroll() - st.start) / (st.end - st.start);
+                         currentIndex = Math.round(progress * (totalProjects - 1));
+                    };
+    
+                    const scrollToProject = (index) => {
+                        updateCurrentIndex();
+                        const targetScroll = st.start + index * scrollDistancePerProject;
+                        gsap.to(window, {
+                            scrollTo: { y: targetScroll, autoKill: false },
+                            duration: 1,
+                            ease: 'power2.inOut'
+                        });
+                    };
+    
+                    prevBtn.addEventListener('click', () => {
+                        updateCurrentIndex();
+                        scrollToProject(Math.max(0, currentIndex - 1));
+                    });
+                    nextBtn.addEventListener('click', () => {
+                        updateCurrentIndex();
+                        scrollToProject(Math.min(totalProjects - 1, currentIndex + 1));
+                    });
+                    indicators.forEach((indicator, index) => {
+                        indicator.addEventListener('click', () => scrollToProject(index));
+                    });
+                }
+                
+                setupTestimonials() {
+                    const testimonialCards = document.querySelectorAll('.testimonial-card');
+                    const prevBtn = document.getElementById('prev-testimonial');
+                    const nextBtn = document.getElementById('next-testimonial');
+                    
+                    if (testimonialCards.length === 0) return;
+    
+                    let currentTestimonial = 0;
+                    const totalTestimonials = testimonialCards.length;
+                    let autoplayInterval;
+
+                    const showTestimonial = (index) => {
+                        testimonialCards.forEach((card, i) => {
+                            const isActive = i === index;
+                            gsap.to(card, {
+                                opacity: isActive ? 1 : 0,
+                                pointerEvents: isActive ? 'auto' : 'none',
+                                duration: 0.5,
+                                ease: 'power2.out'
+                            });
+                            if(isActive) {
+                               card.classList.add('glitch');
+                               setTimeout(() => card.classList.remove('glitch'), 300);
+                            }
+                        });
+                        document.querySelectorAll('.status-dot').forEach((dot, i) => dot.classList.toggle('active', i === index));
+                    }
+
+                    const nextTestimonial = () => {
+                        currentTestimonial = (currentTestimonial + 1) % totalTestimonials;
+                        showTestimonial(currentTestimonial);
+                    }
+
+                    const prevTestimonial = () => {
+                        currentTestimonial = (currentTestimonial - 1 + totalTestimonials) % totalTestimonials;
+                        showTestimonial(currentTestimonial);
+                    }
+
+                    // Ocultar todos excepto el primero al inicio
+                    showTestimonial(0);
+
+                    // Event listeners para botones
+                    if (prevBtn) {
+                        prevBtn.addEventListener('click', () => {
+                            clearInterval(autoplayInterval);
+                            prevTestimonial();
+                            startAutoplay();
+                        });
+                    }
+
+                    if (nextBtn) {
+                        nextBtn.addEventListener('click', () => {
+                            clearInterval(autoplayInterval);
+                            nextTestimonial();
+                            startAutoplay();
+                        });
+                    }
+
+                    // Función para iniciar autoplay
+                    const startAutoplay = () => {
+                        autoplayInterval = setInterval(() => {
+                            nextTestimonial();
+                        }, 5000); // Cambiar testimonio cada 5 segundos
+                    };
+
+                    // Iniciar autoplay
+                    startAutoplay();
+
+                    // Pausar autoplay al hacer hover sobre testimonios
+                    testimonialCards.forEach(card => {
+                        card.addEventListener('mouseenter', () => {
+                            clearInterval(autoplayInterval);
+                        });
+                        
+                        card.addEventListener('mouseleave', () => {
+                            startAutoplay();
+                        });
+                    });
+                }
+                
+                // ANÁLISIS Y MEJORA: Funciones de los otros scripts, consolidadas aquí.
+                setupFuturisticTitleEffect() {
+                    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()_+-=[]{}|;':,.<>/?";
+                    const title = document.getElementById("futuristic-title");
+                    if (!title) return;
+                    
+                    let originalText = title.textContent;
+                    let interval;
+    
+                    title.addEventListener("mouseenter", () => {
+                        let iteration = 0;
+                        clearInterval(interval);
+                        interval = setInterval(() => {
+                            title.textContent = originalText.split("").map((char, i) => {
+                                    if (i < iteration) return originalText[i];
+                                    return letters[Math.floor(Math.random() * letters.length)];
+                                }).join("");
+                            if (iteration >= originalText.length) clearInterval(interval);
+                            iteration += 0.5;
+                        }, 30);
+                    });
+                }
+                setupFooterAnimation() {
+                     gsap.to('.footer-divider', {
+                        boxShadow: '0 0 32px 8px var(--accent-primary)',
+                        repeat: -1, yoyo: true, duration: 2.5, ease: 'power1.inOut'
+                     });
+                }
+            }
+    
+            // --- INICIALIZACIÓN DE MÓDULOS ---
+            new ThreeJSScene('three-canvas');
+            const scrollAnimations = new ScrollAnimations();
+            const uiManager = new UIManager(scrollAnimations); // Pasamos la instancia para que puedan comunicarse.
+            
+            // --- SISTEMA DE AUDIO INMERSIVO ---
+            new AudioSystem(uiManager);
+
+            /**
+             * Sistema de Certificaciones
+             * Maneja la lógica de la sección de certificaciones
+             */
+            class CertificationsSystem {
+                constructor() {
+                    this.certData = [
+                        {
+                            id: 'aws-sa-pro',
+                            logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Amazon_Web_Services_Logo.svg/1024px-Amazon_Web_Services_Logo.svg.png',
+                            title: 'AWS Certified Solutions Architect - Professional',
+                            date: 'Enero 2024',
+                            image: 'https://via.placeholder.com/800x600/1A1A1A/FFFFFF?text=Certificado+AWS+SA-Pro',
+                            description: 'Esta certificación valida mi capacidad para diseñar e implementar arquitecturas de nube complejas, escalables, seguras y rentables en AWS, abordando estrategias avanzadas para migraciones y optimización de costos.',
+                            skills: ['Cloud Computing', 'AWS', 'Architecture', 'Scalability', 'Security', 'Migration', 'Cost Optimization'],
+                            verifyLink: 'https://www.credly.com/badges/xxxxxxxxxxxx',
+                            certId: 'AWS-SA-PRO-2024-001',
+                            validUntil: 'Enero 2027',
+                            level: 'Profesional',
+                            studyHours: '180 horas',
+                            downloadLink: '#'
+                        },
+                        {
+                            id: 'azure-dp-203',
+                            logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Microsoft_Azure.svg/1024px-Microsoft_Azure.svg.png',
+                            title: 'Microsoft Azure Data Engineer Associate',
+                            date: 'Marzo 2024',
+                            image: 'https://via.placeholder.com/800x600/1A1A1A/FFFFFF?text=Certificado+Azure+DP-203',
+                            description: 'Certificación que demuestra expertise en el diseño e implementación de soluciones de datos en Azure, incluyendo almacenamiento, procesamiento y análisis de big data.',
+                            skills: ['Data Engineering', 'Azure', 'Big Data', 'Data Lake', 'Synapse', 'Power BI'],
+                            verifyLink: 'https://www.credly.com/badges/xxxxxxxxxxxx',
+                            certId: 'AZURE-DP-203-2024-002',
+                            validUntil: 'Marzo 2027',
+                            level: 'Associate',
+                            studyHours: '150 horas',
+                            downloadLink: '#'
+                        },
+                        {
+                            id: 'terraform-associate',
+                            logo: 'https://www.vectorlogo.zone/logos/terraformio/terraformio-icon.svg',
+                            title: 'HashiCorp Certified: Terraform Associate',
+                            date: 'Abril 2024',
+                            image: 'https://via.placeholder.com/800x600/1A1A1A/FFFFFF?text=Certificado+Terraform',
+                            description: 'Validación de conocimientos en Infrastructure as Code usando Terraform para automatizar y gestionar infraestructura cloud de manera eficiente.',
+                            skills: ['Infrastructure as Code', 'Terraform', 'DevOps', 'Automation', 'Cloud Management'],
+                            verifyLink: 'https://www.credly.com/badges/xxxxxxxxxxxx',
+                            certId: 'TERRAFORM-ASSOC-2024-003',
+                            validUntil: 'Abril 2027',
+                            level: 'Associate',
+                            studyHours: '120 horas',
+                            downloadLink: '#'
+                        },
+                        {
+                            id: 'docker-certified',
+                            logo: 'https://www.vectorlogo.zone/logos/docker/docker-icon.svg',
+                            title: 'Docker Certified Associate',
+                            date: 'Mayo 2024',
+                            image: 'https://via.placeholder.com/800x600/1A1A1A/FFFFFF?text=Certificado+Docker',
+                            description: 'Certificación que acredita competencias en containerización, orquestación y gestión de aplicaciones con Docker y tecnologías relacionadas.',
+                            skills: ['Containerization', 'Docker', 'Microservices', 'DevOps', 'CI/CD'],
+                            verifyLink: 'https://www.credly.com/badges/xxxxxxxxxxxx',
+                            certId: 'DOCKER-ASSOC-2024-004',
+                            validUntil: 'Mayo 2027',
+                            level: 'Associate',
+                            studyHours: '100 horas',
+                            downloadLink: '#'
+                        },
+                        {
+                            id: 'scrum-master',
+                            logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Scrum_logo.svg/1024px-Scrum_logo.svg.png',
+                            title: 'Certified Scrum Master (CSM)',
+                            date: 'Junio 2024',
+                            image: 'https://via.placeholder.com/800x600/1A1A1A/FFFFFF?text=Certificado+CSM',
+                            description: 'Certificación que valida habilidades en metodologías ágiles, liderazgo de equipos y facilitación de procesos Scrum.',
+                            skills: ['Agile', 'Scrum', 'Leadership', 'Team Management', 'Facilitation'],
+                            verifyLink: 'https://www.credly.com/badges/xxxxxxxxxxxx',
+                            certId: 'CSM-2024-005',
+                            validUntil: 'Junio 2027',
+                            level: 'Professional',
+                            studyHours: '80 horas',
+                            downloadLink: '#'
+                        },
+                        {
+                            id: 'google-pm',
+                            logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/1024px-Google_%22G%22_Logo.svg.png',
+                            title: 'Google Project Management Professional Certificate',
+                            date: 'Julio 2024',
+                            image: 'https://via.placeholder.com/800x600/1A1A1A/FFFFFF?text=Certificado+Google+PM',
+                            description: 'Programa completo de gestión de proyectos que cubre metodologías tradicionales y ágiles, herramientas y mejores prácticas.',
+                            skills: ['Project Management', 'Google', 'Leadership', 'Agile', 'Risk Management'],
+                            verifyLink: 'https://www.credly.com/badges/xxxxxxxxxxxx',
+                            certId: 'GOOGLE-PM-2024-006',
+                            validUntil: 'Julio 2027',
+                            level: 'Professional',
+                            studyHours: '200 horas',
+                            downloadLink: '#'
+                        }
+                    ];
+                    
+                    this.init();
+                }
+                
+                init() {
+                    this.setupCertificationCards();
+                    this.setupModal();
+                }
+                
+                setupCertificationCards() {
+                    // Event listeners para certificaciones
+                    document.querySelectorAll('.cert-card').forEach(card => {
+                        // Efecto de atenuación al pasar el mouse
+                        card.addEventListener('mouseover', () => {
+                            document.querySelectorAll('.cert-card').forEach(otherCard => {
+                                if (otherCard !== card) {
+                                    otherCard.classList.add('attenuated');
+                                }
+                            });
+                        });
+                        
+                        card.addEventListener('mouseout', () => {
+                            document.querySelectorAll('.cert-card').forEach(otherCard => {
+                                otherCard.classList.remove('attenuated');
+                            });
+                        });
+
+                        // Click para abrir modal
+                        card.addEventListener('click', () => {
+                            const certId = card.dataset.certId;
+                            if (!certId) {
+                                console.warn('No se encontró data-cert-id en la tarjeta');
+                                return;
+                            }
+
+                            const selectedCert = this.certData.find(cert => cert.id === certId);
+                            if (selectedCert) {
+                                const success = this.updateModalWithCertData(selectedCert, certId);
+                                if (success) {
+                                    const modalOverlay = this.getElement('certModalOverlay');
+                                    if (modalOverlay) {
+                                        modalOverlay.classList.add('active');
+                                        document.body.style.overflow = 'hidden';
+                                    }
+                                }
+                            } else {
+                                console.warn(`Certificación con ID '${certId}' no encontrada en certData`);
+                            }
+                        });
+                    });
+                }
+                
+                setupModal() {
+                    // Cerrar modal
+                    const closeModalButton = this.getElement('closeModalButton');
+                    const modalOverlay = this.getElement('certModalOverlay');
+                    
+                    if (closeModalButton && modalOverlay) {
+                        closeModalButton.addEventListener('click', () => {
+                            modalOverlay.classList.remove('active');
+                            document.body.style.overflow = '';
+                        });
+                        
+                        modalOverlay.addEventListener('click', (e) => {
+                            if (e.target === modalOverlay) {
+                                modalOverlay.classList.remove('active');
+                                document.body.style.overflow = '';
+                            }
+                        });
+                    }
+                }
+                
+                // Función segura para obtener elementos del DOM
+                getElement(id) {
+                    const element = document.getElementById(id);
+                    if (!element) {
+                        console.warn(`Elemento con ID '${id}' no encontrado`);
+                        return null;
+                    }
+                    return element;
+                }
+                
+                // Función para actualizar modal con datos
+                updateModalWithCertData(selectedCert, certId) {
+                    try {
+                        // Información básica
+                        const modalLogo = this.getElement('modalLogo');
+                        const modalTitle = this.getElement('modalTitle');
+                        const modalDate = this.getElement('modalDate');
+                        const modalCertImage = this.getElement('modalCertImage');
+                        const modalDescription = this.getElement('modalDescription');
+                        const modalVerifyButton = this.getElement('modalVerifyButton');
+
+                        if (modalLogo) modalLogo.src = selectedCert.logo || '';
+                        if (modalTitle) modalTitle.textContent = selectedCert.title || '';
+                        if (modalDate) modalDate.textContent = selectedCert.date || '';
+                        if (modalCertImage) modalCertImage.src = selectedCert.image || '';
+                        if (modalDescription) modalDescription.textContent = selectedCert.description || '';
+                        if (modalVerifyButton) modalVerifyButton.href = selectedCert.verifyLink || '#';
+
+                        // Detalles profesionales
+                        const modalCertId = this.getElement('modalCertId');
+                        const modalValidUntil = this.getElement('modalValidUntil');
+                        const modalLevel = this.getElement('modalLevel');
+                        const modalStudyHours = this.getElement('modalStudyHours');
+
+                        if (modalCertId) modalCertId.textContent = selectedCert.certId || 'CERT-' + certId.toUpperCase();
+                        if (modalValidUntil) modalValidUntil.textContent = selectedCert.validUntil || 'Diciembre 2025';
+                        if (modalLevel) modalLevel.textContent = selectedCert.level || 'Profesional';
+                        if (modalStudyHours) modalStudyHours.textContent = selectedCert.studyHours || '120 horas';
+
+                        // Botón de descarga
+                        const downloadBtn = this.getElement('modalDownloadButton');
+                        if (downloadBtn) {
+                            downloadBtn.href = selectedCert.downloadLink || '#';
+                            downloadBtn.style.display = selectedCert.downloadLink ? 'flex' : 'none';
+                        }
+
+                        // Skills con animación
+                        const modalSkills = this.getElement('modalSkills');
+                        if (modalSkills) {
+                            modalSkills.innerHTML = '';
+                            (selectedCert.skills || []).forEach((skill, index) => {
+                                const span = document.createElement('span');
+                                span.classList.add('skill-tag');
+                                span.textContent = skill;
+                                span.style.opacity = '0';
+                                span.style.transform = 'translateY(10px)';
+                                modalSkills.appendChild(span);
+
+                                // Animación escalonada
+                                setTimeout(() => {
+                                    span.style.transition = 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)';
+                                    span.style.opacity = '1';
+                                    span.style.transform = 'translateY(0)';
+                                }, index * 100);
+                            });
+                        }
+
+                        return true;
+                    } catch (error) {
+                        console.error('Error al actualizar modal:', error);
+                        return false;
+                    }
+                }
+            }
+
+            /**
+             * Sistema de Ecosistema 3D
+             * Maneja la lógica del ecosistema interactivo 3D
+             */
+            class Ecosystem3D {
+                constructor() {
+                    this.nodes = {};
+                    this.lines = {};
+                    this.isMobile = /Mobi|Android/i.test(navigator.userAgent);
+                    this.draggableInstance = null;
+                    
+                    this.init();
+                }
+                
+                init() {
+                    this.createNodes();
+                    this.createConnectionLines();
+                    this.updateLinePositions();
+                    this.setupInteractivity();
+                    this.setupAnimations();
+                }
+                
+                createNodes() {
+                    // Crear nodos del ecosistema
+                    const nodeData = [
+                        { id: 'aws-sa-pro', x: 20, y: 30, connections: ['scrum-master', 'azure-dp-203', 'terraform-associate', 'docker-certified'] },
+                        { id: 'azure-dp-203', x: 80, y: 20, connections: ['aws-sa-pro', 'terraform-associate'] },
+                        { id: 'terraform-associate', x: 60, y: 70, connections: ['aws-sa-pro', 'azure-dp-203', 'docker-certified'] },
+                        { id: 'docker-certified', x: 40, y: 80, connections: ['aws-sa-pro', 'terraform-associate'] },
+                        { id: 'scrum-master', x: 10, y: 60, connections: ['aws-sa-pro', 'google-pm'] },
+                        { id: 'google-pm', x: 90, y: 60, connections: ['scrum-master'] }
+                    ];
+                    
+                    nodeData.forEach(nodeInfo => {
+                        const node = document.createElement('div');
+                        node.className = 'ecosystem-node';
+                        node.id = `node-${nodeInfo.id}`;
+                        node.dataset.nodeId = nodeInfo.id;
+                        node.style.left = `${nodeInfo.x}%`;
+                        node.style.top = `${nodeInfo.y}%`;
+                        
+                        // Contenido del nodo
+                        node.innerHTML = `
+                            <img src="https://via.placeholder.com/60x60/1A1A1A/FFFFFF?text=${nodeInfo.id.charAt(0).toUpperCase()}" alt="${nodeInfo.id}">
+                            <span class="node-title">${nodeInfo.id.replace('-', ' ').toUpperCase()}</span>
+                        `;
+                        
+                        const container = document.getElementById('ecosystemContainer');
+                        if (container) {
+                            container.appendChild(node);
+                            this.nodes[nodeInfo.id] = node;
+                        }
+                    });
+                }
+                
+                createConnectionLines() {
+                    // Crear líneas de conexión entre nodos
+                    const connectionData = [
+                        { from: 'aws-sa-pro', to: 'scrum-master' },
+                        { from: 'aws-sa-pro', to: 'azure-dp-203' },
+                        { from: 'aws-sa-pro', to: 'terraform-associate' },
+                        { from: 'aws-sa-pro', to: 'docker-certified' },
+                        { from: 'azure-dp-203', to: 'terraform-associate' },
+                        { from: 'terraform-associate', to: 'docker-certified' },
+                        { from: 'scrum-master', to: 'google-pm' }
+                    ];
+                    
+                    const svg = document.getElementById('connectionLines');
+                    if (!svg) return;
+                    
+                    connectionData.forEach((connection, index) => {
+                        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        line.id = `line-${index}`;
+                        line.classList.add('connection-line');
+                        line.setAttribute('data-from', connection.from);
+                        line.setAttribute('data-to', connection.to);
+                        
+                        svg.appendChild(line);
+                        this.lines[`${connection.from}-${connection.to}`] = line;
+                    });
+                }
+                
+                updateLinePositions() {
+                    // Actualizar posiciones de las líneas de conexión
+                    Object.values(this.lines).forEach(line => {
+                        const fromId = line.getAttribute('data-from');
+                        const toId = line.getAttribute('data-to');
+                        
+                        const fromNode = this.nodes[fromId];
+                        const toNode = this.nodes[toId];
+                        
+                        if (fromNode && toNode) {
+                            const fromRect = fromNode.getBoundingClientRect();
+                            const toRect = toNode.getBoundingClientRect();
+                            const containerRect = document.getElementById('ecosystemContainer')?.getBoundingClientRect();
+                            
+                            if (containerRect) {
+                                const fromX = fromRect.left + fromRect.width / 2 - containerRect.left;
+                                const fromY = fromRect.top + fromRect.height / 2 - containerRect.top;
+                                const toX = toRect.left + toRect.width / 2 - containerRect.left;
+                                const toY = toRect.top + toRect.height / 2 - containerRect.top;
+                                
+                                line.setAttribute('x1', fromX);
+                                line.setAttribute('y1', fromY);
+                                line.setAttribute('x2', toX);
+                                line.setAttribute('y2', toY);
+                            }
+                        }
+                    });
+                }
+                
+                setupInteractivity() {
+                    // Configurar interactividad de los nodos
+                    Object.values(this.nodes).forEach(node => {
+                        node.addEventListener('click', () => {
+                            this.focusNode(node.dataset.nodeId);
+                        });
+                        
+                        node.addEventListener('mouseenter', () => {
+                            this.highlightConnections(node.dataset.nodeId);
+                        });
+                        
+                        node.addEventListener('mouseleave', () => {
+                            this.clearHighlights();
+                        });
+                    });
+                }
+                
+                setupAnimations() {
+                    // Animaciones de entrada
+                    if (typeof gsap !== 'undefined') {
+                        gsap.fromTo(Object.values(this.nodes), 
+                            { opacity: 0, scale: 0.5, y: "+=50" },
+                            { 
+                                opacity: 1, 
+                                scale: 1, 
+                                y: 0, 
+                                duration: 1, 
+                                ease: "back.out(1.7)", 
+                                stagger: 0.05, 
+                                delay: 0.5 
+                            }
+                        );
+                        
+                        gsap.fromTo(Object.values(this.lines), 
+                            { opacity: 0, strokeWidth: 0 },
+                            { 
+                                opacity: 1, 
+                                strokeWidth: 2, 
+                                duration: 1.5, 
+                                delay: 1, 
+                                ease: "power2.out" 
+                            }
+                        );
+                    }
+                }
+                
+                focusNode(nodeId) {
+                    // Enfocar un nodo específico
+                    Object.values(this.nodes).forEach(node => {
+                        if (node.dataset.nodeId === nodeId) {
+                            node.classList.add('focused');
+                        } else {
+                            node.classList.remove('focused');
+                        }
+                    });
+                }
+                
+                highlightConnections(nodeId) {
+                    // Resaltar conexiones de un nodo
+                    Object.values(this.lines).forEach(line => {
+                        const fromId = line.getAttribute('data-from');
+                        const toId = line.getAttribute('data-to');
+                        
+                        if (fromId === nodeId || toId === nodeId) {
+                            line.classList.add('active');
+                        }
+                    });
+                }
+                
+                clearHighlights() {
+                    // Limpiar resaltados
+                    Object.values(this.lines).forEach(line => {
+                        line.classList.remove('active');
+                    });
+                    
+                    Object.values(this.nodes).forEach(node => {
+                        node.classList.remove('focused');
+                    });
+                }
+            }
+
+            /**
+             * Sistema de Formulario de Contacto
+             * Maneja la lógica del formulario de contacto
+             */
+            class ContactForm {
+                constructor() {
+                    this.form = document.querySelector('.contact-form');
+                    this.init();
+                }
+                
+                init() {
+                    if (this.form) {
+                        this.setupFormValidation();
+                        this.setupFormSubmission();
+                    }
+                }
+                
+                setupFormValidation() {
+                    const inputs = this.form.querySelectorAll('input, textarea');
+                    
+                    inputs.forEach(input => {
+                        input.addEventListener('blur', () => {
+                            this.validateField(input);
+                        });
+                        
+                        input.addEventListener('input', () => {
+                            this.clearFieldError(input);
+                        });
+                    });
+                }
+                
+                setupFormSubmission() {
+                    this.form.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        
+                        if (this.validateForm()) {
+                            this.submitForm();
+                        }
+                    });
+                }
+                
+                validateField(field) {
+                    const value = field.value.trim();
+                    let isValid = true;
+                    let errorMessage = '';
+                    
+                    switch (field.type) {
+                        case 'email':
+                            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                            isValid = emailRegex.test(value);
+                            errorMessage = 'Por favor ingresa un email válido';
+                            break;
+                            
+                        case 'text':
+                        case 'textarea':
+                            isValid = value.length >= 3;
+                            errorMessage = 'Este campo debe tener al menos 3 caracteres';
+                            break;
+                    }
+                    
+                    if (!isValid) {
+                        this.showFieldError(field, errorMessage);
+                    } else {
+                        this.clearFieldError(field);
+                    }
+                    
+                    return isValid;
+                }
+                
+                validateForm() {
+                    const inputs = this.form.querySelectorAll('input, textarea');
+                    let isValid = true;
+                    
+                    inputs.forEach(input => {
+                        if (!this.validateField(input)) {
+                            isValid = false;
+                        }
+                    });
+                    
+                    return isValid;
+                }
+                
+                showFieldError(field, message) {
+                    this.clearFieldError(field);
+                    
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'field-error';
+                    errorDiv.textContent = message;
+                    
+                    field.classList.add('error');
+                    field.parentNode.appendChild(errorDiv);
+                }
+                
+                clearFieldError(field) {
+                    field.classList.remove('error');
+                    const errorDiv = field.parentNode.querySelector('.field-error');
+                    if (errorDiv) {
+                        errorDiv.remove();
+                    }
+                }
+                
+                async submitForm() {
+                    const formData = new FormData(this.form);
+                    const submitButton = this.form.querySelector('button[type="submit"]');
+                    
+                    // Mostrar estado de carga
+                    submitButton.disabled = true;
+                    submitButton.textContent = 'Enviando...';
+                    
+                    try {
+                        // Simular envío (aquí iría la lógica real de envío)
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        
+                        this.showSuccessMessage();
+                        this.form.reset();
+                        
+                    } catch (error) {
+                        this.showErrorMessage();
+                    } finally {
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Enviar Mensaje';
+                    }
+                }
+                
+                showSuccessMessage() {
+                    const message = document.createElement('div');
+                    message.className = 'form-message success';
+                    message.textContent = '¡Mensaje enviado exitosamente! Te responderé pronto.';
+                    
+                    this.form.appendChild(message);
+                    
+                    setTimeout(() => {
+                        message.remove();
+                    }, 5000);
+                }
+                
+                showErrorMessage() {
+                    const message = document.createElement('div');
+                    message.className = 'form-message error';
+                    message.textContent = 'Hubo un error al enviar el mensaje. Por favor intenta nuevamente.';
+                    
+                    this.form.appendChild(message);
+                    
+                    setTimeout(() => {
+                        message.remove();
+                    }, 5000);
+                }
+            }
+
+
+
+
+
+            /**
+             * Inicialización de todos los sistemas
+             */
+            function initializeSystems() {
+                // Inicializar sistemas principales
+                const certificationsSystem = new CertificationsSystem();
+                const ecosystem3D = new Ecosystem3D();
+                const contactForm = new ContactForm();
+                
+                // Configurar GSAP si está disponible
+                if (typeof gsap !== 'undefined') {
+                    gsap.registerPlugin(ScrollTrigger);
+                    
+                    // Animaciones de scroll
+                    gsap.utils.toArray('.animate-on-scroll').forEach(element => {
+                        gsap.from(element, {
+                            scrollTrigger: {
+                                trigger: element,
+                                start: 'top 80%',
+                                end: 'bottom 20%',
+                                toggleActions: 'play none none reverse'
+                            },
+                            y: 50,
+                            opacity: 0,
+                            duration: 1,
+                            ease: 'power2.out'
+                        });
+                    });
+                }
+                
+                console.log('Sistemas del portafolio inicializados correctamente');
+            }
+
+            // Inicializar todos los sistemas
+            initializeSystems();
+        });
+    

@@ -2218,630 +2218,6 @@
        /* Puedes ajustar el color y el espaciado (60px) a tu gusto */
    }
     </style>
-
-<style>
-    /* ======================================================= */
-    /* ESTILOS PARA LA SECCIÓN DE CERTIFICACIONES */
-    /* ======================================================= */
-    
-    /* Variables CSS unificadas */
-    :root {
-        --bg-dark-gradient-center: #1a1a1a;
-        --bg-dark-gradient-edge: #000000;
-        --bg-primary: #111111;
-        --card-bg: #1A1A1A;
-        --node-bg: rgba(26, 26, 26, 0.7);
-        --text-light: #F8F8F8;
-        --text-mid: #CCCCCC;
-        --glow-color-default: rgba(0, 150, 255, 0.3);
-        --glow-color-hover: rgba(0, 150, 255, 0.8);
-        --line-color-default: rgba(255, 255, 255, 0.1);
-        --line-color-active: rgba(0, 150, 255, 0.7);
-        --accent-color: #007bff;
-        --node-size-desktop: 100px;
-        --node-size-mobile: 80px;
-        --transition-speed: 0.4s ease-in-out;
-        --node-border-radius: 50%;
-        --detail-panel-border-radius: 20px;
-        --border-radius-card: 12px;
-        --gutter-space: 2.5rem;
-        --shadow-subtle: 0 4px 15px rgba(0, 0, 0, 0.2);
-        --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.4);
-    }
-    
-    /* Ecosistema 3D */
-    .ecosystem-scene {
-        width: 100vw;
-        height: 100vh;
-        perspective: 1000px;
-        position: relative;
-        overflow: hidden;
-        background: radial-gradient(circle at center, var(--bg-dark-gradient-center) 0%, var(--bg-dark-gradient-edge) 100%);
-    }
-    
-    .ecosystem-container {
-        width: 100%;
-        height: 100%;
-        position: relative;
-        transform-style: preserve-3d;
-    }
-    
-    .connection-lines {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 1;
-    }
-    
-    .connection-line {
-        stroke: url(#lineGradient);
-        stroke-width: 2;
-        fill: none;
-        opacity: 0.3;
-        transition: opacity var(--transition-speed);
-    }
-    
-    .connection-line.active {
-        opacity: 0.7;
-    }
-    
-    /* Nodos del ecosistema */
-    .ecosystem-node {
-        position: absolute;
-        width: var(--node-size-desktop);
-        height: var(--node-size-desktop);
-        background: var(--node-bg);
-        border: 2px solid var(--glow-color-default);
-        border-radius: var(--node-border-radius);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all var(--transition-speed);
-        backdrop-filter: blur(10px);
-        z-index: 2;
-    }
-    
-    .ecosystem-node:hover {
-        border-color: var(--glow-color-hover);
-        box-shadow: 0 0 20px var(--glow-color-hover);
-        transform: scale(1.1);
-    }
-    
-    .ecosystem-node.active {
-        border-color: var(--glow-color-hover);
-        box-shadow: 0 0 30px var(--glow-color-hover);
-    }
-    
-    .ecosystem-node.attenuated {
-        opacity: 0.3;
-        transform: scale(0.8);
-    }
-    
-    .node-logo {
-        width: 60%;
-        height: 60%;
-        object-fit: contain;
-        filter: brightness(0) invert(1);
-        transition: filter var(--transition-speed);
-    }
-    
-    .ecosystem-node:hover .node-logo {
-        filter: brightness(1) invert(0);
-    }
-    
-    /* Panel de detalles */
-    .node-detail-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        backdrop-filter: blur(10px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-        opacity: 0;
-        visibility: hidden;
-        transition: all var(--transition-speed);
-    }
-    
-    .node-detail-overlay.active {
-        opacity: 1;
-        visibility: visible;
-    }
-    
-    .node-detail-panel {
-        background: var(--card-bg);
-        border-radius: var(--detail-panel-border-radius);
-        padding: 2rem;
-        max-width: 500px;
-        width: 90%;
-        position: relative;
-        border: 1px solid var(--border-color);
-        box-shadow: var(--shadow-hover);
-    }
-    
-    .close-detail-btn {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        background: none;
-        border: none;
-        color: var(--text-light);
-        font-size: 1.5rem;
-        cursor: pointer;
-        transition: color var(--transition-speed);
-    }
-    
-    .close-detail-btn:hover {
-        color: var(--accent-color);
-    }
-    
-    .detail-content {
-        text-align: center;
-    }
-    
-    .detail-logo {
-        width: 80px;
-        height: 80px;
-        margin: 0 auto 1rem;
-        object-fit: contain;
-    }
-    
-    .detail-title {
-        color: var(--text-light);
-        font-size: 1.5rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .detail-date {
-        color: var(--text-mid);
-        font-size: 1rem;
-        margin-bottom: 1rem;
-    }
-    
-    .detail-description {
-        color: var(--text-mid);
-        line-height: 1.6;
-        margin-bottom: 1.5rem;
-    }
-    
-    .detail-skills {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        justify-content: center;
-        margin-bottom: 1.5rem;
-    }
-    
-    .skill-tag {
-        background: var(--accent-color);
-        color: white;
-        padding: 0.3rem 0.8rem;
-        border-radius: 20px;
-        font-size: 0.8rem;
-    }
-    
-    .verify-button {
-        display: inline-block;
-        background: var(--accent-color);
-        color: white;
-        padding: 0.8rem 1.5rem;
-        border-radius: 25px;
-        text-decoration: none;
-        transition: all var(--transition-speed);
-    }
-    
-    .verify-button:hover {
-        background: var(--glow-color-hover);
-        transform: translateY(-2px);
-    }
-    
-    /* Botón de giroscopio */
-    .gyro-permission-btn {
-        position: absolute;
-        bottom: 2rem;
-        right: 2rem;
-        background: var(--accent-color);
-        color: white;
-        border: none;
-        padding: 0.8rem 1.5rem;
-        border-radius: 25px;
-        cursor: pointer;
-        transition: all var(--transition-speed);
-        z-index: 10;
-    }
-    
-    .gyro-permission-btn:hover {
-        background: var(--glow-color-hover);
-        transform: translateY(-2px);
-    }
-    
-    /* Mosaico de certificaciones */
-    .certifications-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 2rem;
-        margin-top: 3rem;
-    }
-    
-    .cert-card {
-        background: var(--card-bg);
-        border-radius: var(--border-radius-card);
-        padding: 1.5rem;
-        border: 1px solid var(--border-color);
-        box-shadow: var(--shadow-subtle);
-        transition: all var(--transition-speed);
-        cursor: pointer;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .cert-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(45deg, transparent, rgba(0, 150, 255, 0.1), transparent);
-        transform: translateX(-100%);
-        transition: transform var(--transition-speed);
-    }
-    
-    .cert-card:hover::before {
-        transform: translateX(100%);
-    }
-    
-    .cert-card:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--shadow-hover);
-        border-color: var(--accent-color);
-    }
-    
-    .cert-card.attenuated {
-        opacity: 0.5;
-        transform: scale(0.95);
-    }
-    
-    .cert-logo {
-        width: 60px;
-        height: 60px;
-        margin-bottom: 1rem;
-    }
-    
-    .cert-logo img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-    }
-    
-    .cert-content h3 {
-        color: var(--text-light);
-        font-size: 1.2rem;
-        margin-bottom: 0.5rem;
-        line-height: 1.4;
-    }
-    
-    .cert-date {
-        color: var(--text-mid);
-        font-size: 0.9rem;
-        margin-bottom: 1rem;
-    }
-    
-    .cert-skills {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
-    
-    /* Modal de certificaciones - Diseño Avanzado */
-    .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.85);
-        backdrop-filter: blur(15px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-    }
-    
-    .modal-overlay.active {
-        opacity: 1;
-        visibility: visible;
-    }
-    
-    .cert-modal {
-        background: linear-gradient(135deg, var(--card-bg) 0%, rgba(26,26,26,0.95) 100%);
-        border-radius: 20px;
-        max-width: 900px;
-        width: 90%;
-        max-height: 85vh;
-        overflow-y: auto;
-        position: relative;
-        border: 1px solid rgba(0, 245, 160, 0.2);
-        box-shadow: 
-            0 25px 50px rgba(0, 0, 0, 0.5),
-            0 0 30px rgba(0, 245, 160, 0.1);
-        transform: scale(0.9) translateY(20px);
-        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-    }
-    
-    .modal-overlay.active .cert-modal {
-        transform: scale(1) translateY(0);
-    }
-    
-    .close-modal-btn {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        background: none;
-        border: none;
-        color: var(--text-light);
-        font-size: 1.5rem;
-        cursor: pointer;
-        transition: color var(--transition-speed);
-        z-index: 1;
-    }
-    
-    .close-modal-btn:hover {
-        color: var(--accent-color);
-    }
-    
-    .modal-content {
-        padding: 2.5rem;
-    }
-    
-    .modal-header {
-        text-align: center;
-        margin-bottom: 2.5rem;
-        position: relative;
-    }
-    
-    .cert-status {
-        display: flex;
-        justify-content: center;
-        gap: 1rem;
-        margin-top: 1rem;
-    }
-    
-    .status-badge {
-        padding: 0.4rem 1rem;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 500;
-        backdrop-filter: blur(10px);
-    }
-    
-    .status-badge.verified {
-        background: rgba(0, 245, 160, 0.2);
-        color: #00f5a0;
-        border: 1px solid rgba(0, 245, 160, 0.3);
-    }
-    
-    .status-badge.active {
-        background: rgba(0, 210, 255, 0.2);
-        color: #00d2ff;
-        border: 1px solid rgba(0, 210, 255, 0.3);
-    }
-    
-    .modal-logo {
-        width: 80px;
-        height: 80px;
-        margin: 0 auto 1rem;
-        object-fit: contain;
-    }
-    
-    .modal-title {
-        color: var(--text-light);
-        font-size: 1.8rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .modal-date {
-        color: var(--text-mid);
-        font-size: 1.1rem;
-    }
-    
-    .modal-body {
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
-    }
-    
-    .modal-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 2.5rem;
-        align-items: start;
-    }
-    
-    .modal-left {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-    }
-    
-    .modal-right {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-    }
-    
-    .cert-details {
-        background: rgba(255, 255, 255, 0.03);
-        border-radius: 12px;
-        padding: 1.5rem;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .detail-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.8rem 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .detail-item:last-child {
-        border-bottom: none;
-    }
-    
-    .detail-label {
-        color: var(--text-mid);
-        font-size: 0.9rem;
-        font-weight: 500;
-    }
-    
-    .detail-value {
-        color: var(--text-light);
-        font-weight: 600;
-        font-size: 0.9rem;
-    }
-    
-    .cert-description h4,
-    .cert-skills-section h4 {
-        color: var(--text-light);
-        font-size: 1.1rem;
-        margin-bottom: 1rem;
-        font-weight: 600;
-    }
-    
-    .cert-actions {
-        display: flex;
-        gap: 1rem;
-        margin-top: auto;
-    }
-    
-    .modal-verify-btn,
-    .modal-download-btn {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.8rem 1.5rem;
-        border-radius: 25px;
-        text-decoration: none;
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        font-weight: 500;
-        font-size: 0.9rem;
-    }
-    
-    .modal-verify-btn.primary {
-        background: linear-gradient(135deg, var(--accent-color), #00d2ff);
-        color: white;
-        flex: 2;
-    }
-    
-    .modal-download-btn.secondary {
-        background: rgba(255, 255, 255, 0.1);
-        color: var(--text-light);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        flex: 1;
-    }
-    
-    .modal-verify-btn:hover,
-    .modal-download-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-    }
-    
-    .btn-icon {
-        font-size: 1rem;
-    }
-    
-    .modal-cert-image {
-        width: 100%;
-        height: auto;
-        border-radius: var(--border-radius-card);
-        box-shadow: var(--shadow-subtle);
-    }
-    
-    .modal-info {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-    
-    .modal-description {
-        color: var(--text-mid);
-        line-height: 1.6;
-        font-size: 1rem;
-    }
-    
-    .modal-skills {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
-    
-    .modal-verify-btn {
-        display: inline-block;
-        background: var(--accent-color);
-        color: white;
-        padding: 0.8rem 1.5rem;
-        border-radius: 25px;
-        text-decoration: none;
-        transition: all var(--transition-speed);
-        text-align: center;
-        margin-top: auto;
-    }
-    
-    .modal-verify-btn:hover {
-        background: var(--glow-color-hover);
-        transform: translateY(-2px);
-    }
-    
-    /* Responsive */
-    @media (max-width: 768px) {
-        .ecosystem-node {
-            width: var(--node-size-mobile);
-            height: var(--node-size-mobile);
-        }
-        
-        .certifications-grid {
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-        }
-        
-        .modal-grid {
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-        }
-        
-        .cert-actions {
-            flex-direction: column;
-        }
-        
-        .modal-content {
-            padding: 1.5rem;
-        }
-        
-        .cert-status {
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        
-        .gyro-permission-btn {
-            bottom: 1rem;
-            right: 1rem;
-            padding: 0.6rem 1rem;
-            font-size: 0.9rem;
-        }
-    }
-</style>
-
 </head>
 <body>
 
@@ -3595,176 +2971,6 @@
             </div>
         </section>
 
-        <!-- ======================================================= -->
-        <!-- SECCIÓN DE CERTIFICACIONES - Ecosistema de Conocimiento -->
-        <!-- ======================================================= -->
-        <div class="container">
-            <section id="certifications" class="certifications-section">
-                <div class="section-header reveal-up">
-                    <h2 class="section-title">Certificaciones y Formación Continua</h2>
-                    <p class="section-subtitle">Ecosistema de conocimiento validado por instituciones reconocidas globalmente.</p>
-                </div>
-                
-
-                
-                <!-- Mosaico de Certificaciones -->
-                <div class="certifications-grid">
-                    <div class="cert-card" data-cert-id="aws-sa-pro">
-                        <div class="cert-logo">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Amazon_Web_Services_Logo.svg/1024px-Amazon_Web_Services_Logo.svg.png" alt="AWS">
-                        </div>
-                        <div class="cert-content">
-                            <h3>AWS Certified Solutions Architect - Professional</h3>
-                            <p class="cert-date">Enero 2024</p>
-                            <div class="cert-skills">
-                                <span class="skill-tag">Cloud Computing</span>
-                                <span class="skill-tag">AWS</span>
-                                <span class="skill-tag">Architecture</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="cert-card" data-cert-id="azure-dp-203">
-                        <div class="cert-logo">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Microsoft_Azure.svg/1024px-Microsoft_Azure.svg.png" alt="Azure">
-                        </div>
-                        <div class="cert-content">
-                            <h3>Microsoft Azure Data Engineer Associate</h3>
-                            <p class="cert-date">Marzo 2024</p>
-                            <div class="cert-skills">
-                                <span class="skill-tag">Data Engineering</span>
-                                <span class="skill-tag">Azure</span>
-                                <span class="skill-tag">Big Data</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="cert-card" data-cert-id="terraform-associate">
-                        <div class="cert-logo">
-                            <img src="https://www.vectorlogo.zone/logos/terraformio/terraformio-icon.svg" alt="Terraform">
-                        </div>
-                        <div class="cert-content">
-                            <h3>HashiCorp Certified: Terraform Associate</h3>
-                            <p class="cert-date">Abril 2024</p>
-                            <div class="cert-skills">
-                                <span class="skill-tag">Infrastructure as Code</span>
-                                <span class="skill-tag">Terraform</span>
-                                <span class="skill-tag">DevOps</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="cert-card" data-cert-id="docker-certified">
-                        <div class="cert-logo">
-                            <img src="https://www.vectorlogo.zone/logos/docker/docker-icon.svg" alt="Docker">
-                        </div>
-                        <div class="cert-content">
-                            <h3>Docker Certified Associate</h3>
-                            <p class="cert-date">Mayo 2024</p>
-                            <div class="cert-skills">
-                                <span class="skill-tag">Containerization</span>
-                                <span class="skill-tag">Docker</span>
-                                <span class="skill-tag">Microservices</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="cert-card" data-cert-id="scrum-master">
-                        <div class="cert-logo">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Scrum_logo.svg/1024px-Scrum_logo.svg.png" alt="Scrum">
-                        </div>
-                        <div class="cert-content">
-                            <h3>Certified Scrum Master (CSM)</h3>
-                            <p class="cert-date">Junio 2024</p>
-                            <div class="cert-skills">
-                                <span class="skill-tag">Agile</span>
-                                <span class="skill-tag">Scrum</span>
-                                <span class="skill-tag">Leadership</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="cert-card" data-cert-id="google-pm">
-                        <div class="cert-logo">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/1024px-Google_%22G%22_Logo.svg.png" alt="Google">
-                        </div>
-                        <div class="cert-content">
-                            <h3>Google Project Management Professional Certificate</h3>
-                            <p class="cert-date">Julio 2024</p>
-                            <div class="cert-skills">
-                                <span class="skill-tag">Project Management</span>
-                                <span class="skill-tag">Google</span>
-                                <span class="skill-tag">Leadership</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div>
-        
-        <!-- Modal para Detalles de Certificaciones -->
-        <div class="modal-overlay" id="certModalOverlay">
-            <div class="cert-modal" id="certModal">
-                <button class="close-modal-btn" id="closeModalButton">×</button>
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <img id="modalLogo" class="modal-logo" src="" alt="Logo">
-                        <h3 id="modalTitle" class="modal-title"></h3>
-                        <p id="modalDate" class="modal-date"></p>
-                        <div class="cert-status">
-                            <span class="status-badge verified">✓ Verificado</span>
-                            <span class="status-badge active">🟢 Activo</span>
-                        </div>
-                    </div>
-                    <div class="modal-body">
-                        <div class="modal-grid">
-                            <div class="modal-left">
-                                <img id="modalCertImage" class="modal-cert-image" src="" alt="Certificado">
-                                <div class="cert-details">
-                                    <div class="detail-item">
-                                        <span class="detail-label">ID de Certificación:</span>
-                                        <span id="modalCertId" class="detail-value"></span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Válido hasta:</span>
-                                        <span id="modalValidUntil" class="detail-value"></span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Nivel:</span>
-                                        <span id="modalLevel" class="detail-value"></span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="detail-label">Horas de Estudio:</span>
-                                        <span id="modalStudyHours" class="detail-value"></span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="modal-right">
-                                <div class="cert-description">
-                                    <h4>Descripción Profesional</h4>
-                                    <p id="modalDescription" class="modal-description"></p>
-                                </div>
-                                <div class="cert-skills-section">
-                                    <h4>Competencias Validadas</h4>
-                                    <div id="modalSkills" class="modal-skills"></div>
-                                </div>
-                                <div class="cert-actions">
-                                    <a id="modalVerifyButton" class="modal-verify-btn primary" href="" target="_blank">
-                                        <span class="btn-icon">🔍</span>
-                                        Verificar Certificado
-                                    </a>
-                                    <a id="modalDownloadButton" class="modal-download-btn secondary" href="" target="_blank">
-                                        <span class="btn-icon">📄</span>
-                                        Descargar PDF
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div class="container">
             <section id="testimonials">
                 <div class="section-header reveal-up">
@@ -3942,6 +3148,515 @@
         </footer>
     </main>
     
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+    
+            /**
+             * Sistema de Audio Inmersivo
+             * Maneja toda la funcionalidad de audio del portafolio
+             */
+            class AudioSystem {
+                constructor(uiManager) {
+                    this.uiManager = uiManager;
+                    this.isAudioEnabled = true;
+                    this.hasUserInteracted = false;
+                    this.backgroundMusic = document.getElementById('background-music');
+                    this.audioToggle = document.getElementById('audio-toggle');
+                    
+                    this.init();
+                }
+                
+                init() {
+                    this.setupAudioToggle();
+                    this.setupBackgroundMusic();
+                    this.setupSoundEffects();
+                    this.setupUserInteraction();
+                }
+                
+                setupAudioToggle() {
+                    if (!this.audioToggle) return;
+                    
+                    this.audioToggle.addEventListener('click', () => {
+                        this.isAudioEnabled = !this.isAudioEnabled;
+                        this.audioToggle.classList.toggle('muted', !this.isAudioEnabled);
+                        
+                        // Agregar efecto visual de confirmación
+                        this.audioToggle.classList.add('active');
+                        setTimeout(() => this.audioToggle.classList.remove('active'), 200);
+                        
+                        if (this.isAudioEnabled) {
+                            if (this.hasUserInteracted) {
+                                this.backgroundMusic.play().catch(e => console.log('Audio play failed:', e));
+                            }
+                        } else {
+                            this.backgroundMusic.pause();
+                        }
+                    });
+                }
+                
+                setupBackgroundMusic() {
+                    if (!this.backgroundMusic) return;
+                    
+                    // Configurar volumen bajo para música de fondo
+                    this.backgroundMusic.volume = 0.3;
+                    
+                    // La música se iniciará con la primera interacción del usuario
+                }
+                
+                setVolume(type, volume) {
+                    const audioElements = {
+                        background: this.backgroundMusic,
+                        effects: document.querySelectorAll('#audio-players audio:not(#background-music)')
+                    };
+                    
+                    if (type === 'background' && audioElements.background) {
+                        audioElements.background.volume = Math.max(0, Math.min(1, volume));
+                    } else if (type === 'effects') {
+                        audioElements.effects.forEach(audio => {
+                            audio.volume = Math.max(0, Math.min(1, volume));
+                        });
+                    }
+                }
+                
+                setupUserInteraction() {
+                    // Detectar la primera interacción del usuario para iniciar la música
+                    const startMusicOnInteraction = () => {
+                        if (!this.hasUserInteracted && this.isAudioEnabled) {
+                            this.hasUserInteracted = true;
+                            this.backgroundMusic.play().catch(e => console.log('Background music failed to start:', e));
+                            
+                            // Remover los event listeners después de la primera interacción
+                            document.removeEventListener('click', startMusicOnInteraction);
+                            document.removeEventListener('keydown', startMusicOnInteraction);
+                            document.removeEventListener('touchstart', startMusicOnInteraction);
+                        }
+                    };
+                    
+                    document.addEventListener('click', startMusicOnInteraction);
+                    document.addEventListener('keydown', startMusicOnInteraction);
+                    document.addEventListener('touchstart', startMusicOnInteraction);
+                }
+                
+                setupSoundEffects() {
+                    // Configurar efectos de sonido para diferentes elementos
+                    this.setupHoverEffects();
+                    this.setupClickEffects();
+                    this.setupAccordionEffects();
+                    this.setupNavigationEffects();
+                    this.setupFormEffects();
+                    this.setupTooltipEffects();
+                }
+                
+                setupHoverEffects() {
+                    // Botones y elementos interactivos
+                    const hoverElements = [
+                        { selector: '.cta-button, .nav-link, .portfolio-card, .skill-item, .service-header', sound: 'hover-sound' },
+                        { selector: '.skill-category', sound: 'category-activate' },
+                        { selector: '.social-link', sound: 'social-hover' },
+                        { selector: '.portfolio-card', sound: 'card-hover' },
+                        { selector: '.skill-item', sound: 'skill-hover' },
+                        { selector: '.testimonial-card', sound: 'card-hover' },
+                        { selector: '.process-step', sound: 'hover-sound' }
+                    ];
+                    
+                    hoverElements.forEach(({ selector, sound }) => {
+                        document.querySelectorAll(selector).forEach(element => {
+                            element.addEventListener('mouseenter', () => this.playSound(sound));
+                        });
+                    });
+                }
+                
+                setupClickEffects() {
+                    // Clics en botones y elementos importantes
+                    const clickElements = [
+                        { selector: '.cta-button, .portfolio-card', sound: 'click-sound' },
+                        { selector: '.nav-link', sound: 'nav-click' },
+                        { selector: '.portfolio-nav-btn, .portfolio-indicators .indicator', sound: 'portfolio-nav' },
+                        { selector: '.testimonial-nav-btn', sound: 'testimonial-cycle' },
+                        { selector: '.social-link', sound: 'click-sound' },
+                        { selector: '.hamburger', sound: 'click-sound' },
+                        { selector: '.skill-item', sound: 'click-sound' },
+                        { selector: '.process-step', sound: 'click-sound' },
+                        { selector: '.testimonial-card', sound: 'click-sound' }
+                    ];
+                    
+                    clickElements.forEach(({ selector, sound }) => {
+                        document.querySelectorAll(selector).forEach(element => {
+                            element.addEventListener('click', () => this.playSound(sound));
+                        });
+                    });
+                }
+                
+                setupAccordionEffects() {
+                    // Efectos para acordeones (servicios y FAQ)
+                    document.querySelectorAll('.service-header, .faq-header').forEach(header => {
+                        header.addEventListener('click', () => {
+                            const item = header.closest('.service-item, .faq-item');
+                            const isActive = item.classList.contains('active');
+                            this.playSound(isActive ? 'accordion-close' : 'accordion-open');
+                        });
+                    });
+                }
+                
+                setupNavigationEffects() {
+                    // Efectos para navegación del portafolio
+                    document.querySelectorAll('#prev-project, #next-project').forEach(btn => {
+                        btn.addEventListener('click', () => this.playSound('portfolio-nav'));
+                    });
+                    
+                    document.querySelectorAll('#prev-testimonial, #next-testimonial').forEach(btn => {
+                        btn.addEventListener('click', () => this.playSound('testimonial-cycle'));
+                    });
+                }
+                
+                setupFormEffects() {
+                    // Efectos para formularios
+                    document.querySelectorAll('input, textarea').forEach(input => {
+                        input.addEventListener('focus', () => this.playSound('input-focus'));
+                        input.addEventListener('input', () => this.playSound('typing-start'));
+                    });
+                    
+                    document.querySelectorAll('form').forEach(form => {
+                        form.addEventListener('submit', () => this.playSound('form-submit'));
+                    });
+                }
+                
+                setupTooltipEffects() {
+                    // Efectos para tooltips de habilidades
+                    document.querySelectorAll('.skill-item').forEach(skill => {
+                        skill.addEventListener('mouseenter', () => {
+                            // Pequeño delay para que el tooltip aparezca primero
+                            setTimeout(() => this.playSound('tooltip-show'), 100);
+                        });
+                    });
+                }
+                
+                playSound(soundId) {
+                    if (!this.isAudioEnabled) return;
+                    
+                    const audio = document.getElementById(soundId);
+                    if (audio) {
+                        try {
+                            // Resetear el audio para permitir reproducción múltiple
+                            audio.currentTime = 0;
+                            audio.volume = 0.5; // Volumen moderado para efectos
+                            
+                            // Usar una promesa para manejar mejor los errores
+                            const playPromise = audio.play();
+                            if (playPromise !== undefined) {
+                                playPromise.catch(error => {
+                                    // Solo loggear errores que no sean de autoplay policy
+                                    if (error.name !== 'NotAllowedError') {
+                                        console.log(`Sound ${soundId} failed to play:`, error);
+                                    }
+                                });
+                            }
+                        } catch (error) {
+                            console.log(`Error playing sound ${soundId}:`, error);
+                        }
+                    }
+                }
+            }
+    
+            /**
+             * Maneja la escena de fondo con Three.js.
+             * (Sin cambios, ya es eficiente y encapsulada).
+             */
+            class ThreeJSScene {
+                constructor(canvasId) {
+                    this.canvas = document.getElementById(canvasId);
+                    if (!this.canvas) {
+                        console.error('Three.js canvas not found!');
+                        return;
+                    }
+                    this.init();
+                }
+                init() {
+                    this.scene = new THREE.Scene();
+                    this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+                    this.camera.position.set(0, 0, 60);
+                    this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true });
+                    this.renderer.setClearColor(0x0a0a1a, 1);
+                    this.renderer.setSize(window.innerWidth, window.innerHeight);
+                    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                    this.createNebula();
+                    window.addEventListener('resize', this.onWindowResize.bind(this));
+                    this.animate(0);
+                }
+                createNebula() {
+                    const bgGeo = new THREE.SphereGeometry(900, 32, 32);
+                    this.nebulaMaterial = new THREE.ShaderMaterial({
+                        uniforms: { time: { value: 0 } },
+                        vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+                        fragmentShader: `uniform float time; varying vec2 vUv; void main() { float n = sin(vUv.x * 12.0 + time) * cos(vUv.y * 8.0 + time * 0.7); vec3 col = mix(vec3(0.05, 0.07, 0.25), vec3(0.4, 0.02, 0.08), n * 0.5 + 0.5); gl_FragColor = vec4(col, 1.0); }`,
+                        side: THREE.BackSide
+                    });
+                    this.scene.add(new THREE.Mesh(bgGeo, this.nebulaMaterial));
+                }
+                onWindowResize() {
+                    this.camera.aspect = window.innerWidth / window.innerHeight;
+                    this.camera.updateProjectionMatrix();
+                    this.renderer.setSize(window.innerWidth, window.innerHeight);
+                }
+                animate(time) {
+                    this.nebulaMaterial.uniforms.time.value = time * 0.0005;
+                    this.renderer.render(this.scene, this.camera);
+                    requestAnimationFrame(this.animate.bind(this));
+                }
+            }
+    
+            /**
+             * Maneja todas las animaciones con GSAP y ScrollTrigger.
+             */
+            class ScrollAnimations {
+                constructor() {
+                    gsap.registerPlugin(ScrollTrigger);
+                    // ANÁLISIS Y MEJORA: Hacemos una propiedad para que el UIManager pueda acceder a ella.
+                    this.portfolioScrollTrigger = null; 
+                    this.init();
+                }
+                init() {
+                    this.revealElements();
+                    this.initHorizontalPortfolio();
+                }
+                revealElements() {
+                    gsap.utils.toArray('.reveal-up').forEach(el => {
+                        gsap.fromTo(el, { opacity: 0, y: 50 }, {
+                            opacity: 1, y: 0, duration: 1, ease: 'power3.out',
+                            scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none none' },
+                        });
+                    });
+                }
+                initHorizontalPortfolio() {
+                    if (window.innerWidth <= 768) return;
+                    let portfolioContainer = document.querySelector("#portfolio-container");
+                    let portfolioGrid = document.querySelector(".portfolio-grid");
+                    
+                    // ANÁLISIS Y MEJORA: Guardamos la instancia de ScrollTrigger en la propiedad de la clase.
+                    // Esto es crucial para que los botones de navegación puedan controlarla.
+                    let tween = gsap.to(portfolioGrid, {
+                        x: () => -(portfolioGrid.scrollWidth - document.documentElement.clientWidth),
+                        ease: "none",
+                        scrollTrigger: {
+                            trigger: portfolioContainer,
+                            pin: true,
+                            scrub: 1,
+                            end: () => "+=" + (portfolioGrid.scrollWidth - document.documentElement.clientWidth),
+                            invalidateOnRefresh: true,
+                            // ANÁLISIS Y MEJORA: Añadimos un onUpdate para sincronizar los indicadores.
+                            onUpdate: self => {
+                                 const progress = self.progress;
+                                 const totalProjects = document.querySelectorAll('.portfolio-card').length;
+                                 const currentIndex = Math.round(progress * (totalProjects - 1));
+                                 document.querySelectorAll('.portfolio-indicators .indicator').forEach((indicator, index) => {
+                                     indicator.classList.toggle('active', index === currentIndex);
+                                 });
+                            }
+                        },
+                    });
+    
+                    // Extraemos el ScrollTrigger de la animación para poder controlarlo externamente.
+                    this.portfolioScrollTrigger = tween.scrollTrigger;
+                }
+            }
+    
+            /**
+             * Maneja todas las interacciones de la interfaz de usuario.
+             */
+            class UIManager {
+                // ANÁLISIS Y MEJORA: Acepta la instancia de scrollAnimations para poder interactuar con ella.
+                constructor(scrollAnimations) {
+                    this.scrollAnimations = scrollAnimations;
+                    this.init();
+                }
+                init() {
+                    this.handleHeaderScroll();
+                    this.setupAccordion('.service-item', '.service-header', '.service-details');
+                    this.setupAccordion('.faq-item', '.faq-header', '.faq-answer');
+                    this.setupMobileNav();
+                    this.setupSkillsMatrix();
+                    this.setupPortfolioNavigation(); // Ahora funcionará correctamente
+                    this.setupTestimonials();
+                    this.setupFuturisticTitleEffect(); // Consolidado aquí
+                    this.setupFooterAnimation(); // Consolidado aquí
+                }
+                handleHeaderScroll() {
+                    const header = document.querySelector('.main-header');
+                    ScrollTrigger.create({
+                        start: 'top -80', end: 99999,
+                        onUpdate: self => header.classList.toggle('scrolled', self.direction === 1 && self.scroll() > 80)
+                    });
+                }
+                setupAccordion(itemSelector, headerSelector, detailsSelector) {
+                    const accordionItems = document.querySelectorAll(itemSelector);
+                    accordionItems.forEach(item => {
+                        const header = item.querySelector(headerSelector);
+                        const details = item.querySelector(detailsSelector);
+                        header.addEventListener('click', () => {
+                            const isActive = item.classList.contains('active');
+                            accordionItems.forEach(otherItem => {
+                                if (otherItem !== item && otherItem.classList.contains('active')) {
+                                    otherItem.classList.remove('active');
+                                    gsap.to(otherItem.querySelector(detailsSelector), { maxHeight: 0, duration: 0.5, ease: 'power2.inOut' });
+                                }
+                            });
+                            item.classList.toggle('active');
+                            gsap.to(details, {
+                                maxHeight: isActive ? 0 : details.scrollHeight + 20,
+                                duration: 0.5, ease: 'power2.inOut'
+                            });
+                        });
+                    });
+                }
+                setupMobileNav() {
+                    const hamburger = document.querySelector('.hamburger');
+                    const mainNav = document.querySelector('.main-nav');
+                    const navLinks = document.querySelectorAll('.main-nav .nav-link');
+                    hamburger.addEventListener('click', () => {
+                        mainNav.classList.toggle('active');
+                        hamburger.classList.toggle('active');
+                    });
+                    navLinks.forEach(link => {
+                        link.addEventListener('click', () => {
+                            mainNav.classList.remove('active');
+                            hamburger.classList.remove('active');
+                        });
+                    });
+                }
+                
+                // ANÁLISIS Y MEJORA: Se crea una función auxiliar para evitar repetir código.
+                _setupHoverEffect(selector) {
+                    document.querySelectorAll(selector).forEach(item => {
+                        item.addEventListener('mouseenter', () => item.classList.add('active'));
+                        item.addEventListener('mouseleave', () => item.classList.remove('active'));
+                    });
+                }
+                setupSkillsMatrix() {
+                    this._setupHoverEffect('.skill-category');
+                    this._setupHoverEffect('.skill-item');
+                }
+    
+                // ANÁLISIS Y MEJORA: Lógica completamente rehecha para no entrar en conflicto.
+                setupPortfolioNavigation() {
+                    const prevBtn = document.getElementById('prev-project');
+                    const nextBtn = document.getElementById('next-project');
+                    const indicators = document.querySelectorAll('.portfolio-indicators .indicator');
+                    const totalProjects = document.querySelectorAll('.portfolio-card').length;
+                    let currentIndex = 0;
+    
+                    // Si el scrolltrigger no se inicializó (estamos en móvil), no hacer nada.
+                    if (!this.scrollAnimations.portfolioScrollTrigger) return;
+                    
+                    const st = this.scrollAnimations.portfolioScrollTrigger;
+                    const scrollDistancePerProject = (st.end - st.start) / (totalProjects - 1);
+                    
+                    const updateCurrentIndex = () => {
+                         const progress = (st.scroll() - st.start) / (st.end - st.start);
+                         currentIndex = Math.round(progress * (totalProjects - 1));
+                    };
+    
+                    const scrollToProject = (index) => {
+                        updateCurrentIndex();
+                        const targetScroll = st.start + index * scrollDistancePerProject;
+                        gsap.to(window, {
+                            scrollTo: { y: targetScroll, autoKill: false },
+                            duration: 1,
+                            ease: 'power2.inOut'
+                        });
+                    };
+    
+                    prevBtn.addEventListener('click', () => {
+                        updateCurrentIndex();
+                        scrollToProject(Math.max(0, currentIndex - 1));
+                    });
+                    nextBtn.addEventListener('click', () => {
+                        updateCurrentIndex();
+                        scrollToProject(Math.min(totalProjects - 1, currentIndex + 1));
+                    });
+                    indicators.forEach((indicator, index) => {
+                        indicator.addEventListener('click', () => scrollToProject(index));
+                    });
+                }
+                
+                setupTestimonials() {
+                    const testimonialCards = document.querySelectorAll('.testimonial-card');
+                    const prevBtn = document.getElementById('prev-testimonial');
+                    const nextBtn = document.getElementById('next-testimonial');
+                    
+                    if (testimonialCards.length === 0) return;
+    
+                    let currentTestimonial = 0;
+                    const totalTestimonials = testimonialCards.length;
+    
+                    const showTestimonial = (index) => {
+                        testimonialCards.forEach((card, i) => {
+                            const isActive = i === index;
+                            gsap.to(card, {
+                                opacity: isActive ? 1 : 0,
+                                pointerEvents: isActive ? 'auto' : 'none',
+                                duration: 0.5,
+                                ease: 'power2.out'
+                            });
+                            if(isActive) {
+                               card.classList.add('glitch');
+                               setTimeout(() => card.classList.remove('glitch'), 300);
+                            }
+                        });
+                        document.querySelectorAll('.status-dot').forEach((dot, i) => dot.classList.toggle('active', i === index));
+                    }
+    
+                    // Ocultar todos excepto el primero al inicio
+                    showTestimonial(0);
+    
+                    prevBtn.addEventListener('click', () => {
+                        currentTestimonial = (currentTestimonial - 1 + totalTestimonials) % totalTestimonials;
+                        showTestimonial(currentTestimonial);
+                    });
+                    nextBtn.addEventListener('click', () => {
+                        currentTestimonial = (currentTestimonial + 1) % totalTestimonials;
+                        showTestimonial(currentTestimonial);
+                    });
+                }
+                
+                // ANÁLISIS Y MEJORA: Funciones de los otros scripts, consolidadas aquí.
+                setupFuturisticTitleEffect() {
+                    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()_+-=[]{}|;':,.<>/?";
+                    const title = document.getElementById("futuristic-title");
+                    if (!title) return;
+                    
+                    let originalText = title.textContent;
+                    let interval;
+    
+                    title.addEventListener("mouseenter", () => {
+                        let iteration = 0;
+                        clearInterval(interval);
+                        interval = setInterval(() => {
+                            title.textContent = originalText.split("").map((char, i) => {
+                                    if (i < iteration) return originalText[i];
+                                    return letters[Math.floor(Math.random() * letters.length)];
+                                }).join("");
+                            if (iteration >= originalText.length) clearInterval(interval);
+                            iteration += 0.5;
+                        }, 30);
+                    });
+                }
+                setupFooterAnimation() {
+                     gsap.to('.footer-divider', {
+                        boxShadow: '0 0 32px 8px var(--accent-primary)',
+                        repeat: -1, yoyo: true, duration: 2.5, ease: 'power1.inOut'
+                     });
+                }
+            }
+    
+            // --- INICIALIZACIÓN DE MÓDULOS ---
+            new ThreeJSScene('three-canvas');
+            const scrollAnimations = new ScrollAnimations();
+            const uiManager = new UIManager(scrollAnimations); // Pasamos la instancia para que puedan comunicarse.
+            
+            // --- SISTEMA DE AUDIO INMERSIVO ---
+            new AudioSystem(uiManager);
+        });
+        </script>
         
         <!-- ======================================================= -->
         <!-- SISTEMA DE AUDIO INMERSIVO - REPRODUCTORES OCULTOS      -->
@@ -3963,1005 +3678,194 @@
             </audio>
             
             <!-- ======================================================= -->
-            <!-- SISTEMA DE AUDIO ÚNICO POR ELEMENTO ESPECÍFICO        -->
+            <!-- EFECTOS DE SONIDO PARA INTERACCIONES DE USUARIO       -->
             <!-- ======================================================= -->
             
             <!-- ======================================================= -->
-            <!-- MENÚ DE NAVEGACIÓN - Audio único para todos los enlaces -->
+            <!-- SECCIÓN: HOVER EFFECTS - Efectos al pasar el mouse    -->
             <!-- ======================================================= -->
-            <!-- AUDIO: Hover en cualquier enlace del menú -->
-            <!-- USO: Se reproduce al pasar el mouse sobre cualquier enlace del menú -->
-            <!-- ELEMENTO: Todos los enlaces del menú de navegación -->
+            <!-- AUDIO: Sonido sutil de "activación" para botones y elementos interactivos -->
+            <!-- USO: Se reproduce cuando el usuario pasa el mouse sobre cualquier elemento interactivo -->
+            <!-- ELEMENTOS: Botones, enlaces, tarjetas, elementos de navegación -->
+            <!-- VOLUMEN: 40% - Sutil pero audible -->
+            <!-- DURACIÓN: 0.5-1 segundo -->
+            <audio id="hover-sound" preload="auto">
+                <source src="assets/media/pixabay/UiTecnicoModerno-2.mp3" type="audio/mpeg">
+            </audio>
+            
+            <!-- ======================================================= -->
+            <!-- SECCIÓN: CLICK EFFECTS - Efectos al hacer clic        -->
+            <!-- ======================================================= -->
+            <!-- AUDIO: Sonido de "confirmación" para botones principales y elementos importantes -->
+            <!-- USO: Se reproduce cuando el usuario hace clic en elementos importantes -->
+            <!-- ELEMENTOS: Botones de acción, enlaces principales, elementos de navegación -->
+            <!-- VOLUMEN: 50% - Más audible que hover para confirmar la acción -->
+            <!-- DURACIÓN: 0.8-1.2 segundos -->
+            <audio id="click-sound" preload="auto">
+                <source src="../assets/media/sounds/audio-btn-click.mp3" type="audio/mpeg">
+            </audio>
+            
+            <!-- ======================================================= -->
+            <!-- SECCIÓN: ACORDEÓN - Efectos para apertura y cierre    -->
+            <!-- ======================================================= -->
+            <!-- AUDIO: Sonido de "despliegue mecánico" al abrir servicios o FAQ -->
+            <!-- USO: Se reproduce cuando se expande una sección de acordeón -->
+            <!-- ELEMENTOS: Secciones de servicios, FAQ, información expandible -->
+            <!-- VOLUMEN: 45% - Sonido mecánico distintivo -->
+            <!-- DURACIÓN: 1-1.5 segundos -->
+            <audio id="accordion-open" preload="auto">
+                <source src="../assets/media/sounds/audio-accordion-open.mp3" type="audio/mpeg">
+            </audio>
+            
+            <!-- AUDIO: Sonido de "replegado" al cerrar servicios o FAQ -->
+            <!-- USO: Se reproduce cuando se contrae una sección de acordeón -->
+            <!-- ELEMENTOS: Secciones de servicios, FAQ, información expandible -->
+            <!-- VOLUMEN: 40% - Sonido de cierre más sutil -->
+            <!-- DURACIÓN: 0.8-1.2 segundos -->
+            <audio id="accordion-close" preload="auto">
+                <source src="../assets/media/sounds/audio-accordion-close.mp3" type="audio/mpeg">
+            </audio>
+            
+            <!-- ======================================================= -->
+            <!-- SECCIÓN: NAVEGACIÓN - Efectos para elementos de navegación -->
+            <!-- ======================================================= -->
+            <!-- AUDIO: Sonido de "escaneo" al pasar mouse sobre enlaces de navegación -->
+            <!-- USO: Se reproduce al pasar el mouse sobre elementos del menú de navegación -->
+            <!-- ELEMENTOS: Enlaces del menú principal, navegación secundaria -->
             <!-- VOLUMEN: 35% - Sonido de escaneo tecnológico -->
             <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="nav-menu-hover" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
+            <audio id="nav-hover" preload="auto">
+                <source src="../assets/media/sounds/audio-nav-hover.mp3" type="audio/mpeg">
             </audio>
             
-            <!-- ======================================================= -->
-            <!-- SECCIÓN HERO - Audio único para todos los elementos     -->
-            <!-- ======================================================= -->
-            <!-- AUDIO: Hover en cualquier elemento de la sección hero -->
-            <!-- USO: Se reproduce al pasar el mouse sobre cualquier elemento del hero -->
-            <!-- ELEMENTO: Todos los elementos de la sección hero -->
-            <!-- VOLUMEN: 40% - Sonido de activación -->
-            <!-- DURACIÓN: 0.5-1 segundo -->
-            <audio id="hero-section-hover" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- ======================================================= -->
-            <!-- SECCIÓN ABOUT - Audio único para todos los elementos     -->
-            <!-- ======================================================= -->
-            <!-- AUDIO: Hover en cualquier elemento de la sección about -->
-            <!-- USO: Se reproduce al pasar el mouse sobre cualquier elemento del about -->
-            <!-- ELEMENTO: Todos los elementos de la sección about -->
-            <!-- VOLUMEN: 40% - Sonido de activación -->
-            <!-- DURACIÓN: 0.5-1 segundo -->
-            <audio id="about-section-hover" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- ======================================================= -->
-            <!-- SECCIÓN SKILLS - Audio único para todos los elementos   -->
-            <!-- ======================================================= -->
-            <!-- AUDIO: Hover en cualquier elemento de la sección skills -->
-            <!-- USO: Se reproduce al pasar el mouse sobre cualquier elemento de skills -->
-            <!-- ELEMENTO: Todos los elementos de la sección skills -->
-            <!-- VOLUMEN: 40% - Sonido de activación -->
-            <!-- DURACIÓN: 0.5-1 segundo -->
-            <audio id="skills-section-hover" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- ======================================================= -->
-            <!-- SECCIÓN SERVICES - Sonidos únicos para cada elemento    -->
-            <!-- ======================================================= -->
-            <!-- AUDIO: Entrada a la sección services -->
-            <!-- USO: Se reproduce cuando el usuario navega a la sección services -->
-            <!-- ELEMENTO: Sección completa "Servicios" -->
-            <!-- VOLUMEN: 40% - Sonido de carga de servicios -->
+            <!-- AUDIO: Sonido de "navegación" al hacer clic en enlaces del menú -->
+            <!-- USO: Se reproduce al hacer clic en elementos de navegación -->
+            <!-- ELEMENTOS: Enlaces del menú, navegación interna, breadcrumbs -->
+            <!-- VOLUMEN: 50% - Confirmación de navegación -->
             <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="services-section-enter" preload="auto">
-                <source src="assets/media/sounds/audio-services-section-enter.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en el título de la sección services -->
-            <!-- USO: Se reproduce al pasar el mouse sobre "Servicios" -->
-            <!-- ELEMENTO: Título "Servicios" -->
-            <!-- VOLUMEN: 35% - Sonido de activación de título -->
-            <!-- DURACIÓN: 0.5-0.8 segundos -->
-            <audio id="services-title-hover" preload="auto">
-                <source src="assets/media/sounds/audio-services-title-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en servicio "Diseño Web" -->
-            <!-- USO: Se reproduce al pasar el mouse sobre "Diseño Web" -->
-            <!-- ELEMENTO: Servicio "Diseño Web" -->
-            <!-- VOLUMEN: 40% - Sonido de activación de servicio -->
-            <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="service-web-design-hover" preload="auto">
-                <source src="assets/media/sounds/audio-service-web-design-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click para abrir servicio "Diseño Web" -->
-            <!-- USO: Se reproduce al hacer clic para expandir "Diseño Web" -->
-            <!-- ELEMENTO: Servicio "Diseño Web" -->
-            <!-- VOLUMEN: 45% - Sonido mecánico distintivo -->
-            <!-- DURACIÓN: 1-1.5 segundos -->
-            <audio id="service-web-design-open" preload="auto">
-                <source src="assets/media/sounds/audio-service-web-design-open.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click para cerrar servicio "Diseño Web" -->
-            <!-- USO: Se reproduce al hacer clic para contraer "Diseño Web" -->
-            <!-- ELEMENTO: Servicio "Diseño Web" -->
-            <!-- VOLUMEN: 40% - Sonido de cierre más sutil -->
-            <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="service-web-design-close" preload="auto">
-                <source src="assets/media/sounds/audio-service-web-design-close.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en servicio "Desarrollo Frontend" -->
-            <!-- USO: Se reproduce al pasar el mouse sobre "Desarrollo Frontend" -->
-            <!-- ELEMENTO: Servicio "Desarrollo Frontend" -->
-            <!-- VOLUMEN: 40% - Sonido de activación de servicio -->
-            <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="service-frontend-hover" preload="auto">
-                <source src="assets/media/sounds/audio-service-frontend-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click para abrir servicio "Desarrollo Frontend" -->
-            <!-- USO: Se reproduce al hacer clic para expandir "Desarrollo Frontend" -->
-            <!-- ELEMENTO: Servicio "Desarrollo Frontend" -->
-            <!-- VOLUMEN: 45% - Sonido mecánico distintivo -->
-            <!-- DURACIÓN: 1-1.5 segundos -->
-            <audio id="service-frontend-open" preload="auto">
-                <source src="assets/media/sounds/audio-service-frontend-open.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click para cerrar servicio "Desarrollo Frontend" -->
-            <!-- USO: Se reproduce al hacer clic para contraer "Desarrollo Frontend" -->
-            <!-- ELEMENTO: Servicio "Desarrollo Frontend" -->
-            <!-- VOLUMEN: 40% - Sonido de cierre más sutil -->
-            <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="service-frontend-close" preload="auto">
-                <source src="assets/media/sounds/audio-service-frontend-close.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en servicio "Desarrollo Backend" -->
-            <!-- USO: Se reproduce al pasar el mouse sobre "Desarrollo Backend" -->
-            <!-- ELEMENTO: Servicio "Desarrollo Backend" -->
-            <!-- VOLUMEN: 40% - Sonido de activación de servicio -->
-            <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="service-backend-hover" preload="auto">
-                <source src="assets/media/sounds/audio-service-backend-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click para abrir servicio "Desarrollo Backend" -->
-            <!-- USO: Se reproduce al hacer clic para expandir "Desarrollo Backend" -->
-            <!-- ELEMENTO: Servicio "Desarrollo Backend" -->
-            <!-- VOLUMEN: 45% - Sonido mecánico distintivo -->
-            <!-- DURACIÓN: 1-1.5 segundos -->
-            <audio id="service-backend-open" preload="auto">
-                <source src="assets/media/sounds/audio-service-backend-open.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click para cerrar servicio "Desarrollo Backend" -->
-            <!-- USO: Se reproduce al hacer clic para contraer "Desarrollo Backend" -->
-            <!-- ELEMENTO: Servicio "Desarrollo Backend" -->
-            <!-- VOLUMEN: 40% - Sonido de cierre más sutil -->
-            <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="service-backend-close" preload="auto">
-                <source src="assets/media/sounds/audio-service-backend-close.mp3" type="audio/mpeg">
+            <audio id="nav-click" preload="auto">
+                <source src="../assets/media/sounds/audio-nav-click.mp3" type="audio/mpeg">
             </audio>
             
             <!-- ======================================================= -->
-            <!-- SECCIÓN PROCESS - Sonidos únicos para cada elemento     -->
+            <!-- SECCIÓN: PORTAFOLIO - Efectos para tarjetas y navegación -->
             <!-- ======================================================= -->
-            <!-- AUDIO: Entrada a la sección process -->
-            <!-- USO: Se reproduce cuando el usuario navega a la sección process -->
-            <!-- ELEMENTO: Sección completa "Proceso" -->
-            <!-- VOLUMEN: 40% - Sonido de inicio de proceso -->
-            <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="process-section-enter" preload="auto">
-                <source src="assets/media/sounds/audio-process-section-enter.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en paso 1 del proceso -->
-            <!-- USO: Se reproduce al pasar el mouse sobre el paso 1 -->
-            <!-- ELEMENTO: Paso 1 del proceso -->
-            <!-- VOLUMEN: 40% - Sonido de activación de paso -->
-            <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="process-step1-hover" preload="auto">
-                <source src="assets/media/sounds/audio-process-step1-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en paso 2 del proceso -->
-            <!-- USO: Se reproduce al pasar el mouse sobre el paso 2 -->
-            <!-- ELEMENTO: Paso 2 del proceso -->
-            <!-- VOLUMEN: 40% - Sonido de activación de paso -->
-            <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="process-step2-hover" preload="auto">
-                <source src="assets/media/sounds/audio-process-step2-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en paso 3 del proceso -->
-            <!-- USO: Se reproduce al pasar el mouse sobre el paso 3 -->
-            <!-- ELEMENTO: Paso 3 del proceso -->
-            <!-- VOLUMEN: 40% - Sonido de activación de paso -->
-            <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="process-step3-hover" preload="auto">
-                <source src="assets/media/sounds/audio-process-step3-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en paso 4 del proceso -->
-            <!-- USO: Se reproduce al pasar el mouse sobre el paso 4 -->
-            <!-- ELEMENTO: Paso 4 del proceso -->
-            <!-- VOLUMEN: 40% - Sonido de activación de paso -->
-            <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="process-step4-hover" preload="auto">
-                <source src="assets/media/sounds/audio-process-step4-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- ======================================================= -->
-            <!-- SECCIÓN PORTFOLIO - Sonidos únicos para cada elemento  -->
-            <!-- ======================================================= -->
-            <!-- AUDIO: Entrada a la sección portfolio -->
-            <!-- USO: Se reproduce cuando el usuario navega a la sección portfolio -->
-            <!-- ELEMENTO: Sección completa "Portafolio" -->
-            <!-- VOLUMEN: 40% - Sonido de carga de portafolio -->
-            <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="portfolio-section-enter" preload="auto">
-                <source src="assets/media/sounds/audio-portfolio-section-enter.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en el título de la sección portfolio -->
-            <!-- USO: Se reproduce al pasar el mouse sobre "Portafolio" -->
-            <!-- ELEMENTO: Título "Portafolio" -->
-            <!-- VOLUMEN: 35% - Sonido de activación de título -->
-            <!-- DURACIÓN: 0.5-0.8 segundos -->
-            <audio id="portfolio-title-hover" preload="auto">
-                <source src="assets/media/sounds/audio-portfolio-title-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en tarjeta del proyecto 1 -->
-            <!-- USO: Se reproduce al pasar el mouse sobre la tarjeta del proyecto 1 -->
-            <!-- ELEMENTO: Tarjeta del proyecto 1 -->
+            <!-- AUDIO: Sonido de "carga de datos" al pasar mouse sobre tarjetas del portafolio -->
+            <!-- USO: Se reproduce al pasar el mouse sobre tarjetas de proyectos -->
+            <!-- ELEMENTOS: Tarjetas de proyectos, imágenes de portafolio, galerías -->
             <!-- VOLUMEN: 40% - Sonido de carga de información -->
             <!-- DURACIÓN: 0.7-1.1 segundos -->
-            <audio id="portfolio-card1-hover" preload="auto">
-                <source src="assets/media/sounds/audio-portfolio-card1-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click en tarjeta del proyecto 1 -->
-            <!-- USO: Se reproduce al hacer clic en la tarjeta del proyecto 1 -->
-            <!-- ELEMENTO: Tarjeta del proyecto 1 -->
-            <!-- VOLUMEN: 50% - Confirmación de selección -->
-            <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="portfolio-card1-click" preload="auto">
-                <source src="assets/media/sounds/audio-portfolio-card1-click.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en tarjeta del proyecto 2 -->
-            <!-- USO: Se reproduce al pasar el mouse sobre la tarjeta del proyecto 2 -->
-            <!-- ELEMENTO: Tarjeta del proyecto 2 -->
-            <!-- VOLUMEN: 40% - Sonido de carga de información -->
-            <!-- DURACIÓN: 0.7-1.1 segundos -->
-            <audio id="portfolio-card2-hover" preload="auto">
-                <source src="assets/media/sounds/audio-portfolio-card2-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click en tarjeta del proyecto 2 -->
-            <!-- USO: Se reproduce al hacer clic en la tarjeta del proyecto 2 -->
-            <!-- ELEMENTO: Tarjeta del proyecto 2 -->
-            <!-- VOLUMEN: 50% - Confirmación de selección -->
-            <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="portfolio-card2-click" preload="auto">
-                <source src="assets/media/sounds/audio-portfolio-card2-click.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en tarjeta del proyecto 3 -->
-            <!-- USO: Se reproduce al pasar el mouse sobre la tarjeta del proyecto 3 -->
-            <!-- ELEMENTO: Tarjeta del proyecto 3 -->
-            <!-- VOLUMEN: 40% - Sonido de carga de información -->
-            <!-- DURACIÓN: 0.7-1.1 segundos -->
-            <audio id="portfolio-card3-hover" preload="auto">
-                <source src="assets/media/sounds/audio-portfolio-card3-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click en tarjeta del proyecto 3 -->
-            <!-- USO: Se reproduce al hacer clic en la tarjeta del proyecto 3 -->
-            <!-- ELEMENTO: Tarjeta del proyecto 3 -->
-            <!-- VOLUMEN: 50% - Confirmación de selección -->
-            <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="portfolio-card3-click" preload="auto">
-                <source src="assets/media/sounds/audio-portfolio-card3-click.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en botón "Anterior" del carrusel -->
-            <!-- USO: Se reproduce al pasar el mouse sobre el botón "Anterior" -->
-            <!-- ELEMENTO: Botón de navegación "Anterior" -->
-            <!-- VOLUMEN: 45% - Sonido de transición de datos -->
-            <!-- DURACIÓN: 1-1.5 segundos -->
-            <audio id="portfolio-prev-hover" preload="auto">
-                <source src="assets/media/sounds/audio-portfolio-prev-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click en botón "Anterior" del carrusel -->
-            <!-- USO: Se reproduce al hacer clic en el botón "Anterior" -->
-            <!-- ELEMENTO: Botón de navegación "Anterior" -->
-            <!-- VOLUMEN: 50% - Confirmación de navegación -->
-            <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="portfolio-prev-click" preload="auto">
-                <source src="assets/media/sounds/audio-portfolio-prev-click.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en botón "Siguiente" del carrusel -->
-            <!-- USO: Se reproduce al pasar el mouse sobre el botón "Siguiente" -->
-            <!-- ELEMENTO: Botón de navegación "Siguiente" -->
-            <!-- VOLUMEN: 45% - Sonido de transición de datos -->
-            <!-- DURACIÓN: 1-1.5 segundos -->
-            <audio id="portfolio-next-hover" preload="auto">
-                <source src="assets/media/sounds/audio-portfolio-next-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click en botón "Siguiente" del carrusel -->
-            <!-- USO: Se reproduce al hacer clic en el botón "Siguiente" -->
-            <!-- ELEMENTO: Botón de navegación "Siguiente" -->
-            <!-- VOLUMEN: 50% - Confirmación de navegación -->
-            <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="portfolio-next-click" preload="auto">
-                <source src="assets/media/sounds/audio-portfolio-next-click.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en indicador 1 del carrusel -->
-            <!-- USO: Se reproduce al pasar el mouse sobre el indicador 1 -->
-            <!-- ELEMENTO: Indicador 1 del carrusel -->
-            <!-- VOLUMEN: 40% - Sonido de selección -->
-            <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="portfolio-indicator1-hover" preload="auto">
-                <source src="assets/media/sounds/audio-portfolio-indicator1-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click en indicador 1 del carrusel -->
-            <!-- USO: Se reproduce al hacer clic en el indicador 1 -->
-            <!-- ELEMENTO: Indicador 1 del carrusel -->
-            <!-- VOLUMEN: 50% - Confirmación de selección -->
-            <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="portfolio-indicator1-click" preload="auto">
-                <source src="assets/media/sounds/audio-portfolio-indicator1-click.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en indicador 2 del carrusel -->
-            <!-- USO: Se reproduce al pasar el mouse sobre el indicador 2 -->
-            <!-- ELEMENTO: Indicador 2 del carrusel -->
-            <!-- VOLUMEN: 40% - Sonido de selección -->
-            <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="portfolio-indicator2-hover" preload="auto">
-                <source src="assets/media/sounds/audio-portfolio-indicator2-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click en indicador 2 del carrusel -->
-            <!-- USO: Se reproduce al hacer clic en el indicador 2 -->
-            <!-- ELEMENTO: Indicador 2 del carrusel -->
-            <!-- VOLUMEN: 50% - Confirmación de selección -->
-            <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="portfolio-indicator2-click" preload="auto">
-                <source src="assets/media/sounds/audio-portfolio-indicator2-click.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en indicador 3 del carrusel -->
-            <!-- USO: Se reproduce al pasar el mouse sobre el indicador 3 -->
-            <!-- ELEMENTO: Indicador 3 del carrusel -->
-            <!-- VOLUMEN: 40% - Sonido de selección -->
-            <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="portfolio-indicator3-hover" preload="auto">
-                <source src="assets/media/sounds/audio-portfolio-indicator3-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click en indicador 3 del carrusel -->
-            <!-- USO: Se reproduce al hacer clic en el indicador 3 -->
-            <!-- ELEMENTO: Indicador 3 del carrusel -->
-            <!-- VOLUMEN: 50% - Confirmación de selección -->
-            <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="portfolio-indicator3-click" preload="auto">
-                <source src="assets/media/sounds/audio-portfolio-indicator3-click.mp3" type="audio/mpeg">
+            <audio id="card-hover" preload="auto">
+                <source src="                   " type="audio/mpeg">
             </audio>
             
             <!-- ======================================================= -->
-            <!-- SECCIÓN TESTIMONIALS - Sonidos únicos para cada elemento -->
+            <!-- SECCIÓN: HABILIDADES - Efectos para elementos de habilidades -->
             <!-- ======================================================= -->
-            <!-- AUDIO: Entrada a la sección testimonials -->
-            <!-- USO: Se reproduce cuando el usuario navega a la sección testimonials -->
-            <!-- ELEMENTO: Sección completa "Testimonios" -->
-            <!-- VOLUMEN: 40% - Sonido de carga de testimonios -->
-            <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="testimonials-section-enter" preload="auto">
-                <source src="assets/media/sounds/audio-testimonials-section-enter.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en el título de la sección testimonials -->
-            <!-- USO: Se reproduce al pasar el mouse sobre "Testimonios" -->
-            <!-- ELEMENTO: Título "Testimonios" -->
-            <!-- VOLUMEN: 35% - Sonido de activación de título -->
-            <!-- DURACIÓN: 0.5-0.8 segundos -->
-            <audio id="testimonials-title-hover" preload="auto">
-                <source src="assets/media/sounds/audio-testimonials-title-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en testimonio 1 -->
-            <!-- USO: Se reproduce al pasar el mouse sobre el testimonio 1 -->
-            <!-- ELEMENTO: Testimonio 1 -->
-            <!-- VOLUMEN: 40% - Sonido de transmisión de información -->
-            <!-- DURACIÓN: 0.8-1.3 segundos -->
-            <audio id="testimonial1-hover" preload="auto">
-                <source src="assets/media/sounds/audio-testimonial1-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en testimonio 2 -->
-            <!-- USO: Se reproduce al pasar el mouse sobre el testimonio 2 -->
-            <!-- ELEMENTO: Testimonio 2 -->
-            <!-- VOLUMEN: 40% - Sonido de transmisión de información -->
-            <!-- DURACIÓN: 0.8-1.3 segundos -->
-            <audio id="testimonial2-hover" preload="auto">
-                <source src="assets/media/sounds/audio-testimonial2-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en testimonio 3 -->
-            <!-- USO: Se reproduce al pasar el mouse sobre el testimonio 3 -->
-            <!-- ELEMENTO: Testimonio 3 -->
-            <!-- VOLUMEN: 40% - Sonido de transmisión de información -->
-            <!-- DURACIÓN: 0.8-1.3 segundos -->
-            <audio id="testimonial3-hover" preload="auto">
-                <source src="assets/media/sounds/audio-testimonial3-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en botón "Anterior" de testimonios -->
-            <!-- USO: Se reproduce al pasar el mouse sobre el botón "Anterior" -->
-            <!-- ELEMENTO: Botón de navegación "Anterior" de testimonios -->
-            <!-- VOLUMEN: 40% - Sonido de navegación -->
-            <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="testimonials-prev-hover" preload="auto">
-                <source src="assets/media/sounds/audio-testimonials-prev-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click en botón "Anterior" de testimonios -->
-            <!-- USO: Se reproduce al hacer clic en el botón "Anterior" -->
-            <!-- ELEMENTO: Botón de navegación "Anterior" de testimonios -->
-            <!-- VOLUMEN: 50% - Confirmación de navegación -->
-            <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="testimonials-prev-click" preload="auto">
-                <source src="assets/media/sounds/audio-testimonials-prev-click.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en botón "Siguiente" de testimonios -->
-            <!-- USO: Se reproduce al pasar el mouse sobre el botón "Siguiente" -->
-            <!-- ELEMENTO: Botón de navegación "Siguiente" de testimonios -->
-            <!-- VOLUMEN: 40% - Sonido de navegación -->
-            <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="testimonials-next-hover" preload="auto">
-                <source src="assets/media/sounds/audio-testimonials-next-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click en botón "Siguiente" de testimonios -->
-            <!-- USO: Se reproduce al hacer clic en el botón "Siguiente" -->
-            <!-- ELEMENTO: Botón de navegación "Siguiente" de testimonios -->
-            <!-- VOLUMEN: 50% - Confirmación de navegación -->
-            <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="testimonials-next-click" preload="auto">
-                <source src="assets/media/sounds/audio-testimonials-next-click.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- ======================================================= -->
-            <!-- SECCIÓN FAQ - Sonidos únicos para cada elemento         -->
-            <!-- ======================================================= -->
-            <!-- AUDIO: Entrada a la sección FAQ -->
-            <!-- USO: Se reproduce cuando el usuario navega a la sección FAQ -->
-            <!-- ELEMENTO: Sección completa "FAQ" -->
-            <!-- VOLUMEN: 40% - Sonido de carga de FAQ -->
-            <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="faq-section-enter" preload="auto">
-                <source src="assets/media/sounds/audio-faq-section-enter.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en el título de la sección FAQ -->
-            <!-- USO: Se reproduce al pasar el mouse sobre "FAQ" -->
-            <!-- ELEMENTO: Título "FAQ" -->
-            <!-- VOLUMEN: 35% - Sonido de activación de título -->
-            <!-- DURACIÓN: 0.5-0.8 segundos -->
-            <audio id="faq-title-hover" preload="auto">
-                <source src="assets/media/sounds/audio-faq-title-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en pregunta 1 del FAQ -->
-            <!-- USO: Se reproduce al pasar el mouse sobre la pregunta 1 -->
-            <!-- ELEMENTO: Pregunta 1 del FAQ -->
-            <!-- VOLUMEN: 40% - Sonido de expansión de información -->
-            <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="faq-question1-hover" preload="auto">
-                <source src="assets/media/sounds/audio-faq-question1-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click para expandir pregunta 1 del FAQ -->
-            <!-- USO: Se reproduce al hacer clic para expandir la pregunta 1 -->
-            <!-- ELEMENTO: Pregunta 1 del FAQ -->
-            <!-- VOLUMEN: 45% - Sonido de expansión -->
-            <!-- DURACIÓN: 1-1.5 segundos -->
-            <audio id="faq-question1-open" preload="auto">
-                <source src="assets/media/sounds/audio-faq-question1-open.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click para contraer pregunta 1 del FAQ -->
-            <!-- USO: Se reproduce al hacer clic para contraer la pregunta 1 -->
-            <!-- ELEMENTO: Pregunta 1 del FAQ -->
-            <!-- VOLUMEN: 40% - Sonido de contracción -->
-            <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="faq-question1-close" preload="auto">
-                <source src="assets/media/sounds/audio-faq-question1-close.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en pregunta 2 del FAQ -->
-            <!-- USO: Se reproduce al pasar el mouse sobre la pregunta 2 -->
-            <!-- ELEMENTO: Pregunta 2 del FAQ -->
-            <!-- VOLUMEN: 40% - Sonido de expansión de información -->
-            <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="faq-question2-hover" preload="auto">
-                <source src="assets/media/sounds/audio-faq-question2-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click para expandir pregunta 2 del FAQ -->
-            <!-- USO: Se reproduce al hacer clic para expandir la pregunta 2 -->
-            <!-- ELEMENTO: Pregunta 2 del FAQ -->
-            <!-- VOLUMEN: 45% - Sonido de expansión -->
-            <!-- DURACIÓN: 1-1.5 segundos -->
-            <audio id="faq-question2-open" preload="auto">
-                <source src="assets/media/sounds/audio-faq-question2-open.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click para contraer pregunta 2 del FAQ -->
-            <!-- USO: Se reproduce al hacer clic para contraer la pregunta 2 -->
-            <!-- ELEMENTO: Pregunta 2 del FAQ -->
-            <!-- VOLUMEN: 40% - Sonido de contracción -->
-            <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="faq-question2-close" preload="auto">
-                <source src="assets/media/sounds/audio-faq-question2-close.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en pregunta 3 del FAQ -->
-            <!-- USO: Se reproduce al pasar el mouse sobre la pregunta 3 -->
-            <!-- ELEMENTO: Pregunta 3 del FAQ -->
-            <!-- VOLUMEN: 40% - Sonido de expansión de información -->
-            <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="faq-question3-hover" preload="auto">
-                <source src="assets/media/sounds/audio-faq-question3-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click para expandir pregunta 3 del FAQ -->
-            <!-- USO: Se reproduce al hacer clic para expandir la pregunta 3 -->
-            <!-- ELEMENTO: Pregunta 3 del FAQ -->
-            <!-- VOLUMEN: 45% - Sonido de expansión -->
-            <!-- DURACIÓN: 1-1.5 segundos -->
-            <audio id="faq-question3-open" preload="auto">
-                <source src="assets/media/sounds/audio-faq-question3-open.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click para contraer pregunta 3 del FAQ -->
-            <!-- USO: Se reproduce al hacer clic para contraer la pregunta 3 -->
-            <!-- ELEMENTO: Pregunta 3 del FAQ -->
-            <!-- VOLUMEN: 40% - Sonido de contracción -->
-            <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="faq-question3-close" preload="auto">
-                <source src="assets/media/sounds/audio-faq-question3-close.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- ======================================================= -->
-            <!-- SECCIÓN CONTACT - Sonidos únicos para cada elemento     -->
-            <!-- ======================================================= -->
-            <!-- AUDIO: Entrada a la sección contact -->
-            <!-- USO: Se reproduce cuando el usuario navega a la sección contact -->
-            <!-- ELEMENTO: Sección completa "Contacto" -->
-            <!-- VOLUMEN: 40% - Sonido de carga de contacto -->
-            <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="contact-section-enter" preload="auto">
-                <source src="assets/media/sounds/audio-contact-section-enter.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en el título de la sección contact -->
-            <!-- USO: Se reproduce al pasar el mouse sobre "Contacto" -->
-            <!-- ELEMENTO: Título "Contacto" -->
-            <!-- VOLUMEN: 35% - Sonido de activación de título -->
-            <!-- DURACIÓN: 0.5-0.8 segundos -->
-            <audio id="contact-title-hover" preload="auto">
-                <source src="assets/media/sounds/audio-contact-title-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en campo "Nombre" -->
-            <!-- USO: Se reproduce al pasar el mouse sobre el campo "Nombre" -->
-            <!-- ELEMENTO: Campo de entrada "Nombre" -->
-            <!-- VOLUMEN: 35% - Sonido sutil de activación -->
-            <!-- DURACIÓN: 0.4-0.6 segundos -->
-            <audio id="contact-name-hover" preload="auto">
-                <source src="assets/media/sounds/audio-contact-name-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Focus en campo "Nombre" -->
-            <!-- USO: Se reproduce cuando el usuario hace clic en el campo "Nombre" -->
-            <!-- ELEMENTO: Campo de entrada "Nombre" -->
-            <!-- VOLUMEN: 35% - Sonido sutil de activación -->
-            <!-- DURACIÓN: 0.4-0.6 segundos -->
-            <audio id="contact-name-focus" preload="auto">
-                <source src="assets/media/sounds/audio-contact-name-focus.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Inicio de escritura en campo "Nombre" -->
-            <!-- USO: Se reproduce cuando el usuario comienza a escribir en "Nombre" -->
-            <!-- ELEMENTO: Campo de entrada "Nombre" -->
-            <!-- VOLUMEN: 25% - Sonido muy sutil de escritura -->
-            <!-- DURACIÓN: 0.3-0.5 segundos -->
-            <audio id="contact-name-typing" preload="auto">
-                <source src="assets/media/sounds/audio-contact-name-typing.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en campo "Email" -->
-            <!-- USO: Se reproduce al pasar el mouse sobre el campo "Email" -->
-            <!-- ELEMENTO: Campo de entrada "Email" -->
-            <!-- VOLUMEN: 35% - Sonido sutil de activación -->
-            <!-- DURACIÓN: 0.4-0.6 segundos -->
-            <audio id="contact-email-hover" preload="auto">
-                <source src="assets/media/sounds/audio-contact-email-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Focus en campo "Email" -->
-            <!-- USO: Se reproduce cuando el usuario hace clic en el campo "Email" -->
-            <!-- ELEMENTO: Campo de entrada "Email" -->
-            <!-- VOLUMEN: 35% - Sonido sutil de activación -->
-            <!-- DURACIÓN: 0.4-0.6 segundos -->
-            <audio id="contact-email-focus" preload="auto">
-                <source src="assets/media/sounds/audio-contact-email-focus.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Inicio de escritura en campo "Email" -->
-            <!-- USO: Se reproduce cuando el usuario comienza a escribir en "Email" -->
-            <!-- ELEMENTO: Campo de entrada "Email" -->
-            <!-- VOLUMEN: 25% - Sonido muy sutil de escritura -->
-            <!-- DURACIÓN: 0.3-0.5 segundos -->
-            <audio id="contact-email-typing" preload="auto">
-                <source src="assets/media/sounds/audio-contact-email-typing.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en campo "Mensaje" -->
-            <!-- USO: Se reproduce al pasar el mouse sobre el campo "Mensaje" -->
-            <!-- ELEMENTO: Campo de entrada "Mensaje" -->
-            <!-- VOLUMEN: 35% - Sonido sutil de activación -->
-            <!-- DURACIÓN: 0.4-0.6 segundos -->
-            <audio id="contact-message-hover" preload="auto">
-                <source src="assets/media/sounds/audio-contact-message-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Focus en campo "Mensaje" -->
-            <!-- USO: Se reproduce cuando el usuario hace clic en el campo "Mensaje" -->
-            <!-- ELEMENTO: Campo de entrada "Mensaje" -->
-            <!-- VOLUMEN: 35% - Sonido sutil de activación -->
-            <!-- DURACIÓN: 0.4-0.6 segundos -->
-            <audio id="contact-message-focus" preload="auto">
-                <source src="assets/media/sounds/audio-contact-message-focus.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Inicio de escritura en campo "Mensaje" -->
-            <!-- USO: Se reproduce cuando el usuario comienza a escribir en "Mensaje" -->
-            <!-- ELEMENTO: Campo de entrada "Mensaje" -->
-            <!-- VOLUMEN: 25% - Sonido muy sutil de escritura -->
-            <!-- DURACIÓN: 0.3-0.5 segundos -->
-            <audio id="contact-message-typing" preload="auto">
-                <source src="assets/media/sounds/audio-contact-message-typing.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en botón "Enviar" -->
-            <!-- USO: Se reproduce al pasar el mouse sobre el botón "Enviar" -->
-            <!-- ELEMENTO: Botón "Enviar" del formulario -->
-            <!-- VOLUMEN: 45% - Sonido de llamada a la acción -->
-            <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="contact-send-hover" preload="auto">
-                <source src="assets/media/sounds/audio-contact-send-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click en botón "Enviar" -->
-            <!-- USO: Se reproduce al hacer clic en el botón "Enviar" -->
-            <!-- ELEMENTO: Botón "Enviar" del formulario -->
-            <!-- VOLUMEN: 55% - Confirmación clara de envío -->
-            <!-- DURACIÓN: 1.2-1.8 segundos -->
-            <audio id="contact-send-click" preload="auto">
-                <source src="assets/media/sounds/audio-contact-send-click.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- ======================================================= -->
-            <!-- SECCIÓN REDES SOCIALES - Sonidos únicos para cada elemento -->
-            <!-- ======================================================= -->
-            <!-- AUDIO: Hover en icono de GitHub -->
-            <!-- USO: Se reproduce al pasar el mouse sobre el icono de GitHub -->
-            <!-- ELEMENTO: Icono de GitHub -->
-            <!-- VOLUMEN: 40% - Sonido de conexión digital -->
-            <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="social-github-hover" preload="auto">
-                <source src="assets/media/sounds/audio-social-github-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click en icono de GitHub -->
-            <!-- USO: Se reproduce al hacer clic en el icono de GitHub -->
-            <!-- ELEMENTO: Icono de GitHub -->
-            <!-- VOLUMEN: 50% - Confirmación de navegación -->
-            <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="social-github-click" preload="auto">
-                <source src="assets/media/sounds/audio-social-github-click.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en icono de LinkedIn -->
-            <!-- USO: Se reproduce al pasar el mouse sobre el icono de LinkedIn -->
-            <!-- ELEMENTO: Icono de LinkedIn -->
-            <!-- VOLUMEN: 40% - Sonido de conexión digital -->
-            <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="social-linkedin-hover" preload="auto">
-                <source src="assets/media/sounds/audio-social-linkedin-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click en icono de LinkedIn -->
-            <!-- USO: Se reproduce al hacer clic en el icono de LinkedIn -->
-            <!-- ELEMENTO: Icono de LinkedIn -->
-            <!-- VOLUMEN: 50% - Confirmación de navegación -->
-            <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="social-linkedin-click" preload="auto">
-                <source src="assets/media/sounds/audio-social-linkedin-click.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en icono de Twitter -->
-            <!-- USO: Se reproduce al pasar el mouse sobre el icono de Twitter -->
-            <!-- ELEMENTO: Icono de Twitter -->
-            <!-- VOLUMEN: 40% - Sonido de conexión digital -->
-            <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="social-twitter-hover" preload="auto">
-                <source src="assets/media/sounds/audio-social-twitter-hover.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click en icono de Twitter -->
-            <!-- USO: Se reproduce al hacer clic en el icono de Twitter -->
-            <!-- ELEMENTO: Icono de Twitter -->
-            <!-- VOLUMEN: 50% - Confirmación de navegación -->
-            <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="social-twitter-click" preload="auto">
-                <source src="assets/media/sounds/audio-social-twitter-click.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- ======================================================= -->
-            <!-- SECCIÓN SERVICES - Audio único para todos los elementos -->
-            <!-- ======================================================= -->
-            <!-- AUDIO: Hover en cualquier elemento de la sección services -->
-            <!-- USO: Se reproduce al pasar el mouse sobre cualquier elemento de services -->
-            <!-- ELEMENTO: Todos los elementos de la sección services -->
-            <!-- VOLUMEN: 40% - Sonido de activación -->
-            <!-- DURACIÓN: 0.5-1 segundo -->
-            <audio id="services-section-hover" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- ======================================================= -->
-            <!-- SECCIÓN PROCESS - Audio único para todos los elementos  -->
-            <!-- ======================================================= -->
-            <!-- AUDIO: Hover en cualquier elemento de la sección process -->
-            <!-- USO: Se reproduce al pasar el mouse sobre cualquier elemento de process -->
-            <!-- ELEMENTO: Todos los elementos de la sección process -->
-            <!-- VOLUMEN: 40% - Sonido de activación -->
-            <!-- DURACIÓN: 0.5-1 segundo -->
-            <audio id="process-section-hover" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- ======================================================= -->
-            <!-- SECCIÓN PORTFOLIO - Audio único para todos los elementos -->
-            <!-- ======================================================= -->
-            <!-- AUDIO: Hover en cualquier elemento de la sección portfolio -->
-            <!-- USO: Se reproduce al pasar el mouse sobre cualquier elemento de portfolio -->
-            <!-- ELEMENTO: Todos los elementos de la sección portfolio -->
-            <!-- VOLUMEN: 40% - Sonido de activación -->
-            <!-- DURACIÓN: 0.5-1 segundo -->
-            <audio id="portfolio-section-hover" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- ======================================================= -->
-            <!-- SECCIÓN TESTIMONIALS - Audio único para todos los elementos -->
-            <!-- ======================================================= -->
-            <!-- AUDIO: Hover en cualquier elemento de la sección testimonials -->
-            <!-- USO: Se reproduce al pasar el mouse sobre cualquier elemento de testimonials -->
-            <!-- ELEMENTO: Todos los elementos de la sección testimonials -->
-            <!-- VOLUMEN: 40% - Sonido de activación -->
-            <!-- DURACIÓN: 0.5-1 segundo -->
-            <audio id="testimonials-section-hover" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- ======================================================= -->
-            <!-- SECCIÓN FAQ - Audio único para todos los elementos      -->
-            <!-- ======================================================= -->
-            <!-- AUDIO: Hover en cualquier elemento de la sección faq -->
-            <!-- USO: Se reproduce al pasar el mouse sobre cualquier elemento de faq -->
-            <!-- ELEMENTO: Todos los elementos de la sección faq -->
-            <!-- VOLUMEN: 40% - Sonido de activación -->
-            <!-- DURACIÓN: 0.5-1 segundo -->
-            <audio id="faq-section-hover" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- ======================================================= -->
-            <!-- SECCIÓN CONTACT - Audio único para todos los elementos  -->
-            <!-- ======================================================= -->
-            <!-- AUDIO: Hover en cualquier elemento de la sección contact -->
-            <!-- USO: Se reproduce al pasar el mouse sobre cualquier elemento de contact -->
-            <!-- ELEMENTO: Todos los elementos de la sección contact -->
-            <!-- VOLUMEN: 40% - Sonido de activación -->
-            <!-- DURACIÓN: 0.5-1 segundo -->
-            <audio id="contact-section-hover" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- ======================================================= -->
-            <!-- SECCIÓN REDES SOCIALES - Audio único para todos los elementos -->
-            <!-- ======================================================= -->
-            <!-- AUDIO: Hover en cualquier elemento de la sección redes sociales -->
-            <!-- USO: Se reproduce al pasar el mouse sobre cualquier elemento de redes sociales -->
-            <!-- ELEMENTO: Todos los elementos de la sección redes sociales -->
-            <!-- VOLUMEN: 40% - Sonido de activación -->
-            <!-- DURACIÓN: 0.5-1 segundo -->
-            <audio id="social-section-hover" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- ======================================================= -->
-            <!-- SECCIÓN HERO - Elementos de audio por tipo de interacción -->
-            <!-- ======================================================= -->
-            <!-- AUDIO: Hover en elementos principales del hero -->
-            <!-- USO: Se reproduce al pasar el mouse sobre títulos y subtítulos -->
-            <!-- ELEMENTO: Títulos, subtítulos del hero -->
-            <!-- VOLUMEN: 40% - Sonido de activación -->
-            <!-- DURACIÓN: 0.5-1 segundo -->
-            <audio id="hero-text-hover" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en botones del hero -->
-            <!-- USO: Se reproduce al pasar el mouse sobre botones CTA -->
-            <!-- ELEMENTO: Botones de acción del hero -->
-            <!-- VOLUMEN: 45% - Sonido de llamada a la acción -->
-            <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="hero-button-hover" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- ======================================================= -->
-            <!-- SECCIÓN ABOUT - Elementos de audio por tipo de interacción -->
-            <!-- ======================================================= -->
-            <!-- AUDIO: Hover en elementos de texto del about -->
-            <!-- USO: Se reproduce al pasar el mouse sobre texto descriptivo -->
-            <!-- ELEMENTO: Párrafos, descripciones del about -->
-            <!-- VOLUMEN: 35% - Sonido de lectura -->
-            <!-- DURACIÓN: 0.4-0.8 segundos -->
-            <audio id="about-text-hover" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Hover en imagen del about -->
-            <!-- USO: Se reproduce al pasar el mouse sobre la imagen de perfil -->
-            <!-- ELEMENTO: Imagen de perfil del about -->
-            <!-- VOLUMEN: 40% - Sonido de escaneo -->
-            <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="about-image-hover" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- ======================================================= -->
-            <!-- SECCIÓN SKILLS - Elementos de audio por tipo de interacción -->
-            <!-- ======================================================= -->
-            <!-- AUDIO: Hover en iconos de habilidades -->
-            <!-- USO: Se reproduce al pasar el mouse sobre iconos de skills -->
-            <!-- ELEMENTO: Iconos de tecnologías y herramientas -->
+            <!-- AUDIO: Sonido de "ping de datos" al pasar mouse sobre elementos de habilidades -->
+            <!-- USO: Se reproduce al pasar el mouse sobre iconos o elementos de habilidades -->
+            <!-- ELEMENTOS: Iconos de tecnologías, barras de progreso, elementos de skills -->
             <!-- VOLUMEN: 35% - Sonido de ping tecnológico -->
             <!-- DURACIÓN: 0.5-0.8 segundos -->
-            <audio id="skills-icon-hover" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
+            <audio id="skill-hover" preload="auto">
+                <source src="                      " type="audio/mpeg">
             </audio>
             
-            <!-- AUDIO: Hover en categorías de skills -->
-            <!-- USO: Se reproduce al pasar el mouse sobre filtros de categorías -->
-            <!-- ELEMENTO: Botones de filtro Frontend, Backend, Herramientas -->
-            <!-- VOLUMEN: 40% - Sonido de activación de filtro -->
-            <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="skills-category-hover" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- ======================================================= -->
-            <!-- SECCIÓN SERVICES - Elementos de audio por tipo de interacción -->
-            <!-- ======================================================= -->
-            <!-- AUDIO: Hover en tarjetas de servicios -->
-            <!-- USO: Se reproduce al pasar el mouse sobre tarjetas de servicios -->
-            <!-- ELEMENTO: Tarjetas de servicios individuales -->
-            <!-- VOLUMEN: 40% - Sonido de activación de servicio -->
-            <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="services-card-hover" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click en servicios -->
-            <!-- USO: Se reproduce al hacer clic para expandir/contraer servicios -->
-            <!-- ELEMENTO: Botones de expandir/contraer servicios -->
-            <!-- VOLUMEN: 45% - Sonido de confirmación -->
+            <!-- AUDIO: Sonido de "activación de categoría" al pasar mouse sobre categorías -->
+            <!-- USO: Se reproduce al pasar el mouse sobre categorías de habilidades -->
+            <!-- ELEMENTOS: Categorías de skills, filtros de tecnologías, grupos de habilidades -->
+            <!-- VOLUMEN: 45% - Sonido de activación de categoría -->
             <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="services-click" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
+            <audio id="category-activate" preload="auto">
+                <source src="                       " type="audio/mpeg">
             </audio>
             
             <!-- ======================================================= -->
-            <!-- SECCIÓN PROCESS - Elementos de audio por tipo de interacción -->
+            <!-- SECCIÓN: TOOLTIPS - Efectos para información adicional -->
             <!-- ======================================================= -->
-            <!-- AUDIO: Hover en pasos del proceso -->
-            <!-- USO: Se reproduce al pasar el mouse sobre pasos del proceso -->
-            <!-- ELEMENTO: Pasos individuales del proceso -->
-            <!-- VOLUMEN: 40% - Sonido de activación de paso -->
-            <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="process-step-hover" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- ======================================================= -->
-            <!-- SECCIÓN PORTFOLIO - Elementos de audio por tipo de interacción -->
-            <!-- ======================================================= -->
-            <!-- AUDIO: Hover en tarjetas de proyectos -->
-            <!-- USO: Se reproduce al pasar el mouse sobre tarjetas de proyectos -->
-            <!-- ELEMENTO: Tarjetas de proyectos del portafolio -->
-            <!-- VOLUMEN: 40% - Sonido de carga de información -->
-            <!-- DURACIÓN: 0.7-1.1 segundos -->
-            <audio id="portfolio-card-hover" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click en proyectos -->
-            <!-- USO: Se reproduce al hacer clic en proyectos del portafolio -->
-            <!-- ELEMENTO: Enlaces y botones de proyectos -->
-            <!-- VOLUMEN: 50% - Sonido de confirmación de selección -->
-            <!-- DURACIÓN: 0.8-1.2 segundos -->
-            <audio id="portfolio-click" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- ======================================================= -->
-            <!-- SECCIÓN TESTIMONIALS - Elementos de audio por tipo de interacción -->
-            <!-- ======================================================= -->
-            <!-- AUDIO: Hover en testimonios -->
-            <!-- USO: Se reproduce al pasar el mouse sobre testimonios -->
-            <!-- ELEMENTO: Tarjetas de testimonios -->
-            <!-- VOLUMEN: 35% - Sonido de lectura de testimonio -->
-            <!-- DURACIÓN: 0.5-0.8 segundos -->
-            <audio id="testimonials-hover" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- ======================================================= -->
-            <!-- SECCIÓN FAQ - Elementos de audio por tipo de interacción -->
-            <!-- ======================================================= -->
-            <!-- AUDIO: Hover en preguntas FAQ -->
-            <!-- USO: Se reproduce al pasar el mouse sobre preguntas -->
-            <!-- ELEMENTO: Preguntas individuales del FAQ -->
-            <!-- VOLUMEN: 35% - Sonido de activación de pregunta -->
-            <!-- DURACIÓN: 0.5-0.8 segundos -->
-            <audio id="faq-question-hover" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- AUDIO: Click en preguntas FAQ -->
-            <!-- USO: Se reproduce al hacer clic para expandir respuestas -->
-            <!-- ELEMENTO: Botones de expandir/contraer FAQ -->
-            <!-- VOLUMEN: 45% - Sonido de confirmación -->
-            <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="faq-click" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
-            </audio>
-            
-            <!-- ======================================================= -->
-            <!-- SECCIÓN CONTACT - Elementos de audio por tipo de interacción -->
-            <!-- ======================================================= -->
-            <!-- AUDIO: Hover en campos de formulario -->
-            <!-- USO: Se reproduce al pasar el mouse sobre campos del formulario -->
-            <!-- ELEMENTO: Inputs, textareas del formulario de contacto -->
-            <!-- VOLUMEN: 35% - Sonido de activación de campo -->
+            <!-- AUDIO: Sonido de "información desplegada" al mostrar tooltips -->
+            <!-- USO: Se reproduce cuando aparece un tooltip o información adicional -->
+            <!-- ELEMENTOS: Tooltips de habilidades, información emergente, popups informativos -->
+            <!-- VOLUMEN: 30% - Sonido sutil de información -->
             <!-- DURACIÓN: 0.4-0.7 segundos -->
-            <audio id="contact-field-hover" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
+            <audio id="tooltip-show" preload="auto">
+                <source src="                         " type="audio/mpeg">
             </audio>
             
-            <!-- AUDIO: Hover en botón de envío -->
-            <!-- USO: Se reproduce al pasar el mouse sobre botón de enviar -->
-            <!-- ELEMENTO: Botón de enviar formulario -->
-            <!-- VOLUMEN: 45% - Sonido de llamada a la acción -->
+            <!-- ======================================================= -->
+            <!-- SECCIÓN: NAVEGACIÓN DE PORTAFOLIO - Controles de navegación -->
+            <!-- ======================================================= -->
+            <!-- AUDIO: Sonido de "desplazamiento de datos" al navegar entre proyectos -->
+            <!-- USO: Se reproduce al cambiar entre proyectos en el carrusel del portafolio -->
+            <!-- ELEMENTOS: Botones de navegación del portafolio, flechas de carrusel -->
+            <!-- VOLUMEN: 45% - Sonido de transición de datos -->
+            <!-- DURACIÓN: 1-1.5 segundos -->
+            <audio id="portfolio-nav" preload="auto">
+                <source src="                          " type="audio/mpeg">
+            </audio>
+            
+            <!-- AUDIO: Sonido de "selección" al hacer clic en indicadores del portafolio -->
+            <!-- USO: Se reproduce al hacer clic en indicadores o puntos de navegación -->
+            <!-- ELEMENTOS: Indicadores de carrusel, puntos de navegación, miniaturas -->
+            <!-- VOLUMEN: 50% - Confirmación de selección -->
             <!-- DURACIÓN: 0.6-1 segundo -->
-            <audio id="contact-submit-hover" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
+            <audio id="indicator-click" preload="auto">
+                <source src="                           " type="audio/mpeg">
             </audio>
             
             <!-- ======================================================= -->
-            <!-- SECCIÓN REDES SOCIALES - Elementos de audio por tipo de interacción -->
+            <!-- SECCIÓN: TESTIMONIOS - Efectos para navegación de testimonios -->
             <!-- ======================================================= -->
-            <!-- AUDIO: Hover en iconos de redes sociales -->
-            <!-- USO: Se reproduce al pasar el mouse sobre iconos de redes -->
-            <!-- ELEMENTO: Iconos de redes sociales -->
-            <!-- VOLUMEN: 40% - Sonido de activación de red social -->
-            <!-- DURACIÓN: 0.5-0.8 segundos -->
-            <audio id="social-icon-hover" preload="auto">
-                <source src="assets/media/pixabay/gun-mechanical-reload-.mp3" type="audio/mpeg">
+            <!-- AUDIO: Sonido de "transmisión de datos" al cambiar entre testimonios -->
+            <!-- USO: Se reproduce al cambiar entre testimonios o reseñas -->
+            <!-- ELEMENTOS: Carrusel de testimonios, navegación de reseñas -->
+            <!-- VOLUMEN: 40% - Sonido de transmisión de información -->
+            <!-- DURACIÓN: 0.8-1.3 segundos -->
+            <audio id="testimonial-cycle" preload="auto">
+                <source src="                            " type="audio/mpeg">
+            </audio>
+            
+            <!-- ======================================================= -->
+            <!-- SECCIÓN: FORMULARIOS - Efectos para interacciones con formularios -->
+            <!-- ======================================================= -->
+            <!-- AUDIO: Sonido de "confirmación de envío" al enviar formularios -->
+            <!-- USO: Se reproduce cuando se envía un formulario exitosamente -->
+            <!-- ELEMENTOS: Formularios de contacto, envío de datos, confirmaciones -->
+            <!-- VOLUMEN: 55% - Confirmación clara de envío -->
+            <!-- DURACIÓN: 1.2-1.8 segundos -->
+            <audio id="form-submit" preload="auto">
+                <source src="                              " type="audio/mpeg">
+            </audio>
+            
+            <!-- AUDIO: Sonido de "campo activo" al enfocar campos de entrada -->
+            <!-- USO: Se reproduce cuando el usuario hace clic en un campo de formulario -->
+            <!-- ELEMENTOS: Campos de texto, textareas, inputs de formulario -->
+            <!-- VOLUMEN: 35% - Sonido sutil de activación -->
+            <!-- DURACIÓN: 0.4-0.6 segundos -->
+            <audio id="input-focus" preload="auto">
+                <source src="                               " type="audio/mpeg">
+            </audio>
+            
+            <!-- AUDIO: Sonido de "escritura" al comenzar a escribir en campos -->
+            <!-- USO: Se reproduce cuando el usuario comienza a escribir en un campo -->
+            <!-- ELEMENTOS: Campos de texto, textareas, inputs de formulario -->
+            <!-- VOLUMEN: 25% - Sonido muy sutil de escritura -->
+            <!-- DURACIÓN: 0.3-0.5 segundos -->
+            <audio id="typing-start" preload="auto">
+                <source src="                                 " type="audio/mpeg">
+            </audio>
+            
+            <!-- ======================================================= -->
+            <!-- SECCIÓN: REDES SOCIALES - Efectos para enlaces sociales -->
+            <!-- ======================================================= -->
+            <!-- AUDIO: Sonido de "spark digital" al pasar mouse sobre enlaces sociales -->
+            <!-- USO: Se reproduce al pasar el mouse sobre iconos de redes sociales -->
+            <!-- ELEMENTOS: Iconos de redes sociales, enlaces externos, botones sociales -->
+            <!-- VOLUMEN: 40% - Sonido de conexión digital -->
+            <!-- DURACIÓN: 0.6-1 segundo -->
+            <audio id="social-hover" preload="auto">
+                <source src="                                  " type="audio/mpeg">
             </audio>
         </div>
-    
-        <!-- Script principal del portafolio -->
-    <script src="assets/js/main.js"></script>
-    
 </body>
 </html>
