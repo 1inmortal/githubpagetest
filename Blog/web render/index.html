@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INMORTAL DEV - Portafolio Futurista</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap');
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            cursor: default;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 1.5s ease-out;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        #loading-screen h1 {
+            font-size: 2rem;
+            color: #0ff;
+            text-shadow: 0 0 10px #0ff, 0 0 20px #0ff;
+            letter-spacing: 4px;
+        }
+        
+        #loading-bar-container {
+            width: 300px;
+            height: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid #0ff;
+            margin-top: 20px;
+        }
+
+        #loading-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #f0f, #0ff);
+            transition: width 0.5s ease;
+        }
+
+        /* Oculta los inputs reales, se usarán programáticamente */
+        .hidden-input {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading-screen">
+        <h1>INMORTAL DEV</h1>
+        <div id="loading-bar-container">
+            <div id="loading-bar"></div>
+        </div>
+    </div>
+
+    <canvas id="webgl-canvas"></canvas>
+    
+    <input type="text" id="name-input" class="hidden-input" autocomplete="name">
+    <input type="email" id="email-input" class="hidden-input" autocomplete="email">
+    <textarea id="message-input" class="hidden-input"></textarea>
+
+    <script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.157.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.157.0/examples/jsm/",
+            "gsap": "https://unpkg.com/gsap@3.12.2/index.js"
+        }
+    }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+        import gsap from 'gsap';
+
+        class FuturistPortfolio {
+            constructor() {
+                this.initCore();
+                this.initScene();
+                this.initPostProcessing();
+                this.createBackground();
+                this.createLogo();
+                this.createNavigation();
+                this.createSections();
+                this.initInteractivity();
+                this.animate();
+                this.handleLoading();
+            }
+
+            initCore() {
+                this.scene = new THREE.Scene();
+                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                this.camera.position.z = 10;
+                
+                // FIX: Inicializar el punto de mira de la cámara aquí para evitar el error.
+                this.camera.userData.lookAt = new THREE.Vector3(0, 0, 0);
+
+                this.renderer = new THREE.WebGLRenderer({ 
+                    canvas: document.querySelector('#webgl-canvas'),
+                    antialias: true 
+                });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+                this.clock = new THREE.Clock();
+                this.raycaster = new THREE.Raycaster();
+                this.pointer = new THREE.Vector2();
+                this.interactiveObjects = [];
+                this.currentSection = 'home';
+            }
+            
+            initScene() {
+                this.scene.fog = new THREE.FogExp2(0x000104, 0.08);
+
+                this.energyPointer = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.1, 16, 16),
+                    new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.8 })
+                );
+                this.scene.add(this.energyPointer);
+            }
+
+            initPostProcessing() {
+                this.composer = new EffectComposer(this.renderer);
+                this.composer.addPass(new RenderPass(this.scene, this.camera));
+                const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+                bloomPass.threshold = 0;
+                bloomPass.strength = 1.2;
+                bloomPass.radius = 0.5;
+                this.composer.addPass(bloomPass);
+            }
+
+            createBackground() {
+                const lineCount = 200;
+                const geometry = new THREE.BufferGeometry();
+                const positions = new Float32Array(lineCount * 2 * 3);
+                
+                for (let i = 0; i < lineCount; i++) {
+                    const x = (i / (lineCount - 1) - 0.5) * 50;
+                    positions[i * 6] = x;
+                    positions[i * 6 + 1] = -30;
+                    positions[i * 6 + 2] = -20;
+                    positions[i * 6 + 3] = x;
+                    positions[i * 6 + 4] = 30;
+                    positions[i * 6 + 5] = -20;
+                }
+                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+                this.shaderMaterial = new THREE.ShaderMaterial({
+                    uniforms: {
+                        u_time: { value: 0 },
+                        u_color1: { value: new THREE.Color(0xff00ff) },
+                        u_color2: { value: new THREE.Color(0x00ffff) },
+                        u_color3: { value: new THREE.Color(0xff8800) },
+                    },
+                    vertexShader: `
+                        uniform float u_time;
+                        varying float v_y;
+                        void main() {
+                            v_y = position.y;
+                            vec3 pos = position;
+                            float wave = sin(pos.x * 0.2 + u_time) * cos(pos.y * 0.1 + u_time * 0.5) * 2.0;
+                            pos.z += wave;
+                            pos.y += sin(pos.x * 0.1 + u_time) * 0.5;
+                            gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+                        }
+                    `,
+                    fragmentShader: `
+                        uniform vec3 u_color1;
+                        uniform vec3 u_color2;
+                        uniform vec3 u_color3;
+                        varying float v_y;
+                        void main() {
+                            vec3 color = mix(u_color2, u_color1, smoothstep(-15.0, 15.0, v_y));
+                            color = mix(color, u_color3, smoothstep(5.0, 20.0, v_y * -1.0));
+                            gl_FragColor = vec4(color, 1.0);
+                        }
+                    `,
+                    transparent: true,
+                    blending: THREE.AdditiveBlending,
+                    depthTest: false
+                });
+
+                const lines = new THREE.LineSegments(geometry, this.shaderMaterial);
+                this.scene.add(lines);
+            }
+            
+            createLogo() {
+                this.logoGroup = new THREE.Group();
+                const material = new THREE.MeshStandardMaterial({
+                    color: 0x00ffff,
+                    emissive: 0x00ffff,
+                    emissiveIntensity: 2,
+                    metalness: 0.8,
+                    roughness: 0.2
+                });
+
+                const mainShape = new THREE.TorusKnotGeometry(1.2, 0.1, 200, 16, 2, 3);
+                const logoMesh = new THREE.Mesh(mainShape, material);
+                
+                const particlesGeometry = new THREE.BufferGeometry();
+                const particlesCnt = 500;
+                const posArray = new Float32Array(particlesCnt * 3);
+                for(let i = 0; i < particlesCnt * 3; i++) {
+                    posArray[i] = (Math.random() - 0.5) * 10;
+                }
+                particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+                const particlesMaterial = new THREE.PointsMaterial({
+                    size: 0.03,
+                    color: 0xff00ff
+                });
+                this.particles = new THREE.Points(particlesGeometry, particlesMaterial);
+                
+                this.logoGroup.add(logoMesh, this.particles);
+                this.logoGroup.position.set(0, 0, 0);
+                this.scene.add(this.logoGroup);
+                
+                // MEJORA: Añadir el logo a los objetos interactivos para poder volver al inicio.
+                this.logoGroup.userData = { type: 'logo_home' };
+                this.interactiveObjects.push(this.logoGroup);
+
+                this.create3DText("INMORTAL DEV", { size: 0.8, height: 0.1 }, new THREE.Vector3(0, -2.5, 0), this.logoGroup);
+            }
+
+            createNavigation() {
+                this.navItems = {};
+                const navData = [
+                    { name: 'Sobre mí', position: new THREE.Vector3(-15, 5, -10) },
+                    { name: 'Proyectos', position: new THREE.Vector3(15, 5, -10) },
+                    { name: 'Tecnologías', position: new THREE.Vector3(-15, -5, -10) },
+                    { name: 'Contacto', position: new THREE.Vector3(15, -5, -10) }
+                ];
+
+                navData.forEach(item => {
+                    const group = new THREE.Group();
+                    group.position.copy(item.position);
+                    this.create3DText(item.name, { size: 0.5 }, new THREE.Vector3(), group);
+                    group.visible = false;
+                    this.scene.add(group);
+                    
+                    const box = new THREE.Box3().setFromObject(group);
+                    const size = box.getSize(new THREE.Vector3());
+                    
+                    const hitBox = new THREE.Mesh(
+                        new THREE.BoxGeometry(size.x * 1.2, size.y * 1.5, 1),
+                        new THREE.MeshBasicMaterial({ visible: false })
+                    );
+                    hitBox.userData = { type: 'nav', name: item.name };
+                    group.add(hitBox);
+                    
+                    this.navItems[item.name] = { group: group, cameraTarget: item.position };
+                    this.interactiveObjects.push(group);
+                });
+            }
+
+            createSections() {
+                this.sections = {};
+                this.createAboutSection();
+                this.createProjectsSection();
+                this.createTechSection();
+                this.createContactSection();
+            }
+
+            createAboutSection() {
+                const group = new THREE.Group();
+                const content = [
+                    "Nombre: Armando Espinosa (INMORTAL)",
+                    "Especialidad: Seguridad Informática, Programación Web, UI/UX",
+                    "Experiencia: 6+ años en desarrollo, prototipos y ciberseguridad",
+                    "",
+                    `"En un mundo donde la luz se desvanece,`,
+                    `yo diseño el resplandor."`
+                ];
+                const texture = this.createCanvasTexture(content, { title: "SOBRE MÍ" });
+                const plane = new THREE.Mesh(
+                    new THREE.PlaneGeometry(8, 5),
+                    new THREE.MeshBasicMaterial({ map: texture, transparent: true, opacity: 0 })
+                );
+                group.add(plane);
+                group.position.copy(this.navItems['Sobre mí'].cameraTarget).z += 2;
+                group.visible = false;
+                this.scene.add(group);
+                this.sections['Sobre mí'] = group;
+            }
+            
+            createProjectsSection() {
+                const group = new THREE.Group();
+                this.projectCards = [];
+                const projectsData = [
+                    { title: "FireWall Sentinel", desc: "Sistema inteligente de defensa para redes." },
+                    { title: "CyberUI 2099", desc: "Framework visual de componentes 3D reactivos." },
+                    { title: "NebulaStream FX", desc: "Motor gráfico para visualización de música." },
+                    { title: "Aegis Platform", desc: "App de ciberseguridad empresarial con IA." }
+                ];
+                
+                projectsData.forEach((p, i) => {
+                    const cardGroup = new THREE.Group();
+                    const texture = this.createCanvasTexture([p.desc], { title: p.title, isProject: true });
+                    const card = new THREE.Mesh(
+                        new THREE.BoxGeometry(5, 3, 0.2),
+                        new THREE.MeshStandardMaterial({ 
+                            map: texture,
+                            emissive: 0x003333,
+                            emissiveMap: texture,
+                            transparent: true,
+                            opacity: 0
+                        })
+                    );
+                    cardGroup.add(card);
+                    
+                    const angle = (i / projectsData.length) * Math.PI * 2;
+                    cardGroup.position.set(Math.cos(angle) * 7, 0, Math.sin(angle) * 7);
+                    cardGroup.lookAt(group.position);
+                    
+                    group.add(cardGroup);
+                    this.projectCards.push(cardGroup);
+                });
+
+                group.position.copy(this.navItems['Proyectos'].cameraTarget);
+                group.visible = false;
+                this.scene.add(group);
+                this.sections['Proyectos'] = group;
+                this.currentProjectIndex = 0;
+            }
+
+            createTechSection() {
+                const group = new THREE.Group();
+                const techs = ['HTML5', 'CSS3', 'JavaScript', 'React', 'Three.js', 'WebGL', 'Python', 'GSAP', 'GLSL', 'GitHub'];
+                
+                techs.forEach(tech => {
+                    const textGroup = new THREE.Group();
+                    this.create3DText(tech, { size: 0.3 }, new THREE.Vector3(), textGroup);
+                    
+                    const phi = Math.acos(-1 + (2 * Math.random()));
+                    const theta = Math.sqrt(4 * Math.PI) * Math.random();
+                    textGroup.position.setFromSphericalCoords(4, phi, theta);
+                    textGroup.lookAt(group.position);
+                    
+                    group.add(textGroup);
+                });
+                
+                group.position.copy(this.navItems['Tecnologías'].cameraTarget);
+                group.visible = false;
+                this.scene.add(group);
+                this.sections['Tecnologías'] = group;
+            }
+
+            createContactSection() {
+                const group = new THREE.Group();
+                const texture = this.createCanvasTexture(
+                    ["", "Nombre:", "", "Email:", "", "Mensaje:", ""],
+                    { title: "CONTACTO", isForm: true }
+                );
+                
+                const formPlane = new THREE.Mesh(
+                    new THREE.PlaneGeometry(8, 6),
+                    new THREE.MeshBasicMaterial({ map: texture, transparent: true, opacity: 0 })
+                );
+                group.add(formPlane);
+
+                const fields = [
+                    { name: 'name', y: -0.3 },
+                    { name: 'email', y: -1.7 },
+                    { name: 'message', y: -3.1, h: 1.5 }
+                ];
+                fields.forEach(f => {
+                    const hitGeo = new THREE.BoxGeometry(6, f.h || 0.8, 0.1);
+                    const hitMat = new THREE.MeshBasicMaterial({ visible: false });
+                    const hitBox = new THREE.Mesh(hitGeo, hitMat);
+                    hitBox.position.set(0, f.y, 0.1);
+                    hitBox.userData = { type: 'form_field', name: f.name };
+                    this.interactiveObjects.push(hitBox);
+                    group.add(hitBox);
+                });
+                
+                const buttonGroup = new THREE.Group();
+                this.create3DText("ENVIAR", { size: 0.3 }, new THREE.Vector3(), buttonGroup);
+                buttonGroup.position.set(0, -4.5, 0.1);
+                buttonGroup.userData = { type: 'form_submit' };
+                this.interactiveObjects.push(buttonGroup);
+                group.add(buttonGroup);
+                
+                group.position.copy(this.navItems['Contacto'].cameraTarget);
+                group.visible = false;
+                this.scene.add(group);
+                this.sections['Contacto'] = group;
+                this.contactFormState = { name: '', email: '', message: '' };
+            }
+
+            initInteractivity() {
+                window.addEventListener('resize', this.onWindowResize.bind(this));
+                window.addEventListener('pointermove', this.onPointerMove.bind(this));
+                window.addEventListener('click', this.onClick.bind(this));
+                document.addEventListener('keydown', this.handleKeyDown.bind(this));
+            }
+
+            onWindowResize() {
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.composer.setSize(window.innerWidth, window.innerHeight);
+            }
+
+            onPointerMove(event) {
+                this.pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+                this.pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+                const vector = new THREE.Vector3(this.pointer.x, this.pointer.y, 0.5);
+                vector.unproject(this.camera);
+                const dir = vector.sub(this.camera.position).normalize();
+                const distance = -this.camera.position.z / dir.z;
+                const pos = this.camera.position.clone().add(dir.multiplyScalar(distance));
+                gsap.to(this.energyPointer.position, {
+                    x: pos.x,
+                    y: pos.y,
+                    duration: 0.5,
+                    ease: 'power2.out'
+                });
+            }
+
+            onClick() {
+                this.raycaster.setFromCamera(this.pointer, this.camera);
+                const intersects = this.raycaster.intersectObjects(this.interactiveObjects, true);
+
+                if (intersects.length > 0) {
+                    let obj = intersects[0].object;
+                    while (obj && !obj.userData.type) {
+                        obj = obj.parent;
+                    }
+                    if (!obj) return;
+                    const userData = obj.userData;
+
+                    if (userData.type === 'nav') this.navigateTo(userData.name);
+                    if (userData.type === 'form_field') document.getElementById(`${userData.name}-input`).focus();
+                    if (userData.type === 'form_submit') this.submitForm();
+                    if (userData.type === 'logo_home' && this.currentSection !== 'home') this.showHomePage();
+                }
+            }
+            
+            handleKeyDown(event) {
+                if(this.currentSection === 'Proyectos') {
+                    let direction = 0;
+                    if (event.key === 'ArrowRight') direction = 1;
+                    if (event.key === 'ArrowLeft') direction = -1;
+                    if (direction !== 0) {
+                        this.currentProjectIndex = (this.currentProjectIndex + direction + this.projectCards.length) % this.projectCards.length;
+                        gsap.to(this.sections['Proyectos'].rotation, {
+                            y: this.sections['Proyectos'].rotation.y - direction * (Math.PI * 2 / this.projectCards.length),
+                            duration: 1,
+                            ease: 'power3.inOut'
+                        });
+                    }
+                }
+                if (event.key === 'Escape' && this.currentSection !== 'home') {
+                    this.showHomePage();
+                }
+            }
+            
+            submitForm() {
+                console.log("Formulario enviado:", this.contactFormState);
+                const contactSection = this.sections['Contacto'];
+                const formPlane = contactSection.children.find(c => c.geometry.type === 'PlaneGeometry');
+                const originalTexture = formPlane.material.map;
+
+                const confirmationTexture = this.createCanvasTexture(
+                    ["", "Gracias por tu mensaje.", "Te contactaré pronto."], 
+                    { title: "ENVIADO" }
+                );
+                
+                formPlane.material.map = confirmationTexture;
+                formPlane.material.needsUpdate = true;
+                
+                setTimeout(() => {
+                    formPlane.material.map = originalTexture;
+                    formPlane.material.needsUpdate = true;
+                    this.contactFormState = { name: '', email: '', message: '' };
+                    this.updateContactFormTexture();
+                }, 3000);
+            }
+
+            navigateTo(sectionName) {
+                if (this.isNavigating || this.currentSection === sectionName) return;
+                this.isNavigating = true;
+
+                const targetPos = this.navItems[sectionName].cameraTarget.clone();
+                const targetLookAt = targetPos.clone();
+                
+                targetPos.z += (sectionName === 'Proyectos') ? 15 : 8;
+
+                if (this.currentSection === 'home') {
+                    gsap.to(this.logoGroup.position, { y: -20, duration: 1, ease: 'power2.in' });
+                    Object.values(this.navItems).forEach(item => {
+                        gsap.to(item.group.scale, { x: 0.01, y: 0.01, z: 0.01, duration: 1, ease: 'power2.in' });
+                    });
+                } else {
+                    this.fadeOutSection(this.sections[this.currentSection]);
+                }
+                
+                gsap.to(this.camera.position, {
+                    x: targetPos.x, y: targetPos.y, z: targetPos.z,
+                    duration: 2, ease: 'power3.inOut',
+                    onComplete: () => {
+                        this.currentSection = sectionName;
+                        this.fadeInSection(this.sections[sectionName]);
+                        this.isNavigating = false;
+                    }
+                });
+
+                gsap.to(this.camera.userData.lookAt, {
+                    x: targetLookAt.x, y: targetLookAt.y, z: targetLookAt.z,
+                    duration: 2, ease: 'power3.inOut'
+                });
+            }
+            
+            showHomePage() {
+                if (this.isNavigating || this.currentSection === 'home') return;
+                this.isNavigating = true;
+                
+                this.fadeOutSection(this.sections[this.currentSection]);
+                
+                gsap.to(this.camera.position, {
+                    x: 0, y: 0, z: 10, duration: 2, ease: 'power3.inOut'
+                });
+                gsap.to(this.camera.userData.lookAt, {
+                    x: 0, y: 0, z: 0, duration: 2, ease: 'power3.inOut',
+                    onComplete: () => {
+                        this.currentSection = 'home';
+                        this.isNavigating = false;
+                    }
+                });
+                
+                gsap.to(this.logoGroup.position, { y: 0, duration: 1.5, ease: 'elastic.out(1, 0.5)', delay: 1 });
+                Object.values(this.navItems).forEach((item, i) => {
+                    gsap.to(item.group.scale, { 
+                        x: 1, y: 1, z: 1, 
+                        duration: 1, ease: 'elastic.out(1, 0.7)', 
+                        delay: 1.5 + i * 0.1 
+                    });
+                });
+            }
+
+            fadeInSection(section) {
+                if (!section) return;
+                section.visible = true;
+                section.traverse(child => {
+                    if (child.material) {
+                        gsap.to(child.material, { opacity: 1, duration: 1.5 });
+                    }
+                });
+            }
+
+            fadeOutSection(section) {
+                 if (!section) return;
+                 section.traverse(child => {
+                    if (child.material) {
+                        gsap.to(child.material, { opacity: 0, duration: 1, onComplete: () => {
+                            if(section.visible) section.visible = false;
+                        }});
+                    }
+                });
+            }
+            
+            animate() {
+                requestAnimationFrame(this.animate.bind(this));
+                const elapsedTime = this.clock.getElapsedTime();
+
+                this.shaderMaterial.uniforms.u_time.value = elapsedTime;
+
+                this.logoGroup.rotation.y = elapsedTime * 0.1;
+                this.logoGroup.rotation.x = Math.sin(elapsedTime * 0.2) * 0.1;
+                this.particles.rotation.y = -elapsedTime * 0.05;
+
+                if (this.sections['Tecnologías'] && this.sections['Tecnologías'].visible) {
+                    this.sections['Tecnologías'].rotation.y += 0.001;
+                    this.sections['Tecnologías'].rotation.x += 0.0005;
+                }
+                
+                this.updateHovers();
+                this.camera.lookAt(this.camera.userData.lookAt);
+                this.composer.render();
+            }
+
+            updateHovers() {
+                this.raycaster.setFromCamera(this.pointer, this.camera);
+                const intersects = this.raycaster.intersectObjects(this.interactiveObjects, true);
+
+                this.interactiveObjects.forEach(obj => {
+                    const targetScale = obj.userData.originalScale || new THREE.Vector3(1, 1, 1);
+                    if (obj.scale.x !== targetScale.x) {
+                        gsap.to(obj.scale, { x: targetScale.x, y: targetScale.y, z: targetScale.z, duration: 0.3 });
+                    }
+                });
+                
+                if (intersects.length > 0) {
+                    document.body.style.cursor = 'pointer';
+                    let obj = intersects[0].object;
+                     while (obj.parent && !obj.userData.type) {
+                        obj = obj.parent;
+                    }
+                    if (!obj.userData.originalScale) {
+                        obj.userData.originalScale = obj.scale.clone();
+                    }
+                    gsap.to(obj.scale, { x: 1.2, y: 1.2, z: 1.2, duration: 0.3 });
+                } else {
+                    document.body.style.cursor = 'default';
+                }
+            }
+
+            create3DText(text, options, position, parent) {
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                const fontSize = options.size * 80;
+                context.font = `bold ${fontSize}px Orbitron`;
+                const textMetrics = context.measureText(text);
+                
+                canvas.width = textMetrics.width + 20; // Padding
+                canvas.height = fontSize * 1.5;
+                
+                context.font = `bold ${fontSize}px Orbitron`;
+                context.fillStyle = '#00ffff';
+                context.textAlign = 'center';
+                context.textBaseline = 'middle';
+                context.shadowColor = '#00ffff';
+                context.shadowBlur = 10;
+                context.fillText(text, canvas.width / 2, canvas.height / 2);
+                
+                const texture = new THREE.CanvasTexture(canvas);
+                const planeGeo = new THREE.PlaneGeometry(canvas.width / 100, canvas.height / 100);
+                const planeMat = new THREE.MeshBasicMaterial({ map: texture, transparent: true, opacity: parent.userData.type === 'logo_home' ? 1 : 0 });
+                const mesh = new THREE.Mesh(planeGeo, planeMat);
+                
+                mesh.position.copy(position);
+                parent.add(mesh);
+                return mesh;
+            }
+
+            createCanvasTexture(lines, options = {}) {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = 1024;
+                canvas.height = options.isForm ? 768 : 512;
+
+                ctx.fillStyle = 'rgba(5, 10, 30, 0.7)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.strokeStyle = options.isProject ? '#ff8800' : '#00ffff';
+                ctx.lineWidth = 8;
+                ctx.strokeRect(0, 0, canvas.width, canvas.height);
+
+                if (options.title) {
+                    ctx.font = 'bold 72px Orbitron';
+                    ctx.fillStyle = options.isProject ? '#ff8800' : '#00ffff';
+                    ctx.textAlign = 'center';
+                    ctx.shadowColor = options.isProject ? '#ff8800' : '#00ffff';
+                    ctx.shadowBlur = 20;
+                    ctx.fillText(options.title, canvas.width / 2, 100);
+                    ctx.shadowBlur = 0;
+                }
+
+                ctx.font = '36px Rajdhani';
+                ctx.fillStyle = '#eee';
+                ctx.textAlign = 'center';
+                lines.forEach((line, i) => {
+                    let yPos = options.isForm ? 220 + i * 70 : 200 + i * 50;
+                    if(options.isForm) {
+                       ctx.textAlign = 'left';
+                       ctx.fillText(line, 100, yPos);
+                    } else {
+                       ctx.fillText(line, canvas.width / 2, yPos);
+                    }
+                });
+
+                return new THREE.CanvasTexture(canvas);
+            }
+            
+            updateContactFormTexture() {
+                const formState = this.contactFormState;
+                const lines = [
+                    "",
+                    `Nombre: ${formState.name}`,
+                    "",
+                    `Email: ${formState.email}`,
+                    "",
+                    "Mensaje:",
+                    ...formState.message.split('\n').map(l => `  ${l}`)
+                ];
+                const texture = this.createCanvasTexture(lines, { title: "CONTACTO", isForm: true });
+                this.sections.Contacto.children[0].material.map = texture;
+                this.sections.Contacto.children[0].material.needsUpdate = true;
+            }
+            
+            setupFormListeners() {
+                const nameInput = document.getElementById('name-input');
+                const emailInput = document.getElementById('email-input');
+                const messageInput = document.getElementById('message-input');
+
+                const update = () => {
+                    this.contactFormState.name = nameInput.value;
+                    this.contactFormState.email = emailInput.value;
+                    this.contactFormState.message = messageInput.value;
+                    this.updateContactFormTexture();
+                };
+
+                nameInput.addEventListener('input', update);
+                emailInput.addEventListener('input', update);
+                messageInput.addEventListener('input', update);
+            }
+
+            handleLoading() {
+                const loadingScreen = document.getElementById('loading-screen');
+                const loadingBar = document.getElementById('loading-bar');
+
+                THREE.DefaultLoadingManager.onProgress = (url, itemsLoaded, itemsTotal) => {
+                    loadingBar.style.width = `${(itemsLoaded / itemsTotal) * 100}%`;
+                };
+
+                THREE.DefaultLoadingManager.onLoad = () => {
+                    setTimeout(() => {
+                        gsap.to(loadingScreen, { opacity: 0, duration: 1.5, onComplete: () => loadingScreen.remove() });
+                        this.startExperience();
+                    }, 500);
+                };
+            }
+            
+            startExperience() {
+                this.setupFormListeners();
+                
+                this.logoGroup.position.y = 20;
+                gsap.to(this.logoGroup.position, { y: 0, duration: 2, ease: 'elastic.out(1, 0.5)', delay: 0.5 });
+                
+                Object.values(this.navItems).forEach((item, i) => {
+                    item.group.visible = true;
+                    item.group.scale.set(0.01, 0.01, 0.01);
+                    item.group.children[0].material.opacity = 0; // The text plane
+                    
+                    gsap.to(item.group.scale, {
+                        x: 1, y: 1, z: 1,
+                        duration: 1.5, ease: 'elastic.out(1, 0.7)',
+                        delay: 1.5 + i * 0.15
+                    });
+                    gsap.to(item.group.children[0].material, {
+                        opacity: 1, duration: 1, delay: 1.5 + i * 0.15
+                    });
+                });
+            }
+        }
+
+        new FuturistPortfolio();
+
+    </script>
+</body>
+</html>
