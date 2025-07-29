@@ -186,8 +186,9 @@
                 
                 setupTooltipEffects() {
                     // Efectos para tooltips de habilidades
-                    document.querySelectorAll('.skill-item').forEach(skill => {
-                        skill.addEventListener('mouseenter', () => {
+                    // Solo aplicar sonido a los paneles de categorías, no a los iconos individuales
+                    document.querySelectorAll('.skill-category').forEach(category => {
+                        category.addEventListener('mouseenter', () => {
                             // Pequeño delay para que el tooltip aparezca primero
                             setTimeout(() => this.playSound('skills-icon-hover'), 100);
                         });
