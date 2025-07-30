@@ -1044,6 +1044,15 @@
                 }
                 
                 init() {
+                    // Verificar que los contenedores necesarios existan
+                    const ecosystemContainer = document.getElementById('ecosystemContainer');
+                    const connectionLines = document.getElementById('connectionLines');
+                    
+                    if (!ecosystemContainer || !connectionLines) {
+                        console.warn('Ecosystem containers not found, skipping initialization');
+                        return;
+                    }
+                    
                     this.createNodes();
                     this.createConnectionLines();
                     this.updateLinePositions();
@@ -1053,6 +1062,12 @@
                 
                 createNodes() {
                     // Crear nodos del ecosistema
+                    const container = document.getElementById('ecosystemContainer');
+                    if (!container) {
+                        console.warn('Ecosystem container not found, skipping node creation');
+                        return;
+                    }
+                    
                     const nodeData = [
                         { id: 'aws-sa-pro', x: 20, y: 30, connections: ['scrum-master', 'azure-dp-203', 'terraform-associate', 'docker-certified'] },
                         { id: 'azure-dp-203', x: 80, y: 20, connections: ['aws-sa-pro', 'terraform-associate'] },
@@ -1076,16 +1091,19 @@
                             <span class="node-title">${nodeInfo.id.replace('-', ' ').toUpperCase()}</span>
                         `;
                         
-                        const container = document.getElementById('ecosystemContainer');
-                        if (container) {
-                            container.appendChild(node);
-                            this.nodes[nodeInfo.id] = node;
-                        }
+                        container.appendChild(node);
+                        this.nodes[nodeInfo.id] = node;
                     });
                 }
                 
                 createConnectionLines() {
                     // Crear líneas de conexión entre nodos
+                    const svg = document.getElementById('connectionLines');
+                    if (!svg) {
+                        console.warn('Connection lines SVG not found, skipping line creation');
+                        return;
+                    }
+                    
                     const connectionData = [
                         { from: 'aws-sa-pro', to: 'scrum-master' },
                         { from: 'aws-sa-pro', to: 'azure-dp-203' },
@@ -1095,9 +1113,6 @@
                         { from: 'terraform-associate', to: 'docker-certified' },
                         { from: 'scrum-master', to: 'google-pm' }
                     ];
-                    
-                    const svg = document.getElementById('connectionLines');
-                    if (!svg) return;
                     
                     connectionData.forEach((connection, index) => {
                         const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
@@ -1113,19 +1128,24 @@
                 
                 updateLinePositions() {
                     // Actualizar posiciones de las líneas de conexión
+                    const container = document.getElementById('ecosystemContainer');
+                    if (!container) return;
+                    
                     Object.values(this.lines).forEach(line => {
+                        if (!line || !line.parentNode) return;
+                        
                         const fromId = line.getAttribute('data-from');
                         const toId = line.getAttribute('data-to');
                         
                         const fromNode = this.nodes[fromId];
                         const toNode = this.nodes[toId];
                         
-                        if (fromNode && toNode) {
+                        if (fromNode && toNode && fromNode.parentNode && toNode.parentNode) {
                             const fromRect = fromNode.getBoundingClientRect();
                             const toRect = toNode.getBoundingClientRect();
-                            const containerRect = document.getElementById('ecosystemContainer')?.getBoundingClientRect();
+                            const containerRect = container.getBoundingClientRect();
                             
-                            if (containerRect) {
+                            if (containerRect && fromRect && toRect) {
                                 const fromX = fromRect.left + fromRect.width / 2 - containerRect.left;
                                 const fromY = fromRect.top + fromRect.height / 2 - containerRect.top;
                                 const toX = toRect.left + toRect.width / 2 - containerRect.left;
@@ -1143,6 +1163,8 @@
                 setupInteractivity() {
                     // Configurar interactividad de los nodos
                     Object.values(this.nodes).forEach(node => {
+                        if (!node || !node.parentNode) return;
+                        
                         node.addEventListener('click', () => {
                             this.focusNode(node.dataset.nodeId);
                         });
@@ -1160,35 +1182,44 @@
                 setupAnimations() {
                     // Animaciones de entrada
                     if (typeof gsap !== 'undefined') {
-                        gsap.fromTo(Object.values(this.nodes), 
-                            { opacity: 0, scale: 0.5, y: "+=50" },
-                            { 
-                                opacity: 1, 
-                                scale: 1, 
-                                y: 0, 
-                                duration: 1, 
-                                ease: "back.out(1.7)", 
-                                stagger: 0.05, 
-                                delay: 0.5 
-                            }
-                        );
+                        const nodes = Object.values(this.nodes).filter(node => node && node.parentNode);
+                        const lines = Object.values(this.lines).filter(line => line && line.parentNode);
                         
-                        gsap.fromTo(Object.values(this.lines), 
-                            { opacity: 0, strokeWidth: 0 },
-                            { 
-                                opacity: 1, 
-                                strokeWidth: 2, 
-                                duration: 1.5, 
-                                delay: 1, 
-                                ease: "power2.out" 
-                            }
-                        );
+                        if (nodes.length > 0) {
+                            gsap.fromTo(nodes, 
+                                { opacity: 0, scale: 0.5, y: "+=50" },
+                                { 
+                                    opacity: 1, 
+                                    scale: 1, 
+                                    y: 0, 
+                                    duration: 1, 
+                                    ease: "back.out(1.7)", 
+                                    stagger: 0.05, 
+                                    delay: 0.5 
+                                }
+                            );
+                        }
+                        
+                        if (lines.length > 0) {
+                            gsap.fromTo(lines, 
+                                { opacity: 0, strokeWidth: 0 },
+                                { 
+                                    opacity: 1, 
+                                    strokeWidth: 2, 
+                                    duration: 1.5, 
+                                    delay: 1, 
+                                    ease: "power2.out" 
+                                }
+                            );
+                        }
                     }
                 }
                 
                 focusNode(nodeId) {
                     // Enfocar un nodo específico
                     Object.values(this.nodes).forEach(node => {
+                        if (!node || !node.parentNode) return;
+                        
                         if (node.dataset.nodeId === nodeId) {
                             node.classList.add('focused');
                         } else {
@@ -1200,6 +1231,8 @@
                 highlightConnections(nodeId) {
                     // Resaltar conexiones de un nodo
                     Object.values(this.lines).forEach(line => {
+                        if (!line || !line.parentNode) return;
+                        
                         const fromId = line.getAttribute('data-from');
                         const toId = line.getAttribute('data-to');
                         
@@ -1212,10 +1245,12 @@
                 clearHighlights() {
                     // Limpiar resaltados
                     Object.values(this.lines).forEach(line => {
+                        if (!line || !line.parentNode) return;
                         line.classList.remove('active');
                     });
                     
                     Object.values(this.nodes).forEach(node => {
+                        if (!node || !node.parentNode) return;
                         node.classList.remove('focused');
                     });
                 }
