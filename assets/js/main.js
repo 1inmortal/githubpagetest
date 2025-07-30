@@ -1411,3 +1411,266 @@
             initializeSystems();
         });
     
+// === SCRAMBLE TEXT EFFECT FOR NAV MENU ===
+function scrambleText(element, originalText, scrambleChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*', speed = 30, rounds = 8) {
+    // Fijar el ancho actual para evitar "temblor"
+    const originalWidth = element.offsetWidth;
+    element.style.display = 'inline-block';
+    element.style.width = originalWidth + 'px';
+    let iteration = 0;
+    let scrambled = '';
+    let interval = setInterval(() => {
+        scrambled = '';
+        for (let i = 0; i < originalText.length; i++) {
+            if (iteration > rounds || originalText[i] === ' ') {
+                scrambled += originalText[i];
+            } else {
+                scrambled += scrambleChars[Math.floor(Math.random() * scrambleChars.length)];
+            }
+        }
+        element.textContent = scrambled;
+        iteration++;
+        if (iteration > rounds) {
+            clearInterval(interval);
+            element.textContent = originalText;
+            // Restaurar el ancho
+            element.style.width = '';
+            element.style.display = '';
+        }
+    }, speed);
+}
+
+// Aplica el efecto a todos los .nav-link
+const navLinks = document.querySelectorAll('.main-nav .nav-link');
+navLinks.forEach(link => {
+    const original = link.textContent;
+    link.addEventListener('mouseenter', () => {
+        scrambleText(link, original);
+    });
+    // Opcional: re-scramble al salir
+    // link.addEventListener('mouseleave', () => {
+    //     scrambleText(link, original);
+    // });
+});
+
+// === MENÚ HAMBURGUESA Y OVERLAY ===
+function initMobileMenu() {
+    const hamburger = document.querySelector('.hamburger');
+    const mainNav = document.querySelector('.main-nav');
+    const overlay = document.getElementById('mobile-nav-overlay');
+    const navLinksMobile = document.querySelectorAll('.main-nav .nav-link');
+
+    function closeMobileMenu() {
+        hamburger.classList.remove('active');
+        mainNav.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function openMobileMenu() {
+        hamburger.classList.add('active');
+        mainNav.classList.add('active');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        console.log('📱 Menú abierto');
+    }
+
+    function smoothScrollTo(targetId) {
+        const targetSection = document.querySelector(targetId);
+        if (targetSection) {
+            const headerHeight = document.querySelector('.main-header').offsetHeight;
+            const targetPosition = targetSection.offsetTop - headerHeight;
+            
+            console.log('🎯 Scrolling to:', targetId, 'Position:', targetPosition);
+            
+            // Verificar soporte para scroll suave
+            if ('scrollBehavior' in document.documentElement.style) {
+                // Navegadores modernos
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+            } else {
+                // Fallback para navegadores antiguos
+                window.scrollTo(0, targetPosition);
+            }
+        } else {
+            console.warn('❌ Sección no encontrada:', targetId);
+        }
+    }
+
+    // Función mejorada para scroll con animación personalizada
+    function smoothScrollWithAnimation(targetId) {
+        const targetSection = document.querySelector(targetId);
+        if (!targetSection) {
+            console.warn('❌ Sección no encontrada:', targetId);
+            return;
+        }
+
+        const headerHeight = document.querySelector('.main-header').offsetHeight;
+        const targetPosition = targetSection.offsetTop - headerHeight;
+        const startPosition = window.pageYOffset;
+        const distance = targetPosition - startPosition;
+        const duration = 800; // 800ms
+        let start = null;
+
+        function animation(currentTime) {
+            if (start === null) start = currentTime;
+            const timeElapsed = currentTime - start;
+            const run = easeInOutCubic(timeElapsed, startPosition, distance, duration);
+            window.scrollTo(0, run);
+            if (timeElapsed < duration) requestAnimationFrame(animation);
+        }
+
+        // Función de easing para animación suave
+        function easeInOutCubic(t, b, c, d) {
+            t /= d / 2;
+            if (t < 1) return c / 2 * t * t * t + b;
+            t -= 2;
+            return c / 2 * (t * t * t + 2) + b;
+        }
+
+        requestAnimationFrame(animation);
+    }
+
+    // Limpiar cualquier evento existente que pueda interferir
+    function clearExistingEvents() {
+        const existingHamburger = document.querySelector('.hamburger');
+        if (existingHamburger) {
+            const newHamburger = existingHamburger.cloneNode(true);
+            existingHamburger.parentNode.replaceChild(newHamburger, existingHamburger);
+            return newHamburger;
+        }
+        return existingHamburger;
+    }
+
+    if (hamburger && mainNav && overlay) {
+        console.log('✅ Elementos del menú móvil encontrados');
+        
+        // Limpiar eventos existentes
+        const cleanHamburger = clearExistingEvents();
+        
+        cleanHamburger.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🍔 Hamburger clicked');
+            
+            const isActive = cleanHamburger.classList.contains('active');
+            if (isActive) {
+                closeMobileMenu();
+            } else {
+                openMobileMenu();
+            }
+        });
+        
+        overlay.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🖱️ Overlay clicked');
+            closeMobileMenu();
+        });
+        
+        navLinksMobile.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🔗 Link clicked:', link.getAttribute('href'));
+                
+                // Cerrar el menú primero
+                closeMobileMenu();
+                
+                // Navegar a la sección después de un pequeño delay
+                setTimeout(() => {
+                    const targetId = link.getAttribute('href');
+                    if (targetId && targetId !== '#') {
+                        console.log('🎯 Navegando a:', targetId);
+                        smoothScrollWithAnimation(targetId);
+                    }
+                }, 150);
+            });
+        });
+        
+        // Cerrar con tecla Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && hamburger.classList.contains('active')) {
+                closeMobileMenu();
+            }
+        });
+        
+        // Prevenir scroll cuando el menú está abierto
+        document.addEventListener('touchmove', (e) => {
+            if (hamburger.classList.contains('active')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+    } else {
+        console.warn('❌ Algunos elementos del menú móvil no se encontraron:', {
+            hamburger: !!hamburger,
+            mainNav: !!mainNav,
+            overlay: !!overlay
+        });
+    }
+}
+
+// Inicializar el menú móvil cuando el DOM esté listo
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMobileMenu);
+} else {
+    initMobileMenu();
+}
+
+// === NAVEGACIÓN SUAVE PARA TODOS LOS LINKS ===
+function initSmoothNavigation() {
+    const allNavLinks = document.querySelectorAll('.nav-link');
+    
+    allNavLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            const targetId = link.getAttribute('href');
+            if (targetId && targetId !== '#') {
+                e.preventDefault();
+                console.log('🔗 Desktop link clicked:', targetId);
+                smoothScrollWithAnimation(targetId);
+            }
+        });
+    });
+}
+
+// Inicializar navegación suave
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSmoothNavigation);
+} else {
+    initSmoothNavigation();
+}
+
+// === VERIFICACIÓN DE SECCIONES ===
+function verifySections() {
+    const sections = [
+        '#about',
+        '#skills', 
+        '#services',
+        '#process',
+        '#portfolio',
+        '#testimonials',
+        '#faq',
+        '#contact-form'
+    ];
+    
+    console.log('🔍 Verificando secciones...');
+    sections.forEach(sectionId => {
+        const section = document.querySelector(sectionId);
+        if (section) {
+            console.log(`✅ ${sectionId} - Encontrada`);
+        } else {
+            console.warn(`❌ ${sectionId} - NO ENCONTRADA`);
+        }
+    });
+}
+
+// Verificar secciones cuando el DOM esté listo
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', verifySections);
+} else {
+    verifySections();
+}
+    

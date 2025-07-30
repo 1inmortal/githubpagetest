@@ -195,6 +195,8 @@
             border: 1px solid rgba(255,255,255,0.2);
             border-radius: 50%;
             transition: all 0.3s ease;
+            z-index: 10000;
+            position: relative;
         }
 
         .hamburger:hover {
@@ -230,29 +232,36 @@
         @media (max-width: 768px) {
             .main-nav {
                 position: fixed;
-                top: 100%;
+                top: 0;
                 left: 0;
-                width: 100%;
-                height: calc(100vh - 100%);
-                background: linear-gradient(135deg, rgba(0,0,0,0.95), rgba(0,0,0,0.98));
-                backdrop-filter: blur(20px);
-                -webkit-backdrop-filter: blur(20px);
+                width: 100vw;
+                height: 100vh;
+                background: rgba(10, 10, 20, 0.98);
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
                 align-items: center;
-                gap: 2rem;
-                transform: translateY(-100%);
-                transition: transform 0.3s ease;
-                z-index: 999;
+                gap: 30px;
+                transform: translateX(100%);
+                transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+                z-index: 9999;
+                overflow-y: auto;
             }
 
             .main-nav.active {
-                transform: translateY(0);
+                transform: translateX(0);
             }
 
             .hamburger {
                 display: flex;
+                z-index: 10000;
+                position: relative;
+                pointer-events: auto;
+            }
+            
+            /* Asegurar que el header esté por encima del overlay */
+            .main-header {
+                z-index: 10001;
             }
 
             .nav-link {
@@ -2427,29 +2436,63 @@
             
             /* Header & Mobile Nav */
             .main-nav { 
-                display: none; /* Hidden by default on mobile */
-                /* Mobile Nav Overlay Style */
                 position: fixed;
                 top: 0;
                 left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: var(--bg-color); 
+                width: 100vw;
+                height: 100vh;
+                background: rgba(10, 10, 20, 0.98);
+                display: flex;
                 flex-direction: column;
                 justify-content: center;
                 align-items: center;
                 gap: 30px;
-                transform: translateX(100%); /* Start off-screen */
-                transition: transform 0.4s ease-out;
-                z-index: 99; /* Below header, above content */
+                transform: translateX(100%);
+                transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+                z-index: 9999;
+                overflow-y: auto;
             }
             .main-nav.active {
-                transform: translateX(0); /* Slide in */
-                display: flex; /* Make it visible when active */
+                transform: translateX(0);
             }
             .main-nav .nav-link {
-                font-size: 1.8rem;
+                font-size: 1.2rem;
                 color: var(--text-primary);
+                padding: 12px 20px;
+                border: 1px solid transparent;
+                border-radius: 8px;
+                transition: all 0.3s ease;
+                position: relative;
+                text-decoration: none;
+                display: block;
+            }
+            .main-nav .nav-link:hover {
+                border-color: var(--accent-primary);
+                color: var(--accent-primary);
+                box-shadow: 0 0 20px rgba(0, 245, 160, 0.2);
+            }
+
+            /* Overlay para menú móvil */
+            #mobile-nav-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0, 0, 0, 0.7);
+                z-index: 9998;
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s ease;
+            }
+            #mobile-nav-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+
+            /* Canvas y otros elementos por debajo */
+            #three-canvas, canvas {
+                z-index: 1 !important;
             }
 
             .hamburger { display: block; }
@@ -3382,6 +3425,9 @@
             </button>
         </div>
     </header>
+
+    <!-- Overlay para menú móvil -->
+    <div id="mobile-nav-overlay"></div>
 
     <main>
         <div class="container">
