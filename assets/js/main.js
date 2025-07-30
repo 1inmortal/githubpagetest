@@ -1491,23 +1491,30 @@ navLinks.forEach(link => {
 // === MENÚ HAMBURGUESA Y OVERLAY ===
 function initMobileMenu() {
     const hamburger = document.querySelector('.hamburger');
-    const mainNav = document.querySelector('.main-nav');
+    const mobileNav = document.querySelector('.mobile-nav');
     const overlay = document.getElementById('mobile-nav-overlay');
-    const navLinksMobile = document.querySelectorAll('.main-nav .nav-link');
+    const navLinksMobile = document.querySelectorAll('.mobile-nav .mobile-nav-link');
 
     function closeMobileMenu() {
         hamburger.classList.remove('active');
-        mainNav.classList.remove('active');
+        mobileNav.classList.remove('active');
         overlay.classList.remove('active');
         document.body.style.overflow = '';
     }
 
     function openMobileMenu() {
         hamburger.classList.add('active');
-        mainNav.classList.add('active');
+        mobileNav.classList.add('active');
         overlay.classList.add('active');
         document.body.style.overflow = 'hidden';
-        console.log('📱 Menú abierto');
+        console.log('📱 Menú móvil abierto');
+        
+        // Animación mejorada para las secciones del menú móvil
+        const mobileNavSections = document.querySelectorAll('.mobile-nav-section');
+        mobileNavSections.forEach((section, index) => {
+            section.style.animationDelay = `${0.1 + (index * 0.1)}s`;
+            section.style.animation = 'mobileSlideInUp 0.6s ease forwards';
+        });
     }
 
     function smoothScrollTo(targetId) {
@@ -1579,7 +1586,7 @@ function initMobileMenu() {
         return existingHamburger;
     }
 
-    if (hamburger && mainNav && overlay) {
+    if (hamburger && mobileNav && overlay) {
         console.log('✅ Elementos del menú móvil encontrados');
         
         // Limpiar eventos existentes
@@ -1632,7 +1639,7 @@ function initMobileMenu() {
             }
         });
         
-        // Prevenir scroll cuando el menú está abierto
+        // Prevenir scroll cuando el menú móvil está abierto
         document.addEventListener('touchmove', (e) => {
             if (hamburger.classList.contains('active')) {
                 e.preventDefault();
