@@ -337,7 +337,7 @@
                     this.handleHeaderScroll();
                     this.setupAccordion('.service-item', '.service-header', '.service-details');
                     this.setupAccordion('.faq-item', '.faq-header', '.faq-answer');
-                    this.setupMobileNav();
+                    // setupMobileNav() removido - ahora manejado por MobileMenuManager
                     this.setupSkillsMatrix();
                     this.setupPortfolioNavigation(); // Ahora funcionará correctamente
                     this.setupTestimonials();
@@ -372,137 +372,8 @@
                         });
                     });
                 }
-                setupMobileNav() {
-                    const hamburger = document.querySelector('.hamburger');
-                    const mainNav = document.querySelector('.main-nav');
-                    const navLinks = document.querySelectorAll('.main-nav .nav-link');
-                    const body = document.body;
-                    
-                    // Validación de elementos
-                    if (!hamburger || !mainNav) {
-                        console.warn('Elementos de navegación móvil no encontrados');
-                        return;
-                    }
-                    
-                    let isMenuOpen = false;
-                    
-                    // Función para abrir menú
-                    const openMenu = () => {
-                        if (isMenuOpen) return;
-                        
-                        isMenuOpen = true;
-                        hamburger.classList.add('active');
-                        mainNav.classList.add('active');
-                        hamburger.setAttribute('aria-expanded', 'true');
-                        
-                        // Bloquear scroll del body
-                        body.style.overflow = 'hidden';
-                        
-                        // Animación GSAP si está disponible
-                        if (typeof gsap !== 'undefined') {
-                            gsap.fromTo(navLinks, 
-                                { opacity: 0, y: -20 },
-                                { 
-                                    opacity: 1, 
-                                    y: 0, 
-                                    duration: 0.3, 
-                                    stagger: 0.1,
-                                    ease: 'power2.out'
-                                }
-                            );
-                        }
-                        
-                        // Efecto de sonido
-                        const audioSystem = document.querySelector('#audio-toggle')?.closest('.audio-system')?.querySelector('audio[id="nav-menu-hover"]');
-                        if (audioSystem) {
-                            try {
-                                audioSystem.currentTime = 0;
-                                audioSystem.volume = 0.5;
-                                audioSystem.play().catch(e => console.log('Audio play failed:', e));
-                            } catch (error) {
-                                console.log('Error playing sound:', error);
-                            }
-                        }
-                    };
-                    
-                    // Función para cerrar menú
-                    const closeMenu = () => {
-                        if (!isMenuOpen) return;
-                        
-                        isMenuOpen = false;
-                        hamburger.classList.remove('active');
-                        mainNav.classList.remove('active');
-                        hamburger.setAttribute('aria-expanded', 'false');
-                        
-                        // Restaurar scroll del body
-                        body.style.overflow = '';
-                        
-                        // Animación GSAP si está disponible
-                        if (typeof gsap !== 'undefined') {
-                            gsap.to(navLinks, {
-                                opacity: 0,
-                                y: -20,
-                                duration: 0.2,
-                                ease: 'power2.in'
-                            });
-                        }
-                    };
-                    
-                    // Event listener para el botón hamburguesa
-                    hamburger.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        
-                        if (isMenuOpen) {
-                            closeMenu();
-                        } else {
-                            openMenu();
-                        }
-                    });
-                    
-                    // Cerrar al hacer click en enlaces
-                    navLinks.forEach(link => {
-                        link.addEventListener('click', () => {
-                            closeMenu();
-                        });
-                    });
-                    
-                    // Cerrar con tecla Escape
-                    document.addEventListener('keydown', (e) => {
-                        if (e.key === 'Escape' && isMenuOpen) {
-                            closeMenu();
-                        }
-                    });
-                    
-                    // Cerrar al hacer click fuera del menú
-                    document.addEventListener('click', (e) => {
-                        if (isMenuOpen && 
-                            !hamburger.contains(e.target) && 
-                            !mainNav.contains(e.target)) {
-                            closeMenu();
-                        }
-                    });
-                    
-                    // Cerrar al cambiar tamaño de ventana (responsive)
-                    window.addEventListener('resize', () => {
-                        if (window.innerWidth > 768 && isMenuOpen) {
-                            closeMenu();
-                        }
-                    });
-                    
-                    // Mejorar accesibilidad
-                    hamburger.setAttribute('aria-label', 'Abrir menú de navegación');
-                    hamburger.setAttribute('aria-expanded', 'false');
-                    hamburger.setAttribute('aria-controls', 'main-nav');
-                    
-                    // Añadir focus management
-                    hamburger.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            hamburger.click();
-                        }
-                    });
-                }
+                // Función removida - ahora manejada por MobileMenuManager
+                // setupMobileNav() ha sido reemplazada por la clase MobileMenuManager
                 
                 // ANÁLISIS Y MEJORA: Se crea una función auxiliar para evitar repetir código.
                 _setupHoverEffect(selector) {
@@ -1488,178 +1359,305 @@ navLinks.forEach(link => {
     // });
 });
 
-// === MENÚ HAMBURGUESA Y OVERLAY ===
-function initMobileMenu() {
-    const hamburger = document.querySelector('.hamburger');
-    const mobileNav = document.querySelector('.mobile-nav');
-    const overlay = document.getElementById('mobile-nav-overlay');
-    const navLinksMobile = document.querySelectorAll('.mobile-nav .mobile-nav-link');
-
-    function closeMobileMenu() {
-        hamburger.classList.remove('active');
-        mobileNav.classList.remove('active');
-        overlay.classList.remove('active');
-        document.body.style.overflow = '';
+// === CLASE UNIFICADA PARA MENÚ MÓVIL ===
+class MobileMenuManager {
+    constructor() {
+        this.isOpen = false;
+        this.elements = {};
+        this.audioSystem = null;
+        this.init();
     }
 
-    function openMobileMenu() {
-        hamburger.classList.add('active');
-        mobileNav.classList.add('active');
-        overlay.classList.add('active');
-        document.body.style.overflow = 'hidden';
-        console.log('📱 Menú móvil abierto');
+    init() {
+        this.getElements();
+        if (!this.validateElements()) {
+            console.warn('❌ Elementos del menú móvil no encontrados');
+            return;
+        }
         
-        // Animación mejorada para las secciones del menú móvil
-        const mobileNavSections = document.querySelectorAll('.mobile-nav-section');
-        mobileNavSections.forEach((section, index) => {
+        this.setupEventListeners();
+        this.setupAccessibility();
+        console.log('✅ Menú móvil inicializado correctamente');
+    }
+
+    getElements() {
+        this.elements = {
+            hamburger: document.querySelector('.hamburger'),
+            mobileNav: document.querySelector('.mobile-nav'),
+            overlay: document.getElementById('mobile-nav-overlay'),
+            links: document.querySelectorAll('.mobile-nav .mobile-nav-link'),
+            sections: document.querySelectorAll('.mobile-nav-section'),
+            body: document.body
+        };
+    }
+
+    validateElements() {
+        const missing = [];
+        Object.entries(this.elements).forEach(([name, element]) => {
+            if (!element && name !== 'audioSystem') {
+                missing.push(name);
+            }
+        });
+        
+        if (missing.length > 0) {
+            console.error('❌ Elementos faltantes del menú móvil:', missing);
+            return false;
+        }
+        return true;
+    }
+
+    setupEventListeners() {
+        // Event listener para el botón hamburguesa
+        this.elements.hamburger.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.toggle();
+        });
+
+        // Cerrar con overlay
+        this.elements.overlay.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.close();
+        });
+
+        // Cerrar con enlaces
+        this.elements.links.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const targetId = link.getAttribute('href');
+                console.log('🔗 Mobile link clicked:', targetId);
+                
+                if (targetId && targetId !== '#') {
+                    this.close();
+                    
+                    // Pequeño delay para asegurar que el menú se cierre antes de navegar
+                    setTimeout(() => {
+                        // Verificar si es un enlace interno (empieza con #) o externo
+                        if (targetId.startsWith('#')) {
+                            // Navegación interna a sección
+                            console.log('🎯 Navegación interna a:', targetId);
+                            this.navigateToSection(targetId);
+                        } else {
+                            // Navegación externa a otra página
+                            console.log('🌐 Navegación externa a:', targetId);
+                            console.log('📍 URL actual:', window.location.href);
+                            console.log('🎯 URL destino:', targetId);
+                            
+                            // Limpiar la URL si es una URL completa y convertir a relativa
+                            let cleanTarget = targetId;
+                            if (targetId.includes('http')) {
+                                // Extraer solo el nombre del archivo de la URL completa
+                                cleanTarget = targetId.split('/').pop();
+                                console.log('🔄 URL convertida a:', cleanTarget);
+                            }
+                            
+                            // Navegación directa sin usar smoothScrollWithAnimation
+                            console.log('🚀 Navegando directamente a:', cleanTarget);
+                            window.location.href = cleanTarget;
+                            return; // Salir inmediatamente para evitar procesamiento adicional
+                        }
+                    }, 100);
+                } else {
+                    console.warn('❌ Target ID inválido:', targetId);
+                }
+            });
+        });
+
+        // Cerrar con Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.isOpen) {
+                this.close();
+            }
+        });
+
+        // Cerrar al hacer click fuera
+        document.addEventListener('click', (e) => {
+            if (this.isOpen && 
+                !this.elements.hamburger.contains(e.target) && 
+                !this.elements.mobileNav.contains(e.target)) {
+                this.close();
+            }
+        });
+
+        // Cerrar al cambiar tamaño de ventana
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768 && this.isOpen) {
+                this.close();
+            }
+        });
+
+        // Manejo de scroll en móvil
+        this.setupScrollHandling();
+    }
+
+    setupScrollHandling() {
+        let isScrolling = false;
+        
+        document.addEventListener('touchmove', (e) => {
+            if (this.isOpen && !isScrolling) {
+                // Solo prevenir scroll en el body, no en el menú
+                if (!this.elements.mobileNav.contains(e.target)) {
+                    e.preventDefault();
+                }
+            }
+        }, { passive: false });
+
+        // Permitir scroll dentro del menú
+        this.elements.mobileNav.addEventListener('touchmove', (e) => {
+            isScrolling = true;
+            setTimeout(() => { isScrolling = false; }, 100);
+        }, { passive: true });
+    }
+
+    setupAccessibility() {
+        // Configurar atributos ARIA
+        this.elements.hamburger.setAttribute('aria-label', 'Abrir menú de navegación');
+        this.elements.hamburger.setAttribute('aria-expanded', 'false');
+        this.elements.hamburger.setAttribute('aria-controls', 'mobile-nav');
+
+        // Navegación por teclado
+        this.elements.hamburger.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.toggle();
+            }
+        });
+
+        // Focus management
+        this.elements.links.forEach(link => {
+            link.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    link.click();
+                }
+            });
+        });
+    }
+
+    toggle() {
+        if (this.isOpen) {
+            this.close();
+        } else {
+            this.open();
+        }
+    }
+
+    open() {
+        if (this.isOpen) return;
+        
+        this.isOpen = true;
+        this.elements.hamburger.classList.add('active');
+        this.elements.mobileNav.classList.add('active');
+        this.elements.overlay.classList.add('active');
+        this.elements.body.style.overflow = 'hidden';
+        
+        // Actualizar ARIA
+        this.elements.hamburger.setAttribute('aria-expanded', 'true');
+        this.elements.hamburger.setAttribute('aria-label', 'Cerrar menú de navegación');
+        
+        // Animaciones
+        this.animateSections();
+        this.playSound('nav-menu-hover');
+        
+        console.log('📱 Menú móvil abierto');
+    }
+
+    close() {
+        if (!this.isOpen) return;
+        
+        this.isOpen = false;
+        this.elements.hamburger.classList.remove('active');
+        this.elements.mobileNav.classList.remove('active');
+        this.elements.overlay.classList.remove('active');
+        this.elements.body.style.overflow = '';
+        
+        // Actualizar ARIA
+        this.elements.hamburger.setAttribute('aria-expanded', 'false');
+        this.elements.hamburger.setAttribute('aria-label', 'Abrir menú de navegación');
+        
+        console.log('📱 Menú móvil cerrado');
+    }
+
+    animateSections() {
+        this.elements.sections.forEach((section, index) => {
             section.style.animationDelay = `${0.1 + (index * 0.1)}s`;
             section.style.animation = 'mobileSlideInUp 0.6s ease forwards';
         });
     }
 
-    function smoothScrollTo(targetId) {
-        const targetSection = document.querySelector(targetId);
-        if (targetSection) {
-            const headerHeight = document.querySelector('.main-header').offsetHeight;
-            const targetPosition = targetSection.offsetTop - headerHeight;
-            
-            console.log('🎯 Scrolling to:', targetId, 'Position:', targetPosition);
-            
-            // Verificar soporte para scroll suave
-            if ('scrollBehavior' in document.documentElement.style) {
-                // Navegadores modernos
-                window.scrollTo({
-                    top: targetPosition,
-                    behavior: 'smooth'
-                });
-            } else {
-                // Fallback para navegadores antiguos
-                window.scrollTo(0, targetPosition);
-            }
-        } else {
-            console.warn('❌ Sección no encontrada:', targetId);
-        }
-    }
-
-    // Función mejorada para scroll con animación personalizada
-    function smoothScrollWithAnimation(targetId) {
+    navigateToSection(targetId) {
         const targetSection = document.querySelector(targetId);
         if (!targetSection) {
             console.warn('❌ Sección no encontrada:', targetId);
             return;
         }
 
-        const headerHeight = document.querySelector('.main-header').offsetHeight;
+        const headerHeight = document.querySelector('.main-header')?.offsetHeight || 0;
         const targetPosition = targetSection.offsetTop - headerHeight;
+        
+        console.log('🎯 Navegando a:', targetId, 'Posición:', targetPosition);
+        
+        // Scroll suave con fallback
+        if ('scrollBehavior' in document.documentElement.style) {
+            window.scrollTo({
+                top: targetPosition,
+                behavior: 'smooth'
+            });
+        } else {
+            this.smoothScrollWithAnimation(targetPosition);
+        }
+    }
+
+    smoothScrollWithAnimation(targetPosition) {
         const startPosition = window.pageYOffset;
         const distance = targetPosition - startPosition;
-        const duration = 800; // 800ms
+        const duration = 800;
         let start = null;
 
-        function animation(currentTime) {
+        const animation = (currentTime) => {
             if (start === null) start = currentTime;
             const timeElapsed = currentTime - start;
-            const run = easeInOutCubic(timeElapsed, startPosition, distance, duration);
+            const run = this.easeInOutCubic(timeElapsed, startPosition, distance, duration);
             window.scrollTo(0, run);
             if (timeElapsed < duration) requestAnimationFrame(animation);
-        }
-
-        // Función de easing para animación suave
-        function easeInOutCubic(t, b, c, d) {
-            t /= d / 2;
-            if (t < 1) return c / 2 * t * t * t + b;
-            t -= 2;
-            return c / 2 * (t * t * t + 2) + b;
-        }
+        };
 
         requestAnimationFrame(animation);
     }
 
-    // Limpiar cualquier evento existente que pueda interferir
-    function clearExistingEvents() {
-        const existingHamburger = document.querySelector('.hamburger');
-        if (existingHamburger) {
-            const newHamburger = existingHamburger.cloneNode(true);
-            existingHamburger.parentNode.replaceChild(newHamburger, existingHamburger);
-            return newHamburger;
-        }
-        return existingHamburger;
+    easeInOutCubic(t, b, c, d) {
+        t /= d / 2;
+        if (t < 1) return c / 2 * t * t * t + b;
+        t -= 2;
+        return c / 2 * (t * t * t + 2) + b;
     }
 
-    if (hamburger && mobileNav && overlay) {
-        console.log('✅ Elementos del menú móvil encontrados');
-        
-        // Limpiar eventos existentes
-        const cleanHamburger = clearExistingEvents();
-        
-        cleanHamburger.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('🍔 Hamburger clicked');
-            
-            const isActive = cleanHamburger.classList.contains('active');
-            if (isActive) {
-                closeMobileMenu();
-            } else {
-                openMobileMenu();
+    playSound(soundId) {
+        try {
+            const audioSystem = document.querySelector('#audio-toggle')?.closest('.audio-system')?.querySelector(`audio[id="${soundId}"]`);
+            if (audioSystem) {
+                audioSystem.currentTime = 0;
+                audioSystem.volume = 0.5;
+                audioSystem.play().catch(e => console.log('Audio play failed:', e));
             }
-        });
-        
-        overlay.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('🖱️ Overlay clicked');
-            closeMobileMenu();
-        });
-        
-        navLinksMobile.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('🔗 Link clicked:', link.getAttribute('href'));
-                
-                // Cerrar el menú primero
-                closeMobileMenu();
-                
-                // Navegar a la sección después de un pequeño delay
-                setTimeout(() => {
-                    const targetId = link.getAttribute('href');
-                    if (targetId && targetId !== '#') {
-                        console.log('🎯 Navegando a:', targetId);
-                        smoothScrollWithAnimation(targetId);
-                    }
-                }, 150);
-            });
-        });
-        
-        // Cerrar con tecla Escape
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && hamburger.classList.contains('active')) {
-                closeMobileMenu();
-            }
-        });
-        
-        // Prevenir scroll cuando el menú móvil está abierto
-        document.addEventListener('touchmove', (e) => {
-            if (hamburger.classList.contains('active')) {
-                e.preventDefault();
-            }
-        }, { passive: false });
-        
-    } else {
-        console.warn('❌ Algunos elementos del menú móvil no se encontraron:', {
-            hamburger: !!hamburger,
-            mainNav: !!mainNav,
-            overlay: !!overlay
-        });
+        } catch (error) {
+            console.log('Error playing sound:', error);
+        }
     }
 }
 
 // Inicializar el menú móvil cuando el DOM esté listo
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initMobileMenu);
+    document.addEventListener('DOMContentLoaded', () => {
+        const mobileMenuManager = new MobileMenuManager();
+        // No es necesario llamar a initMobileMenu() aquí, ya que MobileMenuManager maneja su propio init()
+    });
 } else {
-    initMobileMenu();
+    const mobileMenuManager = new MobileMenuManager();
+    // No es necesario llamar a initMobileMenu() aquí, ya que MobileMenuManager maneja su propio init()
 }
 
 // === NAVEGACIÓN SUAVE PARA TODOS LOS LINKS ===
@@ -1672,7 +1670,21 @@ function initSmoothNavigation() {
             if (targetId && targetId !== '#') {
                 e.preventDefault();
                 console.log('🔗 Desktop link clicked:', targetId);
-                smoothScrollWithAnimation(targetId);
+                
+                // Verificar si es un enlace interno o externo
+                if (targetId.startsWith('#')) {
+                    // Navegación interna - usar smoothScrollWithAnimation
+                    const targetSection = document.querySelector(targetId);
+                    if (targetSection) {
+                        const headerHeight = document.querySelector('.main-header')?.offsetHeight || 0;
+                        const targetPosition = targetSection.offsetTop - headerHeight;
+                        smoothScrollWithAnimation(targetPosition);
+                    }
+                } else {
+                    // Navegación externa - navegar directamente
+                    console.log('🌐 Navegación externa desde desktop:', targetId);
+                    window.location.href = targetId;
+                }
             }
         });
     });
@@ -1714,5 +1726,80 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', verifySections);
 } else {
     verifySections();
+}
+
+// === FUNCIÓN DE PRUEBA PARA ENLACES EXTERNOS ===
+function testExternalLinks() {
+    console.log('🧪 Probando enlaces externos...');
+    
+    const externalLinks = [
+        'privacy-policy.html',
+        'terms.html'
+    ];
+    
+    externalLinks.forEach(link => {
+        fetch(link, { method: 'HEAD' })
+            .then(response => {
+                if (response.ok) {
+                    console.log(`✅ ${link} - Accesible`);
+                } else {
+                    console.log(`❌ ${link} - No accesible (${response.status})`);
+                }
+            })
+            .catch(error => {
+                console.log(`❌ ${link} - Error: ${error.message}`);
+            });
+    });
+}
+
+// Ejecutar prueba de enlaces externos
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', testExternalLinks);
+} else {
+    testExternalLinks();
+}
+
+// === FUNCIÓN GLOBAL DE PRUEBA DE NAVEGACIÓN ===
+function testNavigation(targetUrl) {
+    console.log('🧪 Probando navegación a:', targetUrl);
+    console.log('📍 URL actual:', window.location.href);
+    
+    // Navegación directa
+    console.log('🚀 Navegando directamente a:', targetUrl);
+    window.location.href = targetUrl;
+}
+
+// === FUNCIÓN DE NAVEGACIÓN DIRECTA ===
+function testDirectNavigation(targetUrl) {
+    console.log('🚀 Navegación directa a:', targetUrl);
+    console.log('📍 URL actual:', window.location.href);
+    
+    // Navegación directa sin procesamiento
+    window.location.href = targetUrl;
+}
+
+// === FUNCIÓN GLOBAL DE SCROLL SUAVE ===
+function smoothScrollWithAnimation(targetPosition) {
+    const startPosition = window.pageYOffset;
+    const distance = targetPosition - startPosition;
+    const duration = 1000;
+    let start = null;
+
+    const easeInOutCubic = (t, b, c, d) => {
+        t /= d / 2;
+        if (t < 1) return c / 2 * t * t * t + b;
+        t -= 2;
+        return c / 2 * (t * t * t + 2) + b;
+    };
+
+    const animation = (currentTime) => {
+        if (start === null) start = currentTime;
+        const timeElapsed = currentTime - start;
+        const run = easeInOutCubic(timeElapsed, startPosition, distance, duration);
+        window.scrollTo(0, run);
+        if (timeElapsed < duration) requestAnimationFrame(animation);
+    };
+
+    requestAnimationFrame(animation);
 }
     
