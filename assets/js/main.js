@@ -565,10 +565,15 @@
                     });
                 }
                 setupFooterAnimation() {
-                     gsap.to('.footer-divider', {
-                        boxShadow: '0 0 32px 8px var(--accent-primary)',
-                        repeat: -1, yoyo: true, duration: 2.5, ease: 'power1.inOut'
-                     });
+                    const footerDivider = document.querySelector('.footer-divider');
+                    if (footerDivider) {
+                        gsap.to('.footer-divider', {
+                            boxShadow: '0 0 32px 8px var(--accent-primary)',
+                            repeat: -1, yoyo: true, duration: 2.5, ease: 'power1.inOut'
+                        });
+                    } else {
+                        console.log('ℹ️ Elemento .footer-divider no encontrado, omitiendo animación');
+                    }
                 }
             }
     
@@ -1589,6 +1594,13 @@ class MobileMenuManager {
     }
 
     navigateToSection(targetId) {
+        // Verificar si es un enlace externo
+        if (targetId.includes('.html')) {
+            console.log('🌐 Navegando a página externa:', targetId);
+            window.location.href = targetId;
+            return;
+        }
+
         const targetSection = document.querySelector(targetId);
         if (!targetSection) {
             console.warn('❌ Sección no encontrada:', targetId);
