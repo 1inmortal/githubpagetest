@@ -1702,11 +1702,66 @@ function initSmoothNavigation() {
     });
 }
 
-// Inicializar navegación suave
+// === INICIALIZACIÓN DE DROPDOWNS ===
+function initDropdowns() {
+    const dropdowns = document.querySelectorAll('.nav-dropdown');
+    
+    dropdowns.forEach(dropdown => {
+        const toggle = dropdown.querySelector('.dropdown-toggle');
+        const menu = dropdown.querySelector('.dropdown-menu');
+        
+        if (!toggle || !menu) return;
+        
+        // Manejar hover para mostrar/ocultar
+        dropdown.addEventListener('mouseenter', () => {
+            menu.style.opacity = '1';
+            menu.style.visibility = 'visible';
+            menu.style.transform = 'translateY(0)';
+        });
+        
+        dropdown.addEventListener('mouseleave', () => {
+            menu.style.opacity = '0';
+            menu.style.visibility = 'hidden';
+            menu.style.transform = 'translateY(-10px)';
+        });
+        
+        // Manejar clicks en elementos del dropdown
+        const dropdownItems = menu.querySelectorAll('.dropdown-item');
+        dropdownItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const href = item.getAttribute('href');
+                if (href) {
+                    console.log('🔗 Dropdown item clicked:', href);
+                    if (href.startsWith('#')) {
+                        // Navegación interna
+                        const targetSection = document.querySelector(href);
+                        if (targetSection) {
+                            const headerHeight = document.querySelector('.main-header')?.offsetHeight || 0;
+                            const targetPosition = targetSection.offsetTop - headerHeight;
+                            smoothScrollWithAnimation(targetPosition);
+                        }
+                    } else {
+                        // Navegación externa
+                        window.location.href = href;
+                    }
+                }
+            });
+        });
+    });
+    
+    console.log('✅ Dropdowns inicializados');
+}
+
+// Inicializar navegación suave y dropdowns
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initSmoothNavigation);
+    document.addEventListener('DOMContentLoaded', () => {
+        initSmoothNavigation();
+        initDropdowns();
+    });
 } else {
     initSmoothNavigation();
+    initDropdowns();
 }
 
 // === VERIFICACIÓN DE SECCIONES ===
