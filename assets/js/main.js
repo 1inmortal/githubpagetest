@@ -1499,21 +1499,41 @@ class MobileMenuManager {
     }
 
     setupScrollHandling() {
-        let isScrolling = false;
-        
+        // Permitir scroll natural dentro del menú móvil
+        this.elements.mobileNav.addEventListener('touchmove', (e) => {
+            // Permitir scroll dentro del menú sin restricciones
+            e.stopPropagation();
+        }, { passive: true });
+
+        // Prevenir scroll del body solo cuando el menú está abierto
         document.addEventListener('touchmove', (e) => {
-            if (this.isOpen && !isScrolling) {
-                // Solo prevenir scroll en el body, no en el menú
-                if (!this.elements.mobileNav.contains(e.target)) {
-                    e.preventDefault();
-                }
+            if (this.isOpen && !this.elements.mobileNav.contains(e.target)) {
+                e.preventDefault();
             }
         }, { passive: false });
 
-        // Permitir scroll dentro del menú
+        // Mejorar el scroll en dispositivos móviles
+        this.elements.mobileNav.addEventListener('scroll', (e) => {
+            // Asegurar que el scroll funcione suavemente
+            e.stopPropagation();
+        }, { passive: true });
+
+        // Manejar el scroll con el dedo en móviles
+        let startY = 0;
+        let currentY = 0;
+
+        this.elements.mobileNav.addEventListener('touchstart', (e) => {
+            startY = e.touches[0].clientY;
+        }, { passive: true });
+
         this.elements.mobileNav.addEventListener('touchmove', (e) => {
-            isScrolling = true;
-            setTimeout(() => { isScrolling = false; }, 100);
+            currentY = e.touches[0].clientY;
+            const deltaY = currentY - startY;
+            
+            // Permitir scroll natural dentro del menú
+            if (Math.abs(deltaY) > 10) {
+                e.stopPropagation();
+            }
         }, { passive: true });
     }
 
@@ -1559,6 +1579,10 @@ class MobileMenuManager {
         this.elements.overlay.classList.add('active');
         this.elements.body.style.overflow = 'hidden';
         
+        // Asegurar que el menú móvil tenga scroll habilitado
+        this.elements.mobileNav.style.overflowY = 'auto';
+        this.elements.mobileNav.style.webkitOverflowScrolling = 'touch';
+        
         // Actualizar ARIA
         this.elements.hamburger.setAttribute('aria-expanded', 'true');
         this.elements.hamburger.setAttribute('aria-label', 'Cerrar menú de navegación');
@@ -1577,6 +1601,9 @@ class MobileMenuManager {
         this.elements.hamburger.classList.remove('active');
         this.elements.mobileNav.classList.remove('active');
         this.elements.overlay.classList.remove('active');
+        this.elements.body.style.overflow = '';
+        
+        // Restaurar scroll normal del body
         this.elements.body.style.overflow = '';
         
         // Actualizar ARIA
