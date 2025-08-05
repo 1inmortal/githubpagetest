@@ -1,1356 +1,2432 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="dark">
+<html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Diseño Responsivo: Claves y Técnicas - Guía Completa</title>
-
-  <!-- Favicon -->
-  <link rel="icon" href="IMG/FAVICON/responsive.png" type="image/x-icon" />
-
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-
-  <!-- Fuentes Futuristas -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-
-  <!-- Polyfill para IntersectionObserver (compatibilidad con iOS < 12.2) -->
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=IntersectionObserver"></script>
-
-  <!-- CSS Interno -->
-  <style>
-    /* ================================
-       :root Variables
-    ================================= */
-    :root {
-      --color-bg: #0f0f0f;
-      --color-accent: #1e90ff; /* Azul para reflejar tecnología y adaptabilidad */
-      --color-text: #ffffff;
-      --color-muted: #cccccc;
-      --transition-fast: 0.3s;
-      --transition-medium: 0.6s;
-      --transition-slow: 1s;
-      --font-main: 'Share Tech Mono', monospace;
-      --font-heading: 'VT323', monospace;
-      --bg-gradient: linear-gradient(135deg, rgba(0,0,0,0.8), transparent);
-      --aurora1: #1e90ff;
-      --aurora2: #00bfff;
-      --aurora3: #87cefa;
-      --aurora4: #4682b4;
-      --mobile-break: 768px;
-    }
-
-    /* ================================
-       General Styles
-    ================================= */
-    * {
-      margin: 0; 
-      padding: 0; 
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: var(--font-main);
-      background: var(--color-bg);
-      color: var(--color-text);
-      overflow-x: hidden;
-      position: relative;
-      min-height: 100vh;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-
-    a, button {
-      text-decoration: none;
-      color: inherit;
-      cursor: pointer;
-    }
-
-    img, video {
-      max-width: 100%;
-      height: auto;
-      display: block;
-    }
-
-    ul, li {
-      list-style: none;
-    }
-
-    /* ================================
-       Body Pseudo-Elements (Auroras)
-    ================================= */
-    body::before, body::after {
-      content: "";
-      position: fixed;
-      top:0; left:0;
-      width:100vw; height:100vh;
-      pointer-events:none;
-      z-index:-3;
-    }
-
-    body::before {
-      background: radial-gradient(circle at 50% 50%, var(--aurora1) 0%, transparent 70%);
-      opacity:0.1;
-      mix-blend-mode: screen;
-      -webkit-animation: aurora1 30s ease-in-out infinite alternate;
-      animation: aurora1 30s ease-in-out infinite alternate;
-    }
-
-    @-webkit-keyframes aurora1 {
-      0% { -webkit-transform: translate(-10%, -10%) scale(1); transform: translate(-10%, -10%) scale(1); }
-      50% { -webkit-transform: translate(10%, 20%) scale(1.2); transform: translate(10%, 20%) scale(1.2); }
-      100% { -webkit-transform: translate(-5%, -15%) scale(1); transform: translate(-5%, -15%) scale(1); }
-    }
-
-    @keyframes aurora1 {
-      0% { -webkit-transform: translate(-10%, -10%) scale(1); transform: translate(-10%, -10%) scale(1); }
-      50% { -webkit-transform: translate(10%, 20%) scale(1.2); transform: translate(10%, 20%) scale(1.2); }
-      100% { -webkit-transform: translate(-5%, -15%) scale(1); transform: translate(-5%, -15%) scale(1); }
-    }
-
-    body::after {
-      background: radial-gradient(circle at 20% 80%, var(--aurora2), transparent 60%);
-      opacity:0.1;
-      mix-blend-mode: screen;
-      -webkit-animation: aurora2 40s ease-in-out infinite alternate;
-      animation: aurora2 40s ease-in-out infinite alternate;
-    }
-
-    @-webkit-keyframes aurora2 {
-      0% { -webkit-transform: translate(10%, 10%) scale(1); transform: translate(10%, 10%) scale(1); }
-      50% { -webkit-transform: translate(-10%, -20%) scale(1.3); transform: translate(-10%, -20%) scale(1.3); }
-      100% { -webkit-transform: translate(5%, 15%) scale(1); transform: translate(5%, 15%) scale(1); }
-    }
-
-    @keyframes aurora2 {
-      0% { -webkit-transform: translate(10%, 10%) scale(1); transform: translate(10%, 10%) scale(1); }
-      50% { -webkit-transform: translate(-10%, -20%) scale(1.3); transform: translate(-10%, -20%) scale(1.3); }
-      100% { -webkit-transform: translate(5%, 15%) scale(1); transform: translate(5%, 15%) scale(1); }
-    }
-
-    /* ================================
-       Particles Styles
-    ================================= */
-    .particles {
-      position: fixed;
-      top:0; left:0;
-      width:100vw; height:100vh;
-      z-index:-2;
-      pointer-events:none;
-      overflow:hidden;
-    }
-
-    .particle {
-      position:absolute;
-      width:10px; height:10px;
-      background: var(--color-accent);
-      border-radius:50%;
-      opacity:0.2;
-      -webkit-animation: floatParticle 10s linear infinite;
-      animation: floatParticle 10s linear infinite;
-    }
-
-    @-webkit-keyframes floatParticle {
-      0% { -webkit-transform:translateY(0); transform:translateY(0); }
-      100% { -webkit-transform:translateY(-2000px); transform:translateY(-2000px); }
-    }
-
-    @keyframes floatParticle {
-      0% { -webkit-transform:translateY(0); transform:translateY(0); }
-      100% { -webkit-transform:translateY(-2000px); transform:translateY(-2000px); }
-    }
-
-    /* ================================
-       Pantalla de Carga
-    ================================= */
-    .loader-overlay {
-      position: fixed;
-      top:0; left:0;
-      width:100vw; height:100vh;
-      background:#000;
-      display:flex; 
-      flex-direction:column;
-      align-items:center; 
-      justify-content:center;
-      z-index:9999;
-      transition: opacity 0.5s ease;
-    }
-
-    .loader-text {
-      font-family:'Courier New', monospace;
-      font-size:1.5rem;
-      color: var(--color-accent);
-      margin-bottom:20px;
-      text-transform:uppercase;
-      letter-spacing:2px;
-    }
-
-    .loader-bar-container {
-      width:80%;
-      background:rgba(30,144,255,0.1); /* Ajustado al nuevo color de acento */
-      border:2px solid var(--color-accent);
-      border-radius:5px;
-      overflow:hidden;
-      margin-bottom:15px;
-    }
-
-    .loader-bar {
-      width:0%;
-      height:20px;
-      background:var(--color-accent);
-      transition:width 0.1s;
-    }
-
-    .loader-percentage {
-      font-family:'Courier New', monospace;
-      font-size:1.2rem;
-      color:var(--color-accent);
-      letter-spacing:2px;
-    }
-
-    /* ================================
-       Header Styles
-    ================================= */
-    header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      background: rgba(0,0,0,0.5);
-      border-bottom: 1px solid var(--color-accent);
-      padding: 10px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 10000;
-      -webkit-backdrop-filter: blur(5px); /* Prefijo para Safari */
-      backdrop-filter: blur(5px);
-      opacity:0;
-      -webkit-transform:translateY(-50px); /* Prefijo para Safari */
-      transform:translateY(-50px);
-      -webkit-transition: opacity var(--transition-slow) ease, -webkit-transform var(--transition-slow) ease;
-      transition: opacity var(--transition-slow) ease, transform var(--transition-slow) ease;
-    }
-
-    header.visible {
-      opacity:1;
-      -webkit-transform:translateY(0); /* Prefijo para Safari */
-      transform:translateY(0);
-    }
-
-    .branding a {
-      color: var(--color-accent);
-      font-family: var(--font-heading);
-      font-size: 1.5rem;
-      text-decoration: none;
-      letter-spacing:2px;
-    }
-
-    /* ================================
-       Filter Button Styles
-    ================================= */
-    .filter-container {
-      display: inline-block;
-      position: relative;
-    }
-
-    .filter-btn {
-      background: none;
-      border: 1px solid var(--color-accent);
-      color: var(--color-accent);
-      padding: 5px 10px;
-      border-radius:5px;
-      font-family: var(--font-heading);
-      cursor:pointer;
-      position: relative;
-      -webkit-transition: background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
-      transition: background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
-    }
-
-    .filter-btn:hover {
-      background: var(--color-accent);
-      color:#000;
-      box-shadow:0 0 10px var(--color-accent);
-    }
-
-    .filter-panel {
-      position:absolute;
-      top: calc(100% + 10px);
-      right:0;
-      width:200px;
-      background:rgba(0,0,0,0.95);
-      border:1px solid var(--color-accent);
-      border-radius:5px;
-      padding:10px;
-      display:none;
-      z-index:99999;
-      -webkit-transition: background var(--transition-fast), border-color var(--transition-fast);
-      transition: background var(--transition-fast), border-color var(--transition-fast);
-    }
-
-    .filter-panel ul {
-      margin:0; 
-      padding:0; 
-      list-style:none;
-    }
-
-    .filter-panel li {
-      margin-bottom:10px;
-    }
-
-    .filter-panel a {
-      text-decoration:none;
-      color:var(--color-text);
-      transition: color var(--transition-fast);
-      display:block;
-      text-transform: uppercase;
-      font-size:0.9rem;
-    }
-
-    .filter-panel a:hover {
-      color: var(--color-accent);
-      text-shadow:0 0 5px var(--color-accent);
-    }
-
-    /* ================================
-       Hero Section Styles
-    ================================= */
-    .hero {
-      width: 100%;
-      height: 100vh;
-      padding-top: 60px;
-      display: flex;
-      flex-direction: column;
-      align-items:center;
-      justify-content:center;
-      text-align:center;
-      background: var(--bg-gradient);
-      position:relative;
-      overflow:hidden;
-      opacity:0;
-      -webkit-transform:translateY(20px); /* Prefijo para Safari */
-      transform:translateY(20px);
-      -webkit-transition:opacity 1s ease, -webkit-transform 1s ease;
-      transition:opacity 1s ease, transform 1s ease;
-    }
-
-    .hero.visible {
-      opacity:1;
-      -webkit-transform:translateY(0); /* Prefijo para Safari */
-      transform:translateY(0);
-    }
-
-    .hero::before, .hero::after {
-      content:"";
-      position:absolute;
-      top:50%; left:50%;
-      width:1000px; height:1000px;
-      border-radius:50%;
-      background: radial-gradient(var(--color-accent), transparent);
-      -webkit-transform: translate(-50%, -50%) scale(0.5);
-      transform: translate(-50%, -50%) scale(0.5);
-      mix-blend-mode: screen;
-      opacity:0.05;
-      -webkit-animation: pulse 10s ease-in-out infinite;
-      animation: pulse 10s ease-in-out infinite;
-    }
-
-    .hero::after {
-      -webkit-animation-delay:5s;
-      animation-delay:5s;
-      opacity:0.03;
-    }
-
-    @-webkit-keyframes pulse {
-      0%,100% {-webkit-transform: translate(-50%, -50%) scale(0.4); transform: translate(-50%, -50%) scale(0.4); }
-      50% {-webkit-transform:translate(-50%, -50%) scale(0.6); transform:translate(-50%, -50%) scale(0.6); }
-    }
-
-    @keyframes pulse {
-      0%,100% {-webkit-transform: translate(-50%, -50%) scale(0.4); transform: translate(-50%, -50%) scale(0.4); }
-      50% {-webkit-transform:translate(-50%, -50%) scale(0.6); transform:translate(-50%, -50%) scale(0.6); }
-    }
-
-    .hero h1 {
-      font-family: var(--font-heading);
-      font-size:4rem;
-      margin-bottom:20px;
-      letter-spacing:-0.05em;
-      position:relative;
-      color: var(--color-accent);
-      text-shadow:0 0 10px var(--color-accent),0 0 20px var(--color-accent);
-      opacity:0;
-      -webkit-animation: fadeInDown 1s ease forwards;
-      animation: fadeInDown 1s ease forwards;
-    }
-
-    .hero h1::before, .hero h1::after {
-      content: attr(data-text);
-      position:absolute;
-      top:0; left:0;
-      width:100%; height:100%;
-      overflow:hidden;
-    }
-
-    .hero h1::before {
-      left:2px;
-      text-shadow:-2px 0 var(--color-accent);
-      clip: rect(0,0,0,0);
-      -webkit-animation: glitch 2.5s infinite ease-in-out alternate-reverse;
-      animation: glitch 2.5s infinite ease-in-out alternate-reverse;
-    }
-
-    .hero h1::after {
-      left:-2px;
-      text-shadow:-2px 0 var(--color-accent);
-      clip: rect(0,0,0,0);
-      -webkit-animation: glitch2 3s infinite ease-in-out alternate-reverse;
-      animation: glitch2 3s infinite ease-in-out alternate-reverse;
-    }
-
-    @-webkit-keyframes glitch {
-      0% {clip: rect(0,0,0,0);}
-      5% {clip: rect(0,1000px,1000px,0);}
-      10% {clip: rect(0,0,0,0);}
-      15% {clip: rect(200px,1000px,1000px,0);}
-      20% {clip: rect(0,0,0,0);}
-    }
-
-    @keyframes glitch {
-      0% {clip: rect(0,0,0,0);}
-      5% {clip: rect(0,1000px,1000px,0);}
-      10% {clip: rect(0,0,0,0);}
-      15% {clip: rect(200px,1000px,1000px,0);}
-      20% {clip: rect(0,0,0,0);}
-    }
-
-    @-webkit-keyframes glitch2 {
-      0% {clip: rect(0,0,0,0);}
-      5% {clip: rect(300px,1000px,1000px,0);}
-      10% {clip: rect(0,0,0,0);}
-      15% {clip: rect(50px,1000px,1000px,0);}
-      20% {clip: rect(0,0,0,0);}
-    }
-
-    @keyframes glitch2 {
-      0% {clip: rect(0,0,0,0);}
-      5% {clip: rect(300px,1000px,1000px,0);}
-      10% {clip: rect(0,0,0,0);}
-      15% {clip: rect(50px,1000px,1000px,0);}
-      20% {clip: rect(0,0,0,0);}
-    }
-
-    @-webkit-keyframes fadeInDown {
-      0% {opacity:0;-webkit-transform:translateY(-20px); transform:translateY(-20px);}
-      100% {opacity:1;-webkit-transform:translateY(0); transform:translateY(0);}
-    }
-
-    @keyframes fadeInDown {
-      0% {opacity:0;-webkit-transform:translateY(-20px); transform:translateY(-20px);}
-      100% {opacity:1;-webkit-transform:translateY(0); transform:translateY(0);}
-    }
-
-    .hero p {
-      font-size:1.2rem;
-      max-width:600px;
-      line-height:1.5;
-      color: var(--color-muted);
-      opacity:0;
-      -webkit-animation: fadeInUp 1.5s ease forwards 0.5s;
-      animation: fadeInUp 1.5s ease forwards 0.5s;
-    }
-
-    @-webkit-keyframes fadeInUp {
-      0% {opacity:0;-webkit-transform:translateY(20px); transform:translateY(20px);}
-      100% {opacity:1;-webkit-transform:translateY(0); transform:translateY(0);}
-    }
-
-    @keyframes fadeInUp {
-      0% {opacity:0;-webkit-transform:translateY(20px); transform:translateY(20px);}
-      100% {opacity:1;-webkit-transform:translateY(0); transform:translateY(0);}
-    }
-
-    /* ================================
-       Reveal Animation Styles
-    ================================= */
-    .reveal {
-      opacity:0;
-      -webkit-transform: translateY(30px);
-      transform: translateY(30px);
-      -webkit-transition: opacity 0.8s ease, -webkit-transform 0.8s ease;
-      transition: opacity 0.8s ease, transform 0.8s ease;
-    }
-
-    .reveal.visible {
-      opacity:1;
-      -webkit-transform:translateY(0);
-      transform:translateY(0);
-    }
-
-    /* ================================
-       Section Title Styles
-    ================================= */
-    .section-title {
-      font-family: var(--font-heading);
-      font-size:2.5rem;
-      text-align:center;
-      margin-bottom:60px;
-      position:relative;
-      display:inline-block;
-      color:var(--color-accent);
-      opacity:0;
-      -webkit-transform:translateY(30px);
-      transform:translateY(30px);
-      -webkit-transition:opacity var(--transition-slow) ease, -webkit-transform var(--transition-slow) ease;
-      transition:opacity var(--transition-slow) ease, transform var(--transition-slow) ease;
-    }
-
-    .section-title.visible {
-      opacity:1; 
-      -webkit-transform:translateY(0);
-      transform:translateY(0);
-    }
-
-    /* ================================
-       Introducción
-    ================================= */
-    .introduction {
-      padding:100px 20px;
-      background: rgba(0,0,0,0.8);
-      position:relative;
-      text-align:center;
-    }
-
-    .introduction h2 {
-      margin-bottom:30px;
-    }
-
-    .introduction p {
-      max-width:800px;
-      margin:0 auto;
-      font-size:1.1rem;
-      line-height:1.6;
-      color: var(--color-muted);
-      opacity:0;
-      -webkit-animation: fadeInUp 1.5s ease forwards 0.5s;
-      animation: fadeInUp 1.5s ease forwards 0.5s;
-    }
-
-    /* ================================
-       Qué es Diseño Responsivo
-    ================================= */
-    .what-is-responsive {
-      padding:100px 20px;
-      background: rgba(255, 255, 255, 0.05);
-      position:relative;
-    }
-
-    .what-is-responsive .content {
-      display:flex;
-      flex-wrap: wrap;
-      gap:20px;
-      max-width:1200px;
-      margin:0 auto;
-      align-items:center;
-      justify-content:center;
-    }
-
-    .what-is-responsive .text {
-      flex:1 1 300px;
-      color: var(--color-text);
-      line-height:1.6;
-      opacity:0;
-      -webkit-transform:translateY(20px);
-      transform:translateY(20px);
-      -webkit-transition:opacity var(--transition-medium), -webkit-transform var(--transition-medium);
-      transition:opacity var(--transition-medium), transform var(--transition-medium);
-    }
-
-    .what-is-responsive .text.visible {
-      opacity:1;
-      -webkit-transform:translateY(0);
-      transform:translateY(0);
-    }
-
-    .what-is-responsive .image {
-      flex:1 1 300px;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      opacity:0;
-      -webkit-transform:translateY(20px);
-      transform:translateY(20px);
-      -webkit-transition:opacity var(--transition-medium), -webkit-transform var(--transition-medium);
-      transition:opacity var(--transition-medium), transform var(--transition-medium);
-    }
-
-    .what-is-responsive .image.visible {
-      opacity:1;
-      -webkit-transform:translateY(0);
-      transform:translateY(0);
-    }
-
-    .what-is-responsive .image img {
-      border-radius:10px;
-      max-width:500px;
-      width:100%;
-      height:auto;
-      object-fit: cover;
-      border:2px solid var(--color-accent);
-    }
-
-    /* ================================
-       Importancia del Diseño Responsivo
-    ================================= */
-    .importance-responsive {
-      padding:100px 20px;
-      background: rgba(0,0,0,0.8);
-      position:relative;
-    }
-
-    .importance-responsive .content {
-      display:flex;
-      flex-wrap: wrap;
-      gap:20px;
-      max-width:1200px;
-      margin:0 auto;
-      align-items:center;
-      justify-content:center;
-    }
-
-    .importance-responsive .image {
-      flex:1 1 300px;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      opacity:0;
-      -webkit-transform:translateY(20px);
-      transform:translateY(20px);
-      -webkit-transition:opacity var(--transition-medium), -webkit-transform var(--transition-medium);
-      transition:opacity var(--transition-medium), transform var(--transition-medium);
-    }
-
-    .importance-responsive .image.visible {
-      opacity:1;
-      -webkit-transform:translateY(0);
-      transform:translateY(0);
-    }
-
-    .importance-responsive .image img {
-      border-radius:10px;
-      max-width:500px;
-      width:100%;
-      height:auto;
-      object-fit: cover;
-      border:2px solid var(--color-accent);
-    }
-
-    .importance-responsive .text {
-      flex:1 1 300px;
-      color: var(--color-text);
-      line-height:1.6;
-      opacity:0;
-      -webkit-transform:translateY(20px);
-      transform:translateY(20px);
-      -webkit-transition:opacity var(--transition-medium), -webkit-transform var(--transition-medium);
-      transition:opacity var(--transition-medium), transform var(--transition-medium);
-    }
-
-    .importance-responsive .text.visible {
-      opacity:1;
-      -webkit-transform:translateY(0);
-      transform:translateY(0);
-    }
-
-    /* ================================
-       Cómo Crear Diseños Responsivos
-    ================================= */
-    .how-to-create-responsive {
-      padding:100px 20px;
-      background: rgba(255, 255, 255, 0.05);
-      position:relative;
-    }
-
-    .how-to-create-responsive .steps {
-      max-width:800px;
-      margin:0 auto;
-      display:flex;
-      flex-direction:column;
-      gap:30px;
-      opacity:0;
-      -webkit-transform:translateY(20px);
-      transform:translateY(20px);
-      -webkit-transition:opacity var(--transition-medium), -webkit-transform var(--transition-medium);
-      transition:opacity var(--transition-medium), transform var(--transition-medium);
-    }
-
-    .how-to-create-responsive .steps.visible {
-      opacity:1;
-      -webkit-transform:translateY(0);
-      transform:translateY(0);
-    }
-
-    .how-to-create-responsive .step {
-      background: rgba(30,144,255,0.1);
-      border-left: 5px solid var(--color-accent);
-      padding:20px;
-      border-radius:5px;
-    }
-
-    .how-to-create-responsive .step h3 {
-      font-family: var(--font-heading);
-      color: var(--color-accent);
-      margin-bottom:10px;
-    }
-
-    .how-to-create-responsive .step p {
-      color: var(--color-muted);
-      line-height:1.5;
-    }
-
-    /* ================================
-       Ejemplos de Diseño Responsivo
-    ================================= */
-    .responsive-examples {
-      padding:100px 20px;
-      background: rgba(0,0,0,0.8);
-      position:relative;
-    }
-
-    .responsive-examples .content {
-      display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px,1fr));
-      gap:40px;
-      max-width:1200px;
-      margin:0 auto;
-      opacity:0;
-      -webkit-transform:translateY(20px);
-      transform:translateY(20px);
-      -webkit-transition:opacity var(--transition-medium), -webkit-transform var(--transition-medium);
-      transition:opacity var(--transition-medium), transform var(--transition-medium);
-    }
-
-    .responsive-examples .content.visible {
-      opacity:1;
-      -webkit-transform:translateY(0);
-      transform:translateY(0);
-    }
-
-    .responsive-examples .example-item {
-      background: rgba(255,255,255,0.05);
-      border:1px solid var(--color-accent);
-      border-radius:10px;
-      padding:20px;
-      position:relative;
-      overflow:hidden;
-      box-shadow:0 0 10px transparent;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      transition: transform var(--transition-fast);
-    }
-
-    .responsive-examples .example-item:hover {
-      transform:scale(1.02);
-      box-shadow:0 0 20px var(--color-accent);
-    }
-
-    .responsive-examples .example-item h3 {
-      font-family: var(--font-heading);
-      color: var(--color-accent);
-      margin-bottom:10px;
-    }
-
-    .responsive-examples .example-item p {
-      color: var(--color-muted);
-      line-height:1.5;
-      flex:1;
-    }
-
-    .responsive-examples .example-item a {
-      color: var(--color-accent);
-      text-decoration:underline;
-      transition: color var(--transition-fast);
-    }
-
-    .responsive-examples .example-item a:hover {
-      color:#07e686;
-    }
-
-    /* ================================
-       Herramientas de Diseño Responsivo
-    ================================= */
-    .responsive-tools {
-      padding:100px 20px;
-      background: rgba(255, 255, 255, 0.05);
-      position:relative;
-    }
-
-    .responsive-tools .section-title {
-      margin-bottom:40px;
-    }
-
-    .responsive-tools-grid {
-      display:grid;
-      gap:30px;
-      grid-template-columns: repeat(auto-fit, minmax(150px,1fr));
-      max-width:1000px;
-      margin:0 auto;
-      opacity:0;
-      -webkit-transform:translateY(20px);
-      transform:translateY(20px);
-      -webkit-transition:opacity var(--transition-medium), -webkit-transform var(--transition-medium);
-      transition:opacity var(--transition-medium), transform var(--transition-medium);
-    }
-
-    .responsive-tools-grid.visible {
-      opacity:1;
-      -webkit-transform:translateY(0);
-      transform:translateY(0);
-    }
-
-    .responsive-tool-item {
-      background:rgba(255,255,255,0.1);
-      border:1px solid var(--color-accent);
-      border-radius:10px;
-      padding:20px;
-      text-align:center;
-      transition: transform var(--transition-fast), background var(--transition-fast);
-      cursor:pointer;
-    }
-
-    .responsive-tool-item:hover {
-      transform:scale(1.05);
-      background:rgba(30,144,255,0.2);
-    }
-
-    .responsive-tool-item img {
-      width:60px;
-      height:60px;
-      margin-bottom:15px;
-    }
-
-    .responsive-tool-item h3 {
-      font-size:1.2rem;
-      color: var(--color-accent);
-      margin-bottom:10px;
-    }
-
-    /* ================================
-       Mejores Prácticas de Diseño Responsivo
-    ================================= */
-    .responsive-best-practices {
-      padding:100px 20px;
-      background: rgba(0,0,0,0.8);
-      position:relative;
-    }
-
-    .responsive-best-practices .section-title {
-      margin-bottom:40px;
-    }
-
-    .responsive-best-practices .content {
-      max-width:1000px;
-      margin:0 auto;
-      display:flex;
-      flex-direction:column;
-      gap:30px;
-      opacity:0;
-      -webkit-transform:translateY(20px);
-      transform:translateY(20px);
-      -webkit-transition:opacity var(--transition-medium), -webkit-transform var(--transition-medium);
-      transition:opacity var(--transition-medium), transform var(--transition-medium);
-    }
-
-    .responsive-best-practices .content.visible {
-      opacity:1;
-      -webkit-transform:translateY(0);
-      transform:translateY(0);
-    }
-
-    .responsive-best-practices .practice {
-      background: rgba(30,144,255,0.1);
-      border-left: 5px solid var(--color-accent);
-      padding:20px;
-      border-radius:5px;
-    }
-
-    .responsive-best-practices .practice h3 {
-      font-family: var(--font-heading);
-      color: var(--color-accent);
-      margin-bottom:10px;
-    }
-
-    .responsive-best-practices .practice p {
-      color: var(--color-muted);
-      line-height:1.5;
-    }
-
-    /* ================================
-       Contacto
-    ================================= */
-    .contact-section {
-      text-align:center;
-      padding:150px 20px;
-      position:relative;
-      overflow:hidden;
-      background: rgba(255,255,255,0.05);
-    }
-
-    .contact-section p {
-      font-size:1.1rem;
-      color:var(--color-muted);
-      margin-bottom:30px;
-      opacity:0;
-      -webkit-transform:translateY(20px);
-      transform:translateY(20px);
-      -webkit-transition:opacity var(--transition-medium), -webkit-transform var(--transition-medium);
-      transition:opacity var(--transition-medium), transform var(--transition-medium);
-    }
-
-    .contact-section p.visible {
-      opacity:1;
-      -webkit-transform:translateY(0);
-      transform:translateY(0);
-    }
-
-    .contact-button {
-      display:inline-block;
-      padding:15px 30px;
-      background: var(--color-accent);
-      color:#000;
-      border-radius:5px;
-      font-weight:600;
-      text-transform:uppercase;
-      letter-spacing:1px;
-      position:relative;
-      overflow:hidden;
-      opacity:0;
-      -webkit-transform:translateY(20px);
-      transform:translateY(20px);
-      -webkit-transition:opacity var(--transition-medium), -webkit-transform var(--transition-medium);
-      transition:opacity var(--transition-medium), transform var(--transition-medium);
-    }
-
-    .contact-button.visible {
-      opacity:1; 
-      -webkit-transform:translateY(0);
-      transform:translateY(0);
-    }
-
-    .contact-button:hover {
-      background:#07e686;
-      box-shadow:0 0 15px var(--color-accent);
-    }
-
-    .contact-button::before {
-      content:"";
-      position:absolute;
-      top:0; left:-100%;
-      width:100%; 
-      height:100%;
-      background:linear-gradient(to right, transparent, rgba(0,0,0,0.5), transparent);
-      -webkit-animation: scanner 2s linear infinite;
-      animation: scanner 2s linear infinite;
-    }
-
-    @-webkit-keyframes scanner {
-      0% {-webkit-left:-100%; left:-100%;}
-      50% {-webkit-left:100%; left:100%;}
-      100% {-webkit-left:-100%; left:-100%;}
-    }
-
-    @keyframes scanner {
-      0% {left:-100%;}
-      50% {left:100%;}
-      100% {left:-100%;}
-    }
-
-    /* ================================
-       Footer Styles
-    ================================= */
-    footer {
-      background:rgba(0,0,0,0.5);
-      border-top:1px solid var(--color-accent);
-      padding:20px;
-      text-align:center;
-      font-size:0.8rem;
-      position:relative;
-      overflow:hidden;
-      color:var(--color-text);
-    }
-
-    footer p {
-      margin-bottom:5px;
-      color:var(--color-muted);
-    }
-
-    footer a {
-      color:var(--color-accent);
-      text-decoration:none;
-      -webkit-transition: var(--transition-fast);
-      transition: var(--transition-fast);
-    }
-
-    footer a:hover {
-      text-decoration:underline;
-    }
-
-    /* ================================
-       Media Queries
-    ================================= */
-    @media(max-width: var(--mobile-break)) {
-      .hero h1 {
-        font-size:2.5rem;
-      }
-
-      .what-is-responsive .content, .importance-responsive .content {
-        flex-direction: column;
-      }
-
-      .responsive-examples .content {
-        grid-template-columns: 1fr;
-      }
-
-      .responsive-tools-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="Blog de Diseño Web 2024: Guías completas, tendencias de diseño, desarrollo frontend, UX/UI y creación de sitios web modernos. Expertos en diseño web y desarrollo frontend.">
+    <meta name="keywords" content="diseño web, desarrollo frontend, UX/UI, sitios web, HTML/CSS, JavaScript, React, Vue, diseño responsivo, tendencias web">
+    <meta name="author" content="INMORTAL_OS">
+    <title>Blog Diseño Web 2024 - Guías Completas de Desarrollo Frontend</title>
+
+    <!-- Favicon and Icons -->
+    <link rel="icon" type="image/x-icon" href="../assets/img/FAVICON/LOGO.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/img/FAVICON/LOGO.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/img/FAVICON/LOGO.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../assets/img/FAVICON/LOGO.png">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://1inmortal.github.io/githubpagetest/Blog/Ceo.html">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Blog Diseño Web 2024 - Guías Completas de Desarrollo Frontend">
+    <meta property="og:description" content="Blog especializado en diseño web con más de 100 artículos sobre desarrollo frontend, UX/UI y creación de sitios web modernos.">
+    <meta property="og:image" content="https://1inmortal.github.io/githubpagetest/assets/img/ID/1.jpg">
+    <meta property="og:url" content="https://1inmortal.github.io/githubpagetest/Blog/Ceo.html">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Blog Diseño Web 2024 - Guías Completas">
+    <meta name="twitter:description" content="Más de 100 artículos sobre diseño web, desarrollo frontend y UX/UI.">
+    <meta name="twitter:image" content="https://1inmortal.github.io/githubpagetest/assets/img/ID/1.jpg">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    
+    <!-- GSAP Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-K8L51L3YWX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-K8L51L3YWX');
+    </script>
+    <!-- Devicon for icons (used in original index.html for skills) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.15.1/devicon.min.css">
+    <!-- Font Awesome for social icons etc. -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+
+    <link rel="stylesheet" href="../assets/css/navegacion.css">
+    <style>
+        /* ======================================================= */
+        /* VARIABLES & BASE SETUP (Copied from index.html) */
+        /* ======================================================= */
+        :root {
+            --bg-color: #0a0a1a; /* Adjusted to match nebula base color */
+            --text-primary: #FFFFFF;
+            --text-secondary: #a3a3a3;
+            --accent-primary: #00F5A0; /* Green */
+            --accent-secondary: #00D2FF; /* Light Blue */
+            --surface-color: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 255, 255, 0.1);
+            
+            --font-family: 'Poppins', sans-serif;
+            --transition-fast: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: var(--font-family);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+            overflow: overlay; /* Or hidden, depends on desired behavior */
+        }
+
+        /* Customize scrollbar for overlay */
+        body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        body::-webkit-scrollbar-track {
+            background: var(--surface-color);
+        }
+
+        body::-webkit-scrollbar-thumb {
+            background-color: var(--border-color);
+            border-radius: 20px;
+            border: 2px solid var(--bg-color);
+        }
+
+
+
+
+        #grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+            background-image:
+                repeating-linear-gradient(
+                    to right,
+                    rgba(0,245,160,0.05) 0px,
+                    rgba(0,245,160,0.05) 1px,
+                    transparent 1px,
+                    transparent 60px
+                ),
+                repeating-linear-gradient(
+                    to bottom,
+                    rgba(0,245,160,0.05) 0px,
+                    rgba(0,245,160,0.05) 1px,
+                    transparent 1px,
+                    transparent 60px
+                );
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ======================================================= */
+        /* HEADER & NAVIGATION - CON AUDIO CONTROL (Adapted from index.html) */
+        /* ======================================================= */
+        .main-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .nav-brand .logo:hover {
+            color: var(--accent-primary);
+        }
+
+        .main-nav {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--accent-primary);
+        }
+
+        /* Dropdown Styles */
+        .nav-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-toggle {
+            cursor: pointer;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 0.5rem 0;
+            min-width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
+
+        .nav-dropdown:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: block;
+            padding: 0.5rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .dropdown-item:hover {
+            color: var(--accent-primary);
+            background: rgba(0, 245, 160, 0.1);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-primary);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Control de Audio */
+        .audio-control {
+            background: none;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-secondary);
+        }
+
+        .audio-control:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            transform: scale(1.1);
+        }
+
+        .audio-control.active {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            box-shadow: 0 0 10px rgba(0,245,160,0.3);
+        }
+
+        .audio-icon-muted {
+            display: none;
+        }
+
+        .audio-control.muted .audio-icon {
+            display: none;
+        }
+
+        .audio-control.muted .audio-icon-muted {
+            display: block;
+        }
+
+        /* Hamburger Menu */
+        .hamburger {
+            display: none; /* Hidden by default for desktop */
+            flex-direction: column;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            gap: 4px;
+            width: 40px;
+            height: 40px;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            z-index: 10000;
+            position: relative;
+        }
+
+        .hamburger:hover {
+            border-color: var(--accent-primary);
+            transform: scale(1.1);
+        }
+
+        .hamburger-line {
+            width: 20px;
+            height: 2px;
+            background: var(--text-secondary);
+            transition: all 0.3s ease;
+            border-radius: 1px;
+        }
+
+        .hamburger:hover .hamburger-line {
+            background: var(--accent-primary);
+        }
+
+        .hamburger.active .hamburger-line:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .hamburger.active .hamburger-line:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active .hamburger-line:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
+
+        /* ======================================================= */
+        /* MENÚ MÓVIL COMPLETAMENTE SEPARADO - NO AFECTA AL MENÚ DE PC (Adapted from index.html) */
+        /* ======================================================= */
+
+        /* Menú móvil - Oculto por defecto en desktop */
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, rgba(10, 10, 20, 0.98), rgba(0, 0, 0, 0.95));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 9999;
+            overflow-y: auto;
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            padding: 80px 20px 40px;
+        }
+
+        .mobile-nav.active {
+            transform: translateX(0);
+        }
+
+        /* Secciones del menú móvil */
+        .mobile-nav-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: mobileSlideInUp 0.6s ease forwards;
+        }
+
+        .mobile-nav-section:nth-child(1) { animation-delay: 0.1s; }
+        .mobile-nav-section:nth-child(2) { animation-delay: 0.2s; }
+        .mobile-nav-section:nth-child(3) { animation-delay: 0.3s; }
+        .mobile-nav-section:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes mobileSlideInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .mobile-nav-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--accent-primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(0, 245, 160, 0.3);
+            text-align: center;
+        }
+
+        .mobile-nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1rem;
+            padding: 1rem 1.5rem;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .mobile-nav-icon {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .mobile-nav-text {
+            flex: 1;
+            font-size: 1rem;
+        }
+
+        /* Efectos hover para menú móvil */
+        .mobile-nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0,245,160,0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .mobile-nav-link:hover::before {
+            left: 100%;
+        }
+
+        .mobile-nav-link:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            background: rgba(0, 245, 160, 0.05);
+            box-shadow: 0 4px 20px rgba(0,245,160,0.15);
+            transform: translateX(8px);
+        }
+
+        .mobile-nav-link:hover .mobile-nav-icon {
+            transform: scale(1.2);
+        }
+
+        /* Enlaces primarios del menú móvil */
+        .mobile-nav-link-primary {
+            background: linear-gradient(135deg, rgba(0,245,160,0.1), rgba(0,210,255,0.1));
+            border-color: rgba(0,245,160,0.3);
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        .mobile-nav-link-primary:hover {
+            background: linear-gradient(135deg, rgba(0,245,160,0.2), rgba(0,210,255,0.2));
+            box-shadow: 0 6px 25px rgba(0,245,160,0.25);
+            transform: translateX(8px) scale(1.02);
+        }
+
+        /* Enlaces secundarios del menú móvil */
+        .mobile-nav-link-secondary {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .mobile-nav-link-secondary:hover {
+            opacity: 1;
+            color: var(--text-primary);
+        }
+
+        /* Scrollbar personalizado para menú móvil */
+        .mobile-nav::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .mobile-nav::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .mobile-nav::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+            border-radius: 3px;
+        }
+
+        .mobile-nav::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-secondary);
+        }
+        /* Overlay para menú móvil */
+        #mobile-nav-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9998;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        #mobile-nav-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* ======================================================= */
+        /* ESTILOS MÓVILES - SOLO PARA PANTALLAS PEQUEÑAS (Adapted from index.html) */
+        /* ======================================================= */
+
+        @media (max-width: 768px) {
+            /* Ocultar menú de escritorio en móvil */
+            .main-nav {
+                display: none !important;
+            }
+
+            /* Mostrar menú móvil */
+            .mobile-nav {
+                display: block;
+            }
+
+            /* Botón hamburguesa mejorado */
+            .hamburger {
+                display: flex;
+                z-index: 10000;
+                position: relative;
+                pointer-events: auto;
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 10px;
+                padding: 10px;
+                transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                width: 44px;
+                height: 44px;
+                justify-content: center;
+                align-items: center;
+                gap: 4px;
+                cursor: pointer;
+            }
+
+            .hamburger:hover {
+                border-color: var(--accent-primary);
+                background: rgba(0, 245, 160, 0.1);
+                transform: scale(1.05);
+                box-shadow: 0 4px 15px rgba(0, 245, 160, 0.2);
+            }
+
+            .hamburger-line {
+                width: 22px;
+                height: 2px;
+                background: var(--text-secondary);
+                transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+                border-radius: 1px;
+                position: relative;
+            }
+
+            .hamburger:hover .hamburger-line {
+                background: var(--accent-primary);
+                box-shadow: 0 0 8px rgba(0, 245, 160, 0.5);
+            }
+
+            /* Animación mejorada del hamburger */
+            .hamburger.active {
+                background: rgba(0, 245, 160, 0.15);
+                border-color: var(--accent-primary);
+                box-shadow: 0 0 20px rgba(0, 245, 160, 0.3);
+            }
+
+            .hamburger.active .hamburger-line:nth-child(1) {
+                transform: rotate(45deg) translate(6px, 6px);
+                background: var(--accent-primary);
+            }
+
+            .hamburger.active .hamburger-line:nth-child(2) {
+                opacity: 0;
+                transform: scale(0);
+            }
+
+            .hamburger.active .hamburger-line:nth-child(3) {
+                transform: rotate(-45deg) translate(6px, -6px);
+                background: var(--accent-primary);
+            }
+
+            /* Efecto de pulso cuando está activo */
+            .hamburger.active::after {
+                content: '';
+                position: absolute;
+                top: -2px;
+                left: -2px;
+                right: -2px;
+                bottom: -2px;
+                border: 2px solid var(--accent-primary);
+                border-radius: 12px;
+                animation: mobilePulse 2s infinite;
+                z-index: -1;
+            }
+
+            @keyframes mobilePulse {
+                0% {
+                    transform: scale(1);
+                    opacity: 0.5;
+                }
+                50% {
+                    transform: scale(1.1);
+                    opacity: 0.2;
+                }
+                100% {
+                    transform: scale(1);
+                    opacity: 0.5;
+                }
+            }
+
+            /* Responsive para pantallas muy pequeñas */
+            @media (max-width: 480px) {
+                .mobile-nav {
+                    padding: 60px 15px 30px;
+                }
+
+                .mobile-nav-section {
+                    padding: 1rem;
+                    margin-bottom: 1.5rem;
+                }
+
+                .mobile-nav-title {
+                    font-size: 0.8rem;
+                    margin-bottom: 0.8rem;
+                }
+
+                .mobile-nav-link {
+                    padding: 0.8rem 1rem;
+                    font-size: 0.9rem;
+                    gap: 10px;
+                }
+
+                .mobile-nav-icon {
+                    font-size: 1.1rem;
+                    width: 20px;
+                }
+
+                .mobile-nav-text {
+                    font-size: 0.9rem;
+                }
+
+                .hamburger {
+                    width: 40px;
+                    height: 40px;
+                    padding: 8px;
+                }
+
+                .hamburger-line {
+                    width: 20px;
+                }
+            }
+
+            /* Responsive para pantallas extra pequeñas */
+            @media (max-width: 360px) {
+                .mobile-nav {
+                    padding: 50px 10px 20px;
+                }
+
+                .mobile-nav-section {
+                    padding: 0.8rem;
+                    margin-bottom: 1rem;
+                }
+
+                .mobile-nav-link {
+                    padding: 0.7rem 0.8rem;
+                    font-size: 0.85rem;
+                    gap: 8px;
+                }
+
+                .mobile-nav-icon {
+                    font-size: 1rem;
+                    width: 18px;
+                }
+
+                .mobile-nav-text {
+                    font-size: 0.85rem;
+                }
+            }
+        }
+
+        /* ======================================================= */
+        /* HERO SECTION (Adapted from index.html) */
+        /* ======================================================= */
+        .hero-section {
+            text-align: center;
+            padding: 80px 0 60px;
+            position: relative;
+            margin-top: 20px;
+            z-index: 10;
+        }
+
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(0, 245, 160, 0.3);
+            position: relative;
+            z-index: 15;
+            /* Forzar visibilidad */
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+            visibility: visible !important;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+            position: relative;
+            z-index: 15;
+            /* Forzar visibilidad */
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+            visibility: visible !important;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 2rem;
+            position: relative;
+            z-index: 15;
+            /* Forzar visibilidad */
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+            visibility: visible !important;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* ======================================================= */
+        /* BLOG GRID (Adapted with Portfolio Card Aesthetics) */
+        /* ======================================================= */
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .blog-card {
+            background: rgba(255,255,255,0.02); /* Matches portfolio card */
+            border-radius: 12px;
+            overflow: hidden;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border: 1px solid var(--border-color);
+            position: relative;
+            cursor: pointer;
+            display: flex; /* Flex for content layout */
+            flex-direction: column;
+            justify-content: space-between; /* Push meta to bottom */
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2); /* Matches portfolio card */
+            
+            /* Efecto holográfico base */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        /* Efecto de borde brillante (Adapted from portfolio-card::before) */
+        .blog-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 12px;
+            padding: 1px;
+            background: linear-gradient(45deg, transparent, var(--accent-primary), transparent);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .blog-card:hover::before {
+            opacity: 1;
+        }
+
+        .blog-card:hover {
+            transform: translateY(-8px) scale(1.01); /* Slightly less aggressive than portfolio */
+            box-shadow: 
+                0 20px 60px rgba(0,0,0,0.4), /* Stronger shadow on hover */
+                0 0 25px rgba(0,245,160,0.3); /* Accent glow */
+        }
+
+        /* Efecto de scanline (Adapted from portfolio-card::after) */
+        .blog-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                transparent 0%,
+                rgba(0, 245, 160, 0.1) 50%,
+                transparent 100%
+            );
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .blog-card:hover::after {
+            opacity: 1;
+            animation: scanline-sweep 2s linear infinite;
+        }
+
+        @keyframes scanline-sweep {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        .blog-card-image {
+            width: 100%;
+            height: 200px; /* Fixed height for consistency */
+            object-fit: cover; /* Cover the area */
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1); /* Image zoom on hover */
+        }
+        .blog-card:hover .blog-card-image {
+            transform: scale(1.1); /* Zoom effect on image */
+        }
+
+
+        .blog-category {
+            color: var(--accent-primary);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 2; /* Ensure text is above ::after effect */
+        }
+
+        .blog-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+            transition: color 0.3s ease; /* Color change on hover */
+            position: relative;
+            z-index: 2;
+        }
+        .blog-card:hover .blog-title {
+            color: var(--accent-primary);
+        }
+
+        .blog-excerpt {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            flex-grow: 1; /* Allow excerpt to take available space */
+            position: relative;
+            z-index: 2;
+        }
+
+        .blog-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 1rem; /* Space between excerpt and meta */
+            position: relative;
+            z-index: 2;
+        }
+
+        .blog-date {
+            color: var(--accent-secondary);
+        }
+
+        .blog-read-time {
+            background: rgba(0, 245, 160, 0.1);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            color: var(--accent-primary);
+        }
+
+        /* ======================================================= */
+        /* CATEGORY FILTERS */
+        /* ======================================================= */
+        .category-filters {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            font-size: 0.9rem;
+            user-select: none; /* Prevent text selection */
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: var(--accent-primary);
+            color: var(--bg-color);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 15px rgba(0, 245, 160, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* ======================================================= */
+        /* RESPONSIVE DESIGN */
+        /* ======================================================= */
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 60px 0 40px;
+            }
+            
+            .hero-title {
+                font-size: 2.8rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem;
+                max-width: 100%;
+                padding: 0 1rem;
+            }
+
+            .hero-stats {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .blog-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .category-filters {
+                justify-content: flex-start;
+                overflow-x: auto;
+                padding-bottom: 1rem;
+            }
+        }
+
+        /* ======================================================= */
+        /* PAGINATION STYLES */
+        /* ======================================================= */
+        .pagination-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 4rem 0 2rem;
+            padding: 2rem 0;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .page-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-number::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 245, 160, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .page-number:hover::before {
+            left: 100%;
+        }
+
+        .page-number:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            background: rgba(0, 245, 160, 0.05);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 245, 160, 0.2);
+        }
+
+        .page-number.active {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: var(--bg-color);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 20px rgba(0, 245, 160, 0.4);
+            transform: scale(1.1);
+        }
+
+        .page-number.active:hover {
+            transform: scale(1.15);
+            box-shadow: 0 0 30px rgba(0, 245, 160, 0.6);
+        }
+
+        /* Responsive pagination */
+        @media (max-width: 768px) {
+            .pagination {
+                padding: 0.8rem 1.5rem;
+                gap: 0.8rem;
+            }
+
+            .page-number {
+                width: 45px;
+                height: 45px;
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .pagination {
+                padding: 0.6rem 1rem;
+                gap: 0.6rem;
+            }
+
+            .page-number {
+                width: 40px;
+                height: 40px;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* ======================================================= */
+        /* ANIMATIONS */
+        /* ======================================================= */
+        .reveal-up {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        
+        /* Fallback para elementos reveal-up si GSAP no está disponible */
+        .reveal-up.fallback {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Forzar visibilidad de elementos críticos del hero */
+        .hero-title.reveal-up,
+        .hero-subtitle.reveal-up,
+        .hero-stats.reveal-up {
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+            visibility: visible !important;
+        }
+
+        /* ======================================================= */
+        /* LOADING ANIMATION */
+        /* ======================================================= */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            padding: 2rem 0;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ======================================================= */
+        /* FULL ARTICLE PAGE (SIMULATED PAGE - Adapted from index.html concept) */
+        /* ======================================================= */
+        #full-article-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--bg-color); /* Same as body to blend */
+            z-index: 2000; /* Above header */
+            overflow-y: auto; /* Enable scrolling for content */
+            opacity: 0;
+            pointer-events: none; /* Block interactions when hidden */
+            transform: translateY(100%); /* Start off-screen below */
+            display: flex;
+            flex-direction: column;
+            padding-top: 60px; /* Space for fixed header/close button */
+            transition: none; /* GSAP will handle transitions */
+        }
+
+        #full-article-page.active {
+            pointer-events: all; /* Allow interactions when active */
+        }
+
+        .article-header {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: rgba(10, 10, 26, 0.95); /* Match header background */
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 2001; /* Above article content */
+            border-bottom: 1px solid var(--border-color);
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+            padding-left: 5%;
+            padding-right: 5%;
+        }
+
+        .article-close-btn {
+            background: transparent;
+            border: none;
+            color: var(--accent-primary);
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            line-height: 1;
+            transition: var(--transition-fast);
+            border-radius: 50%;
+        }
+
+        .article-close-btn:hover {
+            color: var(--accent-secondary);
+            transform: rotate(90deg) scale(1.1);
+            box-shadow: 0 0 15px rgba(0,245,160,0.3);
+        }
+
+        .article-title-small {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-family: 'Orbitron', sans-serif; /* Match logo font for title */
+        }
+
+        .article-content {
+            width: 90%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 0;
+            line-height: 1.8;
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        .article-content h2, .article-content h3 {
+            color: var(--text-primary);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+            line-height: 1.3;
+        }
+
+        .article-content p {
+            margin-bottom: 1rem;
+        }
+
+        .article-content ul {
+            list-style: disc;
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .article-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .article-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 1.5rem auto; /* Center images */
+            display: block;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .article-hero-image {
+            width: 90%; /* Max width relative to content */
+            max-width: 900px;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin: 0 auto 2rem;
+            display: block;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+
+        .article-meta-full {
+            display: flex;
+            justify-content: flex-end; /* Push date/read time to right */
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+            width: 90%;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .article-meta-full span:first-child {
+            margin-right: 1rem;
+            color: var(--accent-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .article-title-small {
+                font-size: 1.2rem;
+            }
+            .article-close-btn {
+                font-size: 1.5rem;
+            }
+            .article-content {
+                font-size: 1rem;
+            }
+            .article-content h2, .article-content h3 {
+                font-size: 1.5rem;
+            }
+            .article-hero-image {
+                height: 250px;
+            }
+        }
+
+        /* Hide body scrollbar when the simulated page is active */
+        body.no-scroll {
+            overflow: hidden;
+        }
+
+        /* ======================================================= */
+        /* FOOTER STYLES (Copied from index.html) */
+        /* ======================================================= */
+        .main-footer {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(10, 10, 26, 0.95));
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 3rem 0 1rem;
+            margin-top: 4rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .main-footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h3 {
+            color: var(--accent-primary);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .footer-section h4 {
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .footer-section p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section ul li a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section ul li a:hover {
+            color: var(--accent-primary);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background: var(--accent-primary);
+            color: var(--bg-color);
+            transform: translateY(-2px);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            margin-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+            .footer-bottom p {
+            color: var(--text-secondary);
+            margin: 0.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        .legal-links {
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .legal-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.3s ease;
+        }
+
+        .legal-links a:hover {
+            color: var(--accent-primary);
+        }
+
+        .legal-links .separator {
+            color: var(--text-secondary);
+            margin: 0 0.5rem;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+                padding: 0 1rem;
+            }
+
+            .social-links {
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div id="grid-overlay"></div>
 
-  <!-- Pantalla de Carga -->
-  <div class="loader-overlay" id="loaderOverlay">
-    <div class="loader-text">Cargando...</div>
-    <div class="loader-bar-container">
-      <div class="loader-bar" id="loaderBar"></div>
+    <!-- Script para forzar visibilidad inmediata -->
+    <script>
+        // Ejecutar inmediatamente para forzar visibilidad
+        (function() {
+            function forceVisibility() {
+                const heroElements = document.querySelectorAll('.hero-title, .hero-subtitle, .hero-stats');
+                heroElements.forEach(el => {
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                    el.style.visibility = 'visible';
+                });
+            }
+            
+            // Ejecutar inmediatamente
+            forceVisibility();
+            
+            // Ejecutar cuando el DOM esté listo
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', forceVisibility);
+            } else {
+                forceVisibility();
+            }
+            
+            // Ejecutar después de un pequeño delay para asegurar
+            setTimeout(forceVisibility, 100);
+        })();
+    </script>
+
+    <!-- Header (Adapted from index.html) -->
+    <header class="main-header">
+        <div class="nav-brand">
+            <a href="../index.html" class="logo">INMORTAL_OS</a>
+        </div>
+        <nav class="main-nav">
+            <a href="../index.html" class="nav-link">Inicio</a>
+            <a href="#blog" class="nav-link">Blog</a>
+            <div class="nav-dropdown">
+                <a href="#blog" class="nav-link dropdown-toggle">Categorías</a>
+                <div class="dropdown-menu">
+                    <button class="dropdown-item filter-btn" data-category="all">Todos</button>
+                    <button class="dropdown-item filter-btn" data-category="frontend">Frontend</button>
+                    <button class="dropdown-item filter-btn" data-category="ux-ui">UX/UI</button>
+                    <button class="dropdown-item filter-btn" data-category="responsive">Responsive</button>
+                    <button class="dropdown-item filter-btn" data-category="frameworks">Frameworks</button>
+                    <button class="dropdown-item filter-btn" data-category="herramientas">Herramientas</button>
+                    <button class="dropdown-item filter-btn" data-category="tendencias">Tendencias</button>
+                </div>
+            </div>
+            <a href="../index.html#contact-form" class="nav-link">Contacto</a>
+        </nav>
+        <div class="nav-controls">
+            <button id="audio-toggle" class="audio-control" aria-label="Activar/Desactivar Sonido">
+                <svg class="audio-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                </svg>
+                <svg class="audio-icon-muted" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+                    <line x1="23" y1="9" x2="17" y2="15"/>
+                    <line x1="17" y1="9" x2="23" y2="15"/>
+                </svg>
+            </button>
+            <button class="hamburger" aria-label="Menú">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Overlay para menú móvil -->
+    <div id="mobile-nav-overlay"></div>
+
+    <!-- MENÚ MÓVIL COMPLETAMENTE SEPARADO -->
+    <nav class="mobile-nav" id="mobile-nav">
+        <!-- Sección Principal -->
+        <div class="mobile-nav-section">
+            <h3 class="mobile-nav-title">Navegación</h3>
+            <a href="../index.html" class="mobile-nav-link mobile-nav-link-primary">
+                <span class="mobile-nav-icon">🏠</span>
+                <span class="mobile-nav-text">Inicio</span>
+            </a>
+            <a href="#blog" class="mobile-nav-link mobile-nav-link-primary">
+                <span class="mobile-nav-icon">📝</span>
+                <span class="mobile-nav-text">Blog</span>
+            </a>
+            <a href="../index.html#contact-form" class="mobile-nav-link mobile-nav-link-primary">
+                <span class="mobile-nav-icon">✉️</span>
+                <span class="mobile-nav-text">Contacto</span>
+            </a>
+        </div>
+
+        <!-- Sección de Categorías -->
+        <div class="mobile-nav-section">
+            <h3 class="mobile-nav-title">Categorías del Blog</h3>
+            <button class="mobile-nav-link filter-btn" data-category="all">
+                <span class="mobile-nav-icon">📚</span>
+                <span class="mobile-nav-text">Todos los Artículos</span>
+            </button>
+            <button class="mobile-nav-link filter-btn" data-category="frontend">
+                <span class="mobile-nav-icon">💻</span>
+                <span class="mobile-nav-text">Frontend</span>
+            </button>
+            <button class="mobile-nav-link filter-btn" data-category="ux-ui">
+                <span class="mobile-nav-icon">🎨</span>
+                <span class="mobile-nav-text">UX/UI</span>
+            </button>
+            <button class="mobile-nav-link filter-btn" data-category="responsive">
+                <span class="mobile-nav-icon">📱</span>
+                <span class="mobile-nav-text">Responsive</span>
+            </button>
+            <button class="mobile-nav-link filter-btn" data-category="frameworks">
+                <span class="mobile-nav-icon">⚛️</span>
+                <span class="mobile-nav-text">Frameworks</span>
+            </button>
+            <button class="mobile-nav-link filter-btn" data-category="herramientas">
+                <span class="mobile-nav-icon">⚙️</span>
+                <span class="mobile-nav-text">Herramientas</span>
+            </button>
+            <button class="mobile-nav-link filter-btn" data-category="tendencias">
+                <span class="mobile-nav-icon">📈</span>
+                <span class="mobile-nav-text">Tendencias</span>
+            </button>
+        </div>
+
+        <!-- Sección de Paginación -->
+        <div class="mobile-nav-section">
+            <h3 class="mobile-nav-title">Páginas</h3>
+            <a href="Ceo.html" class="mobile-nav-link mobile-nav-link-primary">
+                <span class="mobile-nav-icon">📊</span>
+                <span class="mobile-nav-text">Página 1 - Blog SEO</span>
+            </a>
+            <a href="./" class="mobile-nav-link mobile-nav-link-primary">
+                <span class="mobile-nav-icon">🎨</span>
+                <span class="mobile-nav-text">Página 2 - Blog Diseño Web</span>
+            </a>
+        </div>
+
+        <!-- Sección Legal (Adapted from index.html) -->
+        <div class="mobile-nav-section">
+            <h3 class="mobile-nav-title">Legal</h3>
+            <a href="privacy-policy.html" class="mobile-nav-link mobile-nav-link-secondary">
+                <span class="mobile-nav-icon">🔒</span>
+                <span class="mobile-nav-text">Política de Privacidad</span>
+            </a>
+            <a href="terms.html" class="mobile-nav-link mobile-nav-link-secondary">
+                <span class="mobile-nav-icon">📄</span>
+                <span class="mobile-nav-text">Términos y Condiciones</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <h1 class="hero-title reveal-up">Blog Diseño Web 2024</h1>
+            <p class="hero-subtitle reveal-up">
+                Más de 100 artículos especializados en diseño web, desarrollo frontend y UX/UI. 
+                Guías completas para crear sitios web modernos y atractivos.
+            </p>
+            <div class="hero-stats reveal-up">
+                <div class="stat-item">
+                    <div class="stat-number">100+</div>
+                    <div class="stat-label">Artículos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">50K+</div>
+                    <div class="stat-label">Lectores</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">95%</div>
+                    <div class="stat-label">Satisfacción</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Category Filters -->
+    <section class="container">
+        <div class="category-filters reveal-up">
+            <button class="filter-btn active" data-category="all">Todos</button>
+            <button class="filter-btn" data-category="frontend">Frontend</button>
+            <button class="filter-btn" data-category="ux-ui">UX/UI</button>
+            <button class="filter-btn" data-category="responsive">Responsive</button>
+            <button class="filter-btn" data-category="frameworks">Frameworks</button>
+            <button class="filter-btn" data-category="herramientas">Herramientas</button>
+            <button class="filter-btn" data-category="tendencias">Tendencias</button>
+        </div>
+    </section>
+
+    <!-- Blog Grid -->
+    <section class="container" id="blog">
+        <div class="blog-grid" id="blog-grid">
+            <!-- Los artículos se cargarán dinámicamente con JavaScript -->
+        </div>
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+        </div>
+    </section>
+
+    <!-- Pagination -->
+    <section class="container">
+        <div class="pagination-wrapper">
+            <div class="pagination">
+                <a href="Ceo.html" class="page-number" data-page="1">1</a>
+                <a href="./" class="page-number active" data-page="2">2</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Full Article Page (Simulated Page) -->
+    <div id="full-article-page">
+        <div class="article-header">
+            <h2 class="article-title-small" id="full-article-title-small"></h2>
+            <button class="article-close-btn" id="article-close-btn">×</button>
+        </div>
+        <img id="full-article-image" class="article-hero-image" alt="Article Hero Image">
+        <div class="article-meta-full">
+            <span id="full-article-date"></span>
+            <span id="full-article-read-time"></span>
+        </div>
+        <div class="article-content" id="full-article-content">
+            <!-- Article content will be injected here -->
+        </div>
     </div>
-    <div class="loader-percentage" id="loaderPercentage">0%</div>
-  </div>
 
-  <!-- Partículas -->
-  <div class="particles"></div>
+    <!-- Footer (Adapted from index.html) -->
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>INMORTAL_OS</h3>
+                <p>Desarrollo Full-Stack & Innovación Tecnológica</p>
+                <p>Diseñando el futuro, línea a línea de código</p>
+            </div>
+            <div class="footer-section">
+                <h4>Servicios</h4>
+                <ul>
+                    <li><a href="../index.html#services">Desarrollo Web</a></li>
+                    <li><a href="../index.html#services">Aplicaciones Móviles</a></li>
+                    <li><a href="../index.html#services">DevOps & Cloud</a></li>
+                    <li><a href="../index.html#services">Inteligencia Artificial</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Enlaces</h4>
+                <ul>
+                    <li><a href="../index.html#about">Acerca de</a></li>
+                    <li><a href="../index.html#portfolio">Portafolio</a></li>
+                    <li><a href="../index.html#contact-form">Contacto</a></li>
+                    <li><a href="./">Blog</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="../privacy-policy.html">Política de Privacidad</a></li>
+                    <li><a href="../terms.html">Términos y Condiciones</a></li>
+                    <li><a href="../sitemap.xml">Sitemap</a></li>
+                    <li><a href="../robots.txt">Robots.txt</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Conecta</h4>
+                <div class="social-links">
+                    <a href="https://github.com/1inmortal" target="_blank" rel="noopener" aria-label="GitHub">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="https://linkedin.com/in/1inmortal" target="_blank" rel="noopener" aria-label="LinkedIn">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="mailto:contact@inmortal.dev" aria-label="Email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2024 INMORTAL_OS. Todos los derechos reservados.</p>
+            <p>Construido con ❤️ y tecnologías de vanguardia</p>
+            <div class="legal-links">
+                <a href="../privacy-policy.html">Política de Privacidad</a>
+                <span class="separator">|</span>
+                <a href="../terms.html">Términos y Condiciones</a>
+            </div>
+        </div>
+    </footer>
 
-  <!-- Header -->
-  <header id="mainHeader">
-    <div class="branding">
-      <a href="#">Diseño Responsivo 2024</a>
+    <!-- Sistema de audio (Adapted from index.html) -->
+    <div id="audio-players" style="display: none;">
+        <!-- Background Music (Commented out as src was empty) -->
+        <!-- <audio id="background-music" preload="auto" loop><source src="" type="audio/mpeg"></audio> -->
+        
+        <!-- General Hover/Click sounds (Using generic provided audio) -->
+        <audio id="nav-menu-hover" preload="auto"><source src="https://assets.mixkit.co/sfx/preview/mixkit-sci-fi-tech-on-1779.mp3" type="audio/mpeg"></audio>
+        <audio id="hero-section-hover" preload="auto"><source src="https://assets.mixkit.co/sfx/preview/mixkit-sci-fi-tech-on-1779.mp3" type="audio/mpeg"></audio>
+        <audio id="filter-btn-click" preload="auto"><source src="https://assets.mixkit.co/sfx/preview/mixkit-sci-fi-tech-on-1779.mp3" type="audio/mpeg"></audio>
+        <audio id="blog-card-hover" preload="auto"><source src="https://assets.mixkit.co/sfx/preview/mixkit-sci-fi-tech-on-1779.mp3" type="audio/mpeg"></audio>
+        <audio id="blog-card-click" preload="auto"><source src="https://assets.mixkit.co/sfx/preview/mixkit-futuristic-software-interface-click-1002.mp3" type="audio/mpeg"></audio>
+        <audio id="article-close-click" preload="auto"><source src="https://assets.mixkit.co/sfx/preview/mixkit-futuristic-software-interface-click-1002.mp3" type="audio/mpeg"></audio>
     </div>
-    <!-- Botón Filtrar para Navegación -->
-    <div class="filter-container">
-      <button class="filter-btn" id="filter-btn" aria-label="Abrir menú de navegación">☰</button>
-      <div class="filter-panel" id="filter-panel">
-        <ul class="navbar-nav">
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="#hero">Inicio</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#introduction">Introducción</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#what-is-responsive">¿Qué es?</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#importance-responsive">Importancia</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#how-to-create-responsive">Cómo Crear</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#responsive-examples">Ejemplos</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#responsive-tools">Herramientas</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#responsive-best-practices">Mejores Prácticas</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#contact">Contacto</a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </header>
 
-  <!-- HERO -->
-  <section class="hero reveal" id="hero">
-    <h1 data-text="DISEÑO RESPONSIVO 2024">DISEÑO RESPONSIVO 2024</h1>
-    <p>Aprende las técnicas esenciales para crear diseños adaptables que se vean bien en cualquier dispositivo.</p>
-  </section>
-
-  <!-- INTRODUCCIÓN -->
-  <section class="introduction reveal" id="introduction">
-    <h2 class="section-title">Introducción</h2>
-    <p>En la era digital actual, donde los usuarios acceden a contenido desde una variedad de dispositivos, el diseño responsivo se ha convertido en una habilidad esencial para cualquier desarrollador o diseñador web. Esta guía está diseñada para proporcionarte una comprensión profunda de qué es el diseño responsivo, por qué es importante y cómo puedes implementarlo efectivamente para asegurar que tu sitio web ofrezca una experiencia óptima en cualquier plataforma.</p>
-  </section>
-
-  <!-- QUÉ ES DISEÑO RESPONSIVO -->
-  <section class="what-is-responsive reveal" id="what-is-responsive">
-    <h2 class="section-title">¿Qué es Diseño Responsivo?</h2>
-    <div class="content">
-      <div class="text">
-        <p>El diseño responsivo es una técnica de diseño web que permite que un sitio web se adapte y se vea bien en una amplia gama de dispositivos y tamaños de pantalla, desde computadoras de escritorio hasta teléfonos móviles y tabletas. Utiliza una combinación de rejillas flexibles, imágenes fluidas y consultas de medios CSS para ajustar el diseño y el contenido del sitio según las características del dispositivo del usuario.</p>
-        <p>El objetivo principal del diseño responsivo es mejorar la experiencia del usuario al garantizar que el contenido sea accesible, legible y navegable sin importar el dispositivo utilizado para acceder al sitio web.</p>
-      </div>
-      <div class="image">
-        <img src="Diseño IMG/web.png" alt="Concepto de Diseño Responsivo">
-      </div>
-    </div>
-  </section>
-
-  <!-- IMPORTANCIA DEL DISEÑO RESPONSIVO -->
-  <section class="importance-responsive reveal" id="importance-responsive">
-    <h2 class="section-title">Importancia del Diseño Responsivo</h2>
-    <div class="content">
-      <div class="image">
-        <img src="Diseño IMG/estructura.png" alt="Importancia del Diseño Responsivo">
-      </div>
-      <div class="text">
-        <p>El diseño responsivo es crucial por varias razones:</p>
-        <ul>
-          <li><strong>Mejora la Experiencia del Usuario:</strong> Garantiza que los usuarios tengan una experiencia consistente y agradable en cualquier dispositivo.</li>
-          <li><strong>SEO Mejorado:</strong> Google favorece los sitios web responsivos en sus resultados de búsqueda, lo que puede mejorar tu visibilidad online.</li>
-          <li><strong>Adaptabilidad:</strong> Permite que tu sitio web se adapte a futuras tecnologías y dispositivos sin necesidad de rediseñar completamente.</li>
-          <li><strong>Costo-Eficiencia:</strong> Mantener un solo sitio web que funcione en todos los dispositivos es más económico que desarrollar y mantener versiones separadas.</li>
-          <li><strong>Aumento del Tráfico Móvil:</strong> Con el incremento del uso de dispositivos móviles, un diseño responsivo puede captar y retener a una audiencia más amplia.</li>
-        </ul>
-      </div>
-    </div>
-  </section>
-
-  <!-- CÓMO CREAR DISEÑOS RESPONSIVOS -->
-  <section class="how-to-create-responsive reveal" id="how-to-create-responsive">
-    <h2 class="section-title">Cómo Crear Diseños Responsivos</h2>
-    <div class="steps">
-      <div class="step">
-        <h3>1. Utilizar una Rejilla Flexible</h3>
-        <p>Implementa un sistema de rejilla fluida que permita que los elementos de tu página se ajusten proporcionalmente al tamaño de la pantalla. Frameworks como Bootstrap facilitan la creación de rejillas responsivas.</p>
-      </div>
-      <div class="step">
-        <h3>2. Imágenes Fluidias</h3>
-        <p>Asegúrate de que las imágenes escalen adecuadamente en diferentes dispositivos. Utiliza unidades relativas como porcentajes y la propiedad CSS `max-width: 100%;` para que las imágenes se adapten al contenedor.</p>
-      </div>
-      <div class="step">
-        <h3>3. Consultas de Medios (Media Queries)</h3>
-        <p>Usa consultas de medios CSS para aplicar estilos específicos en función de las características del dispositivo, como el ancho de la pantalla. Esto te permite modificar el diseño para diferentes tamaños de pantalla.</p>
-      </div>
-      <div class="step">
-        <h3>4. Diseño Móvil Primero</h3>
-        <p>Adopta un enfoque de diseño móvil primero, diseñando inicialmente para pantallas pequeñas y luego ampliando para dispositivos más grandes. Esto asegura que la experiencia móvil sea prioritaria.</p>
-      </div>
-      <div class="step">
-        <h3>5. Tipografía Responsiva</h3>
-        <p>Selecciona fuentes y tamaños de texto que sean legibles en todas las plataformas. Utiliza unidades relativas como `em` o `rem` para que la tipografía escale adecuadamente.</p>
-      </div>
-      <div class="step">
-        <h3>6. Pruebas y Optimización</h3>
-        <p>Realiza pruebas exhaustivas en diferentes dispositivos y navegadores para identificar y corregir problemas de diseño. Herramientas como Google Chrome DevTools pueden ayudarte a simular diferentes tamaños de pantalla.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- EJEMPLOS DE DISEÑO RESPONSIVO -->
-  <section class="responsive-examples reveal" id="responsive-examples">
-    <h2 class="section-title">Ejemplos de Diseño Responsivo en Acción</h2>
-    <div class="content">
-      <div class="example-item">
-        <h3>Adaptación de Rejilla</h3>
-        <p>Utilizar una rejilla flexible permite que el contenido se reorganice automáticamente en diferentes tamaños de pantalla, mejorando la usabilidad y estética del sitio.</p>
-        <a href="#">Ver Ejemplo</a>
-      </div>
-      <div class="example-item">
-        <h3>Imágenes Fluidias</h3>
-        <p>Las imágenes que se escalan proporcionalmente al contenedor garantizan que el sitio se vea bien en cualquier dispositivo sin perder calidad o distorsionarse.</p>
-        <a href="#">Ver Ejemplo</a>
-      </div>
-      <div class="example-item">
-        <h3>Menú de Navegación Adaptable</h3>
-        <p>Un menú de navegación que se transforma en un botón de filtrar o en un menú desplegable en dispositivos móviles mejora la experiencia del usuario y la accesibilidad.</p>
-        <a href="#">Ver Ejemplo</a>
-      </div>
-      <div class="example-item">
-        <h3>Tipografía Responsiva</h3>
-        <p>El uso de unidades relativas para la tipografía asegura que el texto sea legible en todas las pantallas, desde teléfonos móviles hasta pantallas de escritorio.</p>
-        <a href="#">Ver Ejemplo</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- HERRAMIENTAS DE DISEÑO RESPONSIVO -->
-  <section class="responsive-tools reveal" id="responsive-tools">
-    <h2 class="section-title">Herramientas de Diseño Responsivo</h2>
-    <div class="responsive-tools-grid">
-      <div class="responsive-tool-item">
-        <img src="Diseño IMG/boostrap.png" alt="Bootstrap">
-        <h3>Bootstrap</h3>
-      </div>
-      <div class="responsive-tool-item">
-        <img src="Diseño IMG/felxbox.png" alt="Flexbox">
-        <h3>Flexbox</h3>
-      </div>
-      <div class="responsive-tool-item">
-        <img src="Diseño IMG/css.png" alt="CSS Grid">
-        <h3>CSS Grid</h3>
-      </div>
-      <div class="responsive-tool-item">
-        <img src="Diseño IMG/webdesign.png" alt="Media Queries">
-        <h3>Media Queries</h3>
-      </div>
-      <div class="responsive-tool-item">
-        <img src="Diseño IMG/herramienta.png" alt="Herramientas de Diseño Responsivo">
-        <h3>Responsive Design Tools</h3>
-      </div>
-      <div class="responsive-tool-item">
-        <img src="Diseño IMG/devtools.png" alt="Chrome DevTools">
-        <h3>Chrome DevTools</h3>
-      </div>
-    </div>
-  </section>
-
-  <!-- MEJORES PRÁCTICAS DE DISEÑO RESPONSIVO -->
-  <section class="responsive-best-practices reveal" id="responsive-best-practices">
-    <h2 class="section-title">Mejores Prácticas de Diseño Responsivo</h2>
-    <div class="content">
-      <div class="practice">
-        <h3>Mobile-First Design</h3>
-        <p>Comienza diseñando para dispositivos móviles y luego expande el diseño para pantallas más grandes. Esto asegura que la experiencia móvil sea prioritaria.</p>
-      </div>
-      <div class="practice">
-        <h3>Uso de Unidades Relativas</h3>
-        <p>Utiliza unidades como `em`, `rem` y porcentajes en lugar de unidades fijas para asegurar que el diseño escale adecuadamente en diferentes dispositivos.</p>
-      </div>
-      <div class="practice">
-        <h3>Optimización de Imágenes</h3>
-        <p>Reduce el tamaño de las imágenes sin comprometer la calidad y utiliza formatos modernos como WebP para mejorar la velocidad de carga.</p>
-      </div>
-      <div class="practice">
-        <h3>Navegación Intuitiva</h3>
-        <p>Asegúrate de que la navegación sea fácil de usar en todos los dispositivos. Implementa menús claros y accesibles, especialmente en móviles.</p>
-      </div>
-      <div class="practice">
-        <h3>Pruebas Exhaustivas</h3>
-        <p>Realiza pruebas en una variedad de dispositivos y navegadores para identificar y corregir problemas de diseño responsivo.</p>
-      </div>
-      <div class="practice">
-        <h3>Performance Optimized</h3>
-        <p>Optimiza el rendimiento del sitio asegurando tiempos de carga rápidos y una experiencia de usuario fluida en todos los dispositivos.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- CONTACTO -->
-  <section class="contact-section reveal" id="contact">
-    <h2 class="section-title">Hablemos</h2>
-    <p>¿Listo para mejorar el diseño responsivo de tu sitio web y ofrecer una experiencia óptima en cualquier dispositivo? Contáctame y juntos llevaremos tu presencia digital al siguiente nivel.</p>
-    <a href="jarmando2965@gmail.com" class="contact-button">Contactar</a>
-  </section>
-
-  <!-- Footer -->
-  <footer>
-    <p>© 2024 Diseño Responsivo 2024. Todos los derechos reservados.</p>
-    <p><a href="#">Privacidad</a> | <a href="#">Términos</a></p>
-  </footer>
-
-  <!-- AUDIO DE FONDO -->
-  <audio id="background-audio" loop>
-    <source src="Audio/ambient-responsive.mp3" type="audio/mpeg">
-    Tu navegador no soporta el elemento de audio.
-  </audio>
-
-  <!-- Bootstrap JS Bundle -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-  <!-- JavaScript Interno -->
-  <script>
-    // Pantalla de carga
-    let progress = 0;
-    const loaderBar = document.getElementById('loaderBar');
-    const loaderPercentage = document.getElementById('loaderPercentage');
-    const loaderOverlayEl = document.getElementById('loaderOverlay');
-
-    const simulateLoading = setInterval(() => {
-      progress += 1;
-      loaderBar.style.width = progress + '%';
-      loaderPercentage.textContent = progress + '%';
-
-      if(progress >= 100) {
-        clearInterval(simulateLoading);
-        loaderOverlayEl.style.opacity = '0';
-        setTimeout(()=>{
-          loaderOverlayEl.style.display = 'none';
-          // Mostrar el header y hero con animación
-          const mainHeader = document.getElementById('mainHeader');
-          mainHeader.classList.add('visible');
-
-          const heroSection = document.getElementById('hero');
-          heroSection.classList.add('visible');
-        },500);
-      }
-    }, 30);
-
-    const filterBtn = document.getElementById('filter-btn');
-    const filterPanel = document.getElementById('filter-panel');
-
-    // Añadimos el sonido de clic
-    const clickSound = new Audio('Sound-mp3/Sound.mp3'); // Asegúrate de tener este archivo
-
-    filterBtn.addEventListener('click', (e) => {
-      e.stopPropagation(); // Evita que el click se propague al documento
-      // Reproducir sonido de clic
-      clickSound.play();
-
-      if (filterPanel.style.display === 'block') {
-        filterPanel.style.display = 'none';
-      } else {
-        filterPanel.style.display = 'block';
-      }
-    });
-
-    document.addEventListener('click', (e) => {
-      if (!filterPanel.contains(e.target) && !filterBtn.contains(e.target)) {
-        filterPanel.style.display = 'none';
-      }
-    });
-
-    // IntersectionObserver para scroll reveal con fade in y fade out
-    const reveals = document.querySelectorAll('.reveal, .section-title, .introduction p, .what-is-responsive .text, .what-is-responsive .image, .importance-responsive .text, .importance-responsive .image, .how-to-create-responsive .steps, .responsive-examples .content, .responsive-tools-grid, .responsive-best-practices .content, .contact-section p, .contact-button');
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if(entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        } else {
-          entry.target.classList.remove('visible');
+    <!-- Scripts -->
+    <script>
+        // Asegurar visibilidad inmediata de elementos críticos
+        document.addEventListener('DOMContentLoaded', function() {
+            // Forzar visibilidad de elementos del hero
+            const heroElements = document.querySelectorAll('.hero-title, .hero-subtitle, .hero-stats');
+            heroElements.forEach(el => {
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+                el.style.visibility = 'visible';
+            });
+        });
+        
+        // Register ScrollTrigger if available
+        if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+            gsap.registerPlugin(ScrollTrigger);
         }
-      });
-    }, {threshold:0.1});
-    reveals.forEach(el => observer.observe(el));
 
-    // Partículas aleatorias
-    const particlesContainer = document.querySelector('.particles');
-    const particleCount = 50;
-    for(let i=0;i<particleCount;i++){
-      const p = document.createElement('div');
-      p.classList.add('particle');
-      const size = Math.random()*5+5;
-      p.style.width = size+'px';
-      p.style.height=size+'px';
-      p.style.left = (Math.random()*100)+'vw';
-      p.style.top = (Math.random()*100)+'vh';
-      p.style.animationDelay = (Math.random()*5)+'s';
-      p.style.animationDuration = (10+Math.random()*10)+'s';
-      particlesContainer.appendChild(p);
-    }
+        // --- Data for blog articles (extended to 100) ---
+        const initialBlogArticles = [
+            { id: 1, title: "Guía Completa de Desarrollo Frontend 2024", excerpt: "Aprende las mejores prácticas de desarrollo frontend para crear sitios web modernos y atractivos con HTML, CSS y JavaScript.", category: "frontend", date: "2024-01-15", readTime: "8 min", featured: true },
+            { id: 2, title: "Optimización de Core Web Vitals", excerpt: "Cómo mejorar los Core Web Vitals de tu sitio web para obtener mejor rendimiento y experiencia de usuario.", category: "frontend", date: "2024-01-14", readTime: "6 min" },
+            { id: 3, title: "Estrategias de UX/UI para E-commerce", excerpt: "Técnicas efectivas para diseñar interfaces de usuario atractivas y funcionales para tiendas online.", category: "ux-ui", date: "2024-01-13", readTime: "7 min" },
+            { id: 4, title: "Content Strategy para Diseño Web", excerpt: "Cómo crear contenido de calidad que mejore la experiencia de usuario y atraiga visitantes.", category: "ux-ui", date: "2024-01-12", readTime: "10 min" },
+            { id: 5, title: "Figma: Configuración Completa", excerpt: "Guía paso a paso para configurar Figma y crear diseños profesionales.", category: "herramientas", date: "2024-01-11", readTime: "12 min" },
+            { id: 6, title: "Herramientas de Diseño Web Imprescindibles 2024", excerpt: "Las mejores herramientas gratuitas y de pago para diseñar sitios web este año.", category: "herramientas", date: "2024-01-10", readTime: "9 min" },
+            { id: 7, title: "Tendencias de Diseño Web para 2024", excerpt: "Las principales tendencias y cambios en diseño web que debes conocer este año.", category: "tendencias", date: "2024-01-09", readTime: "11 min" },
+            { id: 8, title: "Optimización de Imágenes para Web", excerpt: "Técnicas avanzadas para optimizar imágenes y mejorar el rendimiento de tu sitio.", category: "frontend", date: "2024-01-08", readTime: "5 min" },
+            { id: 9, title: "Diseño Web para E-commerce", excerpt: "Estrategias específicas para diseñar tiendas online atractivas y aumentar las ventas.", category: "frontend", date: "2024-01-07", readTime: "8 min" },
+            { id: 10, title: "CSS Grid y Flexbox Avanzado", excerpt: "Técnicas modernas para crear layouts responsivos y flexibles.", category: "frontend", date: "2024-01-06", readTime: "7 min" },
+            { id: 11, title: "Diseño Web para WordPress", excerpt: "Diseño completo de sitios WordPress para crear experiencias únicas.", category: "frontend", date: "2024-01-05", readTime: "9 min" },
+            { id: 12, title: "JavaScript Moderno", excerpt: "Métodos avanzados para usar JavaScript moderno en tus proyectos web.", category: "frontend", date: "2024-01-04", readTime: "10 min" },
+            { id: 13, title: "Diseño Web para Móviles", excerpt: "Diseño específico para dispositivos móviles y mejorar la experiencia de usuario.", category: "responsive", date: "2024-01-03", readTime: "6 min" },
+            { id: 14, title: "Adobe XD Optimization", excerpt: "Cómo optimizar tu flujo de trabajo con Adobe XD para diseño web.", category: "ux-ui", date: "2024-01-02", readTime: "8 min" },
+            { id: 15, title: "Web Components", excerpt: "Implementación de Web Components para crear elementos reutilizables.", category: "frontend", date: "2024-01-01", readTime: "11 min" },
+            { id: 16, title: "Design System para Web", excerpt: "Cómo crear un sistema de diseño que mejore la consistencia de tu sitio.", category: "ux-ui", date: "2023-12-31", readTime: "7 min" },
+            { id: 17, title: "Diseño Web para YouTube", excerpt: "Diseño de sitios web para creadores de contenido y canales de YouTube.", category: "ux-ui", date: "2023-12-30", readTime: "9 min" },
+            { id: 18, title: "Google PageSpeed Insights", excerpt: "Guía completa para usar PageSpeed Insights y mejorar el rendimiento web.", category: "herramientas", date: "2023-12-29", readTime: "12 min" },
+            { id: 19, title: "Diseño Web para Podcasts", excerpt: "Estrategias para diseñar sitios web para podcasts y mejorar la experiencia.", category: "ux-ui", date: "2023-12-28", readTime: "6 min" },
+            { id: 20, title: "Voice UI Design", excerpt: "Diseño de interfaces para búsquedas por voz y asistentes virtuales.", category: "tendencias", date: "2023-12-27", readTime: "8 min" },
+            { id: 21, title: "Diseño Web para Redes Sociales", excerpt: "Cómo diseñar sitios web que integren perfectamente con redes sociales.", category: "ux-ui", date: "2023-12-26", readTime: "7 min" },
+            { id: 22, title: "Technical Web Design Audit", excerpt: "Cómo realizar una auditoría técnica completa de tu diseño web.", category: "frontend", date: "2023-12-25", readTime: "15 min" },
+            { id: 23, title: "Diseño Web para Restaurantes", excerpt: "Estrategias específicas para diseñar sitios web de restaurantes atractivos.", category: "ux-ui", date: "2023-12-24", readTime: "9 min" },
+            { id: 24, title: "Diseño Web para B2B", excerpt: "Técnicas de diseño específicas para empresas B2B y generar leads cualificados.", category: "frontend", date: "2023-12-23", readTime: "10 min" },
+            { id: 25, title: "Microinteracciones", excerpt: "Cómo crear microinteracciones que mejoren la experiencia de usuario.", category: "ux-ui", date: "2023-12-22", readTime: "8 min" },
+            { id: 26, title: "Diseño Web para Noticias", excerpt: "Diseño de sitios web de noticias y blogs para mejorar la legibilidad.", category: "ux-ui", date: "2023-12-21", readTime: "7 min" },
+            { id: 27, title: "Google Ads para Diseño Web", excerpt: "Cómo usar Google Ads para complementar tu estrategia de diseño web.", category: "herramientas", date: "2023-12-20", readTime: "9 min" },
+            { id: 28, title: "Diseño Web para SaaS", excerpt: "Estrategias de diseño específicas para empresas de software como servicio.", category: "frontend", date: "2023-12-19", readTime: "11 min" },
+            { id: 29, title: "International Web Design", excerpt: "Diseño para múltiples países e idiomas.", category: "frontend", date: "2023-12-18", readTime: "13 min" },
+            { id: 30, title: "Diseño Web para Apps", excerpt: "Diseño de sitios web para aplicaciones móviles y PWA.", category: "tendencias", date: "2023-12-17", readTime: "8 min" },
+            { id: 31, title: "Content Clustering en Diseño", excerpt: "Estrategia de clustering de contenido para dominar temas específicos en diseño web.", category: "ux-ui", date: "2023-12-16", readTime: "10 min" },
+            { id: 32, title: "Diseño Web para Real Estate", excerpt: "Diseño específico para el sector inmobiliario.", category: "ux-ui", date: "2023-12-15", readTime: "9 min" },
+            { id: 33, title: "Lighthouse Performance", excerpt: "Cómo usar Lighthouse para mejorar el rendimiento de tu sitio.", category: "herramientas", date: "2023-12-14", readTime: "6 min" },
+            { id: 34, title: "Diseño Web para Healthcare", excerpt: "Diseño para el sector de la salud y medicina.", category: "ux-ui", date: "2023-12-13", readTime: "8 min" },
+            { id: 35, title: "AI y Diseño Web", excerpt: "Cómo la inteligencia artificial está cambiando el diseño web.", category: "tendencias", date: "2023-12-12", readTime: "11 min" },
+            { id: 36, title: "Diseño Web para Fintech", excerpt: "Estrategias de diseño para empresas de tecnología financiera.", category: "frontend", date: "2023-12-11", readTime: "9 min" },
+            { id: 37, title: "Google Trends para Diseño", excerpt: "Cómo usar Google Trends para encontrar tendencias de diseño.", category: "herramientas", date: "2023-12-10", readTime: "7 min" },
+            { id: 38, title: "Diseño Web para Educación", excerpt: "Diseño para instituciones educativas y cursos online.", category: "ux-ui", date: "2023-12-09", readTime: "8 min" },
+            { id: 39, title: "Diseño Web para Servicios", excerpt: "Estrategias para empresas de servicios locales.", category: "ux-ui", date: "2023-12-08", readTime: "7 min" },
+            { id: 40, title: "Diseño Web para Gaming", excerpt: "Diseño para sitios web de videojuegos y gaming.", category: "ux-ui", date: "2023-12-07", readTime: "9 min" },
+            { id: 41, title: "Sketch para Diseño Web", excerpt: "Cómo usar Sketch para crear diseños web profesionales.", category: "ux-ui", date: "2023-12-06", readTime: "6 min" },
+            { id: 42, title: "Diseño Web para Podcasts", excerpt: "Diseño de sitios web para podcasts y contenido de audio.", category: "ux-ui", date: "2023-12-05", readTime: "8 min" },
+            { id: 43, title: "Technical Web Design Checklist", excerpt: "Lista completa de verificación técnica para diseño web.", category: "frontend", date: "2023-12-04", readTime: "12 min" },
+            { id: 44, title: "Diseño Web para E-commerce", excerpt: "Diseño específico para tiendas online.", category: "frontend", date: "2023-12-03", readTime: "10 min" },
+            { id: 45, title: "Analytics para Diseño Web", excerpt: "Configuración de analytics para medir el éxito de tu diseño.", category: "herramientas", date: "2023-12-02", readTime: "9 min" },
+            { id: 46, title: "Diseño Web para Startups", excerpt: "Estrategias de diseño para startups con presupuesto limitado.", category: "frontend", date: "2023-12-01", readTime: "11 min" },
+            { id: 47, title: "ROI del Diseño Web", excerpt: "Cómo medir el ROI de tu estrategia de diseño web.", category: "herramientas", date: "2023-11-30", readTime: "8 min" },
+            { id: 48, title: "Diseño Web para Travel", excerpt: "Diseño para sitios web de viajes y turismo.", category: "ux-ui", date: "2023-11-29", readTime: "9 min" },
+            { id: 49, title: "API de Diseño Web", excerpt: "Automatización de procesos de diseño con APIs.", category: "herramientas", date: "2023-11-28", readTime: "13 min" },
+            { id: 50, title: "Diseño Web para Fashion", excerpt: "Estrategias de diseño para el sector de la moda.", category: "ux-ui", date: "2023-11-27", readTime: "8 min" },
+            { id: 51, title: "Diseño Web para Dentistas", excerpt: "Diseño específico para clínicas dentales.", category: "ux-ui", date: "2023-11-26", readTime: "7 min" },
+            { id: 52, title: "Diseño Web para Real Estate", excerpt: "Estrategias para agentes inmobiliarios y portales.", category: "ux-ui", date: "2023-11-25", readTime: "9 min" },
+            { id: 53, title: "A/B Testing para Diseño", excerpt: "Cómo realizar pruebas A/B para optimizar tu diseño web.", category: "herramientas", date: "2023-11-24", readTime: "8 min" },
+            { id: 54, title: "Diseño Web para Automotive", excerpt: "Diseño para concesionarios y servicios automotrices.", category: "ux-ui", date: "2023-11-23", readTime: "10 min" },
+            { id: 55, title: "Content Gap Analysis en Diseño", excerpt: "Análisis de gaps de contenido para mejorar el diseño web.", category: "ux-ui", date: "2023-11-22", readTime: "11 min" },
+            { id: 56, title: "Diseño Web para Legal Services", excerpt: "Diseño para bufetes de abogados y servicios legales.", category: "ux-ui", date: "2023-11-21", readTime: "8 min" },
+            { id: 57, title: "User Research Insights", excerpt: "Cómo usar insights de investigación de usuarios para mejorar el diseño.", category: "herramientas", date: "2023-11-20", readTime: "7 min" },
+            { id: 58, title: "Diseño Web para Fitness", excerpt: "Diseño para gimnasios y servicios de fitness.", category: "ux-ui", date: "2023-11-19", readTime: "9 min" },
+            { id: 59, title: "Technical Web Design Audit", excerpt: "Auditoría técnica completa para identificar problemas de diseño.", category: "frontend", date: "2023-11-18", readTime: "15 min" },
+            { id: 60, title: "Diseño Web para Beauty", excerpt: "Estrategias para salones de belleza y spas.", category: "ux-ui", date: "2023-11-17", readTime: "8 min" },
+            { id: 61, title: "Performance Web Design", excerpt: "Análisis del rendimiento en diseño web.", category: "herramientas", date: "2023-11-16", readTime: "10 min" },
+            { id: 62, title: "Diseño Web para Home Services", excerpt: "Diseño para servicios para el hogar.", category: "ux-ui", date: "2023-11-15", readTime: "7 min" },
+            { id: 63, title: "Content Calendar para Diseño", excerpt: "Planificación de contenido optimizado para diseño web.", category: "ux-ui", date: "2023-11-14", readTime: "9 min" },
+            { id: 64, title: "Diseño Web para Pet Services", excerpt: "Diseño para veterinarias y servicios para mascotas.", category: "ux-ui", date: "2023-11-13", readTime: "8 min" },
+            { id: 65, title: "Analytics E-commerce", excerpt: "Configuración de analytics para e-commerce en diseño web.", category: "herramientas", date: "2023-11-12", readTime: "11 min" },
+            { id: 66, title: "Diseño Web para Technology", excerpt: "Estrategias para empresas de tecnología.", category: "frontend", date: "2023-11-11", readTime: "10 min" },
+            { id: 67, title: "Diseño Web para Restaurantes", excerpt: "Diseño específico para restaurantes.", category: "ux-ui", date: "2023-11-10", readTime: "9 min" },
+            { id: 68, title: "Diseño Web para Healthcare", excerpt: "Estrategias para clínicas y servicios médicos.", category: "ux-ui", date: "2023-11-09", readTime: "8 min" },
+            { id: 69, title: "ROI del Diseño Web", excerpt: "Medición del retorno de inversión en diseño web.", category: "herramientas", date: "2023-11-08", readTime: "7 min" },
+            { id: 70, title: "Diseño Web para Educación", excerpt: "Diseño para instituciones educativas.", category: "ux-ui", date: "2023-11-07", readTime: "9 min" },
+            { id: 71, title: "Optimización de UX/UI", excerpt: "Optimización completa de experiencia de usuario.", category: "ux-ui", date: "2023-11-06", readTime: "10 min" },
+            { id: 72, title: "Diseño Web para Financial Services", excerpt: "Estrategias para servicios financieros.", category: "frontend", date: "2023-11-05", readTime: "11 min" },
+        ];
 
-    // Reproducir el audio tras la interacción del usuario
-    document.body.addEventListener('click', () => {
-      const audioElement = document.getElementById('background-audio');
-      if (audioElement.paused) {
-        audioElement.play();
-      }
-    }, {once:true});
-  </script>
+        // --- Generate additional articles to reach 100 ---
+        const categories = ["frontend", "ux-ui", "responsive", "frameworks", "herramientas", "tendencias"];
+        let nextId = initialBlogArticles.length + 1;
+        let currentDate = new Date("2023-11-04");
+
+        for (let i = initialBlogArticles.length; i < 100; i++) {
+            currentDate.setDate(currentDate.getDate() - 1); // Go back one day for each article
+            const formattedDate = currentDate.toISOString().slice(0, 10);
+            const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+            const readTime = `${Math.floor(Math.random() * 8) + 5} min`; // 5 to 12 minutes
+
+            initialBlogArticles.push({
+                id: nextId,
+                title: `Artículo ${nextId}: Avances en ${randomCategory.replace('-', ' ').toUpperCase()}`,
+                excerpt: `Un análisis profundo sobre las últimas novedades y estrategias en ${randomCategory.replace('-', ' ')} para mantenerte al día.`,
+                category: randomCategory,
+                date: formattedDate,
+                readTime: readTime
+            });
+            nextId++;
+        }
+
+        const blogArticles = initialBlogArticles; // Now blogArticles has 100 entries
+
+        const blogGrid = document.getElementById('blog-grid');
+        const loadingSpinner = document.getElementById('loading');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const fullArticlePage = document.getElementById('full-article-page');
+        const articleCloseBtn = document.getElementById('article-close-btn');
+        const fullArticleTitleSmall = document.getElementById('full-article-title-small');
+        const fullArticleImage = document.getElementById('full-article-image');
+        const fullArticleDate = document.getElementById('full-article-date');
+        const fullArticleReadTime = document.getElementById('full-article-read-time');
+        const fullArticleContent = document.getElementById('full-article-content');
+
+        const hamburgerBtn = document.querySelector('.hamburger');
+        const mobileNav = document.getElementById('mobile-nav');
+        const mobileNavOverlay = document.getElementById('mobile-nav-overlay');
+        const mobileNavLinks = document.querySelectorAll('#mobile-nav .mobile-nav-link');
+        const navDropdowns = document.querySelectorAll('.main-nav .nav-dropdown');
+
+        let currentCategory = 'all';
+
+        // Audio controls (Adapted from index.html)
+        const audioToggleBtn = document.getElementById('audio-toggle');
+        const backgroundMusic = document.getElementById('background-music');
+        const navMenuHoverAudio = document.getElementById('nav-menu-hover');
+        const blogCardHoverAudio = document.getElementById('blog-card-hover');
+        const blogCardClickAudio = document.getElementById('blog-card-click');
+        const articleCloseClickAudio = document.getElementById('article-close-click');
+        const filterBtnClickAudio = document.getElementById('filter-btn-click');
+        const heroSectionHoverAudio = document.getElementById('hero-section-hover');
+        const paginationClickAudio = document.getElementById('filter-btn-click'); // Reuse filter sound for pagination
+
+        let isAudioEnabled = false; // Start muted
+
+        // Function to play sound, with volume control and check for mute status
+        const playSound = (audioElement, volume = 0.5) => {
+            if (!audioElement || !isAudioEnabled) return;
+            audioElement.currentTime = 0; // Rewind to start for quick repeated plays
+            audioElement.volume = volume;
+            audioElement.play().catch(e => console.error("Audio playback error:", e));
+        };
+
+        // Initialize audio state from local storage or default to muted
+        const initAudioState = () => {
+            const savedAudioState = localStorage.getItem('isAudioEnabled');
+            if (savedAudioState !== null) {
+                isAudioEnabled = JSON.parse(savedAudioState);
+            } else {
+                isAudioEnabled = false; // Default to muted
+            }
+
+            if (isAudioEnabled) {
+                audioToggleBtn.classList.add('active');
+                audioToggleBtn.classList.remove('muted');
+                // Auto-play background music on first user interaction later
+            } else {
+                audioToggleBtn.classList.remove('active');
+                audioToggleBtn.classList.add('muted');
+                if (backgroundMusic) backgroundMusic.pause();
+            }
+        };
+
+        audioToggleBtn.addEventListener('click', () => {
+            isAudioEnabled = !isAudioEnabled;
+            localStorage.setItem('isAudioEnabled', isAudioEnabled);
+            initAudioState(); // Update UI and state
+
+            if (isAudioEnabled) {
+                // Attempt to play background music only after user interaction
+                if (backgroundMusic) backgroundMusic.play().catch(e => console.error("Background music autoplay failed:", e));
+            } else {
+                if (backgroundMusic) backgroundMusic.pause();
+            }
+        });
+
+        // Function to generate Lorem Ipsum like content
+        const generateArticleContent = (title, category) => {
+            // Generate relevant images for the article content
+            const imageData1 = generateImageUrl(title, category);
+            const imageData2 = generateImageUrl(`${title} design`, category);
+            
+            const paragraphs = [
+                `El diseño web es una disciplina en constante evolución, y mantenerse al día con las últimas tendencias y tecnologías es crucial. Este artículo profundiza en los aspectos clave de ${title.toLowerCase()}, ofreciendo una perspectiva integral para diseñadores y desarrolladores por igual.`,
+                `<img src="https://source.unsplash.com/800x450/?${encodeURIComponent(imageData1.alt)}" alt="${imageData1.alt}" onerror="this.src='https://picsum.photos/seed/${Math.floor(Math.random() * 1000) + 2000}/800/450'">`,
+                `En el panorama digital actual, donde la experiencia de usuario determina el éxito, comprender cómo crear interfaces atractivas y funcionales es fundamental. Exploramos las metodologías más efectivas y las herramientas que pueden potenciar tu diseño. Desde la investigación de usuarios hasta la implementación técnica, cada paso es vital.`,
+                `<h2>La Importancia de la Experiencia de Usuario (UX) en el Diseño Web</h2>`,
+                `<p>Uno de los pilares del diseño web moderno es la experiencia del usuario. Un sitio web rápido, intuitivo y accesible no solo deleita a los visitantes, sino que también mejora la conversión y la retención. Abordaremos cómo la usabilidad se entrelaza con las técnicas de diseño, incluyendo la optimización para móviles y los principios de diseño responsivo.</p>`,
+                `<h3>Estrategias Avanzadas de Diseño</h3>`,
+                `<p>La creación de interfaces atractivas y funcionales sigue siendo fundamental. Más allá de la estética, la funcionalidad y la accesibilidad son lo que realmente resuena con los usuarios. Desglosamos técnicas para desarrollar sistemas de diseño robustos, el uso de componentes reutilizables y la optimización para diferentes dispositivos.</p>`,
+                `<p>Además, exploraremos cómo la integración de la <strong>Inteligencia Artificial</strong> puede potenciar la creación de diseños, la automatización de procesos y el análisis de comportamiento de usuarios, llevando tu estrategia de diseño web a un nuevo nivel.</p>`,
+                `<img src="https://source.unsplash.com/800x450/?${encodeURIComponent(imageData2.alt)}" alt="${imageData2.alt}" onerror="this.src='https://picsum.photos/seed/${Math.floor(Math.random() * 1000) + 3000}/800/450'">`,
+                `<h2>Medición y Análisis de Rendimiento</h2>`,
+                `<p>Finalmente, la medición y el análisis son indispensables. Sin datos, las decisiones se basan en conjeturas. Te mostraremos cómo interpretar métricas clave de rendimiento web y herramientas de análisis, y ajustar tu enfoque para maximizar el retorno de inversión de tus esfuerzos de diseño. Adéntrate en este viaje para dominar ${category.replace('-', ' ')}.</p>`,
+                `<p>El monitoreo constante y la adaptabilidad son la clave del éxito en el dinámico mundo del diseño web. Implementar las estrategias correctas y estar al tanto de las tendencias emergentes te permitirá mantener una ventaja competitiva.</p>`
+            ];
+            return paragraphs.map(p => p).join('');
+        };
+
+        // Function to generate image URL based on article title and category
+        const generateImageUrl = (title, category) => {
+            // Create search terms based on title and category
+            const searchTerms = [];
+            
+            // Add category-based terms
+            const categoryTerms = {
+                'frontend': ['web design', 'frontend development', 'html css javascript', 'coding', 'programming'],
+                'ux-ui': ['user interface', 'user experience', 'ui design', 'ux design', 'design'],
+                'responsive': ['responsive design', 'mobile design', 'web design', 'responsive'],
+                'frameworks': ['web frameworks', 'react vue angular', 'javascript frameworks', 'development'],
+                'herramientas': ['design tools', 'software', 'technology', 'digital tools', 'web tools'],
+                'tendencias': ['web design trends', 'future design', 'innovation', 'technology', 'digital design']
+            };
+            
+            // Add category terms
+            if (categoryTerms[category]) {
+                searchTerms.push(...categoryTerms[category]);
+            }
+            
+            // Extract key words from title (remove common words)
+            const titleWords = title.toLowerCase()
+                .replace(/[^\w\s]/g, '')
+                .split(' ')
+                .filter(word => word.length > 3 && !['para', 'con', 'los', 'las', 'una', 'uno', 'este', 'esta', 'como', 'para', 'sobre', 'desde', 'hasta', 'entre', 'contra', 'según', 'mediante', 'durante', 'antes', 'después', 'mientras', 'cuando', 'donde', 'quien', 'cual', 'que', 'cuyo', 'cuya', 'cuyos', 'cuyas', 'guía', 'completa', 'estrategias', 'mejorar', 'diseño', 'web'].includes(word));
+            
+            searchTerms.push(...titleWords.slice(0, 3)); // Take first 3 meaningful words
+            
+            // Add specific terms based on title keywords
+            const titleLower = title.toLowerCase();
+            if (titleLower.includes('figma')) searchTerms.push('figma', 'design tool', 'ui design');
+            if (titleLower.includes('wordpress')) searchTerms.push('wordpress', 'cms', 'web design');
+            if (titleLower.includes('ecommerce')) searchTerms.push('ecommerce', 'online store', 'shopping');
+            if (titleLower.includes('móvil') || titleLower.includes('mobile')) searchTerms.push('mobile design', 'smartphone', 'responsive');
+            if (titleLower.includes('analytics')) searchTerms.push('analytics', 'data', 'dashboard');
+            if (titleLower.includes('content')) searchTerms.push('content design', 'writing', 'blog');
+            if (titleLower.includes('css')) searchTerms.push('css', 'styling', 'web design');
+            if (titleLower.includes('javascript')) searchTerms.push('javascript', 'programming', 'coding');
+            if (titleLower.includes('react')) searchTerms.push('react', 'javascript framework', 'frontend');
+            if (titleLower.includes('vue')) searchTerms.push('vue', 'javascript framework', 'frontend');
+            if (titleLower.includes('angular')) searchTerms.push('angular', 'javascript framework', 'frontend');
+            if (titleLower.includes('ui') || titleLower.includes('ux')) searchTerms.push('user interface', 'user experience', 'design');
+            if (titleLower.includes('responsive')) searchTerms.push('responsive design', 'mobile', 'web design');
+            if (titleLower.includes('voice')) searchTerms.push('voice interface', 'ai', 'technology');
+            if (titleLower.includes('ai') || titleLower.includes('inteligencia')) searchTerms.push('artificial intelligence', 'ai', 'technology');
+            if (titleLower.includes('adobe')) searchTerms.push('adobe', 'design software', 'creative tools');
+            if (titleLower.includes('sketch')) searchTerms.push('sketch', 'design tool', 'ui design');
+            if (titleLower.includes('microinteracciones')) searchTerms.push('microinteractions', 'ui design', 'animations');
+            if (titleLower.includes('performance')) searchTerms.push('web performance', 'speed', 'optimization');
+            if (titleLower.includes('lighthouse')) searchTerms.push('lighthouse', 'performance', 'web tools');
+            
+            // Remove duplicates
+            const uniqueTerms = [...new Set(searchTerms)];
+            
+            // Create search query
+            const searchQuery = uniqueTerms.slice(0, 5).join(' '); // Limit to 5 terms
+            
+            // Use Unsplash API for relevant images
+            const unsplashUrl = `https://source.unsplash.com/400x250/?${encodeURIComponent(searchQuery)}`;
+            
+            // Fallback to a more generic image if needed
+            const fallbackUrl = `https://picsum.photos/seed/${title.length + Math.floor(Math.random() * 1000)}/400/250`;
+            
+            return {
+                url: unsplashUrl,
+                fallback: fallbackUrl,
+                alt: `${searchQuery} - ${title}`
+            };
+        };
+
+        // Function to create a blog card HTML element
+        const createBlogCard = (article) => {
+            const imageData = generateImageUrl(article.title, article.category);
+            
+            const card = document.createElement('div');
+            card.className = 'blog-card';
+            card.dataset.id = article.id; // Store ID for easy lookup
+            card.innerHTML = `
+                <img src="${imageData.url}" alt="${imageData.alt}" class="blog-card-image" onerror="this.src='${imageData.fallback}'">
+                <div class="card-content">
+                    <div class="blog-category">${article.category.replace('-', ' ')}</div>
+                    <h3 class="blog-title">${article.title}</h3>
+                    <p class="blog-excerpt">${article.excerpt}</p>
+                    <div class="blog-meta">
+                        <span class="blog-date">${new Date(article.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                        <span class="blog-read-time">${article.readTime}</span>
+                    </div>
+                </div>
+            `;
+
+            // GSAP hover animations for cards
+            const tl = gsap.timeline({ paused: true });
+            const cardImage = card.querySelector('.blog-card-image');
+            const cardTitle = card.querySelector('.blog-title');
+            
+            tl.to(card, { y: -8, boxShadow: "0 20px 60px rgba(0,0,0,0.4), 0 0 25px rgba(0,245,160,0.3)", duration: 0.3, ease: "power2.out" });
+            
+            if (cardImage) {
+                tl.to(cardImage, { scale: 1.1, duration: 0.3, ease: "power2.out" }, "<");
+            }
+            if (cardTitle) {
+                tl.to(cardTitle, { color: "var(--accent-primary)", duration: 0.3 }, "<");
+            }
+
+            card.addEventListener('mouseenter', () => {
+                playSound(blogCardHoverAudio, 0.3);
+                tl.play();
+            });
+
+            card.addEventListener('mouseleave', () => {
+                tl.reverse();
+            });
+
+            card.addEventListener('click', () => {
+                playSound(blogCardClickAudio, 0.4);
+                openArticlePage(article.id);
+            });
+            return card;
+        };
+
+        // Track which cards have been animated
+        const animatedCards = new Set();
+        
+        // Function to reset animation state if needed
+        const resetAnimationState = () => {
+            if (typeof gsap !== 'undefined') {
+                // Kill all ScrollTriggers for blog grid
+                if (typeof ScrollTrigger !== 'undefined') {
+                    ScrollTrigger.getAll().forEach(trigger => {
+                        if (trigger.vars && trigger.vars.trigger === blogGrid) {
+                            trigger.kill();
+                        }
+                    });
+                }
+            }
+        };
+        
+        // Function to ensure cards are visible
+        const ensureCardsVisible = (cards) => {
+            cards.forEach(card => {
+                if (card && typeof gsap !== 'undefined') {
+                    gsap.set(card, { 
+                        opacity: 1, 
+                        y: 0, 
+                        scale: 1,
+                        clearProps: "all"
+                    });
+                }
+            });
+        };
+        
+        // Function to render blog articles
+        const renderBlogArticles = (category) => {
+            blogGrid.innerHTML = ''; // Clear current articles
+            loadingSpinner.style.display = 'flex'; // Show loading spinner
+
+            setTimeout(() => { // Simulate network delay
+                const filteredArticles = category === 'all'
+                    ? blogArticles
+                    : blogArticles.filter(article => article.category === category);
+
+                if (filteredArticles.length === 0) {
+                    blogGrid.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No se encontraron artículos en esta categoría.</p>';
+                } else {
+                    const cards = [];
+                    const newCards = [];
+                    
+                    filteredArticles.forEach(article => {
+                        const card = createBlogCard(article);
+                        cards.push(card);
+                        blogGrid.appendChild(card);
+                        
+                        // Check if this card has been animated before
+                        if (!animatedCards.has(article.id)) {
+                            newCards.push(card);
+                            animatedCards.add(article.id);
+                        } else {
+                            // If already animated, set it to visible state immediately
+                            card.style.opacity = '1';
+                            card.style.transform = 'translateY(0) scale(1)';
+                            card.style.visibility = 'visible';
+                            // Ensure the card is not affected by any GSAP animations
+                            if (typeof gsap !== 'undefined') {
+                                gsap.set(card, { clearProps: "all" });
+                            }
+                        }
+                    });
+
+                    // Only animate new cards that haven't been seen before
+                    if (newCards.length > 0 && typeof gsap !== 'undefined') {
+                        // Set initial state for new cards
+                        newCards.forEach(card => {
+                            card.style.opacity = '0';
+                            card.style.transform = 'translateY(50px) scale(0.9)';
+                        });
+                        
+                        const animationConfig = {
+                            opacity: 1,
+                            y: 0,
+                            scale: 1,
+                            stagger: 0.08, // Stagger animation for each card
+                            duration: 0.6,
+                            ease: "power3.out",
+                            onComplete: () => {
+                                // Ensure cards remain visible after animation
+                                ensureCardsVisible(newCards);
+                            }
+                        };
+                        
+                        // Add ScrollTrigger if available and there are new cards to animate
+                        if (typeof ScrollTrigger !== 'undefined' && newCards.length > 0) {
+                            animationConfig.scrollTrigger = {
+                                trigger: blogGrid,
+                                start: "top 85%", // Start animation when the top of the grid is 85% in view
+                                end: "bottom 20%",
+                                toggleActions: "play none none none",
+                                once: true // Only animate once per card
+                            };
+                        }
+                        
+                        gsap.to(newCards, animationConfig);
+                    }
+                }
+                loadingSpinner.style.display = 'none'; // Hide loading spinner
+                
+                // Ensure all cards are visible after a delay
+                setTimeout(() => {
+                    const allCards = blogGrid.querySelectorAll('.blog-card');
+                    ensureCardsVisible(allCards);
+                }, 1000);
+            }, 500); // 0.5 second delay
+        };
+
+        // Function to open the full article page
+        const openArticlePage = (articleId) => {
+            const article = blogArticles.find(a => a.id === articleId);
+            if (!article) return;
+
+            fullArticleTitleSmall.textContent = article.title;
+            
+            // Generate hero image based on article content
+            const heroImageData = generateImageUrl(article.title, article.category);
+            fullArticleImage.src = `https://source.unsplash.com/1200x600/?${encodeURIComponent(heroImageData.alt)}`;
+            fullArticleImage.alt = article.title;
+            fullArticleImage.onerror = function() {
+                this.src = `https://picsum.photos/seed/${article.id + 100}/1200/600`;
+            };
+            
+            fullArticleDate.textContent = new Date(article.date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+            fullArticleReadTime.textContent = article.readTime;
+            fullArticleContent.innerHTML = generateArticleContent(article.title, article.category); // Generate full content
+
+            document.body.classList.add('no-scroll'); // Prevent body scrolling
+
+            if (typeof gsap !== 'undefined' && fullArticlePage) {
+                gsap.to(fullArticlePage, {
+                    y: "0%",
+                    opacity: 1,
+                    duration: 0.7,
+                    ease: "power3.out",
+                    onStart: () => {
+                        fullArticlePage.classList.add('active'); // Add active class before animation
+                    },
+                    onComplete: () => {
+                        fullArticlePage.scrollTo(0, 0); // Scroll to top of the article page
+                    }
+                });
+            } else {
+                // Fallback if GSAP is not available
+                fullArticlePage.classList.add('active');
+                fullArticlePage.style.transform = 'translateY(0)';
+                fullArticlePage.style.opacity = '1';
+            }
+        };
+
+        // Function to close the full article page
+        const closeArticlePage = () => {
+            playSound(articleCloseClickAudio, 0.4);
+            document.body.classList.remove('no-scroll'); // Re-enable body scrolling
+            
+            if (typeof gsap !== 'undefined' && fullArticlePage) {
+                gsap.to(fullArticlePage, {
+                    y: "100%",
+                    opacity: 0,
+                    duration: 0.7,
+                    ease: "power3.in",
+                    onComplete: () => {
+                        fullArticlePage.classList.remove('active'); // Remove active class after animation
+                        fullArticleContent.innerHTML = ''; // Clear content
+                    }
+                });
+            } else {
+                // Fallback if GSAP is not available
+                fullArticlePage.classList.remove('active');
+                fullArticlePage.style.transform = 'translateY(100%)';
+                fullArticlePage.style.opacity = '0';
+                fullArticleContent.innerHTML = ''; // Clear content
+            }
+        };
+
+        // Event listeners for category filters
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                playSound(filterBtnClickAudio, 0.3);
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                currentCategory = button.dataset.category;
+                
+                // Kill existing ScrollTriggers to prevent conflicts
+                resetAnimationState();
+                
+                renderBlogArticles(currentCategory);
+
+                // Close mobile menu if filter button is clicked there
+                if (mobileNav.classList.contains('active')) {
+                    toggleMobileNav();
+                }
+            });
+        });
+
+        // Event listener for close button
+        articleCloseBtn.addEventListener('click', closeArticlePage);
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && fullArticlePage.classList.contains('active')) {
+                closeArticlePage();
+            }
+        });
+
+        // Mobile Navigation Toggle (Adapted from index.html)
+        const toggleMobileNav = () => {
+            hamburgerBtn.classList.toggle('active');
+            mobileNav.classList.toggle('active');
+            mobileNavOverlay.classList.toggle('active');
+            document.body.classList.toggle('no-scroll'); // Prevent body scroll
+        };
+
+        hamburgerBtn.addEventListener('click', toggleMobileNav);
+        mobileNavOverlay.addEventListener('click', toggleMobileNav); // Close when clicking overlay
+
+        mobileNavLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                playSound(navMenuHoverAudio, 0.3); // Use a hover sound for click to represent interaction
+                if (mobileNav.classList.contains('active')) {
+                    // Slight delay for animation before navigating
+                    setTimeout(toggleMobileNav, 400); 
+                }
+            });
+            link.addEventListener('mouseenter', () => playSound(navMenuHoverAudio, 0.2));
+        });
+
+        // Handle dropdowns in desktop nav (minimalist version)
+        navDropdowns.forEach(dropdown => {
+            const toggle = dropdown.querySelector('.dropdown-toggle');
+            const menu = dropdown.querySelector('.dropdown-menu');
+
+            // Play sound on dropdown toggle hover
+            if (toggle) {
+                toggle.addEventListener('mouseenter', () => playSound(navMenuHoverAudio, 0.2));
+            }
+        });
+
+        // Initial render of articles on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Ensure GSAP is available
+            if (typeof gsap === 'undefined') {
+                console.warn('GSAP not loaded, animations will be disabled');
+                // Apply fallback for reveal-up elements
+                document.querySelectorAll('.reveal-up').forEach(el => {
+                    el.classList.add('fallback');
+                });
+                return;
+            }
+            
+            initAudioState(); // Initialize audio state
+            renderBlogArticles(currentCategory);
+
+            // GSAP for initial hero and filter reveal
+            const heroTitle = document.querySelector(".hero-title");
+            const heroSubtitle = document.querySelector(".hero-subtitle");
+            const heroStats = document.querySelectorAll(".hero-stats .stat-item");
+            const categoryFilters = document.querySelector(".category-filters");
+            const pagination = document.querySelector(".pagination");
+            
+            if (heroTitle) {
+                gsap.from(heroTitle, { duration: 1, y: 50, opacity: 0, ease: "power3.out", delay: 0.2 });
+            }
+            if (heroSubtitle) {
+                gsap.from(heroSubtitle, { duration: 1, y: 50, opacity: 0, ease: "power3.out", delay: 0.4 });
+            }
+            if (heroStats.length > 0) {
+                gsap.from(heroStats, { duration: 1, y: 50, opacity: 0, stagger: 0.2, ease: "power3.out", delay: 0.6 });
+            }
+            if (categoryFilters) {
+                gsap.from(categoryFilters, { duration: 1, y: 50, opacity: 0, ease: "power3.out", delay: 0.8 });
+            }
+            if (pagination) {
+                gsap.from(pagination, { duration: 1, y: 50, opacity: 0, ease: "power3.out", delay: 1.0 });
+            }
+            
+            // Fallback timeout to ensure elements are visible
+            setTimeout(() => {
+                document.querySelectorAll('.reveal-up').forEach(el => {
+                    if (el.style.opacity === '0' || el.style.opacity === '') {
+                        el.classList.add('fallback');
+                    }
+                });
+            }, 3000); // 3 seconds timeout
+            
+            // Add general hover sound to relevant sections (only for desktop, avoid interfering with mobile)
+            if (window.innerWidth > 768) {
+                document.querySelectorAll('.hero-section').forEach(el => {
+                    el.addEventListener('mouseenter', () => playSound(heroSectionHoverAudio, 0.2));
+                });
+            }
+        });
+
+        // Pagination functionality
+        const pageNumbers = document.querySelectorAll('.page-number');
+        
+        pageNumbers.forEach(pageNumber => {
+            pageNumber.addEventListener('click', (e) => {
+                playSound(paginationClickAudio, 0.3);
+                
+                // Remove active class from all page numbers
+                pageNumbers.forEach(pn => pn.classList.remove('active'));
+                
+                // Add active class to clicked page number
+                pageNumber.classList.add('active');
+                
+                // Add hover effect for pagination
+                pageNumber.addEventListener('mouseenter', () => {
+                    if (isAudioEnabled) {
+                        playSound(paginationClickAudio, 0.2);
+                    }
+                });
+            });
+        });
+
+
+
+    </script>
 </body>
 </html>
