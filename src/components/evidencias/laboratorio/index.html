@@ -1,0 +1,2903 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CyberLab Overdrive Dashboard – Interfaz Holográfica v2.0</title>
+
+  <!-- Firma del autor (Opcional, tomado de referencia) -->
+  <meta name="author" content="Adaptado por IA a partir de diseños de Ing. Espinosa Martínez José Armando">
+  <meta name="copyright" content="© 2024 CyberLab. Based on design © 2025 Ing. Espinosa Martínez José Armando">
+
+  <!-- Favicon (Tomado de referencia, si aplica) -->
+  <!-- <link rel="icon" href="src/assets/img/FAVICON/LOGO.png" type="image/x-icon" /> -->
+
+  <!-- Importación de fuentes (Ya presentes en principal) -->
+  <link href="https://fonts.googleapis.com/css?family=Share+Tech+Mono|VT323" rel="stylesheet">
+  <!-- Bootstrap CSS (Mantenido para estructura base si se necesita, pero menos dependiente) -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <!-- Font Awesome para Iconos (Ya presentes en principal) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- ============================================================ -->
+  <!-- CSS Styles (Fusionados desde el archivo de referencia)       -->
+  <!-- ============================================================ -->
+  <style>
+    /* ============================================================
+       :root VARIABLES & THEMES
+       ------------------------------------------------------------
+       Definición de paleta de colores principal (Dark/HUD)
+       y una alternativa Light (opcional, requiere más ajustes).
+       NUEVO: Variables RGB para rgba() y variables HUD.
+    ============================================================ */
+    :root {
+      --hue: 160; /* Color principal (Cyan/Verde) */
+      --saturation: 100%;
+      --brightness-accent: 50%;
+      --brightness-bg: 5%;
+      --brightness-text: 95%;
+      --brightness-muted: 70%;
+      --brightness-feedback-success: 60%; /* Nuevo para feedback */
+      --brightness-feedback-error: 60%; /* Nuevo para feedback */
+      --brightness-feedback-warning: 60%; /* Nuevo para feedback */
+
+
+      /* Colores Base (HSLA para fácil ajuste) */
+      --color-bg: hsla(var(--hue), var(--saturation), var(--brightness-bg), 1);
+      --color-accent: hsla(var(--hue), var(--saturation), var(--brightness-accent), 1);
+      --color-accent-glow: hsla(var(--hue), var(--saturation), calc(var(--brightness-accent) + 10%), 0.6); /* Más brillante */
+      --color-accent-dark: hsla(var(--hue), var(--saturation), calc(var(--brightness-accent) - 15%), 1);
+      --color-text: hsla(var(--hue), 10%, var(--brightness-text), 1);
+      --color-muted: hsla(var(--hue), 10%, var(--brightness-muted), 1);
+      --color-border: hsla(var(--hue), var(--saturation), calc(var(--brightness-accent) / 2), 0.3);
+      --color-glass-bg: hsla(var(--hue), 30%, 15%, 0.1); /* Fondo para glassmorphism */
+      --color-feedback-success: hsla(120, 70%, var(--brightness-feedback-success), 1); /* Verde */
+      --color-feedback-error: hsla(0, 100%, var(--brightness-feedback-error), 1); /* Rojo */
+      --color-feedback-warning: hsla(45, 100%, var(--brightness-feedback-warning), 1); /* Amarillo */
+
+
+      /* NUEVO: Colores RGB para rgba() en sombras (Aproximado - ajustar si es necesario) */
+      --color-accent-rgb: 0, 255, 170; /* Aproximado para HSL(160, 100%, 50%) */
+
+      /* Transiciones */
+      --transition-fast: 0.2s;
+      --transition-medium: 0.4s;
+      --transition-slow: 0.7s;
+
+      /* Fuentes */
+      --font-main: 'Share Tech Mono', monospace;
+      --font-heading: 'VT323', monospace;
+
+      /* NUEVO: Variables HUD */
+      --hud-border-width: 2px;
+      --hud-corner-size: 20px;
+      --hud-line-thickness: 1px;
+      --hud-glow: 0 0 5px var(--color-accent-glow), 0 0 10px var(--color-accent-glow);
+
+      /* Breakpoints */
+      --mobile-break: 768px;
+      --tablet-break: 1024px;
+    }
+
+    /* NUEVO: Tema Claro (Opcional, básico) - Adaptado */
+    [data-theme="light"] {
+      --hue: 200; /* Azul claro */
+      --saturation: 50%; /* Menos saturación general */
+      --brightness-bg: 95%;
+      --brightness-accent: 45%; /* Un poco más oscuro para contraste */
+      --brightness-text: 10%;
+      --brightness-muted: 40%;
+      --brightness-feedback-success: 40%; /* Ajuste para claro */
+      --brightness-feedback-error: 50%; /* Ajuste para claro */
+      --brightness-feedback-warning: 50%; /* Ajuste para claro */
+
+
+      /* Recalcular colores base */
+      --color-bg: hsla(var(--hue), 20%, var(--brightness-bg), 1);
+      --color-accent: hsla(var(--hue), 80%, var(--brightness-accent), 1);
+      --color-accent-glow: hsla(var(--hue), 80%, calc(var(--brightness-accent) + 10%), 0.5); /* Ajuste glow */
+      --color-accent-dark: hsla(var(--hue), 80%, calc(var(--brightness-accent) - 15%), 1);
+      --color-text: hsla(var(--hue), 10%, var(--brightness-text), 1);
+      --color-muted: hsla(var(--hue), 10%, var(--brightness-muted), 1);
+      --color-border: hsla(var(--hue), 50%, calc(var(--brightness-accent)), 0.3);
+      --color-glass-bg: hsla(var(--hue), 30%, 85%, 0.2); /* Fondo más claro */
+      --color-accent-rgb: 0, 170, 255; /* Aproximado */
+
+      --color-feedback-success: hsla(120, 70%, var(--brightness-feedback-success), 1);
+      --color-feedback-error: hsla(0, 100%, var(--brightness-feedback-error), 1);
+      --color-feedback-warning: hsla(45, 100%, var(--brightness-feedback-warning), 1);
+    }
+
+    /* ============================================================
+       RESET BÁSICO Y ESTILOS GENERALES
+       ------------------------------------------------------------
+       Incluye scroll suave y selección de texto estilizada.
+       Adaptado para cursor y overflow.
+    ============================================================ */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px; /* Base para REMs */
+      overflow-y: scroll; /* Siempre mostrar barra de scroll para evitar saltos */
+    }
+
+    body {
+      font-family: var(--font-main);
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      overflow-x: hidden;
+      position: relative;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      /* Cursor personalizado (manteniendo el original) - Asegúrate de tener este archivo */
+      cursor: url("IMG/CURSORS/cursor1.cur"), auto;
+      transition: background-color var(--transition-medium), color var(--transition-medium); /* Transición para cambio de tema */
+    }
+
+    /* Estilo de Selección */
+    ::selection {
+      background-color: var(--color-accent);
+      color: var(--color-bg);
+      text-shadow: none;
+    }
+
+    a, button {
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: inherit;
+    }
+
+    img, video {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover; /* Asegura que cubran su contenedor */
+    }
+
+    /* NUEVO: Estilos para Lazy Loading de imágenes */
+    img[data-src] {
+        opacity: 0; /* Oculto inicialmente */
+        transition: opacity 0.5s ease-in-out; /* Transición suave */
+    }
+    img.loaded {
+        opacity: 1; /* Mostrar cuando esté cargada */
+    }
+
+
+    ul, li {
+      list-style: none;
+    }
+
+    /* Ocultar elementos inicialmente hasta que JS los revele */
+    #mainHeader, .main-content-wrapper, .hud-overlay {
+      opacity: 0;
+      transition: opacity var(--transition-slow) ease-in-out;
+    }
+    #mainHeader.visible, .main-content-wrapper.visible, .hud-overlay.visible {
+      opacity: 1;
+    }
+
+    /* Video de fondo */
+    #bg-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -2; /* Detrás del contenido y del HUD */
+      opacity: 0.15; /* Más sutil */
+      filter: grayscale(50%) brightness(0.7); /* Efecto visual */
+    }
+
+     /* Particulas JS */
+    #particles-js {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: -1; /* Entre el video y el contenido */
+        pointer-events: none; /* No bloquea interacciones */
+    }
+
+
+    /* ============================================================
+       LOADER AVANZADO ESTILOS
+       ------------------------------------------------------------
+       NUEVO: Diseño HUD, scanline, texto dinámico.
+    ============================================================ */
+    .loader-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: var(--color-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity var(--transition-slow) ease-in-out, visibility var(--transition-slow) step-end;
+    }
+
+    .loader-overlay:not(.active) {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity var(--transition-slow) ease-in-out, visibility 0s var(--transition-slow);
+    }
+
+    .loader-hud-border {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      bottom: 20px;
+      border: var(--hud-border-width) solid var(--color-border);
+      pointer-events: none;
+      box-shadow: inset 0 0 15px rgba(var(--color-accent-rgb), 0.1);
+    }
+
+    .loader-scanline {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: var(--color-accent);
+      box-shadow: var(--hud-glow);
+      opacity: 0.7;
+      animation: scan 3s linear infinite;
+      z-index: 1;
+    }
+
+    @keyframes scan {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(calc(100vh - 3px)); }
+      100% { transform: translateY(0); }
+    }
+
+    .loader-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      color: var(--color-accent);
+      max-width: 80%;
+    }
+
+    .loader-logo {
+      font-family: var(--font-heading);
+      font-size: 2rem;
+      margin-bottom: 20px;
+      letter-spacing: 4px;
+      text-shadow: var(--hud-glow);
+      animation: pulse-text 2s infinite alternate;
+    }
+
+    @keyframes pulse-text {
+      from { opacity: 0.7; }
+      to { opacity: 1; }
+    }
+
+    .loader-text {
+      font-family: var(--font-main);
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .loader-bar-container {
+      width: 100%;
+      max-width: 400px;
+      height: 10px;
+      background: rgba(var(--color-accent-rgb), 0.1);
+      border: 1px solid var(--color-border);
+      border-radius: 2px;
+      overflow: hidden;
+      margin: 15px auto;
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+    }
+
+    .loader-bar {
+      width: 0%;
+      height: 100%;
+      background: var(--color-accent);
+      box-shadow: var(--hud-glow);
+      transition: width 0.1s linear; /* Más rápido para progreso */
+    }
+
+    .loader-percentage {
+      font-family: var(--font-main);
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
+
+    .loader-subtext {
+      font-family: var(--font-main);
+      font-size: 0.8rem;
+      color: var(--color-muted);
+      letter-spacing: 1px;
+    }
+
+    /* ============================================================
+       HUD OVERLAY ESTILOS
+       ------------------------------------------------------------
+       NUEVO: Esquinas, líneas y readouts fijos.
+    ============================================================ */
+    .hud-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none; /* No interfiere con clicks */
+      z-index: 1000; /* Encima del contenido, debajo de modales/menús */
+      overflow: hidden; /* Evita que elementos se salgan */
+    }
+
+    /* Esquinas Decorativas */
+    .hud-corner {
+      position: absolute;
+      width: var(--hud-corner-size);
+      height: var(--hud-corner-size);
+      border-style: solid;
+      border-color: var(--color-accent);
+      opacity: 0.7;
+    }
+    .hud-corner.top-left { top: 15px; left: 15px; border-width: var(--hud-border-width) 0 0 var(--hud-border-width); }
+    .hud-corner.top-right { top: 15px; right: 15px; border-width: var(--hud-border-width) var(--hud-border-width) 0 0; }
+    .hud-corner.bottom-left { bottom: 15px; left: 15px; border-width: 0 0 var(--hud-border-width) var(--hud-border-width); }
+    .hud-corner.bottom-right { bottom: 15px; right: 15px; border-width: 0 var(--hud-border-width) var(--hud-border-width) 0; }
+
+    /* Líneas Decorativas */
+    .hud-line {
+      position: absolute;
+      background-color: var(--color-border);
+      box-shadow: 0 0 3px var(--color-border);
+      opacity: 0.5;
+    }
+    .hud-line.top { top: 25px; left: calc(15px + var(--hud-corner-size)); right: calc(15px + var(--hud-corner-size)); height: var(--hud-line-thickness); }
+    .hud-line.bottom { bottom: 25px; left: calc(15px + var(--hud-corner-size)); right: calc(15px + var(--hud-corner-size)); height: var(--hud-line-thickness); }
+    .hud-line.left { left: 25px; top: calc(15px + var(--hud-corner-size)); bottom: calc(15px + var(--hud-corner-size)); width: var(--hud-line-thickness); }
+    .hud-line.right { right: 25px; top: calc(15px + var(--hud-corner-size)); bottom: calc(15px + var(--hud-corner-size)); width: var(--hud-line-thickness); }
+
+    /* Readouts de Información */
+    .hud-readout {
+      position: absolute;
+      font-family: var(--font-main);
+      font-size: 0.75rem;
+      color: var(--color-muted);
+      padding: 5px 10px;
+      background: rgba(var(--color-bg), 0.5); /* Fondo semitransparente */
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border: 1px solid var(--color-border); /* Añadir borde para definir */
+      border-radius: 3px;
+    }
+    .hud-readout span:first-child { color: var(--color-accent); margin-right: 5px;}
+    .hud-readout .hud-ok { color: var(--color-feedback-success); } /* Verde OK */
+    .hud-readout .hud-warning { color: var(--color-feedback-warning); } /* Amarillo Warning */
+    .hud-readout .hud-error { color: var(--color-feedback-error); } /* Rojo Error */
+
+    .top-left-readout { top: 40px; left: 40px; }
+    .top-right-readout { top: 40px; right: 40px; text-align: right;}
+    .bottom-left-readout { bottom: 40px; left: 40px; }
+    .bottom-right-readout { bottom: 40px; right: 40px; text-align: right;}
+
+    /* ============================================================
+       CONTENEDOR PRINCIPAL Y SECCIONES
+       ------------------------------------------------------------
+       Añade padding para que el contenido no quede debajo del HUD fijo.
+    ============================================================ */
+    .main-content-wrapper {
+      position: relative;
+      z-index: 1; /* Encima del video de fondo */
+      padding-top: 100px; /* Espacio para header + HUD top */
+      padding-bottom: 80px; /* Espacio para HUD bottom */
+    }
+
+    /* Estilo base para secciones/paneles */
+    .panel { /* Usamos .panel que ya tenías */
+      padding: 100px 5%; /* Padding lateral responsivo */
+      max-width: 1400px; /* Ancho máximo del contenido */
+      margin-left: auto;
+      margin-right: auto;
+      position: relative; /* Para posibles pseudo-elementos */
+      margin-top: 50px; /* Espacio entre secciones */
+    }
+     .panel:first-of-type {
+         margin-top: 0; /* Sin margen superior para el primer panel */
+     }
+
+
+    /* Añadir un borde sutil o línea superior a cada sección */
+    .panel:not(:first-of-type) {
+       /* border-top: 1px solid var(--color-border); /* Ya hay margen, el borde puede ser excesivo */
+    }
+
+
+    /* Estilo base para cajas de contenido (cards, paneles, etc.) */
+    .content-box {
+      background: var(--color-glass-bg);
+      border: 1px solid var(--color-border);
+      border-radius: 5px;
+      padding: 25px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px); /* Safari */
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      transition: transform var(--transition-medium), box-shadow var(--transition-medium), background-color var(--transition-medium);
+    }
+    .content-box:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3), 0 0 15px var(--color-accent-glow);
+      background-color: hsla(var(--hue), 30%, 15%, 0.3); /* Más opaco en hover */
+    }
+
+    /* ============================================================
+       HEADER MEJORADO (Adaptado de referencia)
+       ------------------------------------------------------------
+       Estilo HUD, controles agrupados.
+    ============================================================ */
+    #mainHeader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 10px 30px; /* Más padding */
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1001; /* Encima del HUD overlay, pero debajo del panel filtro */
+      background: rgba(var(--color-bg), 0.8); /* Fondo más opaco */
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border-bottom: var(--hud-line-thickness) solid var(--color-border);
+      /* Quitando transformación inicial, se controla con JS */
+    }
+
+    .branding a {
+      font-family: var(--font-heading);
+      font-size: 1.5rem;
+      color: var(--color-accent);
+      text-shadow: var(--hud-glow);
+      letter-spacing: 2px;
+      transition: color var(--transition-fast), text-shadow var(--transition-fast);
+    }
+    .branding a:hover {
+      color: var(--color-text);
+      text-shadow: 0 0 10px var(--color-text);
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Estilo Base para Botones HUD */
+    .hud-button {
+      font-family: var(--font-main);
+      padding: 8px 15px;
+      border: 1px solid var(--color-border);
+      background: rgba(var(--color-accent-rgb), 0.1);
+      color: var(--color-accent);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-radius: 3px;
+      transition: background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
+      position: relative;
+      overflow: hidden;
+    }
+    .hud-button:hover {
+      background: var(--color-accent);
+      color: var(--color-bg);
+      box-shadow: var(--hud-glow);
+    }
+    .hud-button.small { padding: 5px 10px; font-size: 0.7rem; }
+    .hud-button.large { padding: 12px 25px; font-size: 1rem; }
+
+    /* Estilo Primario/Destacado para Botones */
+    .hud-button.primary {
+      background: var(--color-accent);
+      color: var(--color-bg);
+      border-color: var(--color-accent);
+      box-shadow: var(--hud-glow);
+    }
+    .hud-button.primary:hover {
+      background: var(--color-accent-dark);
+      box-shadow: 0 0 15px var(--color-accent);
+    }
+
+    /* Efecto Scanline Hover para botones */
+    .hud-button::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -150%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+      transform: skewX(-25deg);
+      transition: left var(--transition-medium) ease-in-out;
+    }
+    .hud-button:hover::after {
+      left: 150%;
+    }
+
+    /* Botón Mute */
+    #volumeControl { display: inline-flex; align-items: center; justify-content: center; padding: 8px; font-size: 1.2rem;} /* Adaptado de #muteButton */
+     #volumeControl i { transition: opacity var(--transition-fast); }
+    #volumeControl .fa-volume-mute { position: absolute; opacity: 0; color: var(--color-feedback-warning); } /* Icono de mute */
+    #volumeControl.muted i:not(.fa-volume-mute) { opacity: 0.3; }
+    #volumeControl.muted .fa-volume-mute { opacity: 1; }
+
+
+    /* Menú Filtro - NUEVO: Estilo Overlay Centrado */
+    .filter-container { position: static; } /* Contenedor ya no necesita ser relativo */
+    .filter-panel {
+      position: fixed; /* Cambiado a fijo */
+      top: 50%;      /* Centrado vertical */
+      left: 50%;     /* Centrado horizontal */
+      width: 90%;    /* Ancho responsivo */
+      max-width: 400px; /* Ancho máximo */
+      max-height: 80vh; /* Altura máxima con scroll */
+      overflow-y: auto; /* Scroll si es necesario */
+      background: rgba(var(--color-bg), 0.95);
+      border: 1px solid var(--color-border);
+      border-radius: 5px;
+      padding: 25px; /* Más padding */
+      z-index: 10001; /* MUY ALTO para estar sobre todo */
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      /* Estado inicial (oculto) */
+      transform: translate(-50%, -50%) scale(0.9); /* Centrado y escalado */
+      opacity: 0;
+      visibility: hidden;
+      transition: transform var(--transition-medium) ease, opacity var(--transition-medium) ease, visibility 0s var(--transition-medium);
+      transform-origin: center center; /* Origen de transformación */
+    }
+    .filter-panel.open {
+      transform: translate(-50%, -50%) scale(1); /* Estado abierto */
+      opacity: 1;
+      visibility: visible;
+      transition: transform var(--transition-medium) ease, opacity var(--transition-medium) ease, visibility 0s 0s;
+    }
+    .filter-panel .navbar-nav { /* Adaptado de Bootstrap nav */
+      display: flex;
+      flex-direction: column;
+      gap: 8px; /* Más espacio */
+    }
+    .filter-panel .nav-link { /* Adaptado de Bootstrap nav */
+      display: block;
+      padding: 10px 15px; /* Padding más grande */
+      color: var(--color-muted);
+      font-size: 1rem; /* Fuente más grande */
+      border-radius: 3px;
+      transition: background var(--transition-fast), color var(--transition-fast);
+      position: relative;
+      overflow: hidden;
+      text-align: center; /* Texto centrado */
+    }
+    .filter-panel .nav-link::before { /* Efecto hover */
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 2px;
+      background: var(--color-accent);
+      transition: width var(--transition-medium) ease;
+    }
+    .filter-panel .nav-link:hover {
+      background: rgba(var(--color-accent-rgb), 0.1);
+      color: var(--color-accent);
+    }
+    .filter-panel .nav-link:hover::before {
+      width: 80%; /* Ancho de la línea en hover */
+    }
+
+    /* Overlay para el menú filtro (fondo oscuro) */
+    .filter-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.8); /* Más oscuro */
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity var(--transition-medium) ease, visibility 0s var(--transition-medium);
+      z-index: 10000; /* Debajo del panel, encima de todo lo demás */
+    }
+    .filter-overlay.open {
+      opacity: 1;
+      visibility: visible;
+      transition: opacity var(--transition-medium) ease, visibility 0s 0s;
+    }
+
+     /* ============================================================
+       TÍTULOS DE SECCIÓN (Adaptados de referencia)
+       ------------------------------------------------------------
+    ============================================================ */
+    .panel-title { /* Usamos .panel-title que ya tenías */
+      font-family: var(--font-heading);
+      font-size: clamp(2rem, 5vw, 3rem); /* Fluido */
+      text-align: center;
+      margin-bottom: 60px;
+      position: relative;
+      display: block; /* O inline-block si prefieres centrar el bloque */
+      color: var(--color-accent);
+      text-shadow: var(--hud-glow);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .panel-title::before, .panel-title::after { /* Líneas decorativas */
+      content: '';
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 2px;
+      background: var(--color-border);
+      width: 50%;
+    }
+    .panel-title::before { top: -15px; width: 25%; }
+    .panel-title::after { bottom: -15px; }
+
+     /* Efecto Glitch para Títulos de Panel */
+    .glitch-text { /* Ya tenías esta clase, adaptar */
+        position: relative;
+        display: inline-block; /* Para que el glitch funcione solo en el texto */
+    }
+    .glitch-text::before,
+    .glitch-text::after {
+      content: attr(data-text);
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      overflow: hidden; background: var(--color-bg); /* Oculta mejor el texto original */
+      color: var(--color-accent); clip-path: inset(0);
+    }
+    .glitch-text::before {
+      left: 2px; text-shadow: -1px 0 red; /* Color diferente para glitch */
+      animation: glitch-anim-1 2s infinite linear alternate-reverse;
+    }
+    .glitch-text::after {
+      left: -2px; text-shadow: -1px 0 blue; /* Otro color */
+      animation: glitch-anim-2 3s infinite linear alternate-reverse;
+    }
+    @keyframes glitch-anim-1 { /* Keyframes simplificados */
+      0%, 100% { clip-path: inset(45% 0 50% 0); } 5% { clip-path: inset(10% 0 85% 0); } 10% { clip-path: inset(90% 0 5% 0); } 15% { clip-path: inset(30% 0 60% 0); } 20% { clip-path: inset(70% 0 10% 0); } 25% { clip-path: inset(50% 0 45% 0); } 30% { clip-path: inset(20% 0 75% 0); } 35% { clip-path: inset(80% 0 15% 0); } 40% { clip-path: inset(40% 0 55% 0); } 45% { clip-path: inset(60% 0 35% 0); } 50% { clip-path: inset(25% 0 70% 0); } 55% { clip-path: inset(85% 0 10% 0); } 60% { clip-path: inset(35% 0 60% 0); } 65% { clip-path: inset(75% 0 20% 0); } 70% { clip-path: inset(48% 0 48% 0); } 75% { clip-path: inset(15% 0 80% 0); } 80% { clip-path: inset(95% 0 2% 0); } 85% { clip-path: inset(33% 0 63% 0); } 90% { clip-path: inset(68% 0 28% 0); } 95% { clip-path: inset(55% 0 40% 0); }
+    }
+    @keyframes glitch-anim-2 { /* Similar pero con diferentes valores */
+      0%, 100% { clip-path: inset(80% 0 15% 0); } 5% { clip-path: inset(30% 0 65% 0); } 10% { clip-path: inset(5% 0 90% 0); } 15% { clip-path: inset(60% 0 30% 0); } 20% { clip-path: inset(10% 0 70% 0); } 25% { clip-path: inset(45% 0 50% 0); } 30% { clip-path: inset(75% 0 20% 0); } 35% { clip-path: inset(20% 0 80% 0); } 40% { clip-path: inset(55% 0 40% 0); } 45% { clip-path: inset(35% 0 60% 0); } 50% { clip-path: inset(70% 0 25% 0); } 55% { clip-path: inset(10% 0 85% 0); } 60% { clip-path: inset(60% 0 33% 0); } 65% { clip-path: inset(20% 0 78% 0); } 70% { clip-path: inset(49% 0 49% 0); } 75% { clip-path: inset(80% 0 18% 0); } 80% { clip-path: inset(2% 0 95% 0); } 85% { clip-path: inset(63% 0 33% 0); } 90% { clip-path: inset(28% 0 68% 0); } 95% { clip-path: inset(40% 0 55% 0); }
+    }
+    @keyframes text-flicker { /* Ajustado para el color de acento */
+      0%, 18%, 22%, 25%, 53%, 57%, 100% { text-shadow: 0 0 8px var(--color-accent-glow), 0 0 15px var(--color-accent-glow), 0 0 25px rgba(var(--color-accent-rgb), 0.3), 0 2px 2px rgba(0,0,0,0.5); }
+      20%, 24%, 55% { text-shadow: none; }
+    }
+
+
+    /* --- PANEL 1: Proyectos --- */
+    .projects-grid {
+      display: grid;
+      gap: 25px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Ajustado tamaño mínimo */
+    }
+    .project-card { /* Ya tenías esta clase, le añadimos content-box y hover */
+      display: flex;
+      flex-direction: column;
+      transition: transform var(--transition-medium), box-shadow var(--transition-medium), background-color var(--transition-medium);
+      cursor: pointer; /* Indicar que es clickeable */
+      position: relative; /* Para el hover */
+      overflow: hidden; /* Para efectos internos */
+    }
+     .project-card:hover {
+         transform: translateY(-8px); /* Efecto hover más pronunciado */
+         box-shadow: 0 12px 20px rgba(0,0,0,0.4), 0 0 18px var(--color-accent-glow);
+         background-color: hsla(var(--hue), 30%, 15%, 0.4); /* Más opaco */
+     }
+
+    .project-image-container {
+        position: relative;
+        width: 100%;
+        padding-top: 56.25%; /* 16:9 Aspect Ratio */
+        overflow: hidden;
+    }
+
+    .project-portada, .project-gif {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: opacity var(--transition-medium) ease-in-out;
+    }
+
+    .project-gif {
+        opacity: 0; /* GIF oculto inicialmente */
+    }
+
+     .project-card:hover .project-portada {
+        opacity: 0; /* Ocultar portada en hover */
+     }
+     .project-card:hover .project-gif {
+        opacity: 1; /* Mostrar GIF en hover */
+     }
+
+    .project-card-content {
+      padding: 15px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .project-card-content h3 {
+      font-size: 1.1rem;
+      color: var(--color-accent);
+      margin-bottom: 8px;
+    }
+
+    .project-card-content p {
+      font-size: 0.9rem;
+      color: var(--color-muted);
+      margin-bottom: 10px;
+    }
+
+    /* Progress Bar - Adaptado de Skills */
+    .progress-bar-container {
+      background: rgba(var(--color-accent-rgb), 0.1);
+      height: 6px;
+      border-radius: 3px;
+      margin-top: 10px;
+      overflow: hidden;
+      border: 1px solid var(--color-border);
+      position: relative; /* Para texto de porcentaje */
+    }
+    .progress-fill { /* Renombrado de .progress-bar-fill a .progress-fill */
+      height: 100%;
+      background: var(--color-accent);
+      width: 0%; /* Animado por JS */
+      transition: width 1.5s ease-out; /* Transición más larga */
+      box-shadow: var(--hud-glow);
+    }
+    /* Opcional: Texto de porcentaje sobre la barra */
+     .progress-bar-container::after {
+         content: attr(data-label); /* O usar JS para poner el porcentaje */
+         position: absolute;
+         top: -18px; /* Ajustar posición */
+         right: 0;
+         font-size: 0.7rem;
+         color: var(--color-muted);
+         font-family: var(--font-main);
+     }
+
+
+    /* --- PANEL 2: Análisis --- */
+    .analytics-container {
+        display: grid;
+        gap: 30px;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        align-items: center;
+    }
+    .chart-container {
+        min-height: 250px; /* Asegurar altura mínima para el canvas */
+         position: relative; /* Para que el canvas tenga tamaño */
+         background: rgba(var(--color-bg), 0.7); /* Fondo para el gráfico */
+         padding: 15px; /* Añadir padding */
+         border: 1px solid var(--color-border);
+         border-radius: 5px;
+         box-shadow: inset 0 0 10px rgba(var(--color-accent-rgb), 0.1);
+    }
+
+    .data-table-container {
+        background: var(--color-glass-bg);
+        border: 1px solid var(--color-border);
+        border-radius: 5px;
+        padding: 20px;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    .data-table th, .data-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px dashed var(--color-border);
+    }
+     .data-table th {
+         color: var(--color-accent);
+         font-family: var(--font-heading);
+         text-transform: uppercase;
+         letter-spacing: 1px;
+         font-size: 1rem;
+         background: rgba(var(--color-accent-rgb), 0.05);
+     }
+     .data-table td {
+         color: var(--color-text);
+     }
+     .data-table tbody tr:last-child td {
+         border-bottom: none;
+     }
+     .data-table td span[id] { /* Estilo para valores dinámicos */
+        color: var(--color-accent);
+        font-weight: bold;
+     }
+
+
+    /* --- PANEL 3: Sistema --- */
+    .system-data {
+        display: grid;
+        gap: 30px;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        align-items: center;
+    }
+     .system-data .data-panel { /* Aplicar content-box */
+         background: var(--color-glass-bg);
+         border: 1px solid var(--color-border);
+         border-radius: 5px;
+         padding: 20px;
+         backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+         box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+     }
+     .system-data .data-panel h4 {
+         font-size: 1.1rem;
+         color: var(--color-accent);
+         margin-bottom: 15px;
+         border-bottom: 1px dashed var(--color-border);
+         padding-bottom: 10px;
+     }
+     .system-data .data-panel h4 i {
+         margin-right: 8px;
+         color: var(--color-text);
+     }
+     .system-data .data-panel p {
+         font-size: 0.9rem;
+         color: var(--color-muted);
+         margin-bottom: 8px;
+     }
+     .system-data .data-panel p span:first-child {
+         color: var(--color-text);
+         font-weight: bold;
+         margin-right: 5px;
+     }
+     .system-data .system-graph-container { /* Similar a chart-container */
+         min-height: 250px;
+         position: relative;
+         background: rgba(var(--color-bg), 0.7);
+         padding: 15px;
+         border: 1px solid var(--color-border);
+         border-radius: 5px;
+         box-shadow: inset 0 0 10px rgba(var(--color-accent-rgb), 0.1);
+     }
+
+
+    /* --- PANEL 4: Beta Testing --- */
+    .beta-testing {
+      display: grid;
+      gap: 25px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Igual que proyectos */
+    }
+    .beta-project { /* Usamos .beta-project que ya tenías, le añadimos content-box y hover */
+      display: flex;
+      flex-direction: column;
+      transition: transform var(--transition-medium), box-shadow var(--transition-medium), background-color var(--transition-medium);
+      cursor: pointer; /* Indicar que es clickeable */
+      position: relative; /* Para el hover */
+      overflow: hidden; /* Para efectos internos */
+    }
+     .beta-project:hover { /* Mismo hover que project-card */
+         transform: translateY(-8px);
+         box-shadow: 0 12px 20px rgba(0,0,0,0.4), 0 0 18px var(--color-accent-glow);
+         background-color: hsla(var(--hue), 30%, 15%, 0.4);
+     }
+
+    /* Reutilizar estilos de .project-card para imágenes, contenido y barra de progreso */
+    .beta-project .project-image-container,
+    .beta-project .project-portada,
+    .beta-project .project-gif,
+    .beta-project .project-card-content,
+    .beta-project .project-card-content h3,
+    .beta-project .project-card-content p,
+    .beta-project .progress-bar-container,
+    .beta-project .progress-fill {
+        /* Simplemente heredar o reutilizar los estilos de .project-card */
+        /* Asegurarse de que las selectores son lo suficientemente específicos si es necesario */
+    }
+    /* Si las imágenes tienen data-src, el lazy loading se aplicará */
+
+
+    /* ============================================================
+       MODAL DETALLE PROYECTO (Adaptado de referencia)
+       ------------------------------------------------------------
+    ============================================================ */
+    .modal-proyecto { /* Usamos .modal-proyecto que ya tenías */
+      display: none; /* Controlado por JS */
+      position: fixed;
+      z-index: 10002; /* Encima del panel de filtro */
+      left: 0; top: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      align-items: center; justify-content: center; /* Centrar con flex */
+      padding: 20px; /* Padding para evitar que el modal toque los bordes */
+      overflow-y: auto; /* Scroll si el contenido es muy largo */
+    }
+    .modal-proyecto.open { display: flex; } /* Mostrar con flex */
+    .modal-proyecto .modal-content { /* Usamos .modal-content que ya tenías */
+      position: relative;
+      padding: 30px; /* Más padding */
+      width: 100%;
+      max-width: 900px; /* Ancho máximo más grande */
+      height: 90vh; /* Altura fija para el modal */
+      display: flex; /* Para organizar header, body */
+      flex-direction: column;
+      border-radius: 5px;
+      animation: modal-fadein var(--transition-medium) ease forwards;
+       /* Asegurar que hereda el estilo de content-box si no se aplica explícitamente */
+       background: var(--color-glass-bg);
+       border: 1px solid var(--color-border);
+       backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+       box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+     @keyframes modal-fadein {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-proyecto .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px dashed var(--color-border);
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+    .modal-proyecto .modal-header h2 {
+        margin: 0; /* Quitar margen del h2 */
+        font-size: 1.6rem;
+    }
+
+    .modal-proyecto .close-modal { /* Usamos .close-modal que ya tenías */
+      position: static; /* No fijo dentro del header */
+      font-size: 2rem;
+      color: var(--color-muted);
+      cursor: pointer;
+      transition: color var(--transition-fast);
+      line-height: 1;
+      z-index: 1;
+       padding: 5px; /* Área de click más grande */
+    }
+    .modal-proyecto .close-modal:hover { color: var(--color-accent); }
+
+    .modal-proyecto .modal-body {
+        display: flex;
+        flex-grow: 1; /* Ocupa el espacio restante */
+        overflow: hidden; /* Para que el contenido de las pestañas no se desborde */
+    }
+
+    /* Pestañas Verticales */
+    .modal-tabs { /* Usamos .modal-tabs que ya tenías */
+        display: flex;
+        flex-direction: column;
+        width: 180px; /* Ancho fijo para las pestañas */
+        border-right: 1px dashed var(--color-border);
+        padding-right: 15px;
+        flex-shrink: 0; /* No se encoge */
+         overflow-y: auto; /* Scroll si hay muchas pestañas */
+    }
+
+    .modal-tabs .tab-link { /* Usamos .tab-link que ya tenías */
+        display: flex;
+        align-items: center;
+        padding: 10px 0;
+        margin-bottom: 5px;
+        font-size: 0.9rem;
+        color: var(--color-muted);
+        transition: color var(--transition-fast), background-color var(--transition-fast);
+        position: relative;
+        overflow: hidden;
+        background: none; /* Reset */
+        border: none; /* Reset */
+        text-align: left; /* Alinear texto a la izquierda */
+    }
+
+     .modal-tabs .tab-link i {
+         margin-right: 10px;
+         color: var(--color-border); /* Icono de color muted */
+         transition: color var(--transition-fast);
+     }
+
+    .modal-tabs .tab-link:hover,
+    .modal-tabs .tab-link.active {
+        color: var(--color-accent);
+    }
+     .modal-tabs .tab-link.active i {
+         color: var(--color-accent); /* Icono activo */
+     }
+
+    /* Indicador activo de pestaña */
+    .modal-tabs .tab-link.active::before {
+        content: '';
+        position: absolute;
+        left: -15px; /* Posición para el indicador */
+        top: 50%;
+        transform: translateY(-50%);
+        width: 5px;
+        height: 100%; /* Altura completa del botón */
+        background: var(--color-accent);
+        box-shadow: 0 0 8px var(--color-accent-glow);
+    }
+
+    /* Contenedor del Contenido de las Pestañas */
+    .tab-content-container { /* Usamos .tab-content-container que ya tenías */
+        flex-grow: 1; /* Ocupa el espacio restante */
+        padding-left: 20px;
+        overflow-y: auto; /* Scroll para el contenido de la pestaña activa */
+    }
+
+    .tab-pane { /* Usamos .tab-pane que ya tenías */
+        display: none; /* Oculto por defecto */
+        /* Animación simple al mostrar */
+        opacity: 0;
+        transform: translateX(10px);
+        transition: opacity var(--transition-medium) ease-in-out, transform var(--transition-medium) ease-in-out;
+    }
+    .tab-pane.active {
+        display: block; /* Mostrar el activo */
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .tab-pane h3 {
+        font-size: 1.4rem;
+        color: var(--color-text); /* Títulos dentro de la pestaña */
+        margin-bottom: 15px;
+        border-bottom: 1px dotted var(--color-border);
+        padding-bottom: 8px;
+    }
+
+    .tab-pane p {
+        font-size: 0.95rem;
+        color: var(--color-muted);
+        line-height: 1.6;
+        margin-bottom: 15px;
+    }
+
+    /* Contenido específico del modal (ejemplos de listas, tablas, etc.) */
+    .tab-pane ul {
+        list-style: disc;
+        padding-left: 20px;
+        margin-bottom: 15px;
+        color: var(--color-muted);
+    }
+    .tab-pane ul li {
+        margin-bottom: 5px;
+        line-height: 1.5;
+    }
+    .tab-pane ul li strong {
+        color: var(--color-text);
+    }
+
+    #chartProyecto {
+        max-height: 250px; /* Controlar tamaño del gráfico */
+        margin-bottom: 15px;
+         background: rgba(var(--color-bg), 0.5); /* Fondo para el gráfico */
+         padding: 10px;
+         border-radius: 5px;
+    }
+
+    /* Comentarios */
+    #comLista {
+        border: 1px solid var(--color-border);
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
+        max-height: 200px; /* Altura fija con scroll */
+        overflow-y: auto;
+        background: rgba(var(--color-bg), 0.3);
+    }
+    .modal-comment { /* Clase para cada comentario */
+        border-bottom: 1px dashed rgba(var(--color-accent-rgb), 0.1);
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+        font-size: 0.9rem;
+    }
+     .modal-comment:last-child { border-bottom: none; margin-bottom: 0; }
+    .modal-comment .author { font-weight: bold; color: var(--color-accent); margin-right: 10px; }
+    .modal-comment .timestamp { font-size: 0.8em; color: var(--color-muted); }
+    .modal-comment .text { display: block; margin-top: 5px; color: var(--color-text); }
+
+
+    #comInput {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--color-border);
+        border-radius: 3px;
+        background: rgba(var(--color-bg), 0.8);
+        color: var(--color-text);
+        font-family: var(--font-main);
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+        resize: vertical; /* Permitir redimensionar verticalmente */
+    }
+    #comInput::placeholder {
+        color: var(--color-muted);
+    }
+     #comSubmitBtn {
+         display: inline-flex;
+         align-items: center;
+         justify-content: center;
+         padding: 8px 15px;
+         background: var(--color-accent);
+         color: var(--color-bg);
+         border-color: var(--color-accent);
+         border-radius: 3px;
+         cursor: pointer;
+         transition: background var(--transition-fast);
+         font-size: 0.9rem;
+     }
+     #comSubmitBtn i { margin-right: 5px; }
+     #comSubmitBtn:hover { background: var(--color-accent-dark); }
+
+    /* Prototipo iframe */
+    #proIframe {
+        width: 100%;
+        height: 400px; /* Altura por defecto */
+        border: 1px solid var(--color-border);
+        border-radius: 5px;
+        margin-bottom: 15px;
+        background: rgba(var(--color-bg), 0.5);
+    }
+
+     /* Estado de Carga (Skeleton) - Adaptado de referencia */
+     .loading-state {
+         padding: 20px;
+         border: 1px dashed var(--color-border);
+         border-radius: 5px;
+         margin: 20px 0;
+         background: rgba(var(--color-bg), 0.5);
+         display: none; /* Oculto por defecto, mostrado por JS */
+     }
+
+     .loading-state.active {
+         display: block;
+     }
+
+    .skeleton {
+      animation: pulse 1.5s ease-in-out infinite;
+      background-color: rgba(var(--color-accent-rgb), 0.1);
+      border-radius: 4px;
+    }
+
+    .skeleton-title { height: 20px; margin-bottom: 15px; }
+    .skeleton-text { height: 15px; width: 95%; margin-bottom: 10px; }
+    .skeleton-text.short { width: 50%; }
+    .skeleton-list-item { height: 15px; width: 70%; margin: 10px 0;}
+     .skeleton-block { height: 100px; margin-bottom: 15px; }
+
+    @keyframes pulse {
+      0% { background-color: rgba(var(--color-accent-rgb), 0.1); }
+      50% { background-color: rgba(var(--color-accent-rgb), 0.2); }
+      100% { background-color: rgba(var(--color-accent-rgb), 0.1); }
+    }
+
+
+    /* ============================================================
+       ANIMACIÓN REVEAL (Scroll)
+       ------------------------------------------------------------
+    ============================================================ */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px); /* Un poco más de desplazamiento */
+      transition: opacity 0.8s cubic-bezier(0.645, 0.045, 0.355, 1), /* Ease-in-out */
+                  transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ============================================================
+       MEDIA QUERIES (Responsividad)
+       ------------------------------------------------------------
+       Ajustes para tablets y móviles.
+    ============================================================ */
+    @media (max-width: var(--tablet-break)) {
+      html { font-size: 15px; } /* Ajustar base */
+      .hud-readout { font-size: 0.7rem; padding: 4px 8px; }
+      .top-left-readout { top: 70px; left: 15px; } /* Reposicionar readouts */
+      .top-right-readout { top: 70px; right: 15px; }
+      .bottom-left-readout { bottom: 60px; left: 15px; }
+      .bottom-right-readout { bottom: 60px; right: 15px; }
+      .panel { padding: 80px 4%; }
+      .main-content-wrapper { padding-top: 80px; padding-bottom: 60px; }
+      #mainHeader { padding: 10px 20px; }
+       .panel-title { margin-bottom: 40px; }
+       .analytics-container, .system-data { grid-template-columns: 1fr; } /* Apilar en tablet */
+       .data-table th, .data-table td { padding: 8px; }
+       .modal-proyecto .modal-content { max-width: 600px; } /* Reducir tamaño modal en tablet */
+    }
+
+    @media (max-width: var(--mobile-break)) {
+      html { font-size: 14px; }
+      body { cursor: default; } /* Quitar cursor custom en móvil */
+      .hud-corner { display: none; } /* Ocultar esquinas */
+      .hud-line { display: none; } /* Ocultar líneas */
+      .hud-readout { display: none; } /* Ocultar readouts */
+      .main-content-wrapper { padding-top: 70px; padding-bottom: 20px; } /* Menos padding */
+      #mainHeader { padding: 8px 15px; }
+      .branding a { font-size: 1.3rem; }
+      .header-controls { gap: 5px; }
+      .hud-button { padding: 6px 10px; font-size: 0.7rem; }
+      #volumeControl { padding: 6px; font-size: 1rem;}
+      .filter-panel { width: 85%; max-width: 300px; max-height: 70vh;} /* Ajuste panel filtro movil */
+      .panel { padding: 60px 5%; }
+      .projects-grid, .beta-testing { grid-template-columns: 1fr; gap: 20px; } /* Una columna */
+      .project-card-content h3 { font-size: 1rem; }
+      .project-card-content p { font-size: 0.85rem; }
+      .modal-proyecto .modal-content {
+          height: 95vh; /* Ocupar más altura en móvil */
+          max-width: 95%; /* Usar más ancho */
+          padding: 20px;
+      }
+       .modal-proyecto .modal-header { padding-bottom: 10px; margin-bottom: 15px; }
+       .modal-proyecto .modal-header h2 { font-size: 1.3rem; }
+       .modal-tabs {
+           flex-direction: row; /* Pestañas horizontales en móvil */
+           width: 100%;
+           border-right: none;
+           border-bottom: 1px dashed var(--color-border);
+           padding-right: 0;
+           padding-bottom: 10px;
+           margin-bottom: 15px;
+           overflow-x: auto; /* Scroll horizontal si muchas pestañas */
+           overflow-y: hidden;
+           justify-content: space-between; /* Espaciar pestañas */
+           white-space: nowrap; /* Evitar salto de línea */
+       }
+       .modal-tabs .tab-link {
+           padding: 5px 10px;
+           margin-bottom: 0;
+           font-size: 0.8rem;
+           flex-direction: column; /* Icono y texto apilados */
+       }
+        .modal-tabs .tab-link i { margin-right: 0; margin-bottom: 5px; }
+        .modal-tabs .tab-link.active::before {
+             width: 100%; /* Ancho completo */
+             height: 3px; /* Altura pequeña */
+             left: 0; /* Desde la izquierda */
+             bottom: 0; /* En la parte inferior */
+             top: auto; /* Reset top */
+             transform: none; /* Reset transform */
+             border-radius: 3px 3px 0 0;
+        }
+        .tab-content-container { padding-left: 0; } /* Quitar padding lateral */
+        .tab-pane h3 { font-size: 1.2rem; margin-bottom: 10px; }
+        .tab-pane p { font-size: 0.9rem; margin-bottom: 10px; }
+        #comLista { max-height: 150px; }
+        #proIframe { height: 300px; }
+        .data-table th, .data-table td { font-size: 0.8rem; padding: 6px;}
+        .data-table th { font-size: 0.9rem; }
+    }
+
+  </style>
+
+</head>
+<body>
+
+  <!-- ============================================================
+       PANTALLA DE CARGA AVANZADA (Tomado de referencia)
+       ------------------------------------------------------------
+       Nuevo diseño con efectos visuales y sonoros.
+  ============================================================ -->
+  <div class="loader-overlay active" id="loaderOverlay">
+    <div class="loader-hud-border"></div>
+    <div class="loader-scanline"></div>
+    <div class="loader-content">
+      <div class="loader-logo">[ CYBERLAB_INIT ]</div> <!-- Texto adaptado -->
+      <div class="loader-text" id="loaderText">INITIATING SYSTEM...</div>
+      <div class="loader-bar-container">
+        <div class="loader-bar" id="loaderBar"></div>
+      </div>
+      <div class="loader-percentage" id="loaderPercentage">0%</div>
+      <div class="loader-subtext" id="loaderSubtext">Loading core modules...</div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       ELEMENTOS DEL HUD (Heads-Up Display) (Tomado de referencia)
+       ------------------------------------------------------------
+       Capas visuales fijas para dar la sensación de interfaz.
+  ============================================================ -->
+  <div class="hud-overlay">
+    <!-- Esquinas Decorativas -->
+    <div class="hud-corner top-left"></div>
+    <div class="hud-corner top-right"></div>
+    <div class="hud-corner bottom-left"></div>
+    <div class="hud-corner bottom-right"></div>
+
+    <!-- Líneas Decorativas -->
+    <div class="hud-line top"></div>
+    <div class="hud-line bottom"></div>
+    <div class="hud-line left"></div>
+    <div class="hud-line right"></div>
+
+    <!-- Readouts de Información (Ejemplos) -->
+    <div class="hud-readout top-left-readout">
+      <span>SYS_STATUS:</span> <span class="hud-ok">ONLINE</span>
+    </div>
+    <div class="hud-readout top-right-readout" id="hudClock">
+      --:--:--
+    </div>
+    <div class="hud-readout bottom-left-readout">
+       <span>DASH_VER:</span> 2.0
+    </div>
+    <div class="hud-readout bottom-right-readout" id="hudScrollIndicator">
+      <span>SCROLL:</span> 0%
+    </div>
+  </div>
+
+  <!-- ============================================================
+       CONTENEDOR PRINCIPAL DEL CONTENIDO (Envuelve tu dashboard-container)
+       ------------------------------------------------------------
+  ============================================================ -->
+  <div class="main-content-wrapper" id="mainContent">
+
+    <!-- Header Mejorado (Reemplaza tu Navbar) -->
+    <header id="mainHeader">
+      <div class="branding">
+        <a href="../Menu.html" class="glitch-text" data-text="CyberLab">CyberLab</a> <!-- Enlace y glitch existentes -->
+      </div>
+
+      <div class="header-controls">
+         <!-- Botón Mute (Adaptado de referencia) -->
+         <a href="#" class="hud-button" id="volumeControl" title="Control de Volumen">
+            <i class="fas fa-volume-up"></i>
+            <i class="fas fa-volume-mute"></i> <!-- Icono de mute -->
+         </a>
+
+         <!-- Menú Filtro con Estilo HUD (Reemplaza la lista de navegación directa) -->
+         <div class="filter-container">
+           <button class="hud-button filter-btn" id="filter-btn" aria-label="Abrir menú de navegación">
+             NAV_MENU
+           </button>
+           <!-- El panel es ahora 'fixed' y se controla con JS -->
+         </div>
+      </div>
+    </header>
+
+     <!-- PANEL DE FILTRO (Overlay Centrado) (Tomado de referencia) -->
+    <div class="filter-panel" id="filter-panel">
+        <!-- Contenido del menú (los links de tu navbar principal) -->
+        <ul class="navbar-nav">
+           <li><a class="nav-link" href="#panel1">Proyectos</a></li>
+           <li><a class="nav-link" href="#panel2">Análisis</a></li>
+           <li><a class="nav-link" href="#panel3">Sistema</a></li>
+           <li><a class="nav-link" href="#panel4">Beta Tests</a></li>
+           <!-- Añadir más enlaces si tuvieras (ej: inicio, contacto, etc. como en referencia) -->
+           <!-- <li><a class="nav-link" href="../Menu.html">Menú Principal</a></li>  Opcional -->
+        </ul>
+      </div>
+
+    <!-- Overlay para el menú filtro (fondo oscuro) (Tomado de referencia) -->
+    <div class="filter-overlay" id="filterOverlay"></div>
+
+
+    <!-- DASHBOARD CONTAINER (Tu contenido principal) -->
+    <div class="dashboard-container">
+
+      <!-- PANEL 1: Proyectos -->
+      <section id="panel1" class="panel reveal"> <!-- Añadido .panel, .reveal -->
+        <h2 class="panel-title glitch-text" data-text="Proyectos en Progreso">Proyectos en Progreso</h2>
+        <div class="projects-grid">
+          <!-- Tarjeta Proyecto Ejemplo (Añadido .content-box) -->
+          <div class="project-card content-box" data-project="Nexus">
+            <div class="project-image-container">
+              <!-- Usamos data-src para lazy loading -->
+              <img class="project-portada" data-src="https://i.pinimg.com/736x/c9/3d/88/c93d88b5f29c00ee90a1f16cd8e26609.jpg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Portada Proyecto Nexus" loading="lazy">
+              <img class="project-gif" data-src="https://media.giphy.com/media/VbnUQpnihPSIgIXuZv/giphy.gif" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Gif Proyecto Nexus" loading="lazy">
+            </div>
+            <div class="project-card-content">
+              <h3>Proyecto Nexus</h3>
+              <p>Estado: Desarrollo Alfa</p>
+              <div class="progress-bar-container">
+                <div class="progress-fill" data-progress="45"></div> <!-- data-progress para JS -->
+              </div>
+            </div>
+          </div>
+           <div class="project-card content-box" data-project="QuantumLeap">
+            <div class="project-image-container">
+              <img class="project-portada" data-src="https://i.pinimg.com/736x/3b/05/7f/3b057f3b20c81d295cc2f4b359f695ea.jpg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Portada Quantum Leap AI" loading="lazy">
+              <img class="project-gif" data-src="https://media.giphy.com/media/l41lGnxllmN3YqOyI/giphy.gif" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Gif Quantum Leap AI" loading="lazy">
+            </div>
+            <div class="project-card-content">
+              <h3>Quantum Leap AI</h3>
+              <p>Estado: Optimización Beta</p>
+              <div class="progress-bar-container">
+                <div class="progress-fill" data-progress="60"></div>
+              </div>
+            </div>
+          </div>
+           <div class="project-card content-box" data-project="TitanProtocol">
+            <div class="project-image-container">
+              <img class="project-portada" data-src="https://i.pinimg.com/736x/ed/3a/fc/ed3afc8254a0d8c4c2c45d8db8773e6c.jpg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Portada Titan Protocol" loading="lazy">
+              <img class="project-gif" data-src="https://media.giphy.com/media/l41lGnxllmN3YqOyI/giphy.gif" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Gif Titan Protocol" loading="lazy">
+            </div>
+            <div class="project-card-content">
+              <h3>Titan Protocol</h3>
+              <p>Estado: Diseño UI</p>
+              <div class="progress-bar-container">
+                <div class="progress-fill" data-progress="30"></div>
+              </div>
+            </div>
+          </div>
+           <div class="project-card content-box" data-project="AetherNetwork">
+            <div class="project-image-container">
+              <img class="project-portada" data-src="https://i.pinimg.com/736x/1e/f8/fa/1ef8fa667ab0de78c48a21951be9d99a.jpg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Portada Aether Network" loading="lazy">
+              <img class="project-gif" data-src="https://media.giphy.com/media/l41lGnxllmN3YqOyI/giphy.gif" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Gif Aether Network" loading="lazy">
+            </div>
+            <div class="project-card-content">
+              <h3>Aether Network</h3>
+              <p>Estado: Despliegue Inminente</p>
+              <div class="progress-bar-container">
+                <div class="progress-fill" data-progress="80"></div>
+              </div>
+            </div>
+          </div>
+          <div class="project-card content-box" data-project="Chimera">
+            <div class="project-image-container">
+              <img class="project-portada" data-src="https://i.pinimg.com/736x/7d/54/f0/7d54f0f2323f539d580cf13078462648.jpg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Portada Project Chimera" loading="lazy">
+              <img class="project-gif" data-src="https://media.giphy.com/media/l41lGnxllmN3YqOyI/giphy.gif" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Gif Project Chimera" loading="lazy">
+            </div>
+            <div class="project-card-content">
+              <h3>Project Chimera</h3>
+              <p>Estado: Feedback UI/UX</p>
+              <div class="progress-bar-container">
+                <div class="progress-fill" data-progress="50"></div>
+              </div>
+            </div>
+          </div>
+          <div class="project-card content-box" data-project="Stealth">
+            <div class="project-image-container">
+              <img class="project-portada" data-src="https://i.pinimg.com/736x/95/fd/07/95fd07104c3665c009f97b2772caf6b7.jpg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Portada Stealth Protocol" loading="lazy">
+              <img class="project-gif" data-src="https://media.giphy.com/media/l41lGnxllmN3YqOyI/giphy.gif" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Gif Stealth Protocol" loading="lazy">
+            </div>
+            <div class="project-card-content">
+              <h3>Stealth Protocol</h3>
+              <p>Estado: Pruebas de Estrés</p>
+              <div class="progress-bar-container">
+                <div class="progress-fill" data-progress="70"></div>
+              </div>
+            </div>
+          </div>
+          <div class="project-card content-box" data-project="Helios">
+            <div class="project-image-container">
+              <img class="project-portada" data-src="https://i.pinimg.com/736x/53/a1/25/53a125f83bb386fe6343587e00915d98.jpg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Portada Helios Framework" loading="lazy">
+              <img class="project-gif" data-src="https://media.giphy.com/media/l41lGnxllmN3YqOyI/giphy.gif" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Gif Helios Framework" loading="lazy">
+            </div>
+            <div class="project-card-content">
+              <h3>Helios Framework</h3>
+              <p>Estado: Integración API</p>
+              <div class="progress-bar-container">
+                <div class="progress-fill" data-progress="40"></div>
+              </div>
+            </div>
+          </div>
+          <div class="project-card content-box" data-project="Synapse">
+            <div class="project-image-container">
+              <img class="project-portada" data-src="https://i.pinimg.com/474x/d8/44/8f/d8448f7fd7e6bb2177a3f35856bcde8d.jpg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Portada Synapse Link" loading="lazy">
+              <img class="project-gif" data-src="https://media.giphy.com/media/l41lGnxllmN3YqOyI/giphy.gif" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Gif Synapse Link" loading="lazy">
+            </div>
+            <div class="project-card-content">
+              <h3>Synapse Link</h3>
+              <p>Estado: Lanzamiento RC</p>
+              <div class="progress-bar-container">
+                <div class="progress-fill" data-progress="55"></div>
+              </div>
+            </div>
+          </div>
+          <div class="project-card content-box" data-project="Warden">
+            <div class="project-image-container">
+              <img class="project-portada" data-src="https://i.pinimg.com/474x/0f/2c/2c/0f2c2c06f7fdf767e5725e1f403bdf04.jpg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Portada Warden Security" loading="lazy">
+              <img class="project-gif" data-src="https://media.giphy.com/media/l41lGnxllmN3YqOyI/giphy.gif" src="data:image/gif;base64,R0lGODAQAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Gif Warden Security" loading="lazy">
+            </div>
+            <div class="project-card-content">
+              <h3>Warden Security</h3>
+              <p>Estado: Auditoría Externa</p>
+              <div class="progress-bar-container">
+                <div class="progress-fill" data-progress="85"></div>
+              </div>
+            </div>
+          </div>
+          <div class="project-card content-box" data-project="NovaCore">
+            <div class="project-image-container">
+              <img class="project-portada" data-src="https://i.pinimg.com/474x/d0/ae/4a/d0ae4aae65a7d80f633a8113ba092844.jpg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Portada Nova Core" loading="lazy">
+              <img class="project-gif" data-src="https://media.giphy.com/media/l41lGnxllmN3YqOyI/giphy.gif" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Gif Nova Core" loading="lazy">
+            </div>
+            <div class="project-card-content">
+              <h3>Nova Core</h3>
+              <p>Estado: Producción</p>
+              <div class="progress-bar-container">
+                <div class="progress-fill" data-progress="95"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PANEL 2: Análisis -->
+      <section id="panel2" class="panel reveal"> <!-- Añadido .panel, .reveal -->
+        <h2 class="panel-title glitch-text" data-text="Análisis de Datos">Análisis de Datos</h2>
+        <div class="analytics-container">
+          <div class="chart-container">
+            <canvas id="chart1"></canvas>
+          </div>
+          <div class="data-table-container"> <!-- Añadido .content-box si quieres estilo en tabla -->
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Métrica Clave</th>
+                  <th>Valor Actual</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Rendimiento Global</td>
+                  <td><span class="glitch-text" data-text="Óptimo">Óptimo</span></td>
+                </tr>
+                <tr>
+                  <td>Latencia Promedio</td>
+                  <td><span id="analisis-latencia">--</span> ms</td> <!-- Placeholder inicial -->
+                </tr>
+                 <tr>
+                  <td>Carga de Red</td>
+                  <td><span id="analisis-red">--</span>%</td> <!-- Placeholder inicial -->
+                </tr>
+                <tr>
+                  <td>Proyectos Activos</td>
+                  <td>10</td>
+                </tr>
+                 <tr>
+                  <td>Anomalías Detectadas</td>
+                  <td style="color: var(--color-feedback-error);"><span id="analisis-anomalias">--</span></td> <!-- Usar variable CSS -->
+                </tr>
+                 <tr>
+                    <td>Uptime Últimas 24h</td>
+                    <td>99.98%</td>
+                 </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- PANEL 3: Sistema -->
+      <section id="panel3" class="panel reveal"> <!-- Añadido .panel, .reveal -->
+        <h2 class="panel-title glitch-text" data-text="Estado del Sistema">Estado del Sistema</h2>
+        <div class="system-data">
+          <div class="data-panel"> <!-- Añadido .content-box si quieres estilo aquí -->
+              <h4><i class="fas fa-server"></i>Núcleo Computacional</h4>
+              <p><span>CPU Load:</span> <span id="cpu-load">-- %</span></p> <!-- Placeholder inicial -->
+              <p><span>Memoria RAM:</span> <span id="ram-usage">-- GB / -- GB</span></p> <!-- Placeholder inicial -->
+              <p><span>Temp. CPU:</span> <span id="cpu-temp">-- °C</span></p> <!-- Placeholder inicial -->
+              <p><span>Almacenamiento SSD:</span> <span id="disk-usage">-- GB / -- TB</span></p> <!-- Placeholder inicial -->
+          </div>
+          <div class="system-graph-container">
+              <canvas id="systemChart"></canvas>
+          </div>
+           <div class="data-panel"> <!-- Añadido .content-box si quieres estilo aquí -->
+               <h4><i class="fas fa-network-wired"></i>Conectividad</h4>
+               <p><span>Ping Global:</span> <span id="ping">-- ms</span></p> <!-- Placeholder inicial -->
+               <p><span>Ancho de Banda:</span> <span id="bandwidth">-- Gbps</span></p> <!-- Placeholder inicial -->
+               <p><span>Conexiones Activas:</span> <span id="connections">--</span></p> <!-- Placeholder inicial -->
+               <p><span>Estado Firewall:</span> <span style="color: var(--color-feedback-success);">Activo</span></p> <!-- Usar variable CSS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- PANEL 4: Beta Testing -->
+      <section id="panel4" class="panel reveal"> <!-- Añadido .panel, .reveal -->
+        <h2 class="panel-title glitch-text" data-text="Pruebas Beta Activas">Pruebas Beta Activas</h2>
+        <div class="beta-testing">
+          <!-- Items Beta Test (Añadido .content-box) -->
+          <div class="beta-project content-box" data-project="Chimera">
+             <div class="project-image-container">
+              <img class="project-portada" data-src="https://i.pinimg.com/474x/a9/0b/11/a90b11a39d73ad4ee8d5da33d7ea7371.jpg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Portada Beta Chimera" loading="lazy">
+              <img class="project-gif" data-src="https://media.giphy.com/media/3o7TKS6AWgP3Q1jKog/giphy.gif" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Gif Beta Chimera" loading="lazy">
+            </div>
+            <div class="project-card-content">
+              <h3>Proyecto Chimera</h3>
+              <p>Fase Beta: Feedback UI/UX</p>
+              <div class="progress-bar-container">
+                <div class="progress-fill" data-progress="75"></div>
+              </div>
+            </div>
+          </div>
+           <div class="beta-project content-box" data-project="Stealth">
+             <div class="project-image-container">
+              <img class="project-portada" data-src="https://i.pinimg.com/474x/45/9e/11/459e115f9fa059fbd5cb03a8d5ced2e8.jpg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Portada Beta Stealth" loading="lazy">
+              <img class="project-gif" data-src="https://media.giphy.com/media/B1xE0PEW/giphy.gif" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Gif Beta Stealth" loading="lazy">
+            </div>
+            <div class="project-card-content">
+              <h3>Stealth Protocol</h3>
+              <p>Fase Beta: Pruebas de Estrés</p>
+              <div class="progress-bar-container">
+                <div class="progress-fill" data-progress="60"></div>
+              </div>
+            </div>
+          </div>
+          <div class="beta-project content-box" data-project="Helios">
+             <div class="project-image-container">
+              <img class="project-portada" data-src="https://i.pinimg.com/474x/14/6a/b4/146ab4bfcb440f105a4101ba6a3cc9a2.jpg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Portada Beta Helios" loading="lazy">
+              <img class="project-gif" data-src="https://media.giphy.com/media/B1xE0PEW/giphy.gif" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Gif Beta Helios" loading="lazy">
+            </div>
+            <div class="project-card-content">
+              <h3>Helios Framework</h3>
+              <p>Fase Beta: Integración API</p>
+              <div class="progress-bar-container">
+                <div class="progress-fill" data-progress="30"></div>
+              </div>
+            </div>
+          </div>
+          <div class="beta-project content-box" data-project="Synapse">
+             <div class="project-image-container">
+              <img class="project-portada" data-src="https://i.pinimg.com/474x/10/01/15/100115c998799729b8f1bc1e54bb3238.jpg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Portada Beta Synapse" loading="lazy">
+              <img class="project-gif" data-src="https://media.giphy.com/media/B1xE0PEW/giphy.gif" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Gif Beta Synapse" loading="lazy">
+            </div>
+            <div class="project-card-content">
+              <h3>Synapse Link</h3>
+              <p>Fase Beta: Lanzamiento RC</p>
+              <div class="progress-bar-container">
+                <div class="progress-fill" data-progress="90"></div>
+              </div>
+            </div>
+          </div>
+          <div class="beta-project content-box" data-project="Warden">
+             <div class="project-image-container">
+              <img class="project-portada" data-src="https://i.pinimg.com/474x/b0/38/fa/b038fa196686f9cf118e1f5b533d830b.jpg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Portada Beta Warden" loading="lazy">
+              <img class="project-gif" data-src="https://media.giphy.com/media/B1xE0PEW/giphy.gif" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Gif Beta Warden" loading="lazy">
+            </div>
+            <div class="project-card-content">
+              <h3>Warden Security</h3>
+              <p>Fase Beta: Auditoría Externa</p>
+              <div class="progress-bar-container">
+                <div class="progress-fill" data-progress="50"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div> <!-- Fin de dashboard-container -->
+
+    <!-- FOOTER MINIMALISTA (Opcional, adaptado) -->
+    <!-- Puedes añadir un footer simple aquí si lo deseas -->
+    <!-- <footer class="main-footer">
+        <p>© 2024 CyberLab Overdrive Dashboard. System Online.</p>
+    </footer> -->
+
+
+  </div> <!-- Fin de main-content-wrapper -->
+
+  <!-- MODAL DETALLE PROYECTO (Tu estructura, estilo de referencia) -->
+  <div id="modalProyecto" class="modal-proyecto"> <!-- Añadido .modal-proyecto -->
+    <div class="modal-content"> <!-- Añadido .modal-content -->
+      <div class="modal-header">
+         <h2 id="modalTitle" class="glitch-text" data-text="Cargando...">Cargando...</h2>
+         <span class="close-modal" title="Cerrar Ventana">×</span> <!-- Añadido .close-modal -->
+      </div>
+      <div class="modal-body">
+        <!-- Pestañas Verticales -->
+        <div class="modal-tabs">
+          <button class="tab-link active" data-tab="tab-descripcion"><i class="fas fa-info-circle fa-fw"></i> Descripción</button>
+          <button class="tab-link" data-tab="tab-estadisticas"><i class="fas fa-chart-line fa-fw"></i> Estadísticas</button>
+          <button class="tab-link" data-tab="tab-historial"><i class="fas fa-history fa-fw"></i> Historial</button>
+          <button class="tab-link" data-tab="tab-tareas"><i class="fas fa-tasks fa-fw"></i> Tareas</button>
+          <button class="tab-link" data-tab="tab-documentacion"><i class="fas fa-file-alt fa-fw"></i> Docs</button>
+          <button class="tab-link" data-tab="tab-comentarios"><i class="fas fa-comments fa-fw"></i> Comentarios</button>
+          <button class="tab-link" data-tab="tab-integraciones"><i class="fas fa-plug fa-fw"></i> APIs</button>
+          <button class="tab-link" data-tab="tab-prototipo"><i class="fas fa-vr-cardboard fa-fw"></i> Prototipo</button>
+          <button class="tab-link" data-tab="tab-seguridad"><i class="fas fa-shield-alt fa-fw"></i> Seguridad</button>
+          <button class="tab-link" data-tab="tab-finanzas"><i class="fas fa-coins fa-fw"></i> Finanzas</button>
+          <!-- Añadir más pestañas si es necesario -->
+        </div>
+        <!-- Contenedor del Contenido de las Pestañas -->
+        <div class="tab-content-container">
+          <!-- Estado de Carga (Skeleton) -->
+          <div class="loading-state"> <!-- Añadido .loading-state -->
+              <div class="skeleton skeleton-title" style="width: 40%;"></div>
+              <div class="skeleton skeleton-text"></div>
+              <div class="skeleton skeleton-text short" style="width: 60%;"></div>
+              <br>
+              <div class="skeleton skeleton-text" style="width: 30%;"></div>
+              <div class="skeleton skeleton-list-item" style="width: 60%;"></div>
+              <div class="skeleton skeleton-list-item" style="width: 50%;"></div>
+              <br>
+              <div class="skeleton skeleton-block" style="height: 100px;"></div>
+          </div>
+
+          <!-- Paneles de Contenido (uno por pestaña) -->
+          <div class="tab-pane active" id="tab-descripcion">
+              <h3>Descripción General</h3>
+              <p id="descTexto">Cargando...</p>
+              <h4>Recursos Multimedia</h4>
+              <ul id="descRecursos"><li>Cargando...</li></ul>
+          </div>
+          <div class="tab-pane" id="tab-estadisticas">
+              <h3>Estadísticas Clave</h3>
+              <p id="statsTexto">Cargando...</p>
+              <div style="height: 250px; margin-bottom: 1rem; position: relative;">
+                  <canvas id="chartProyecto"></canvas> <!-- Usamos tu ID -->
+              </div>
+              <h4>Opciones Avanzadas</h4>
+              <ul id="statsOpciones"><li>Cargando...</li></ul>
+          </div>
+          <div class="tab-pane" id="tab-historial">
+              <h3>Línea Temporal</h3>
+              <p id="histTexto">Cargando...</p>
+              <ul id="histLista"><li>Cargando...</li></ul>
+              <h4>Filtros</h4>
+              <ul id="histFiltros"><li>Cargando...</li></ul>
+          </div>
+          <div class="tab-pane" id="tab-tareas">
+              <h3>Gestión de Tareas</h3>
+              <p id="tarTexto">Cargando...</p>
+              <ul id="tarLista"><li>Cargando...</li></ul>
+              <h4>Funcionalidades</h4>
+              <ul id="tarOpciones"><li>Cargando...</li></ul>
+          </div>
+          <div class="tab-pane" id="tab-documentacion">
+              <h3>Base de Conocimiento</h3>
+              <p id="docTexto">Cargando...</p>
+              <ul id="docLista"><li>Cargando...</li></ul>
+              <h4>Herramientas</h4>
+              <ul id="docAvanzadas"><li>Cargando...</li></ul>
+          </div>
+          <div class="tab-pane" id="tab-comentarios">
+             <h3>Canal de Comunicación</h3>
+             <p id="comTexto">Cargando...</p>
+             <div id="comLista"><p style="text-align: center; color: var(--color-muted);">Cargando comentarios...</p></div> <!-- Contenedor de comentarios -->
+             <textarea id="comInput" placeholder="Escribe tu comentario... Shift+Enter para nueva línea." rows="3"></textarea>
+             <button id="comSubmitBtn"><i class="fas fa-paper-plane"></i> Enviar Comentario</button>
+             <h4>Funciones Extras</h4>
+             <ul id="comExtras"><li>Cargando...</li></ul>
+          </div>
+          <div class="tab-pane" id="tab-integraciones">
+             <h3>APIs e Integraciones</h3>
+             <p id="intTexto">Cargando...</p>
+             <ul id="intLista"><li>Cargando...</li></ul>
+             <h4>Pruebas</h4>
+             <ul id="intOpciones"><li>Cargando...</li></ul>
+          </div>
+          <div class="tab-pane" id="tab-prototipo">
+             <h3>Prototipo Interactivo</h3>
+             <p id="proTexto">Cargando...</p>
+             <iframe id="proIframe" src="about:blank" title="Prototipo Interactivo" loading="lazy"></iframe>
+             <h4>Interacción</h4>
+             <ul id="proOpciones"><li>Cargando...</li></ul>
+          </div>
+          <div class="tab-pane" id="tab-seguridad">
+             <h3>Auditoría de Seguridad</h3>
+             <p id="segTexto">Cargando...</p>
+             <ul id="segLista"><li>Cargando...</li></ul>
+             <h4>Monitoreo</h4>
+             <ul id="segOpciones"><li>Cargando...</li></ul>
+          </div>
+          <div class="tab-pane" id="tab-finanzas">
+             <h3>Análisis Financiero</h3>
+             <p id="finTexto">Cargando...</p>
+             <ul id="finLista"><li>Cargando...</li></ul>
+             <h4>Reportes</h4>
+             <ul id="finOpciones"><li>Cargando...</li></ul>
+          </div>
+        </div> <!-- Fin tab-content-container -->
+      </div> <!-- Fin modal-body -->
+    </div> <!-- Fin modal-content -->
+  </div> <!-- Fin modalProyecto -->
+
+
+   <!-- ============================================================
+       ELEMENTOS DE AUDIO (Fusionados con tus audios originales)
+       ------------------------------------------------------------
+   ============================================================ -->
+
+  <!-- Tus audios originales -->
+  <audio id="bgMusic" loop><source src="audio/general/sound.flac" type="audio/flac"></audio>
+  <audio id="clickSound"><source src="audio/click/Sonido para Clicks.wav" type="audio/wav"></audio>
+  <audio id="tabSound"><source src="audio/pestaña/Pestañas.wav" type="audio/wav"></audio>
+  <!-- <audio id="hoverSound"><source src="audio/hover/subtle_hover.wav" type="audio/wav"></audio> --> <!-- Hover sound puede ser molesto sin cursor dedicado -->
+  <audio id="modalOpenSound"><source src="audio/modal/modal_open.wav" type="audio/wav"></audio>
+  <audio id="modalCloseSound"><source src="audio/modal/modal_close.wav" type="audio/wav"></audio>
+  <audio id="successSound"><source src="audio/feedback/success.wav" type="audio/wav"></audio> <!-- Ejemplo feedback -->
+  <audio id="errorSound"><source src="audio/feedback/error.wav" type="audio/wav"></audio> <!-- Ejemplo feedback -->
+
+  <!-- Audios adicionales de referencia (si los necesitas) -->
+  <!-- Asumo que estos son sonidos genéricos de UI/carga -->
+  <audio id="loadingAudio" loop preload="auto"><source src="../Audio/Sound-mp3/terminal.mp3" type="audio/mpeg"></audio>
+  <audio id="loadCompleteAudio" preload="auto"><source src="../Audio/Sound-mp3/aviso.mp3" type="audio/mpeg"></audio>
+  <!-- Puedes usar bgMusic de tu principal en lugar de backgroundAudio de referencia -->
+  <!-- <audio id="backgroundAudio" loop preload="auto"><source src="src/assets/media/Hybrid & Dark.mp3" type="audio/mpeg"></audio> -->
+  <!-- Puedes usar clickSound de tu principal en lugar de uiClickAudio de referencia -->
+  <!-- <audio id="uiClickAudio" preload="auto"><source src="Audio/ui_click.mp3" type="audio/mpeg"></audio> -->
+  <audio id="uiHoverAudio" preload="auto"><source src="Audio/botones/botón UI haga clic en 1.mp3" type="audio/mpeg"></audio>
+  <audio id="filterHoverAudio" preload="auto"><source src="../Audio/Sound-mp3/click 2.mp3" type="audio/mpeg"></audio>
+
+
+  <!-- ============================================================ -->
+  <!-- JavaScript Logic (Fusionado y Adaptado)                      -->
+  <!-- ============================================================ -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.9.3/tsparticles.bundle.min.js"></script>
+  <!-- Asumo que tienes un script separado para inicializar particles.js -->
+  <!-- <script src="js/particles-init.js"></script> -->
+
+
+  <script>
+    "use strict"; // Modo estricto para buenas prácticas
+
+    document.addEventListener('DOMContentLoaded', () => {
+
+        // ============================================================
+        // SELECTORES DE ELEMENTOS FRECUENTES
+        // ============================================================
+        const loaderOverlayEl = document.getElementById('loaderOverlay');
+        const loaderBar = document.getElementById('loaderBar');
+        const loaderPercentage = document.getElementById('loaderPercentage');
+        const loaderText = document.getElementById('loaderText');
+        const loaderSubtext = document.getElementById('loaderSubtext');
+        const mainHeader = document.getElementById('mainHeader');
+        const mainContent = document.getElementById('mainContent');
+        const hudOverlay = document.querySelector('.hud-overlay');
+        const hudClock = document.getElementById('hudClock');
+        const hudScrollIndicator = document.getElementById('hudScrollIndicator');
+        const filterBtn = document.getElementById('filter-btn');
+        const filterPanel = document.getElementById('filter-panel');
+        const filterOverlay = document.getElementById('filterOverlay');
+        // const themeToggle = document.getElementById('themeToggle'); // No incluido en principal
+        // const langToggle = document.getElementById('langToggle'); // No incluido en principal
+        const volumeControl = document.getElementById('volumeControl'); // Tu botón de volumen
+        const htmlEl = document.documentElement;
+
+        // Elementos específicos de tu dashboard
+        const projectCards = document.querySelectorAll('.project-card');
+        const betaProjects = document.querySelectorAll('.beta-project');
+        const progressFills = document.querySelectorAll('.progress-fill'); // Renombrado para coincidir con tu HTML
+        const modalProyecto = document.getElementById('modalProyecto');
+        const closeModalBtn = modalProyecto ? modalProyecto.querySelector('.close-modal') : null;
+        const modalTitle = document.getElementById('modalTitle');
+        const modalTabs = modalProyecto ? modalProyecto.querySelectorAll('.modal-tabs .tab-link') : [];
+        const modalPanes = modalProyecto ? modalProyecto.querySelectorAll('.tab-content-container .tab-pane') : [];
+        const modalLoadingState = modalProyecto ? modalProyecto.querySelector('.loading-state') : null;
+        const modalDescTexto = document.getElementById('descTexto');
+        const modalDescRecursos = document.getElementById('descRecursos');
+        const modalStatsTexto = document.getElementById('statsTexto');
+        const chartProyectoCanvas = document.getElementById('chartProyecto');
+        const modalStatsOpciones = document.getElementById('statsOpciones');
+        const modalHistTexto = document.getElementById('histTexto');
+        const modalHistLista = document.getElementById('histLista');
+        const modalHistFiltros = document.getElementById('histFiltros');
+        const modalTarTexto = document.getElementById('tarTexto');
+        const modalTarLista = document.getElementById('tarLista');
+        const modalTarOpciones = document.getElementById('tarOpciones');
+        const modalDocTexto = document.getElementById('docTexto');
+        const modalDocLista = document.getElementById('docLista');
+        const modalDocAvanzadas = document.getElementById('docAvanzadas');
+        const modalComTexto = document.getElementById('comTexto');
+        const modalComLista = document.getElementById('comLista');
+        const modalComInput = document.getElementById('comInput');
+        const modalComSubmitBtn = document.getElementById('comSubmitBtn');
+        const modalComExtras = document.getElementById('comExtras');
+        const modalIntTexto = document.getElementById('intTexto');
+        const modalIntLista = document.getElementById('intLista');
+        const modalIntOpciones = document.getElementById('intOpciones');
+        const modalProTexto = document.getElementById('proTexto');
+        const modalProIframe = document.getElementById('proIframe');
+        const modalProOpciones = document.getElementById('proOpciones');
+        const modalSegTexto = document.getElementById('segTexto');
+        const modalSegLista = document.getElementById('segLista');
+        const modalSegOpciones = document.getElementById('segOpciones');
+        const modalFinTexto = document.getElementById('finTexto');
+        const modalFinLista = document.getElementById('finLista');
+        const modalFinOpciones = document.getElementById('finOpciones');
+
+
+        // Elementos para los gráficos del panel de análisis/sistema
+        const chart1Canvas = document.getElementById('chart1');
+        const systemChartCanvas = document.getElementById('systemChart');
+         // Elementos de texto para simular datos en el panel de análisis/sistema
+        const analisisLatenciaEl = document.getElementById('analisis-latencia');
+        const analisisRedEl = document.getElementById('analisis-red');
+        const analisisAnomaliasEl = document.getElementById('analisis-anomalias');
+        const cpuLoadEl = document.getElementById('cpu-load');
+        const ramUsageEl = document.getElementById('ram-usage');
+        const cpuTempEl = document.getElementById('cpu-temp');
+        const diskUsageEl = document.getElementById('disk-usage');
+        const pingEl = document.getElementById('ping');
+        const bandwidthEl = document.getElementById('bandwidth');
+        const connectionsEl = document.getElementById('connections');
+
+
+        // ============================================================
+        // SIMULACIÓN DE DATOS (Para el modal de proyecto y paneles)
+        // ============================================================
+        const projectData = {
+             "Nexus": {
+                 title: "Proyecto Nexus",
+                 status: "Desarrollo Alfa",
+                 description: "El Proyecto Nexus busca establecer una red neuronal interconectada para la gestión automatizada de recursos computacionales a escala global. Fase actual: diseño de la arquitectura de nodos y simulación de flujos de datos primarios.",
+                 resources: ["Informe de Arquitectura v1.2", "Diagramas de Flujo Iniciales", "Especificaciones de Hardware"],
+                 statsText: "Métricas de rendimiento simuladas:",
+                 statsLabels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                 statsData: [65, 70, 75, 80],
+                 statsOptions: ["Monitorización de Nodos", "Optimización de Carga"],
+                 histText: "Historial de desarrollo:",
+                 histLista: ["2023-01: Inicio Conceptualización", "2023-06: Diseño de Arquitectura", "2024-01: Inicio Desarrollo Alfa", "2024-04: Pruebas de Interconexión"],
+                 histFiltros: ["Por Fecha", "Por Hito", "Por Responsable"],
+                 tarTexto: "Tareas Activas:",
+                 tarLista: ["Implementar módulo de seguridad (Prioridad Alta)", "Optimizar algoritmo de enrutamiento", "Documentar API interna", "Realizar pruebas de estrés (Fase 1)"],
+                 tarOpciones: ["Asignar Tarea", "Ver Kanban", "Reporte de Progreso"],
+                 docTexto: "Documentación del Proyecto:",
+                 docLista: ["Manual Técnico v1.0", "Guía de Configuración de Nodos", "API Reference", "Whitepaper"],
+                 docAvanzadas: ["Acceso a Repositorio", "Historial de Revisiones"],
+                 comTexto: "Comentarios recientes:",
+                 comLista: [
+                     { author: "SysAdmin", text: "La latencia entre nodos es mayor de lo esperado en la región 3.", timestamp: "2024-07-20 10:30" },
+                     { author: "Dev Lead", text: "Revisando configuración del router principal en Región 3. Posible cuello de botella.", timestamp: "2024-07-20 10:35" },
+                     { author: "UX Team", text: "Interfaz del panel de monitorización necesita ajustes para mejor visualización.", timestamp: "2024-07-19 16:00" }
+                 ],
+                 comExtras: ["Notificaciones", "Chat Grupal"],
+                 intTexto: "APIs Integradas:",
+                 intLista: ["API Gateway v1.1", "Base de Datos Distribuida (DB-Alpha)", "Servicio de Autenticación (Auth-0)"],
+                 intOpciones: ["Logs de Errores", "Pruebas de Latencia API"],
+                 proTexto: "Prototipo de Interfaz:",
+                 proIframeSrc: "https://ejemplo.com/prototipo-nexus", // Cambiar por un URL real si existe
+                 proOpciones: ["Pantalla Completa", "Feedback del Usuario"],
+                 segTexto: "Estado de Seguridad:",
+                 segLista: ["Última Auditoría: 2024-07-15 (Resultado: <span style='color:var(--color-feedback-warning)'>Warning</span>)", "Firewall Activo", "Detección de Intrusiones: <span style='color:var(--color-feedback-success)'>Online</span>"],
+                 segOpciones: ["Ver Reporte Completo", "Configurar Alertas"],
+                 finTexto: "Reporte Financiero:",
+                 finLista: ["Presupuesto Asignado: 500,000 Cygnus", "Gasto Actual: 225,000 Cygnus", "Proyección Q3: 150,000 Cygnus"],
+                 finOpciones: ["Reporte de Costos", "Historial de Transacciones"]
+             },
+              "QuantumLeap": {
+                 title: "Quantum Leap AI",
+                 status: "Optimización Beta",
+                 description: "Quantum Leap AI es un motor de inteligencia artificial experimental centrado en el análisis predictivo de mercados de energía. Fase actual: optimización del algoritmo de aprendizaje y calibración de modelos.",
+                 resources: ["Algoritmo Core v0.9", "Conjunto de Datos de Entrenamiento (Beta)", "Reporte de Calibración"],
+                 statsText: "Precisión del Modelo AI simulada:",
+                 statsLabels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
+                 statsData: [70, 78, 82, 85], // Ejemplo de mejora
+                 statsOptions: ["Evaluación de Sesgo", "Análisis de Variables"],
+                 histText: "Historial de desarrollo:",
+                 histLista: ["2023-08: Inicio Modelo IA", "2024-02: Desarrollo Algoritmo Core", "2024-05: Inicio Optimización Beta", "2024-07: Calibración de Modelos"],
+                 histFiltros: ["Por Versión", "Por Etapa"],
+                 tarTexto: "Tareas Activas:",
+                 tarLista: ["Ajustar hiperparámetros (Prioridad Alta)", "Integrar nuevo conjunto de datos", "Documentar resultados de pruebas", "Mejorar eficiencia de cómputo"],
+                 tarOpciones: ["Ver Pendientes", "Crear Nueva Tarea"],
+                 docTexto: "Documentación del Proyecto:",
+                 docLista: ["Whitepaper AI", "Guía de API de Predicción", "Informe de Pruebas Beta"],
+                 docAvanzadas: ["Acceso a Papeles de Investigación"],
+                  comTexto: "Comentarios recientes:",
+                 comLista: [
+                     { author: "Data Scientist", text: "Los resultados en el conjunto de datos de validación son prometedores.", timestamp: "2024-07-22 09:00" },
+                     { author: "Product Owner", text: "Considerar la posibilidad de añadir un módulo de explicación de predicciones.", timestamp: "2024-07-21 14:00" }
+                 ],
+                 comExtras: ["Reporte Automático", "Integración con Slack"],
+                 intTexto: "APIs Integradas:",
+                 intLista: ["API de Mercado de Energía (Externo)", "Servicio de Logging (Interno)", "Plataforma de Despliegue ML (Interno)"],
+                 intOpciones: ["Monitorear API", "Pruebas de Integración"],
+                 proTexto: "Prototipo de Interfaz de Usuario:",
+                 proIframeSrc: "https://ejemplo.com/prototipo-quantumleap-ui", // Cambiar por un URL real si existe
+                 proOpciones: ["Pruebas de Usabilidad"],
+                 segTexto: "Estado de Seguridad:",
+                 segLista: ["Protección de Datos Sensibles: <span style='color:var(--color-feedback-success)'>Activa</span>", "Autenticación de API: Implementada", "Registro de Accesos: <span style='color:var(--color-feedback-success)'>Online</span>"],
+                 segOpciones: ["Auditoría de Código", "Gestión de Credenciales"],
+                 finTexto: "Análisis de Costos:",
+                 finLista: ["Costo de Cómputo (Mensual): 15,000 Cygnus", "Inversión I+D: 100,000 Cygnus", "Proyección ROI (1 año): +200%"],
+                 finOpciones: ["Reporte Detallado", "Simulación de Escenarios"]
+              },
+              "TitanProtocol": { /* Datos simulados */ title: "Titan Protocol", status: "Diseño UI", description: "...", resources: [], statsText: "...", statsLabels: [], statsData: [], statsOptions: [], histText: "...", histLista: [], histFiltros: [], tarTexto: "...", tarLista: [], tarOpciones: [], docTexto: "...", docLista: [], docAvanzadas: [], comTexto: "...", comLista: [], comExtras: [], intTexto: "...", intLista: [], intOpciones: [], proTexto: "...", proIframeSrc: "about:blank", proOpciones: [], segTexto: "...", segLista: [], segOpciones: [], finTexto: "...", finLista: [], finOpciones: [] },
+              "AetherNetwork": { /* Datos simulados */ title: "Aether Network", status: "Despliegue Inminente", description: "...", resources: [], statsText: "...", statsLabels: [], statsData: [], statsOptions: [], histText: "...", histLista: [], histFiltros: [], tarTexto: "...", tarLista: [], tarOpciones: [], docTexto: "...", docLista: [], docAvanzadas: [], comTexto: "...", comLista: [], comExtras: [], intTexto: "...", intLista: [], intOpciones: [], proTexto: "...", proIframeSrc: "about:blank", proOpciones: [], segTexto: "...", segLista: [], segOpciones: [], finTexto: "...", finLista: [], finOpciones: [] },
+              "Chimera": { /* Datos simulados */ title: "Project Chimera", status: "Feedback UI/UX (Beta)", description: "...", resources: [], statsText: "...", statsLabels: [], statsData: [], statsOptions: [], histText: "...", histLista: [], histFiltros: [], tarTexto: "...", tarLista: [], tarOpciones: [], docTexto: "...", docLista: [], docAvanzadas: [], comTexto: "...", comLista: [], comExtras: [], intTexto: "...", intLista: [], intOpciones: [], proTexto: "...", proIframeSrc: "about:blank", proOpciones: [], segTexto: "...", segLista: [], segOpciones: [], finTexto: "...", finLista: [], finOpciones: [] },
+               "Stealth": { /* Datos simulados */ title: "Stealth Protocol", status: "Pruebas de Estrés (Beta)", description: "...", resources: [], statsText: "...", statsLabels: [], statsData: [], statsOptions: [], histText: "...", histLista: [], histFiltros: [], tarTexto: "...", tarLista: [], tarOpciones: [], docTexto: "...", docLista: [], docAvanzadas: [], comTexto: "...", comLista: [], comExtras: [], intTexto: "...", intLista: [], intOpciones: [], proTexto: "...", proIframeSrc: "about:blank", proOpciones: [], segTexto: "...", segLista: [], segOpciones: [], finTexto: "...", finLista: [], finOpciones: [] },
+                "Helios": { /* Datos simulados */ title: "Helios Framework", status: "Integración API (Beta)", description: "...", resources: [], statsText: "...", statsLabels: [], statsData: [], statsOptions: [], histText: "...", histLista: [], histFiltros: [], tarTexto: "...", tarLista: [], tarOpciones: [], docTexto: "...", docLista: [], docAvanzadas: [], comTexto: "...", comLista: [], comExtras: [], intTexto: "...", intLista: [], intOpciones: [], proTexto: "...", proIframeSrc: "about:blank", proOpciones: [], segTexto: "...", segLista: [], segOpciones: [], finTexto: "...", finLista: [], finOpciones: [] },
+                 "Synapse": { /* Datos simulados */ title: "Synapse Link", status: "Lanzamiento RC (Beta)", description: "...", resources: [], statsText: "...", statsLabels: [], statsData: [], statsOptions: [], histText: "...", histLista: [], histFiltros: [], tarTexto: "...", tarLista: [], tarOpciones: [], docTexto: "...", docLista: [], docAvanzadas: [], comTexto: "...", comLista: [], comExtras: [], intTexto: "...", intLista: [], intOpciones: [], proTexto: "...", proIframeSrc: "about:blank", proOpciones: [], segTexto: "...", segLista: [], segOpciones: [], finTexto: "...", finLista: [], finOpciones: [] },
+                  "Warden": { /* Datos simulados */ title: "Warden Security", status: "Auditoría Externa (Beta)", description: "...", resources: [], statsText: "...", statsLabels: [], statsData: [], statsOptions: [], histText: "...", histLista: [], histFiltros: [], tarTexto: "...", tarLista: [], tarOpciones: [], docTexto: "...", docLista: [], docAvanzadas: [], comTexto: "...", comLista: [], comExtras: [], intTexto: "...", intLista: [], intOpciones: [], proTexto: "...", proIframeSrc: "about:blank", proOpciones: [], segTexto: "...", segLista: [], segOpciones: [], finTexto: "...", finLista: [], finOpciones: [] },
+                  "NovaCore": { /* Datos simulados */ title: "Nova Core", status: "Producción", description: "...", resources: [], statsText: "...", statsLabels: [], statsData: [], statsOptions: [], histText: "...", histLista: [], histFiltros: [], tarTexto: "...", tarLista: [], tarOpciones: [], docTexto: "...", docLista: [], docAvanzadas: [], comTexto: "...", comLista: [], comExtras: [], intTexto: "...", intLista: [], intOpciones: [], proTexto: "...", proIframeSrc: "about:blank", proOpciones: [], segTexto: "...", segLista: [], segOpciones: [], finTexto: "...", finLista: [], finOpciones: [] },
+        };
+
+        // Simulación de datos dinámicos para paneles Análisis/Sistema
+        const simulatePanelData = () => {
+            if (analisisLatenciaEl) analisisLatenciaEl.textContent = (Math.random() * (120 - 50) + 50).toFixed(0); // Latencia entre 50-120 ms
+            if (analisisRedEl) analisisRedEl.textContent = (Math.random() * (80 - 40) + 40).toFixed(0); // Carga red entre 40-80%
+            if (analisisAnomaliasEl) analisisAnomaliasEl.textContent = `${Math.floor(Math.random() * 3) + 1} Crítica`; // 1-3 críticas
+
+            if (cpuLoadEl) cpuLoadEl.textContent = (Math.random() * (90 - 20) + 20).toFixed(1) + " %";
+            if (ramUsageEl) ramUsageEl.textContent = `${(Math.random() * (12 - 4) + 4).toFixed(1)} GB / 16 GB`; // Ejemplo 16GB total
+            if (cpuTempEl) cpuTempEl.textContent = (Math.random() * (75 - 40) + 40).toFixed(1) + " °C";
+            if (diskUsageEl) diskUsageEl.textContent = `${(Math.random() * (800 - 200) + 200).toFixed(0)} GB / 1 TB`; // Ejemplo 1TB total
+            if (pingEl) pingEl.textContent = (Math.random() * (200 - 10) + 10).toFixed(0) + " ms"; // Ping entre 10-200 ms
+            if (bandwidthEl) bandwidthEl.textContent = (Math.random() * (10 - 2) + 2).toFixed(1) + " Gbps"; // Ancho banda entre 2-10 Gbps
+            if (connectionsEl) connectionsEl.textContent = Math.floor(Math.random() * (5000 - 1000) + 1000); // Conexiones entre 1000-5000
+        };
+
+        // ============================================================
+        // MANEJO DE SONIDOS (Adaptado de referencia, usando tus audios)
+        // ============================================================
+        const sounds = {
+            loading: document.getElementById('loadingAudio'),
+            complete: document.getElementById('loadCompleteAudio'),
+            // background: document.getElementById('backgroundAudio'), // Usaremos bgMusic
+            bgMusic: document.getElementById('bgMusic'), // Tu audio de fondo
+            // click: document.getElementById('uiClickAudio'), // Usaremos clickSound
+            clickSound: document.getElementById('clickSound'), // Tu audio de click
+            uiHover: document.getElementById('uiHoverAudio'), // Audio hover de referencia
+            filterHover: document.getElementById('filterHoverAudio'), // Audio hover menu de referencia
+            tabSound: document.getElementById('tabSound'), // Tu audio de tab
+            modalOpen: document.getElementById('modalOpenSound'), // Tu audio modal open
+            modalClose: document.getElementById('modalCloseSound'), // Tu audio modal close
+            success: document.getElementById('successSound'), // Tu audio success
+            error: document.getElementById('errorSound') // Tu audio error
+        };
+
+        let isMuted = localStorage.getItem('dashboardMuted') === 'true'; // Recuperar estado de mute
+
+        function updateVolumeControlIcon() {
+            if (!volumeControl) return;
+            const volumeUp = volumeControl.querySelector('.fa-volume-up');
+            const volumeMute = volumeControl.querySelector('.fa-volume-mute');
+
+            if (isMuted) {
+                volumeControl.classList.add('muted');
+                volumeControl.setAttribute('title', 'Activar Sonido');
+                 if (volumeUp) volumeUp.style.opacity = '0.3';
+                 if (volumeMute) volumeMute.style.opacity = '1';
+            } else {
+                volumeControl.classList.remove('muted');
+                volumeControl.setAttribute('title', 'Silenciar Sonido');
+                 if (volumeUp) volumeUp.style.opacity = '1';
+                 if (volumeMute) volumeMute.style.opacity = '0';
+            }
+        }
+
+        function playSound(soundId, volume = 0.5) {
+            const audio = sounds[soundId];
+            if (isMuted || !audio) return;
+            try {
+                audio.volume = volume;
+                audio.currentTime = 0; // Reiniciar si ya sonaba
+                 audio.play().catch(e => console.warn(`Error al reproducir sonido (${soundId}):`, e));
+            } catch (e) {
+                console.warn(`Error al manejar sonido (${soundId}):`, e);
+            }
+        }
+
+
+        function stopSound(soundId) {
+             const audio = sounds[soundId];
+            if (audio) {
+                try {
+                    audio.pause();
+                    audio.currentTime = 0;
+                } catch(e) {
+                     console.warn(`Error al detener sonido (${soundId}):`, e);
+                }
+            }
+        }
+
+        // Inicializar botón mute y sonidos base
+        updateVolumeControlIcon();
+        if (sounds.bgMusic) sounds.bgMusic.volume = 0.2; // Volumen bajo para música de fondo
+        if (sounds.loading) sounds.loading.volume = 0.4;
+
+        if (volumeControl) {
+            volumeControl.addEventListener('click', (e) => {
+                e.preventDefault(); // Evitar scroll si es un link #
+                isMuted = !isMuted;
+                localStorage.setItem('dashboardMuted', isMuted); // Guardar preferencia
+                updateVolumeControlIcon();
+                // Detener/reanudar música de fondo según estado
+                if (isMuted) {
+                    if (sounds.bgMusic) stopSound('bgMusic');
+                    if (sounds.loading) stopSound('loading'); // También detener sonido de carga
+                } else if (loaderOverlayEl && loaderOverlayEl.classList.contains('active')) {
+                     if (sounds.loading) playSound('loading', 0.4); // Reanudar sonido de carga si aún está
+                } else {
+                     if (sounds.bgMusic) playSound('bgMusic', 0.2); // Reanudar música de fondo si ya terminó
+                }
+                playSound('clickSound', 0.6); // Sonido de clic para el propio botón
+            });
+        }
+
+        // Aplicar sonido de click a elementos interactivos
+        document.querySelectorAll('a, button, .project-card, .beta-project, .tab-link').forEach(el => {
+            // Evitar añadir listener duplicado o a elementos que ya tienen uno específico
+             if (el !== volumeControl && el !== filterBtn) {
+                 el.addEventListener('click', () => playSound('clickSound', 0.5));
+             }
+        });
+
+         // Aplicar sonido de hover a elementos interactivos (opcional, puede ser molesto)
+         /*
+         document.querySelectorAll('a:not(.nav-link):not(.hud-button), button:not(.hud-button)').forEach(el => {
+             el.addEventListener('mouseenter', () => playSound('uiHover', 0.3));
+         });
+         */
+
+
+        // ============================================================
+        // PANTALLA DE CARGA AVANZADA
+        // NUEVO: Textos dinámicos, sonido, transición mejorada.
+        // ============================================================
+        if (loaderOverlayEl) { // Solo ejecutar si el loader existe
+            let progress = 0;
+            const loadingSteps = [ // Pasos de carga simulados
+                { percent: 10, text: "Booting Core Systems...", subtext: "Initializing hardware..." },
+                { percent: 25, text: "Loading UI Modules...", subtext: "Rendering holographic interface..." },
+                { percent: 40, text: "Establishing Network Link...", subtext: "Verifying connectivity..." },
+                { percent: 60, text: "Accessing Project Database...", subtext: "Fetching project data..." },
+                { percent: 75, text: "Compiling Analytics Data...", subtext: "Processing real-time feeds..." },
+                { percent: 90, text: "Finalizing Protocols...", subtext: "Running diagnostics..." },
+                { percent: 100, text: "SYSTEM ONLINE", subtext: "Dashboard Ready." }
+            ];
+            let currentStep = 0;
+
+            // Intentar iniciar sonido de carga, si bgMusic aún no está sonando
+            if (sounds.loading && sounds.bgMusic && sounds.bgMusic.paused) {
+                 playSound('loading', 0.4);
+            }
+
+
+            const simulateLoading = setInterval(() => {
+                progress += Math.random() * 3 + 0.5; // Progreso un poco aleatorio, un poco más rápido
+                progress = Math.min(progress, 100); // No pasar de 100
+
+                if(loaderBar) loaderBar.style.width = progress + '%';
+                if(loaderPercentage) loaderPercentage.textContent = Math.floor(progress) + '%';
+
+                // Actualizar textos de carga
+                if (currentStep < loadingSteps.length && progress >= loadingSteps[currentStep].percent) {
+                    if(loaderText) loaderText.textContent = loadingSteps[currentStep].text;
+                    if(loaderSubtext) loaderSubtext.textContent = loadingSteps[currentStep].subtext;
+                    currentStep++;
+                }
+
+                if (progress >= 100) {
+                    clearInterval(simulateLoading);
+                    stopSound('loading');
+                    playSound('complete', 0.6);
+
+                    // Esperar un poco después del 100% para leer "SYSTEM ONLINE"
+                    setTimeout(() => {
+                        loaderOverlayEl.classList.remove('active'); // Inicia la transición de salida
+
+                        // Después de la transición del loader, mostrar contenido
+                        setTimeout(() => {
+                            loaderOverlayEl.style.display = 'none'; // Ocultar completamente
+                            if(mainHeader) mainHeader.classList.add('visible');
+                            if(mainContent) mainContent.classList.add('visible');
+                            if(hudOverlay) hudOverlay.classList.add('visible');
+
+                             // Iniciar música de fondo si no está muteado
+                             if (!isMuted && sounds.bgMusic) {
+                                 playSound('bgMusic', 0.2);
+                             }
+
+                            // Disparar las animaciones de reveal iniciales que sean visibles
+                            triggerVisibleReveals();
+                            startClock(); // Iniciar reloj del HUD
+                            simulatePanelData(); // Iniciar simulación de datos de paneles
+                            setInterval(simulatePanelData, 5000); // Actualizar datos de paneles cada 5 segundos
+                            initCharts(); // Inicializar gráficos del panel de análisis/sistema
+
+                        }, 700); // Debe coincidir con la duración de transition en .loader-overlay
+                    }, 500); // Pequeña pausa en 100%
+                }
+            }, 50); // Intervalo de actualización
+        } else {
+            // Si no hay loader (ej. JS deshabilitado), mostrar contenido directamente
+            if(mainHeader) mainHeader.classList.add('visible');
+            if(mainContent) mainContent.classList.add('visible');
+            if(hudOverlay) hudOverlay.classList.add('visible');
+             if (!isMuted && sounds.bgMusic) {
+                 playSound('bgMusic', 0.2);
+             }
+            triggerVisibleReveals();
+            startClock();
+            simulatePanelData();
+            setInterval(simulatePanelData, 5000);
+             initCharts();
+        }
+
+
+        // ============================================================
+        // FUNCIONALIDAD DEL MENÚ FILTRO (Overlay Centrado)
+        // ============================================================
+        if (filterBtn && filterPanel && filterOverlay) { // Verificar existencia
+            filterBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                playSound('clickSound'); // Usar tu sonido de click
+                filterPanel.classList.toggle('open');
+                filterOverlay.classList.toggle('open');
+            });
+
+            filterOverlay.addEventListener('click', () => {
+                playSound('clickSound', 0.4); // Usar tu sonido de click
+                filterPanel.classList.remove('open');
+                filterOverlay.classList.remove('open');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (filterPanel.classList.contains('open') && !filterPanel.contains(e.target) && !filterBtn.contains(e.target)) {
+                    filterPanel.classList.remove('open');
+                    filterOverlay.classList.remove('open');
+                }
+            });
+
+            // Cerrar menú al hacer clic en un enlace del menú
+            const filterLinks = filterPanel.querySelectorAll('.nav-link');
+            filterLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    playSound('clickSound'); // Usar tu sonido de click
+                    const targetHref = link.getAttribute('href');
+                    filterPanel.classList.remove('open'); // Siempre cerrar el panel
+                    filterOverlay.classList.remove('open'); // Siempre cerrar el overlay
+
+                    // Evitar scroll suave si es enlace externo
+                    if (targetHref && targetHref.startsWith('#')) {
+                        e.preventDefault();
+                        smoothScrollTo(targetHref);
+                    }
+                    // Si es externo (ej: Menu.html), permite la navegación normal
+                });
+                // Sonido de hover específico para el menú
+                link.addEventListener('mouseenter', () => {
+                    playSound('filterHover', 0.5); // Usar sonido filterHover de referencia
+                });
+            });
+        }
+
+
+        // ============================================================
+        // SCROLL SUAVE PARA ENLACES INTERNOS
+        // ============================================================
+        function smoothScrollTo(targetSelector) {
+            const targetElement = document.querySelector(targetSelector);
+            if (targetElement && mainHeader) { // Verificar si existen
+                // Calcular offset considerando la altura del header fijo
+                const headerOffset = mainHeader.offsetHeight + 20; // Espacio extra
+                const elementPosition = targetElement.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+            } else if (targetElement) {
+                 // Si no hay header, scroll directo
+                 targetElement.scrollIntoView({ behavior: 'smooth'});
+            }
+        }
+
+        // Aplicar a enlaces internos (los del header ahora están en el panel filtro)
+        // Este ya no es necesario si todos los links internos están en el panel filtro
+        // Pero se deja por si hay otros enlaces internos (ej: un scroll-down-indicator si lo añades)
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+             // Excluir enlaces dentro del panel de filtro (ya manejados arriba) y el control de volumen
+            if (!anchor.closest('.filter-panel') && anchor !== volumeControl) {
+                 anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    // playSound('clickSound'); // Ya aplicado globalmente
+                    smoothScrollTo(this.getAttribute('href'));
+                 });
+            }
+        });
+
+
+        // ============================================================
+        // ANIMACIONES AL HACER SCROLL (REVEAL)
+        // ============================================================
+        const revealElements = document.querySelectorAll('.reveal');
+        if (typeof IntersectionObserver !== 'undefined') { // Verificar soporte del navegador
+            const revealObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        // observer.unobserve(entry.target); // Descomentar para animar solo una vez
+                         // Trigger animations within the revealed element
+                         triggerProgressBars(entry.target); // Animar barras dentro del panel revelado
+                    } else {
+                        // entry.target.classList.remove('visible'); // Descomentar para animar cada vez
+                    }
+                });
+            }, {
+                root: null,
+                threshold: 0.1, // Un poco antes
+                rootMargin: '0px 0px -50px 0px'
+            });
+
+            revealElements.forEach(el => revealObserver.observe(el));
+        } else {
+            // Fallback si IntersectionObserver no es soportado (mostrar todo)
+            revealElements.forEach(el => {
+                el.classList.add('visible');
+                 triggerProgressBars(el); // Animar barras en fallback
+            });
+        }
+
+        // Función para disparar manualmente reveals (útil después de la carga)
+        function triggerVisibleReveals() {
+             revealElements.forEach(el => {
+                 const rect = el.getBoundingClientRect();
+                 if (rect.top < window.innerHeight && rect.bottom >= 0 && rect.left < window.innerWidth && rect.right >= 0) {
+                     el.classList.add('visible');
+                      triggerProgressBars(el); // Animar barras visibles al inicio
+                 }
+             });
+             // No llamamos triggerVisibleSkillBars aquí, se maneja en el observer y en el fallback
+        }
+
+        // ============================================================
+        // BARRAS DE PROGRESO DINÁMICAS (PROYECTOS/BETA)
+        // Adaptado de la lógica de Skills del archivo de referencia
+        // ============================================================
+         // Esta lógica ahora se llama dentro del IntersectionObserver del Reveal, o en el fallback.
+         // La función triggerProgressBars se encarga de animar las barras *dentro* de un elemento dado.
+        function triggerProgressBars(containerElement) {
+            const bars = containerElement.querySelectorAll('.progress-fill');
+            bars.forEach(bar => {
+                const level = bar.getAttribute('data-progress');
+                 // Solo animar si ya tiene el ancho 0% (no re-animar si ya está animado)
+                 if (bar.style.width === '0%') {
+                     setTimeout(() => { // Pequeño delay para el efecto
+                         bar.style.width = level + '%';
+                     }, 100);
+                 }
+            });
+        }
+
+
+        // ============================================================
+        // LAZY LOADING PARA IMÁGENES (data-src)
+        // Adaptado para imágenes en project/beta cards y modal
+        // ============================================================
+        const lazyImages = document.querySelectorAll('img[data-src]');
+         if (typeof IntersectionObserver !== 'undefined') {
+             const lazyObserver = new IntersectionObserver((entries, observer) => {
+                 entries.forEach(entry => {
+                     if (entry.isIntersecting) {
+                         const lazyEl = entry.target;
+                         // CORREGIDO: Añadir el handler onload ANTES de cambiar el src
+                         lazyEl.onload = () => {
+                             lazyEl.classList.add('loaded');
+                             lazyEl.removeAttribute('loading'); // Quitar atributo nativo si se usó
+                         };
+                         lazyEl.onerror = () => { // Manejo de error simple
+                             console.error("Error cargando imagen:", lazyEl.dataset.src);
+                             // lazyEl.classList.add('error'); // Clase opcional para indicar error
+                             // Opcional: poner una imagen de placeholder de error
+                             // lazyEl.src = 'placeholder-error.png';
+                         };
+                         lazyEl.src = lazyEl.dataset.src;
+                         // lazyEl.removeAttribute('data-src'); // Mantener data-src si se necesita para algo más (ej: modal) - Dejamos el remove
+                         lazyObserver.unobserve(lazyEl);
+                     }
+                 });
+             }, { rootMargin: "0px 0px 200px 0px" }); // Cargar cuando esté a 200px de distancia
+
+             lazyImages.forEach(img => lazyObserver.observe(img));
+         } else {
+              // Fallback: Cargar todas las imágenes directamente
+              lazyImages.forEach(img => {
+                  img.src = img.dataset.src;
+                  // img.removeAttribute('data-src'); // Dejamos el remove
+                  img.classList.add('loaded');
+              });
+         }
+
+        // ============================================================
+        // MODAL DE DETALLE DE PROYECTO (NUEVO: Basado en tu estructura, con JS)
+        // ============================================================
+
+        let projectChartInstance = null; // Para mantener la instancia de Chart.js
+
+        // Función para mostrar el esqueleto de carga en el modal
+        function showModalLoadingState() {
+             modalPanes.forEach(pane => pane.classList.remove('active')); // Ocultar todos los paneles
+             if (modalLoadingState) modalLoadingState.classList.add('active'); // Mostrar esqueleto
+             // Limpiar contenido previo
+             modalTitle.textContent = "Cargando...";
+             modalDescTexto.textContent = "";
+             modalDescRecursos.innerHTML = "";
+             modalStatsTexto.textContent = "";
+             // Destruir chart viejo si existe
+            if (projectChartInstance) {
+                projectChartInstance.destroy();
+                projectChartInstance = null;
+            }
+             modalStatsOpciones.innerHTML = "";
+             modalHistTexto.textContent = "";
+             modalHistLista.innerHTML = "";
+             modalHistFiltros.innerHTML = "";
+             modalTarTexto.textContent = "";
+             modalTarLista.innerHTML = "";
+             modalTarOpciones.innerHTML = "";
+             modalDocTexto.textContent = "";
+             modalDocLista.innerHTML = "";
+             modalDocAvanzadas.innerHTML = "";
+             modalComTexto.textContent = "";
+             modalComLista.innerHTML = "";
+             modalComInput.value = "";
+             modalComExtras.innerHTML = "";
+             modalIntTexto.textContent = "";
+             modalIntLista.innerHTML = "";
+             modalIntOpciones.innerHTML = "";
+             modalProTexto.textContent = "";
+             modalProIframe.src = "about:blank"; // Reset iframe
+             modalProOpciones.innerHTML = "";
+             modalSegTexto.textContent = "";
+             modalSegLista.innerHTML = "";
+             modalSegOpciones.innerHTML = "";
+             modalFinTexto.textContent = "";
+             modalFinLista.innerHTML = "";
+             modalFinOpciones.innerHTML = "";
+        }
+
+        // Función para cargar y mostrar datos de un proyecto específico
+        function loadProjectData(projectKey) {
+            showModalLoadingState(); // Mostrar esqueleto
+            modalProyecto.classList.add('open'); // Abrir modal
+            playSound('modalOpen'); // Sonido de apertura
+
+            const data = projectData[projectKey];
+
+            if (!data) {
+                modalTitle.textContent = "Error";
+                modalDescTexto.textContent = "Datos del proyecto no encontrados.";
+                if (modalLoadingState) modalLoadingState.classList.remove('active');
+                 modalPanes[0].classList.add('active'); // Mostrar pestaña Descripción con error
+                return;
+            }
+
+            // Simular tiempo de carga
+            setTimeout(() => {
+                modalTitle.textContent = data.title;
+
+                // Rellenar pestañas
+                if (modalDescTexto) modalDescTexto.textContent = data.description;
+                 if (modalDescRecursos) {
+                     modalDescRecursos.innerHTML = data.resources.map(item => `<li>${item}</li>`).join('');
+                     if (data.resources.length === 0) modalDescRecursos.innerHTML = "<li>No hay recursos disponibles.</li>";
+                 }
+
+                if (modalStatsTexto) modalStatsTexto.textContent = data.statsText;
+                if (chartProyectoCanvas) {
+                     // Destruir chart viejo si existía antes de crear uno nuevo
+                    if (projectChartInstance) {
+                        projectChartInstance.destroy();
+                    }
+                    // Crear nuevo gráfico (ejemplo Chart.js - Line)
+                    projectChartInstance = new Chart(chartProyectoCanvas, {
+                        type: 'line',
+                        data: {
+                            labels: data.statsLabels,
+                            datasets: [{
+                                label: 'Progreso (%)',
+                                data: data.statsData,
+                                borderColor: 'hsla(var(--hue), var(--saturation), var(--brightness-accent), 0.8)',
+                                backgroundColor: 'hsla(var(--hue), var(--saturation), var(--brightness-accent), 0.2)',
+                                tension: 0.3,
+                                fill: true,
+                                pointBackgroundColor: 'var(--color-accent)',
+                                pointBorderColor: 'var(--color-bg)'
+                            }]
+                        },
+                        options: {
+                             responsive: true,
+                             maintainAspectRatio: false, // Importante si el contenedor tiene altura fija
+                             plugins: {
+                                 legend: {
+                                     display: true,
+                                     labels: { color: 'var(--color-text)', font: { family: 'var(--font-main)' } }
+                                 }
+                             },
+                             scales: {
+                                 x: {
+                                     ticks: { color: 'var(--color-muted)', font: { family: 'var(--font-main)' } },
+                                     grid: { color: 'rgba(var(--color-accent-rgb), 0.1)' }
+                                 },
+                                 y: {
+                                     ticks: { color: 'var(--color-muted)', font: { family: 'var(--font-main)' } },
+                                     grid: { color: 'rgba(var(--color-accent-rgb), 0.1)' },
+                                      beginAtZero: true,
+                                      max: 100 // Asumiendo que es porcentaje
+                                 }
+                             }
+                        }
+                    });
+                }
+                if (modalStatsOpciones) {
+                    modalStatsOpciones.innerHTML = data.statsOptions.map(item => `<li>${item}</li>`).join('');
+                    if (data.statsOptions.length === 0) modalStatsOpciones.innerHTML = "<li>No hay opciones disponibles.</li>";
+                }
+
+
+                 if (modalHistTexto) modalHistTexto.textContent = data.histText;
+                 if (modalHistLista) {
+                     modalHistLista.innerHTML = data.histLista.map(item => `<li>${item}</li>`).join('');
+                     if (data.histLista.length === 0) modalHistLista.innerHTML = "<li>Historial no disponible.</li>";
+                 }
+                 if (modalHistFiltros) {
+                     modalHistFiltros.innerHTML = data.histFiltros.map(item => `<li>${item}</li>`).join('');
+                      if (data.histFiltros.length === 0) modalHistFiltros.innerHTML = "<li>Sin filtros disponibles.</li>";
+                 }
+
+                 if (modalTarTexto) modalTarTexto.textContent = data.tarTexto;
+                 if (modalTarLista) {
+                     modalTarLista.innerHTML = data.tarLista.map(item => `<li>${item}</li>`).join('');
+                      if (data.tarLista.length === 0) modalTarLista.innerHTML = "<li>No hay tareas activas.</li>";
+                 }
+                 if (modalTarOpciones) {
+                     modalTarOpciones.innerHTML = data.tarOpciones.map(item => `<li>${item}</li>`).join('');
+                      if (data.tarOpciones.length === 0) modalTarOpciones.innerHTML = "<li>Sin opciones de tareas.</li>";
+                 }
+
+                 if (modalDocTexto) modalDocTexto.textContent = data.docTexto;
+                 if (modalDocLista) {
+                     modalDocLista.innerHTML = data.docLista.map(item => `<li>${item}</li>`).join('');
+                     if (data.docLista.length === 0) modalDocLista.innerHTML = "<li>No hay documentación disponible.</li>";
+                 }
+                 if (modalDocAvanzadas) {
+                     modalDocAvanzadas.innerHTML = data.docAvanzadas.map(item => `<li>${item}</li>`).join('');
+                      if (data.docAvanzadas.length === 0) modalDocAvanzadas.innerHTML = "<li>Sin herramientas avanzadas.</li>";
+                 }
+
+                 if (modalComTexto) modalComTexto.textContent = data.comTexto;
+                 if (modalComLista) {
+                     modalComLista.innerHTML = data.comLista.map(comment => `<div class="modal-comment"><span class="author">${comment.author}:</span> <span class="text">${comment.text}</span> <span class="timestamp">${comment.timestamp}</span></div>`).join('');
+                     if (data.comLista.length === 0) modalComLista.innerHTML = "<p style='text-align: center; color: var(--color-muted);'>No hay comentarios.</p>";
+                 }
+                 if (modalComExtras) {
+                     modalComExtras.innerHTML = data.comExtras.map(item => `<li>${item}</li>`).join('');
+                     if (data.comExtras.length === 0) modalComExtras.innerHTML = "<li>Sin funciones extras.</li>";
+                 }
+
+
+                if (modalIntTexto) modalIntTexto.textContent = data.intTexto;
+                if (modalIntLista) {
+                    modalIntLista.innerHTML = data.intLista.map(item => `<li>${item}</li>`).join('');
+                     if (data.intLista.length === 0) modalIntLista.innerHTML = "<li>No hay integraciones.</li>";
+                }
+                if (modalIntOpciones) {
+                    modalIntOpciones.innerHTML = data.intOpciones.map(item => `<li>${item}</li>`).join('');
+                     if (data.intOpciones.length === 0) modalIntOpciones.innerHTML = "<li>Sin pruebas.</li>";
+                }
+
+                if (modalProTexto) modalProTexto.textContent = data.proTexto;
+                if (modalProIframe) modalProIframe.src = data.proIframeSrc || 'about:blank'; // Usar about:blank si no hay src
+                 if (modalProOpciones) {
+                    modalProOpciones.innerHTML = data.proOpciones.map(item => `<li>${item}</li>`).join('');
+                     if (data.proOpciones.length === 0) modalProOpciones.innerHTML = "<li>Sin interacción.</li>";
+                 }
+
+                if (modalSegTexto) modalSegTexto.textContent = data.segTexto;
+                if (modalSegLista) {
+                    modalSegLista.innerHTML = data.segLista.map(item => `<li>${item}</li>`).join('');
+                     if (data.segLista.length === 0) modalSegLista.innerHTML = "<li>Sin datos de seguridad.</li>";
+                }
+                if (modalSegOpciones) {
+                    modalSegOpciones.innerHTML = data.segOpciones.map(item => `<li>${item}</li>`).join('');
+                     if (data.segOpciones.length === 0) modalSegOpciones.innerHTML = "<li>Sin monitoreo.</li>";
+                }
+
+                if (modalFinTexto) modalFinTexto.textContent = data.finTexto;
+                if (modalFinLista) {
+                    modalFinLista.innerHTML = data.finLista.map(item => `<li>${item}</li>`).join('');
+                     if (data.finLista.length === 0) modalFinLista.innerHTML = "<li>Sin datos financieros.</li>";
+                }
+                if (modalFinOpciones) {
+                    modalFinOpciones.innerHTML = data.finOpciones.map(item => `<li>${item}</li>`).join('');
+                     if (data.finFinOpciones.length === 0) modalFinOpciones.innerHTML = "<li>Sin reportes.</li>";
+                }
+
+
+                if (modalLoadingState) modalLoadingState.classList.remove('active'); // Ocultar esqueleto
+                modalPanes[0].classList.add('active'); // Mostrar la primera pestaña (Descripción) por defecto
+
+            }, 800); // Simular un retardo de 800ms para la carga de datos
+
+        }
+
+        // Asignar event listeners a las tarjetas de proyecto/beta
+        projectCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const projectKey = card.getAttribute('data-project');
+                if (projectKey) {
+                    loadProjectData(projectKey);
+                } else {
+                    console.error("Project card missing data-project attribute:", card);
+                }
+            });
+        });
+
+         betaProjects.forEach(card => {
+            card.addEventListener('click', () => {
+                const projectKey = card.getAttribute('data-project');
+                if (projectKey) {
+                    loadProjectData(projectKey); // Usamos la misma función de carga
+                } else {
+                    console.error("Beta project card missing data-project attribute:", card);
+                }
+            });
+        });
+
+
+        // Manejar el cambio de pestañas en el modal
+        modalTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                 if (tab.classList.contains('active')) return; // No hacer nada si ya está activo
+
+                playSound('tabSound'); // Sonido al cambiar de pestaña
+
+                // Quitar 'active' de todas las pestañas y paneles
+                modalTabs.forEach(t => t.classList.remove('active'));
+                modalPanes.forEach(p => p.classList.remove('active'));
+
+                // Añadir 'active' a la pestaña clickeada y su panel asociado
+                tab.classList.add('active');
+                const targetTabId = tab.getAttribute('data-tab');
+                const targetPane = document.getElementById(targetTabId);
+                if (targetPane) {
+                    targetPane.classList.add('active');
+                     // Si el panel es de estadísticas, asegurarse de que el gráfico se renderice correctamente
+                    if (targetTabId === 'tab-estadisticas' && projectChartInstance) {
+                        projectChartInstance.resize(); // Forzar redibujado del gráfico si es necesario
+                    }
+                } else {
+                    console.error("Target pane not found for tab:", targetTabId);
+                }
+            });
+        });
+
+        // Manejar el cierre del modal
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', () => {
+                modalProyecto.classList.remove('open');
+                playSound('modalClose'); // Sonido de cierre
+                 // Destruir chart al cerrar modal para liberar memoria
+                 if (projectChartInstance) {
+                    projectChartInstance.destroy();
+                    projectChartInstance = null;
+                }
+            });
+        }
+
+         // Cerrar modal al hacer clic fuera del contenido
+         if (modalProyecto) {
+             modalProyecto.addEventListener('click', (e) => {
+                 // Comprobar si el clic fue directamente en el fondo del modal
+                 if (e.target === modalProyecto) {
+                    modalProyecto.classList.remove('open');
+                    playSound('modalClose');
+                     if (projectChartInstance) {
+                        projectChartInstance.destroy();
+                        projectChartInstance = null;
+                    }
+                 }
+             });
+         }
+
+
+        // Cerrar modal con tecla Escape
+        document.addEventListener('keydown', (e) => {
+             if (e.key === 'Escape') {
+                 if (modalProyecto && modalProyecto.classList.contains('open')) {
+                    modalProyecto.classList.remove('open');
+                    playSound('modalClose');
+                     if (projectChartInstance) {
+                        projectChartInstance.destroy();
+                        projectChartInstance = null;
+                    }
+                 }
+             }
+        });
+
+        // Lógica simple para enviar comentario (simulado)
+        if (modalComSubmitBtn) {
+             modalComSubmitBtn.addEventListener('click', () => {
+                 const commentText = modalComInput.value.trim();
+                 if (commentText && modalComLista) {
+                     const newCommentEl = document.createElement('div');
+                     newCommentEl.classList.add('modal-comment');
+                     const now = new Date();
+                     const timestamp = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                     newCommentEl.innerHTML = `<span class="author">User:</span> <span class="text">${commentText}</span> <span class="timestamp">${timestamp}</span>`;
+                      // Quitar el mensaje de "No hay comentarios." si existe
+                      if (modalComLista.querySelector('p')) {
+                          modalComLista.innerHTML = '';
+                      }
+                     modalComLista.appendChild(newCommentEl);
+                     modalComInput.value = ''; // Limpiar input
+                     modalComLista.scrollTop = modalComLista.scrollHeight; // Scroll al último comentario
+                     playSound('success'); // Sonido de éxito
+                 } else if (!commentText) {
+                     // Opcional: Sonido de error o feedback visual si el comentario está vacío
+                     playSound('error');
+                 }
+             });
+
+             // Permitir Shift+Enter para nueva línea en el textarea
+             if (modalComInput) {
+                 modalComInput.addEventListener('keydown', (e) => {
+                     if (e.key === 'Enter' && e.shiftKey) {
+                         // Permitir nueva línea
+                     } else if (e.key === 'Enter') {
+                         e.preventDefault(); // Prevenir salto de línea por defecto
+                         modalComSubmitBtn.click(); // Simular clic en el botón de enviar
+                     }
+                 });
+             }
+        }
+
+
+        // ============================================================
+        // GRAFICOS DE PANEL (Chart.js)
+        // ============================================================
+        let chart1Instance = null;
+        let systemChartInstance = null;
+
+        function initCharts() {
+            // Gráfico 1: Análisis
+             if (chart1Canvas) {
+                 if (chart1Instance) chart1Instance.destroy(); // Destruir instancia anterior si existe
+                 chart1Instance = new Chart(chart1Canvas, {
+                     type: 'bar', // Ejemplo: Gráfico de barras
+                     data: {
+                         labels: ['Procesamiento', 'Red', 'Almacenamiento', 'Memoria'], // Ejemplo de métricas
+                         datasets: [{
+                             label: 'Carga Promedio (%)',
+                             data: [(Math.random() * 80 + 10), (Math.random() * 70 + 20), (Math.random() * 60 + 30), (Math.random() * 75 + 15)], // Datos simulados
+                             backgroundColor: 'rgba(var(--color-accent-rgb), 0.4)',
+                             borderColor: 'var(--color-accent)',
+                             borderWidth: 1
+                         }]
+                     },
+                     options: {
+                         responsive: true,
+                         maintainAspectRatio: false,
+                         plugins: { legend: { display: false } }, // Ocultar leyenda
+                         scales: {
+                              x: {
+                                  ticks: { color: 'var(--color-muted)', font: { family: 'var(--font-main)' } },
+                                  grid: { color: 'rgba(var(--color-accent-rgb), 0.1)' }
+                              },
+                              y: {
+                                  ticks: { color: 'var(--color-muted)', font: { family: 'var(--font-main)' } },
+                                  grid: { color: 'rgba(var(--color-accent-rgb), 0.1)' },
+                                  beginAtZero: true,
+                                  max: 100 // Ejemplo: Valores en porcentaje
+                              }
+                          }
+                     }
+                 });
+             }
+
+            // Gráfico 2: Sistema (ej. CPU/RAM over time)
+             if (systemChartCanvas) {
+                 if (systemChartInstance) systemChartInstance.destroy(); // Destruir instancia anterior
+                 systemChartInstance = new Chart(systemChartCanvas, {
+                      type: 'line', // Ejemplo: Gráfico de líneas
+                     data: {
+                         labels: ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00'], // Eje de tiempo simulado
+                         datasets: [
+                             {
+                                 label: 'CPU (%)',
+                                 data: [Math.random() * 30 + 40, Math.random() * 20 + 50, Math.random() * 30 + 30, Math.random() * 40 + 40, Math.random() * 20 + 50, Math.random() * 30 + 40, Math.random() * 10 + 60],
+                                 borderColor: 'hsla(200, 80%, 55%, 0.8)', // Otro color de ejemplo
+                                 backgroundColor: 'hsla(200, 80%, 55%, 0.2)',
+                                 tension: 0.4,
+                                 pointRadius: 3
+                             },
+                             {
+                                label: 'RAM (%)',
+                                data: [Math.random() * 20 + 20, Math.random() * 15 + 25, Math.random() * 10 + 30, Math.random() * 20 + 20, Math.random() * 15 + 25, Math.random() * 10 + 30, Math.random() * 5 + 35],
+                                borderColor: 'hsla(0, 100%, 60%, 0.8)', // Otro color de ejemplo (rojo/error)
+                                backgroundColor: 'hsla(0, 100%, 60%, 0.2)',
+                                tension: 0.4,
+                                pointRadius: 3
+                            }
+                         ]
+                     },
+                     options: {
+                         responsive: true,
+                         maintainAspectRatio: false,
+                         plugins: {
+                             legend: {
+                                 display: true,
+                                 labels: { color: 'var(--color-text)', font: { family: 'var(--font-main)' } }
+                             }
+                         },
+                         scales: {
+                              x: {
+                                  ticks: { color: 'var(--color-muted)', font: { family: 'var(--font-main)' } },
+                                  grid: { color: 'rgba(var(--color-accent-rgb), 0.1)' }
+                              },
+                              y: {
+                                  ticks: { color: 'var(--color-muted)', font: { family: 'var(--font-main)' } },
+                                  grid: { color: 'rgba(var(--color-accent-rgb), 0.1)' },
+                                  beginAtZero: true,
+                                  max: 100 // Ejemplo: Valores en porcentaje
+                              }
+                          }
+                     }
+                 });
+             }
+        }
+
+
+        // ============================================================
+        // ACTUALIZACIONES DEL HUD (Adaptado de referencia)
+        // ============================================================
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            if (hudClock) hudClock.textContent = `${hours}:${minutes}:${seconds}`;
+        }
+
+        function startClock() { if (hudClock) { updateClock(); setInterval(updateClock, 1000); } }
+
+        function updateScrollIndicator() {
+            const bodyHeight = document.body.scrollHeight;
+            const windowHeight = window.innerHeight;
+             if (!hudScrollIndicator) return; // Salir si no existe el elemento
+
+            if (bodyHeight <= windowHeight) {
+                hudScrollIndicator.querySelector('span:last-child').textContent = '100%';
+                return;
+            }
+            const scrollableHeight = bodyHeight - windowHeight;
+            const scrollPercent = Math.min(100, Math.max(0, (window.scrollY / scrollableHeight) * 100));
+             hudScrollIndicator.querySelector('span:last-child').textContent = `${scrollPercent.toFixed(0)}%`;
+        }
+
+        let scrollTimeout;
+        window.addEventListener('scroll', () => {
+            if (scrollTimeout) window.cancelAnimationFrame(scrollTimeout);
+            scrollTimeout = window.requestAnimationFrame(updateScrollIndicator);
+        }, { passive: true });
+        updateScrollIndicator(); // Llamar al inicio
+
+        console.log("CyberLab Dashboard Interface Initialized.");
+    });
+  </script>
+
+</body>
+</html>
