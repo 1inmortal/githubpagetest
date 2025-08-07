@@ -6,6 +6,7 @@ Verifica que todos los archivos necesarios estén presentes y correctos
 
 import os
 import sys
+import yaml
 from pathlib import Path
 
 def check_file_exists(file_path: str, description: str) -> bool:
@@ -36,6 +37,8 @@ def check_workflow_files() -> bool:
     workflow_files = [
         (".github/workflows/codeql.yml", "Workflow de CodeQL"),
         (".github/codeql/codeql-config.yml", "Configuración de CodeQL"),
+        (".github/workflows/sitemap.yml", "Workflow de Sitemap"),
+        (".github/workflows/static-site-deploy.yml", "Workflow de Deploy"),
     ]
     
     all_exist = True
@@ -94,6 +97,31 @@ def check_gitignore() -> bool:
         print("✅ .gitignore no excluye archivos Python importantes")
         return True
 
+def check_yaml_syntax() -> bool:
+    """Verifica la sintaxis YAML de los archivos de configuración"""
+    yaml_files = [
+        ".github/workflows/codeql.yml",
+        ".github/codeql/codeql-config.yml",
+        ".github/workflows/sitemap.yml",
+        ".github/workflows/static-site-deploy.yml",
+    ]
+    
+    all_valid = True
+    for file_path in yaml_files:
+        if Path(file_path).exists():
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    yaml.safe_load(f)
+                print(f"✅ Sintaxis YAML válida: {file_path}")
+            except yaml.YAMLError as e:
+                print(f"❌ Error de sintaxis YAML en {file_path}: {e}")
+                all_valid = False
+        else:
+            print(f"⚠️  Archivo YAML no encontrado: {file_path}")
+            all_valid = False
+    
+    return all_valid
+
 def main():
     """Función principal de verificación"""
     print("🔍 Verificando configuración de CodeQL...\n")
@@ -103,6 +131,7 @@ def main():
         ("Archivos de Workflow", check_workflow_files),
         ("Configuración de Python", check_python_config_files),
         ("Configuración de .gitignore", check_gitignore),
+        ("Sintaxis YAML", check_yaml_syntax),
     ]
     
     results = []
