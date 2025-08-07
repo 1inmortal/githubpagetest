@@ -20,16 +20,19 @@ def check_file_exists(file_path: str, description: str) -> bool:
 
 def check_python_files() -> bool:
     """Verifica que existan archivos Python en el repositorio"""
-    python_files = list(Path(".").rglob("*.py"))
-    if python_files:
-        print(f"✅ Archivos Python encontrados: {len(python_files)}")
-        for file in python_files[:5]:  # Mostrar solo los primeros 5
-            print(f"   - {file}")
-        if len(python_files) > 5:
-            print(f"   ... y {len(python_files) - 5} más")
-        return True
-    else:
-        print("❌ No se encontraron archivos Python")
+    # Usar el script específico para listar archivos del proyecto
+    try:
+        import subprocess
+        result = subprocess.run(['python', 'list-project-files.py'], 
+                              capture_output=True, text=True, timeout=30)
+        if result.returncode == 0:
+            print("✅ Archivos Python del proyecto verificados correctamente")
+            return True
+        else:
+            print("❌ Error ejecutando list-project-files.py")
+            return False
+    except Exception as e:
+        print(f"❌ Error verificando archivos Python: {e}")
         return False
 
 def check_workflow_files() -> bool:
