@@ -844,11 +844,29 @@
         };
     }
 
-    // Limpiar HTML (básico)
+    // Limpiar HTML (mejorado con seguridad)
     function sanitizeHTML(str) {
+        if (typeof str !== 'string') {
+            return '';
+        }
+        
+        // Crear elemento temporal
         const temp = document.createElement('div');
         temp.textContent = str;
-        return temp.innerHTML;
+        
+        // Obtener el contenido HTML escapado
+        let sanitized = temp.innerHTML;
+        
+        // Eliminar cualquier script que pudiera haberse insertado
+        sanitized = sanitized.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+        
+        // Eliminar eventos inline
+        sanitized = sanitized.replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, '');
+        
+        // Eliminar javascript: en href
+        sanitized = sanitized.replace(/href\s*=\s*["']\s*javascript:/gi, 'href="#"');
+        
+        return sanitized;
     }
 
      // Calcular RGB desde CSS var (para sombras, etc.)
@@ -1075,10 +1093,20 @@
         terminalPrompt.textContent = `${USERNAME}@${HOSTNAME}:${currentDirectory}${PROMPT_SYMBOL}`;
     }
 
-     // Crear enlaces clickables para comandos
+     // Función mejorada para escapar comillas en SQL
+    function escapeQuotes(s) {
+        if (typeof s !== 'string') {
+            return '';
+        }
+        
+        // ESCAPAR TODAS las comillas simples usando regex con bandera global
+        return s.replace(/'/g, "''");
+    }
+    
+    // Crear enlaces clickables para comandos
     function createCommandLink(command, text = null) {
         const displayText = text || command;
-        // Sanitizar command antes de usarlo en el onclick
+        // Sanitizar command antes de usarlo en el onclick usando escape mejorado
         const safeCommand = command.replace(/'/g, "\\'").replace(/"/g, '\\"');
         return `<a href="#" onclick="executeCommandFromLink('${safeCommand}'); return false;">${sanitizeHTML(displayText)}</a>`;
     }
