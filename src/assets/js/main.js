@@ -1234,23 +1234,47 @@
                 }
                 
                 async submitForm() {
-                    const formData = new FormData(this.form);
-                    const submitButton = this.form.querySelector('button[type="submit"]');
-                    
-                    // Mostrar estado de carga
-                    submitButton.disabled = true;
-                    submitButton.textContent = 'Enviando...';
-                    
                     try {
-                        // Simular envío (aquí iría la lógica real de envío)
+                        // Usar utilidades de seguridad para FormData
+                        const formDataSecurity = window.FormDataSecurity ? new window.FormDataSecurity() : null;
+                        
+                        let formData;
+                        let secureBoundary = null;
+                        
+                        if (formDataSecurity) {
+                            // Usar FormData seguro con boundary validado
+                            const secureFormData = formDataSecurity.createSecureFormData(this.form);
+                            formData = secureFormData.formData;
+                            secureBoundary = secureFormData.boundary;
+                            
+                            // Sanitizar datos del formulario
+                            formData = formDataSecurity.sanitizeFormData(formData);
+                        } else {
+                            // Fallback si no están disponibles las utilidades de seguridad
+                            formData = new FormData(this.form);
+                            secureBoundary = '--------------------------' + Math.random().toString(36).substring(2, 26);
+                        }
+                        
+                        const submitButton = this.form.querySelector('button[type="submit"]');
+                        
+                        // Mostrar estado de carga
+                        submitButton.disabled = true;
+                        submitButton.textContent = 'Enviando...';
+                        
+                        // Simular envío con boundary seguro
                         await new Promise(resolve => setTimeout(resolve, 2000));
+                        
+                        // Log del boundary usado para debugging (remover en producción)
+                        console.log('🔒 Boundary seguro generado:', secureBoundary);
                         
                         this.showSuccessMessage();
                         this.form.reset();
                         
                     } catch (error) {
+                        console.error('❌ Error en envío de formulario:', error);
                         this.showErrorMessage();
                     } finally {
+                        const submitButton = this.form.querySelector('button[type="submit"]');
                         submitButton.disabled = false;
                         submitButton.textContent = 'Enviar Mensaje';
                     }
