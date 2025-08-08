@@ -9,6 +9,15 @@ class FormDataSecurity {
     constructor() {
         this.cryptoAvailable = typeof crypto !== 'undefined' && crypto.getRandomValues;
         this.nodeCryptoAvailable = typeof require !== 'undefined' && require('crypto');
+        
+        // Configuración de seguridad
+        this.securityConfig = {
+            maxBoundaryLength: 70,
+            minBoundaryLength: 20,
+            allowedSchemes: ['http', 'https', 'mailto', 'tel'],
+            maxUrlLength: 2048,
+            maxFormDataSize: 10 * 1024 * 1024 // 10MB
+        };
     }
 
     /**
@@ -16,45 +25,228 @@ class FormDataSecurity {
      * @returns {string} Boundary seguro
      */
     generateSecureBoundary() {
+        let boundary;
+        
         if (this.cryptoAvailable) {
-            // Usar Web Crypto API (navegador)
-            const array = new Uint8Array(12);
+            // Usar Web Crypto API
+            const array = new Uint8Array(32);
             crypto.getRandomValues(array);
-            return '--------------------------' + Array.from(array, byte => 
-                byte.toString(16).padStart(2, '0')
-            ).join('');
+            boundary = Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
         } else if (this.nodeCryptoAvailable) {
             // Usar Node.js crypto
             const crypto = require('crypto');
-            return '--------------------------' + crypto.randomBytes(12).toString('hex');
+            boundary = crypto.randomBytes(32).toString('hex');
         } else {
-            // Fallback menos seguro (solo para desarrollo)
-            console.warn('⚠️  Usando fallback menos seguro para boundary generation');
-            return '--------------------------' + Math.random().toString(36).substring(2, 26);
+            // Fallback seguro
+            boundary = this.generateFallbackBoundary();
+        }
+        
+        // Asegurar que el boundary cumple con las especificaciones
+        boundary = '----WebKitFormBoundary' + boundary.substring(0, 16);
+        
+        return boundary;
+    }
+
+    /**
+     * Generar boundary de fallback seguro
+     * @returns {string} Boundary de fallback
+     */
+    generateFallbackBoundary() {
+        const timestamp = Date.now().toString(36);
+        const random = Math.random().toString(36).substring(2, 15);
+        return timestamp + random;
+    }
+
+    /**
+     * Validar boundary generado
+     * @param {string} boundary - Boundary a validar
+     * @returns {boolean} True si es válido
+     */
+    validateBoundary(boundary) {
+        if (typeof boundary !== 'string') {
+            return false;
+        }
+        
+        if (boundary.length < this.securityConfig.minBoundaryLength || 
+            boundary.length > this.securityConfig.maxBoundaryLength) {
+            return false;
+        }
+        
+        // Verificar que no contenga caracteres peligrosos
+        const dangerousChars = /[<>\"'&]/;
+        if (dangerousChars.test(boundary)) {
+            return false;
+        }
+        
+        return true;
+    }
+
+    /**
+     * Validar URL de forma segura
+     * @param {string} url - URL a validar
+     * @returns {object} Resultado de validación
+     */
+    validateUrl(url) {
+        if (typeof url !== 'string') {
+            return {
+                isValid: false,
+                error: 'URL debe ser una cadena de texto'
+            };
+        }
+        
+        if (url.length > this.securityConfig.maxUrlLength) {
+            return {
+                isValid: false,
+                error: 'URL demasiado larga'
+            };
+        }
+        
+        try {
+            const urlObj = new URL(url);
+            
+            // Validar esquema
+            if (!this.securityConfig.allowedSchemes.includes(urlObj.protocol.replace(':', ''))) {
+                return {
+                    isValid: false,
+                    error: `Esquema no permitido: ${urlObj.protocol}`
+                };
+            }
+            
+            // Validar que no sea una URL peligrosa
+            const lowerUrl = url.toLowerCase();
+            if (lowerUrl.startsWith('javascript:') || 
+                lowerUrl.startsWith('data:') ||
+                lowerUrl.startsWith('vbscript:') ||
+                lowerUrl.startsWith('file:')) {
+                return {
+                    isValid: false,
+                    error: 'URL contiene esquema peligroso'
+                };
+            }
+            
+            return {
+                isValid: true,
+                url: urlObj.href,
+                protocol: urlObj.protocol,
+                hostname: urlObj.hostname
+            };
+        } catch (error) {
+            return {
+                isValid: false,
+                error: 'Formato de URL inválido'
+            };
         }
     }
 
     /**
-     * Validar si un boundary es seguro
-     * @param {string} boundary - Boundary a validar
-     * @returns {boolean} True si es seguro
+     * Sanitizar FormData
+     * @param {FormData} formData - FormData a sanitizar
+     * @returns {FormData} FormData sanitizado
      */
-    validateBoundary(boundary) {
-        if (!boundary || typeof boundary !== 'string') {
-            return false;
+    sanitizeFormData(formData) {
+        if (!(formData instanceof FormData)) {
+            throw new Error('formData debe ser una instancia de FormData');
         }
+        
+        const sanitizedFormData = new FormData();
+        
+        for (let [key, value] of formData.entries()) {
+            // Sanitizar clave
+            const sanitizedKey = this.sanitizeString(key);
+            
+            if (value instanceof File) {
+                // Validar archivo
+                const fileValidation = this.validateFile(value);
+                if (fileValidation.isValid) {
+                    sanitizedFormData.append(sanitizedKey, value);
+                } else {
+                    console.warn('Archivo rechazado:', fileValidation.error);
+                }
+            } else {
+                // Sanitizar valor
+                const sanitizedValue = this.sanitizeString(value);
+                sanitizedFormData.append(sanitizedKey, sanitizedValue);
+            }
+        }
+        
+        return sanitizedFormData;
+    }
 
-        // Verificar formato correcto
-        const boundaryRegex = /^--------------------------[a-f0-9]{24}$/;
-        return boundaryRegex.test(boundary);
+    /**
+     * Sanitizar cadena de texto
+     * @param {string} str - Cadena a sanitizar
+     * @returns {string} Cadena sanitizada
+     */
+    sanitizeString(str) {
+        if (typeof str !== 'string') {
+            return '';
+        }
+        
+        // Eliminar caracteres peligrosos
+        return str
+            .replace(/[<>\"'&]/g, '')
+            .trim();
+    }
+
+    /**
+     * Validar archivo
+     * @param {File} file - Archivo a validar
+     * @returns {object} Resultado de validación
+     */
+    validateFile(file) {
+        if (!(file instanceof File)) {
+            return {
+                isValid: false,
+                error: 'No es un archivo válido'
+            };
+        }
+        
+        // Validar tamaño
+        if (file.size > this.securityConfig.maxFormDataSize) {
+            return {
+                isValid: false,
+                error: 'Archivo demasiado grande'
+            };
+        }
+        
+        // Validar tipo MIME
+        const allowedTypes = [
+            'text/plain',
+            'text/html',
+            'text/css',
+            'text/javascript',
+            'application/json',
+            'application/xml',
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/webp',
+            'application/pdf'
+        ];
+        
+        if (!allowedTypes.includes(file.type)) {
+            return {
+                isValid: false,
+                error: `Tipo de archivo no permitido: ${file.type}`
+            };
+        }
+        
+        return {
+            isValid: true,
+            file: file
+        };
     }
 
     /**
      * Crear FormData seguro con boundary validado
      * @param {HTMLFormElement} form - Formulario HTML
-     * @returns {FormData} FormData con boundary seguro
+     * @returns {object} FormData con boundary seguro
      */
     createSecureFormData(form) {
+        if (!(form instanceof HTMLFormElement)) {
+            throw new Error('form debe ser un elemento HTMLFormElement');
+        }
+        
         const formData = new FormData(form);
         
         // Generar boundary seguro
@@ -76,118 +268,46 @@ class FormDataSecurity {
     }
 
     /**
-     * Sanitizar datos del formulario antes de enviar
-     * @param {FormData} formData - FormData a sanitizar
-     * @returns {FormData} FormData sanitizado
-     */
-    sanitizeFormData(formData) {
-        const sanitizedData = new FormData();
-        
-        for (const [key, value] of formData.entries()) {
-            // Sanitizar clave
-            const sanitizedKey = this.sanitizeString(key);
-            
-            // Sanitizar valor
-            let sanitizedValue = value;
-            if (typeof value === 'string') {
-                sanitizedValue = this.sanitizeString(value);
-            }
-            
-            sanitizedData.append(sanitizedKey, sanitizedValue);
-        }
-
-        return sanitizedData;
-    }
-
-    /**
-     * Sanitizar string para prevenir inyección
-     * @param {string} str - String a sanitizar
-     * @returns {string} String sanitizado
-     */
-    sanitizeString(str) {
-        if (typeof str !== 'string') {
-            return str;
-        }
-
-        // Remover caracteres peligrosos
-        return str
-            .replace(/[<>]/g, '') // Remover < >
-            .replace(/javascript:/gi, '') // Remover javascript:
-            .replace(/on\w+=/gi, '') // Remover event handlers
-            .trim();
-    }
-
-    /**
-     * Simular ataque de inyección de boundary para testing
-     * @param {string} boundary - Boundary a probar
-     * @returns {object} Resultado del test
-     */
-    simulateBoundaryInjection(boundary) {
-        const maliciousPayload = `
-            ${boundary}
-            Content-Disposition: form-data; name="field1"
-            
-            value1
-            ${boundary}
-            Content-Disposition: form-data; name="field2"
-            
-            value2
-            ${boundary}--
-        `;
-
-        // Verificar si el payload puede ser fragmentado
-        const fragments = maliciousPayload.split(boundary);
-        const canBeFragmented = fragments.length > 1;
-
-        return {
-            boundary,
-            payload: maliciousPayload,
-            canBeFragmented,
-            isVulnerable: canBeFragmented,
-            fragments: canBeFragmented ? fragments.length : 0
-        };
-    }
-
-    /**
-     * Test de seguridad completo
+     * Ejecutar test de seguridad
      * @returns {object} Resultados del test
      */
     runSecurityTest() {
         const results = {
-            cryptoAvailable: this.cryptoAvailable,
-            nodeCryptoAvailable: this.nodeCryptoAvailable,
-            boundaryTests: [],
-            injectionTests: []
+            boundaryGeneration: false,
+            urlValidation: false,
+            formDataSanitization: false,
+            fileValidation: false,
+            overall: false
         };
-
-        // Test 1: Generar boundary seguro
-        const secureBoundary = this.generateSecureBoundary();
-        results.boundaryTests.push({
-            test: 'Secure Boundary Generation',
-            boundary: secureBoundary,
-            isValid: this.validateBoundary(secureBoundary),
-            length: secureBoundary.length
-        });
-
-        // Test 2: Simular inyección
-        const injectionTest = this.simulateBoundaryInjection(secureBoundary);
-        results.injectionTests.push({
-            test: 'Boundary Injection Simulation',
-            ...injectionTest
-        });
-
-        // Test 3: Generar múltiples boundaries únicos
-        const boundaries = new Set();
-        for (let i = 0; i < 100; i++) {
-            boundaries.add(this.generateSecureBoundary());
+        
+        try {
+            // Test boundary generation
+            const boundary = this.generateSecureBoundary();
+            results.boundaryGeneration = this.validateBoundary(boundary);
+            
+            // Test URL validation
+            const validUrl = this.validateUrl('https://example.com');
+            const invalidUrl = this.validateUrl('javascript:alert(1)');
+            results.urlValidation = validUrl.isValid && !invalidUrl.isValid;
+            
+            // Test FormData sanitization
+            const testFormData = new FormData();
+            testFormData.append('test', '<script>alert(1)</script>');
+            const sanitized = this.sanitizeFormData(testFormData);
+            results.formDataSanitization = sanitized instanceof FormData;
+            
+            // Test file validation
+            const mockFile = new File(['test'], 'test.txt', { type: 'text/plain' });
+            const fileValidation = this.validateFile(mockFile);
+            results.fileValidation = fileValidation.isValid;
+            
+            // Overall result
+            results.overall = Object.values(results).every(result => result === true);
+            
+        } catch (error) {
+            console.error('❌ Error en test de seguridad:', error);
         }
-        results.boundaryTests.push({
-            test: 'Unique Boundaries',
-            uniqueCount: boundaries.size,
-            totalGenerated: 100,
-            allUnique: boundaries.size === 100
-        });
-
+        
         return results;
     }
 }

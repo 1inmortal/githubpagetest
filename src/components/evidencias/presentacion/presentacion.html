@@ -844,20 +844,24 @@
         };
     }
 
-    // Limpiar HTML (mejorado con seguridad)
+    // Limpiar HTML (refactorizado con sanitize-html)
     function sanitizeHTML(str) {
         if (typeof str !== 'string') {
             return '';
         }
         
-        // Crear elemento temporal
+        // Intentar usar sanitize-html si está disponible
+        if (typeof window.SecurityUtils !== 'undefined' && window.SecurityUtils.sanitizeHTML) {
+            return window.SecurityUtils.sanitizeHTML(str);
+        }
+        
+        // Fallback robusto si no está disponible la librería
         const temp = document.createElement('div');
         temp.textContent = str;
         
-        // Obtener el contenido HTML escapado
         let sanitized = temp.innerHTML;
         
-        // Eliminar cualquier script que pudiera haberse insertado
+        // Eliminar scripts maliciosos
         sanitized = sanitized.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
         
         // Eliminar eventos inline
@@ -865,6 +869,12 @@
         
         // Eliminar javascript: en href
         sanitized = sanitized.replace(/href\s*=\s*["']\s*javascript:/gi, 'href="#"');
+        
+        // Eliminar data: URLs peligrosas
+        sanitized = sanitized.replace(/src\s*=\s*["']\s*data:image\/svg\+xml/gi, 'src="#"');
+        
+        // Eliminar expresiones de estilo peligrosas
+        sanitized = sanitized.replace(/style\s*=\s*["'][^"']*expression\s*\([^"']*["']/gi, '');
         
         return sanitized;
     }
