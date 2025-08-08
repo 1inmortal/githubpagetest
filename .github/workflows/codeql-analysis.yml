@@ -29,9 +29,9 @@ jobs:
         fetch-depth: 0    # Necesario para CodeQL
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@v3
       with:
-        languages: ${{ matrix.language }}
+        languages: javascript,python
         config-file: ./.github/codeql/codeql-config.yml
 
     - name: Set up Node.js (for JavaScript analysis)
@@ -41,36 +41,37 @@ jobs:
         node-version: '18'
         cache: 'npm'
 
-    - name: Install Node.js dependencies
+    - name: Install Node dependencies
       if: matrix.language == 'javascript'
       run: |
         if [ -f "config/package.json" ]; then
-          cd config && npm install
+          cd config && npm ci
         fi
         if [ -f "src/components/react-ui-login/package.json" ]; then
-          cd src/components/react-ui-login && npm install
+          cd src/components/react-ui-login && npm ci
         fi
 
-    - name: Set up Python (for Python analysis)
+    - name: Set up Python
       if: matrix.language == 'python'
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
 
     - name: Install Python dependencies
-      if: matrix.language == 'python'
+      if: matrix.language == 'python' && hashFiles('config/requirements.txt') != ''
       run: |
-        if [ -f "config/requirements.txt" ]; then
-          pip install -r config/requirements.txt
-        fi
-        if [ -f "config/setup.py" ]; then
-          pip install -e config/
-        fi
+        pip install --upgrade pip
+        pip install -r config/requirements.txt
+
+    - name: Install config package
+      if: matrix.language == 'python' && hashFiles('config/setup.py') != ''
+      run: pip install -e config
 
     - name: Autobuild
-      uses: github/codeql-action/autobuild@v2
+      uses: github/codeql-action/autobuild@v3
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v3
       with:
+        output: results.sarif
         category: "/language:${{matrix.language}}"
