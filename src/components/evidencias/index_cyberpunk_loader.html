@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Cyberpunk Loader • C·P PROFILE</title>
+  
+  <!-- Carga de fuentes desde Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ============================================= */
+    /* ====== VARIABLES Y ESTILOS GLOBALES ========= */
+    /* ============================================= */
+    :root{
+      /* Paleta de colores para un fácil mantenimiento */
+      --bg:#060607;      /* Fondo principal oscuro */
+      --ink:#f5f5f7;     /* Color de texto principal (casi blanco) */
+      --soft:#a7a7b1;    /* Color de texto suave/secundario */
+      --neon:#ff2e4c;     /* Acento de neón principal (rojo/rosa) */
+      --neon2:#00f0ff;    /* Acento de neón secundario (cyan) */
+      --hud:#1a1a1f;      /* Color de fondo para elementos HUD */
+      --muted:#6b6b74;   /* Color para elementos menos importantes */
+    }
+    
+    *{
+      box-sizing: border-box; /* Modelo de caja universal para un layout predecible */
+    }
+    
+    html,body{
+      height: 100%; 
+      margin: 0; 
+      background: var(--bg); 
+      color: var(--ink); 
+      font-family: 'Share Tech Mono', monospace; /* Fuente monoespaciada por defecto */
+      overflow: hidden; /* Evita barras de scroll durante la animación */
+    }
+    
+    /* ============================================= */
+    /* ======= EFECTOS DE FONDO (BACKDROP) ========= */
+    /* ============================================= */
+    /* Efecto de ruido estático para dar textura */
+    .noise{
+      position: fixed; 
+      inset: 0; 
+      pointer-events: none; /* No interfiere con el ratón */
+      opacity: .04;
+      background:
+        radial-gradient(1000px 800px at 50% 50%, #0d0d12 0%, transparent 60%),
+        url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23n)" opacity="0.25"/></svg>');
+      mix-blend-mode: screen; /* Mezcla el ruido con el fondo */
+      animation: subtle-flicker 10s linear infinite;
+    }
+    
+    /* Efecto de líneas de escaneo (scanlines) típico de monitores antiguos */
+    .scanlines{
+      position: fixed; 
+      inset: 0; 
+      pointer-events: none;
+      background: repeating-linear-gradient(180deg, rgba(255,255,255,.04) 0px, rgba(255,255,255,.04) 1px, transparent 2px, transparent 4px);
+      opacity: .08; 
+      animation: sl 6s linear infinite;
+    }
+    
+    @keyframes sl{ /* Animación para mover las scanlines verticalmente */
+      from{transform: translateY(0)} 
+      to{transform: translateY(4px)}
+    }
+    @keyframes subtle-flicker { /* Animación sutil para el ruido de fondo */
+      0%, 100% { opacity: .04; }
+      50% { opacity: .05; }
+    }
+
+    /* ============================================= */
+    /* =========== ESTRUCTURA PRINCIPAL ============ */
+    /* ============================================= */
+    #loader{
+      position: fixed; 
+      inset: 0; 
+      display: grid; 
+      place-items: center; 
+      overflow: hidden;
+      /* Transición suave para la salida */
+      transition: opacity .5s ease;
+    }
+    
+    .frame{
+      width: min(1200px, 92vw); /* Ancho responsive, máximo 1200px */
+      aspect-ratio: 21/9; /* Proporción de pantalla cinematográfica */
+      display: grid; 
+      grid-template-rows: auto 1fr auto; /* Filas: cabecera, contenido, pie */
+      row-gap: min(2vh, 24px);
+      border: 1px solid #202026; 
+      background: linear-gradient(#0a0a0c, #09090b);
+      box-shadow: 0 0 0 2px #0a0a0c inset, 0 0 40px #000;
+      position: relative; 
+      isolation: isolate; /* Crea un nuevo contexto de apilamiento */
+    }
+    
+    .topbar{
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      gap: 12px; 
+      letter-spacing: .5em; 
+      text-transform: uppercase;
+      font-family: 'Orbitron', sans-serif; 
+      color: #c9c9d4; 
+      font-size: clamp(12px, 1.8vw, 18px); /* Tamaño de fuente responsive */
+      padding: 8px 0;
+    }
+    
+    .topbar .dot{
+      width: 6px; 
+      height: 6px; 
+      background: var(--neon2); 
+      box-shadow: 0 0 12px var(--neon2); 
+      border-radius: 2px;
+    }
+
+    .hud{
+      display: grid; 
+      grid-template-columns: 1fr minmax(260px, 34%) 1fr; /* 3 columnas flexibles */
+      align-items: center; 
+      gap: clamp(12px, 2vw, 28px);
+      padding: clamp(8px, 1.6vw, 18px) clamp(8px, 2vw, 28px);
+      position: relative;
+    }
+    
+    /* Adaptación para móviles: apila las columnas */
+    @media (max-width: 860px){
+      .frame{
+        aspect-ratio: auto; 
+        height: 100vh; 
+        grid-template-rows: auto 1fr auto;
+        width: 100vw;
+        border: none;
+        box-shadow: none;
+      }
+      .hud{
+        grid-template-columns: 1fr; /* Una sola columna */
+        grid-auto-rows: min-content; 
+        padding: 20px;
+        gap: 24px;
+      }
+      .left-col, .right-col { order: 2; } /* Reordena para que la foto quede arriba */
+      .center-col { order: 1; }
+    }
+
+    /* ============================================= */
+    /* ====== COLUMNA IZQUIERDA: HUELLA DIGITAL ==== */
+    /* ============================================= */
+    .left-col{
+      justify-self: center; 
+      width: 100%; 
+      max-width: 330px; 
+      position: relative;
+    }
+    
+    .scanbox{
+      padding: 16px 14px 18px; 
+      border: 1px solid #26262d; 
+      background: #0a0a0d;
+      outline: 1px solid #1b1b21; 
+      outline-offset: -6px;
+      box-shadow: inset 0 0 0 1px #101015, 0 0 24px #000;
+    }
+    
+    .label{
+      font-size: 10px; 
+      letter-spacing: .4em; 
+      color: var(--soft); 
+      text-transform: uppercase; 
+      margin-bottom: 8px; 
+      text-align: center;
+    }
+    
+    .fp-wrap{
+      position: relative; 
+      aspect-ratio: 1 / 1.25; 
+      display: grid; 
+      place-items: center;
+    }
+    
+    .ring{
+      position: absolute; 
+      border: 1px solid #2a2a31; 
+      border-radius: 100%;
+    }
+    .ring.r1{ inset: 6%; }
+    .ring.r2{ inset: 12%; }
+    .ring.r3{ inset: 18%; }
+    
+    svg.fingerprint{
+      width: 100%; height: 100%; 
+      overflow: visible; 
+      filter: drop-shadow(0 0 6px rgba(255,46,76,.35));
+    }
+    .fp{ 
+      fill: none; 
+      stroke: var(--neon); 
+      stroke-width: 2; 
+      stroke-linecap: round; 
+      opacity: .95; 
+    }
+
+    .readout{
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between; 
+      margin-top: 10px; 
+      font-size: 11px; 
+      color: #bcbcc6;
+    }
+    
+    .meter{
+      position: relative; 
+      height: 6px; 
+      flex: 1; 
+      margin-left: 8px; 
+      background: #121217; 
+      border: 1px solid #26262d;
+    }
+    
+    .meter .bar{
+      position: absolute; 
+      inset: 0; 
+      width: 0%; 
+      background: linear-gradient(90deg, var(--neon), #ff6b7e); 
+      box-shadow: 0 0 10px rgba(255,46,76,.6);
+    }
+
+    /* ============================================= */
+    /* ======== COLUMNA CENTRAL: FOTO ============== */
+    /* ============================================= */
+    .center-col{
+      justify-self: center; 
+      position: relative; 
+      width: 100%; 
+      max-width: 360px;
+    }
+    
+    .photo{
+      position: relative; 
+      display: block; 
+      border: 1px solid #2b2b33; 
+      outline: 2px solid var(--neon); 
+      outline-offset: -10px;
+      box-shadow: 0 0 0 1px #17171c, 0 0 40px rgba(255,46,76,.18), inset 0 0 24px #0b0b10;
+      padding: 10px; 
+      background: var(--bg);
+    }
+    
+    .photo img{
+      display: block; 
+      width: 100%; 
+      height: auto; 
+      object-fit: cover; 
+      filter: grayscale(1) contrast(1.05) brightness(.92);
+    }
+    
+    .bracket{
+      position: absolute; 
+      width: 36px; 
+      height: 24px; 
+      border: 2px solid var(--ink); 
+      opacity: .85;
+    }
+    .bracket.tl{ left: -8px; top: -8px; border-right: none; border-bottom: none; }
+    .bracket.tr{ right: -8px; top: -8px; border-left: none; border-bottom: none; }
+    .bracket.bl{ left: -8px; bottom: -8px; border-right: none; border-top: none; }
+    .bracket.br{ right: -8px; bottom: -8px; border-left: none; border-top: none; }
+    
+    .center-col .scan{
+      position: absolute; 
+      left: 10px; 
+      right: 10px; 
+      height: 2px; 
+      top: 50%; 
+      background: linear-gradient(90deg, transparent, var(--neon2), transparent); 
+      filter: blur(.5px);
+      box-shadow: 0 0 8px var(--neon2);
+      opacity: 0;
+    }
+
+    /* ============================================= */
+    /* ====== COLUMNA DERECHA: DATOS PERFIL ======== */
+    /* ============================================= */
+    .right-col{
+      justify-self: center; 
+      width: 100%; 
+      max-width: 420px;
+    }
+    
+    .panel{
+      padding: 14px 16px; 
+      border: 1px solid #26262d; 
+      background: #0a0a0d;
+      box-shadow: inset 0 0 0 1px #111116, 0 0 24px #000;
+    }
+    
+    .field{
+      display: flex; 
+      gap: 10px; 
+      margin: 4px 0; /* Aumentado para más espacio */
+      align-items: center; /* Centra verticalmente */
+    }
+    
+    .k{ /* Key: la etiqueta del campo */
+      width: 120px; 
+      color: var(--soft); 
+      text-transform: uppercase; 
+      letter-spacing: .15em; 
+      font-size: 11px;
+      flex-shrink: 0; /* Evita que se encoja */
+    }
+    
+    .v{ /* Value: el valor del campo */
+      flex: 1; 
+      color: #e7e7ef; 
+      font-size: 12px; 
+      white-space: nowrap; 
+      overflow: hidden; 
+      text-overflow: ellipsis;
+      position: relative;
+    }
+    
+    .cursor{
+      display: inline-block; 
+      width: 8px; 
+      height: 13px; 
+      background: var(--neon2); 
+      margin-left: 6px;
+      vertical-align: middle;
+      animation: blink 1s steps(2) infinite;
+    }
+    
+    @keyframes blink{
+      50%{ opacity: 0; }
+    }
+
+    /* ============================================= */
+    /* ======= BARRA DE CARGA INFERIOR ============= */
+    /* ============================================= */
+    .bottombar{
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 18px; 
+      padding: 8px 0 16px;
+      color: var(--neon); 
+      letter-spacing: .6em; 
+      text-transform: uppercase; 
+      font-size: clamp(12px, 2vw, 14px);
+    }
+    
+    .loadline{ 
+      position: relative; 
+      width: min(58vw, 640px); 
+      height: 8px; 
+      background: #121217; 
+      border: 1px solid #26262d; 
+      box-shadow: inset 0 0 10px #0f0f14;
+    }
+    
+    .loadline .bar{ 
+      position: absolute; 
+      inset: 0; 
+      width: 0%; 
+      background: linear-gradient(90deg, var(--neon), #ff6980); 
+      box-shadow: 0 0 16px rgba(255,46,76,.8);
+    }
+
+    /* ============================================= */
+    /* ========= ELEMENTOS DECORATIVOS ============= */
+    /* ============================================= */
+    .tick{
+      position: absolute; 
+      width: 38px; 
+      height: 2px; 
+      background: #d8d8df18; 
+      top: 50%; 
+      transform: translateY(-50%);
+    }
+    .tick.l{left: 6%;} .tick.r{right: 6%;}
+    
+    .dot{
+      position: absolute; 
+      width: 4px; 
+      height: 4px; 
+      background: var(--neon); 
+      box-shadow: 0 0 8px var(--neon); 
+      border-radius: 1px; 
+      top: 48%;
+    }
+    .dot.dl{left: 12%;} .dot.dr{right: 12%;}
+
+    /* ============================================= */
+    /* ========= PANTALLA DE APP FINAL ============= */
+    /* ============================================= */
+    #app{
+      display: none; /* Oculto hasta que el loader termine */
+      place-items: center; 
+      height: 100%; 
+      color: white; 
+      font-family: 'Orbitron', sans-serif;
+    }
+    
+    .skip{
+      position: absolute; 
+      right: 14px; 
+      bottom: 12px; 
+      color: var(--soft); 
+      background: #0f0f12; 
+      border: 1px solid #2a2a32; 
+      padding: 6px 10px; 
+      cursor: pointer; 
+      letter-spacing: .2em; 
+      text-transform: uppercase; 
+      opacity: .7;
+      transition: all .2s;
+    }
+    
+    .skip:hover{
+      opacity: 1; 
+      color: var(--ink);
+      border-color: var(--soft);
+      box-shadow: 0 0 8px #1d1d22;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- El loader es un diálogo modal para accesibilidad -->
+  <div id="loader" role="dialog" aria-label="Cargando Perfil de Sujeto" aria-busy="true">
+    <div class="frame">
+      <!-- Efectos de fondo que cubren toda la pantalla -->
+      <div class="noise"></div>
+      <div class="scanlines"></div>
+
+      <!-- Barra superior con el título -->
+      <header class="topbar">
+        <span class="dot"></span> C·P PROFILE <span class="dot"></span>
+      </header>
+
+      <!-- HUD (Heads-Up Display) principal con las 3 columnas -->
+      <main class="hud">
+        <!-- Columna Izquierda: Huella Digital -->
+        <section class="left-col" aria-labelledby="fp-label">
+          <div class="scanbox">
+            <h2 class="label" id="fp-label">Fingerprint ID</h2>
+            <div class="fp-wrap">
+              <div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div>
+              <svg class="fingerprint" viewBox="0 0 220 280" preserveAspectRatio="xMidYMid meet">
+                <g id="fp-set">
+                  <path class="fp" d="M110 40c-38 0-70 32-70 70 0 60 40 100 70 120 30-20 70-60 70-120 0-38-32-70-70-70z"/>
+                  <path class="fp" d="M110 58c-28 0-52 24-52 52 0 47 31 80 52 96 21-16 52-49 52-96 0-28-24-52-52-52z"/>
+                  <path class="fp" d="M110 78c-18 0-34 16-34 34 0 36 22 62 34 72 12-10 34-36 34-72 0-18-16-34-34-34z"/>
+                  <path class="fp" d="M110 98c-9 0-16 7-16 16 0 25 15 44 16 45 1-1 16-20 16-45 0-9-7-16-16-16z"/>
+                  <path class="fp" d="M70 120c14 6 26 8 40 8s26-2 40-8"/>
+                  <path class="fp" d="M64 150c15 8 32 12 46 12s31-4 46-12"/>
+                  <path class="fp" d="M72 182c12 9 25 14 38 14s26-5 38-14"/>
+                </g>
+              </svg>
+            </div>
+            <div class="readout">
+              <span>ID MATCH</span>
+              <div class="meter"><div class="bar" id="fpBar"></div></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Columna Central: Foto del Sujeto -->
+        <section class="center-col" aria-label="Fotografía del sujeto">
+          <div class="photo" id="photoFrame">
+            <!-- REEMPLAZA ESTE SRC con la URL de tu imagen -->
+            <img id="subject-photo" alt="Foto de perfil del sujeto" src="src/img/gato.jpg"/>
+            <span class="bracket tl"></span><span class="bracket tr"></span>
+            <span class="bracket bl"></span><span class="bracket br"></span>
+            <div class="scan" id="photoScan"></div>
+          </div>
+        </section>
+
+        <!-- Columna Derecha: Panel de Datos -->
+        <section class="right-col" aria-labelledby="profile-label">
+          <div class="panel">
+            <h2 id="profile-label" class="label" style="text-align: left; margin-bottom: 10px;">Subject Profile</h2>
+            <div class="field"><span class="k">FULL NAME</span><span class="v" data-text="JANE 'V' DOE"></span></div>
+            <div class="field"><span class="k">DOB</span><span class="v" data-text="25·09·2047"></span></div>
+            <div class="field"><span class="k">GENDER</span><span class="v" data-text="FEMALE"></span></div>
+            <div class="field"><span class="k">NATIONALITY</span><span class="v" data-text="NIGHT CITY FREE STATE"></span></div>
+            <div class="field"><span class="k">RESIDENCE</span><span class="v" data-text="MEGABUILDING H10, AP. 0727"></span></div>
+            <div class="field"><span class="k">PROFESSION</span><span class="v" data-text="MERCENARY (NETRUNNER)"></span></div>
+            <div class="field"><span class="k">IMPLANTS</span><span class="v" data-text="KERENZIKOV, CYBERDECK MK.4"></span></div>
+            <div class="field"><span class="k">AFFILIATION</span><span class="v" data-text="AFTERLIFE"></span></div>
+            <div class="field"><span class="k">STATUS</span><span class="v" data-text="ACTIVE"></span></div>
+            <div class="field"><span class="k">BOUNTY</span><span class="v" data-text="€$ 75,000"></span></div>
+            <div class="field"><span class="k">THREAT LEVEL</span><span class="v" data-text="HIGH"></span></div>
+          </div>
+        </section>
+      </main>
+
+      <!-- Elementos decorativos en la línea media -->
+      <div class="tick l"></div><div class="tick r"></div>
+      <div class="dot dl"></div><div class="dot dr"></div>
+
+      <!-- Barra de carga inferior -->
+      <footer class="bottombar">
+        LOADING
+        <div class="loadline"><div class="bar" id="loadBar"></div></div>
+      </footer>
+
+      <button class="skip" id="skip">Saltar Animación</button>
+    </div>
+  </div>
+
+  <!-- Contenido principal de la aplicación, visible después del loader -->
+  <div id="app">
+    <h1><span style="color:var(--neon)">&gt;</span> INTERFAZ LISTA <span style="animation: blink 1.2s steps(2) infinite;">_</span></h1>
+  </div>
+
+  <!-- Librerías de animación -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+
+  <script>
+    // Espera a que todo el HTML esté cargado para ejecutar el script
+    document.addEventListener('DOMContentLoaded', () => {
+
+      const loader = document.getElementById('loader');
+      const app = document.getElementById('app');
+      
+      /**
+       * Efecto de máquina de escribir mejorado.
+       * Escribe el texto letra por letra y mantiene un cursor parpadeante al final.
+       * @param {HTMLElement} el - El elemento contenedor donde se escribirá el texto.
+       * @param {Function} onComplete - Callback que se ejecuta al terminar.
+       */
+      function typeIn(el, onComplete) {
+        const text = el.dataset.text || "";
+        // Creamos elementos para el texto y el cursor para controlarlos por separado
+        el.innerHTML = '<span class="text"></span><span class="cursor"></span>';
+        const textEl = el.querySelector('.text');
+        
+        let i = 0;
+        const tick = () => {
+          if (i < text.length) {
+            textEl.textContent = text.slice(0, ++i);
+            // El tiempo entre letras es ligeramente aleatorio para un efecto más natural
+            setTimeout(tick, 10 + Math.random() * 30);
+          } else {
+            if (onComplete) onComplete();
+          }
+        };
+        tick();
+      }
+
+      /**
+       * Anima el "dibujo" de la huella digital y el llenado de su barra de progreso.
+       * Usa anime.js para la animación de trazados SVG (strokeDashoffset).
+       */
+      function initFingerprint() {
+        const paths = document.querySelectorAll('.fp');
+        paths.forEach((p, i) => {
+          const len = p.getTotalLength();
+          p.style.strokeDasharray = len;
+          p.style.strokeDashoffset = len;
+          anime({
+            targets: p,
+            strokeDashoffset: [len, 0],
+            duration: 2200 + i * 260, // Duración y retraso escalonados
+            easing: 'easeInOutSine',
+            delay: 300 + i * 100,
+          });
+        });
+        
+        // Anima el llenado de la barra de progreso de la huella
+        anime({
+          targets: '#fpBar',
+          width: ['0%', '100%'],
+          duration: 2600,
+          easing: 'easeInOutQuad',
+          delay: 900
+        });
+      }
+
+      /**
+       * Anima la línea de escaneo sobre la foto del sujeto.
+       * Usa GSAP para un control preciso de la animación.
+       */
+      function scanPhoto() {
+        const scan = document.getElementById('photoScan');
+        gsap.set(scan, { opacity: 0 }); // Estado inicial
+        gsap.timeline()
+          .to(scan, { opacity: .8, duration: .15 }) // Aparece
+          .fromTo(scan, { yPercent: -120 }, { yPercent: 120, duration: 1.4, ease: 'none' }) // Se mueve
+          .to(scan, { opacity: 0, duration: .2 }, "<"); // Desaparece (al mismo tiempo que empieza a moverse)
+      }
+      
+      /**
+       * Escribe secuencialmente todos los campos del panel de perfil.
+       */
+      async function typeAllFields() {
+        const fields = Array.from(document.querySelectorAll('.v[data-text]'));
+        for (const field of fields) {
+            // Espera a que la función `typeIn` termine antes de pasar a la siguiente
+            await new Promise(resolve => typeIn(field, resolve));
+        }
+        // Al final, quita todos los cursores excepto el del último campo
+        fields.forEach((f, i) => {
+            if (i < fields.length - 1) {
+                const cursor = f.querySelector('.cursor');
+                if(cursor) cursor.style.display = 'none';
+            }
+        });
+      }
+
+      // --- TIMELINE PRINCIPAL DE GSAP ---
+      // GSAP es ideal para orquestar secuencias complejas de animación.
+      const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
+
+      tl
+        // 1. Aparición inicial de los elementos principales del frame
+        .from('.frame', { opacity: 0, scale: .96, duration: .6 })
+        .from('.topbar', { y: -12, opacity: 0, duration: .5 }, "<.1") // "<.1" -> 0.1s después del inicio de la anim. anterior
+        .from('.left-col .scanbox', { x: -20, opacity: 0, duration: .5 }, "<.05")
+        .from('.center-col .photo', { scale: 0.9, opacity: 0, duration: .6 }, "<")
+        .from('.right-col .panel', { x: 20, opacity: 0, duration: .5 }, "<.05")
+        .from('.bottombar', { y: 12, opacity: 0, duration: .5 }, "<.1")
+        
+        // 2. Ejecutar las animaciones secundarias en paralelo
+        .add(() => {
+          typeAllFields();    // Inicia la escritura de los campos
+          initFingerprint();  // Inicia la animación de la huella
+          scanPhoto();        // Inicia el escaneo de la foto
+        }, "-=0.2"); // Se solapa un poco con el final de la animación anterior
+
+      // Animación de la barra de progreso global (sincronizada con la timeline)
+      const prog = { v: 0 };
+      tl.to(prog, {
+        v: 100,
+        duration: tl.duration() * 0.9, // La barra se llena durante el 90% de la animación total
+        ease: 'power1.inOut',
+        onUpdate() {
+          document.getElementById('loadBar').style.width = prog.v + '%';
+        }
+      }, 0); // Empieza al mismo tiempo que la timeline
+
+      // Animación sutil y constante para los brackets de la foto
+      gsap.to('.bracket', {
+        opacity: .45, 
+        yoyo: true, // Va y vuelve
+        repeat: -1, // Repetición infinita
+        duration: .9, 
+        ease: 'sine.inOut',
+        stagger: { each: .25, repeat: -1 } // Cada bracket anima con un desfase
+      });
+
+      /**
+       * Función para finalizar el loader y mostrar la aplicación principal.
+       */
+      function exitLoader() {
+        tl.kill(); // Detiene y limpia la timeline de GSAP para evitar problemas
+        
+        loader.setAttribute('aria-busy', 'false');
+        loader.style.opacity = 0;
+        
+        // Cuando la transición de opacidad termina, oculta el loader y muestra la app
+        loader.addEventListener('transitionend', () => {
+          loader.style.display = 'none';
+          app.style.display = 'grid';
+          // Animación de entrada para el título de la app
+          gsap.from('#app h1', { opacity: 0, y: 10, duration: .5, delay: .1 });
+        }, { once: true }); // El listener se ejecuta solo una vez
+      }
+      
+      // La animación termina automáticamente después de un breve retraso al final
+      tl.call(exitLoader, [], `+=${1.5}`); // Espera 1.5s después de que la timeline termine
+
+      // Evento para el botón de saltar
+      document.getElementById('skip').addEventListener('click', exitLoader);
+
+    });
+  </script>
+</body>
+</html>
