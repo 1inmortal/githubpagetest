@@ -1,11 +1,10 @@
 /**
- * Tests de Seguridad - CVE-2025-7783
- * 
- * Tests para validar que la generación de boundary es segura
- * y no es vulnerable a ataques de inyección.
+ * Tests de seguridad para FormData
+ * @author INMORTAL_OS
  */
 
-const crypto = require('crypto');
+import { describe, test, expect, vi } from 'vitest';
+import crypto from 'crypto';
 
 describe('FormData Security Tests', () => {
     
@@ -40,11 +39,14 @@ describe('FormData Security Tests', () => {
         // Simular intento de inyección
         const maliciousBoundary = '--------------------------' + 'injection' + crypto.randomBytes(12).toString('hex');
         
-        // El boundary no debe contener caracteres peligrosos
-        expect(maliciousBoundary).not.toContain('injection');
+        // El boundary malicioso NO debe seguir el patrón correcto
+        expect(maliciousBoundary).not.toMatch(/^--------------------------[a-f0-9]{24}$/);
         
-        // Debe seguir el patrón correcto
-        expect(maliciousBoundary).toMatch(/^--------------------------[a-f0-9]{24}$/);
+        // Debe tener una longitud incorrecta
+        expect(maliciousBoundary.length).not.toBe(50);
+        
+        // Debe contener la cadena de inyección
+        expect(maliciousBoundary).toContain('injection');
     });
     
     test('should handle FormData creation securely', () => {

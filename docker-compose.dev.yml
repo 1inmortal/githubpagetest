@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # Base de datos SQLite (usando volumen para persistencia)
+  db:
+    image: alpine:latest
+    container_name: githubpagetest-db
+    volumes:
+      - ./server/dev.db:/app/dev.db
+      - ./server/prisma:/app/prisma
+    working_dir: /app
+    command: >
+      sh -c "
+        apk add --no-cache sqlite &&
+        sqlite3 dev.db 'CREATE TABLE IF NOT EXISTS _prisma_migrations (id VARCHAR(36) PRIMARY KEY, checksum VARCHAR(64) NOT NULL, finished_at DATETIME(3), migration_name VARCHAR(255) NOT NULL, logs TEXT, rolled_back_at DATETIME(3), started_at DATETIME(3) NOT NULL DEFAULT (CURRENT_TIMESTAMP), applied_steps_count INTEGER UNSIGNED NOT NULL DEFAULT 0);' &&
+        tail -f /dev/null
+      "
+    networks:
+      - githubpagetest-network
+
+  # API Backend
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    container_name: githubpagetest-api
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - DATABASE_URL=file:./dev.db
+      - JWT_SECRET=dev-jwt-secret-key
+      - FRONTEND_URL=http://localhost:3000
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    depends_on:
+      - db
+    networks:
+      - githubpagetest-network
+    command: npm run dev
+
+  # Prisma Studio (opcional, para administrar la base de datos)
+  prisma-studio:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    container_name: githubpagetest-prisma-studio
+    ports:
+      - "5555:5555"
+    environment:
+      - DATABASE_URL=file:./dev.db
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    depends_on:
+      - db
+    networks:
+      - githubpagetest-network
+    command: npx prisma studio --hostname 0.0.0.0 --port 5555
+
+networks:
+  githubpagetest-network:
+    driver: bridge
+
+volumes:
+  db-data:

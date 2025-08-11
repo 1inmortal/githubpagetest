@@ -52,9 +52,24 @@ class FormDataSecurity {
      * @returns {string} Boundary de fallback
      */
     generateFallbackBoundary() {
+        // Usar una combinación de timestamp y entropía del sistema
         const timestamp = Date.now().toString(36);
-        const random = Math.random().toString(36).substring(2, 15);
-        return timestamp + random;
+        const performance = performance.now().toString(36);
+        const userAgent = navigator.userAgent.length.toString(36);
+        const screenRes = (screen.width * screen.height).toString(36);
+        
+        // Combinar múltiples fuentes de entropía
+        const entropy = timestamp + performance + userAgent + screenRes;
+        
+        // Aplicar hash simple para mejorar la aleatoriedad
+        let hash = 0;
+        for (let i = 0; i < entropy.length; i++) {
+            const char = entropy.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; // Convertir a 32-bit integer
+        }
+        
+        return Math.abs(hash).toString(36) + entropy.substring(0, 8);
     }
 
     /**

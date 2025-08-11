@@ -2,6 +2,14 @@ const express = require('express');
 const http = require('http');
 const path = require('path');
 const socketIo = require('socket.io');
+const helmet = require('helmet');
+const crypto = require('crypto');
+const cookieParser = require('cookie-parser');
+const session = require('express-session');
+const cors = require('cors');
+
+// Importar configuración de seguridad centralizada
+const securityConfig = require('../../../../config/security-config');
 
 // Importar rate limiting
 let rateLimit;
@@ -15,30 +23,34 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-// Configuración de seguridad
+// Configuración de CORS
+app.use(cors({
+    origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['http://localhost:3000', 'https://1inmortal.github.io'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
+
+// Configuración de Helmet para seguridad
+app.use(helmet(securityConfig.getHelmetConfig()));
+
+// Middleware para generar nonces únicos para cada request
 app.use((req, res, next) => {
-    // Headers de seguridad
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'DENY');
-    res.setHeader('X-XSS-Protection', '1; mode=block');
-    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-    res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:;");
+    const nonce = securityConfig.generateNonce();
+    res.locals.nonce = nonce;
+    
+    // Headers de seguridad adicionales
+    const securityHeaders = securityConfig.getSecurityHeaders();
+    Object.entries(securityHeaders).forEach(([key, value]) => {
+        res.setHeader(key, value);
+    });
     
     next();
 });
 
 // Rate limiting
 if (rateLimit) {
-    const limiter = rateLimit({
-        windowMs: 15 * 60 * 1000, // 15 minutos
-        max: 100, // máximo 100 requests por ventana
-        message: {
-            error: 'Demasiadas requests desde esta IP, intenta de nuevo más tarde.'
-        },
-        standardHeaders: true,
-        legacyHeaders: false,
-    });
-    
+    const limiter = rateLimit(securityConfig.getRateLimitConfig());
     app.use(limiter);
     
     // Rate limiting específico para el chat
@@ -55,19 +67,34 @@ if (rateLimit) {
     console.warn('⚠️ Rate limiting no disponible');
 }
 
+// Middleware para cookies y sesiones
+app.use(cookieParser());
+app.use(session(securityConfig.getSessionConfig()));
+
 // Middleware para parsear JSON de forma segura
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-// Función para sanitizar entrada
+// Función para sanitizar entrada usando DOMPurify
 function sanitizeInput(input) {
     if (typeof input !== 'string') {
         return '';
     }
     
-    return input
+    // Sanitización básica antes de DOMPurify
+    let sanitized = input
         .replace(/[<>\"'&]/g, '')
         .trim();
+    
+    // Si DOMPurify está disponible, usarlo para sanitización adicional
+    if (typeof DOMPurify !== 'undefined') {
+        sanitized = DOMPurify.sanitize(sanitized, {
+            ALLOWED_TAGS: [],
+            ALLOWED_ATTR: []
+        });
+    }
+    
+    return sanitized;
 }
 
 // Envía el main.html que está en el mismo directorio
@@ -147,4 +174,6 @@ server.listen(PORT, () => {
     console.log(`🔒 Servidor seguro escuchando en el puerto ${PORT}`);
     console.log('✅ Rate limiting: ' + (rateLimit ? 'Activado' : 'No disponible'));
     console.log('✅ Headers de seguridad: Activados');
+    console.log('✅ Helmet: Activado');
+    console.log('✅ CSP: Configurado sin unsafe-inline');
 });
