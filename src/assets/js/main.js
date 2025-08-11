@@ -879,7 +879,7 @@
                         // Skills con animación
                         const modalSkills = this.getElement('modalSkills');
                         if (modalSkills) {
-                            modalSkills.innerHTML = '';
+                            modalSkills.textContent = '';
                             (selectedCert.skills || []).forEach((skill, index) => {
                                 const span = document.createElement('span');
                                 span.classList.add('skill-tag');
@@ -961,11 +961,17 @@
                         node.style.left = `${nodeInfo.x}%`;
                         node.style.top = `${nodeInfo.y}%`;
                         
-                        // Contenido del nodo
-                        node.innerHTML = `
-                            <img src="https://via.placeholder.com/60x60/1A1A1A/FFFFFF?text=${nodeInfo.id.charAt(0).toUpperCase()}" alt="${nodeInfo.id}">
-                            <span class="node-title">${nodeInfo.id.replace('-', ' ').toUpperCase()}</span>
-                        `;
+                        // Contenido del nodo - Creación segura sin innerHTML
+                        const img = document.createElement('img');
+                        img.src = `https://via.placeholder.com/60x60/1A1A1A/FFFFFF?text=${nodeInfo.id.charAt(0).toUpperCase()}`;
+                        img.alt = nodeInfo.id;
+                        
+                        const span = document.createElement('span');
+                        span.className = 'node-title';
+                        span.textContent = nodeInfo.id.replace('-', ' ').toUpperCase();
+                        
+                        node.appendChild(img);
+                        node.appendChild(span);
                         
                         container.appendChild(node);
                         this.nodes[nodeInfo.id] = node;

@@ -1,0 +1,262 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 2 * * 0' # Semanal los domingos a las 2 AM
+
+env:
+  NODE_VERSION: '20.x'
+  NPM_VERSION: '10.x'
+
+jobs:
+  # Análisis de código y linting
+  lint:
+    name: Lint y Análisis de Código
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Instalar dependencias
+      run: |
+        npm ci
+        cd server && npm ci
+
+    - name: Lint frontend
+      run: npm run lint
+
+    - name: Lint backend
+      run: cd server && npm run lint
+
+    - name: Verificar formato
+      run: npm run format --check
+
+  # Tests unitarios
+  test-unit:
+    name: Tests Unitarios
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Instalar dependencias
+      run: |
+        npm ci
+        cd server && npm ci
+
+    - name: Ejecutar tests unitarios
+      run: npm run test:unit
+
+    - name: Generar reporte de cobertura
+      run: npm run test:coverage
+
+    - name: Subir cobertura a Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+
+  # Tests de API
+  test-api:
+    name: Tests de API
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Instalar dependencias del servidor
+      run: cd server && npm ci
+
+    - name: Setup SQLite
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y sqlite3
+
+    - name: Ejecutar migraciones de base de datos
+      run: |
+        cd server
+        npm run db:migrate
+        npm run db:seed
+
+    - name: Ejecutar tests de API
+      run: cd server && npm run test:api
+
+  # Tests E2E
+  test-e2e:
+    name: Tests E2E
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Instalar dependencias
+      run: npm ci
+
+    - name: Instalar Playwright browsers
+      run: npx playwright install --with-deps
+
+    - name: Ejecutar tests E2E
+      run: npm run test:e2e
+
+    - name: Subir reportes de Playwright
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: playwright-report
+        path: |
+          test-results/
+          playwright-report/
+        retention-days: 30
+
+  # Build y verificación
+  build:
+    name: Build y Verificación
+    runs-on: ubuntu-latest
+    needs: [lint, test-unit, test-api, test-e2e]
+    permissions:
+      contents: read
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Instalar dependencias
+      run: npm ci
+
+    - name: Verificar build
+      run: npm run build
+
+    - name: Verificar estructura del proyecto
+      run: |
+        # Verificar que los archivos críticos existen
+        test -f index.html
+        test -f src/core/store.js
+        test -f src/services/dataClient.js
+        test -f server/src/index.js
+        test -f server/prisma/schema.prisma
+
+    - name: Verificar dependencias de seguridad
+      run: npm audit --audit-level=moderate
+
+  # Despliegue (solo en main)
+  deploy:
+    name: Despliegue
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Instalar dependencias
+      run: npm ci
+
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+
+    - name: Build para Pages
+      run: |
+        # Crear directorio de build
+        mkdir -p dist
+        # Copiar archivos estáticos
+        cp -r src/ dist/
+        cp index.html dist/
+        cp -r config/ dist/
+        cp -r docs/ dist/
+        cp README.md dist/
+        cp LICENSE dist/
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: './dist'
+
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+
+  # Notificaciones
+  notify:
+    name: Notificaciones
+    runs-on: ubuntu-latest
+    needs: [build, deploy]
+    if: always()
+    permissions:
+      contents: read
+    
+    steps:
+    - name: Notificar estado del build
+      run: |
+        if [ "${{ needs.build.result }}" == "success" ]; then
+          echo "✅ Build exitoso"
+        else
+          echo "❌ Build falló"
+          exit 1
+        fi
+
+    - name: Notificar despliegue
+      if: needs.deploy.result == 'success'
+      run: |
+        echo "🚀 Despliegue exitoso a GitHub Pages"
+        echo "URL: https://1inmortal.github.io/githubpagetest/"

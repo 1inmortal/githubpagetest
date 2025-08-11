@@ -1,388 +1,252 @@
-# 🚀 Future Interface Manifesto
+# INMORTAL_OS v3.0 - Portfolio Profesional
 
-> **Plataforma de Interfaces Digitales Avanzadas y Experiencias Inmersivas**
+[![CI/CD Pipeline](https://github.com/1inmortal/githubpagetest/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/1inmortal/githubpagetest/actions)
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/1inmortal/githubpagetest/actions)
+[![Coverage](https://img.shields.io/badge/coverage-80%25-brightgreen)](https://github.com/1inmortal/githubpagetest/actions)
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/Jarmando/githubpagetest/actions)
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Code Coverage](https://img.shields.io/badge/coverage-85%25-green.svg)](https://github.com/Jarmando/githubpagetest)
-[![Security Audit](https://img.shields.io/badge/security-audit-passing-brightgreen.svg)](https://github.com/Jarmando/githubpagetest/security)
-[![Contributors](https://img.shields.io/badge/contributors-1-orange.svg)](https://github.com/Jarmando/githubpagetest/graphs/contributors)
+Portfolio profesional moderno con arquitectura full-stack, sistema de gestión de estado, API REST, y testing completo.
 
----
+## 🏗️ Arquitectura
 
-## 📋 Tabla de Contenidos
+### Frontend
+- **Estado**: Store minimal con persistencia en IndexedDB (fallback a localStorage)
+- **Datos**: Cliente de datos con cache SWR y revalidación en background
+- **UI**: Componentes modulares con diseño responsive y accesible
+- **Testing**: Vitest (unit), Playwright (E2E)
 
-- [🎯 Visión del Proyecto](#-visión-del-proyecto)
-- [✨ Características Principales](#-características-principales)
-- [🖼️ Demo y Capturas](#️-demo-y-capturas)
-- [🏗️ Arquitectura del Sistema](#️-arquitectura-del-sistema)
-- [⚡ Instalación Rápida](#-instalación-rápida)
-- [🚀 Guía de Uso](#-guía-de-uso)
-- [🔧 Configuración Avanzada](#-configuración-avanzada)
-- [🤝 Contribución](#-contribución)
-- [📈 Roadmap](#-roadmap)
-- [📄 Licencia](#-licencia)
-- [🙏 Agradecimientos](#-agradecimientos)
+### Backend
+- **API**: Express.js con middleware de autenticación JWT
+- **Base de Datos**: Prisma ORM con SQLite
+- **Autenticación**: JWT con cookies HttpOnly+Secure+SameSite=Strict
+- **Testing**: Supertest para tests de API
 
----
+### Infraestructura
+- **CI/CD**: GitHub Actions con pipeline completo
+- **Testing**: Unit, API, y E2E automatizados
+- **Despliegue**: GitHub Pages automático
+- **Dependencias**: Dependabot para actualizaciones automáticas
 
-## 🎯 Visión del Proyecto
+## 🚀 Setup Rápido
 
-**Future Interface Manifesto** es una plataforma integral que trasciende los límites convencionales del desarrollo web frontend. Nuestra misión es crear **interfaces digitales avanzadas y futuristas** que transformen la experiencia del usuario a través de arquitecturas web inmersivas y altamente interactivas.
+### Prerrequisitos
+- Node.js 20.x o superior
+- npm 10.x o superior
+- Git
 
-### 🎨 Especializaciones Core
-
-- **🖥️ HUD (Heads-Up Display) Interfaces:** Sistemas de visualización de datos críticos con capas visuales no intrusivas
-- **🎭 UI/UX Avanzados:** Fusión de estética futurista con principios sólidos de usabilidad
-- **📊 Visualizaciones de Datos Dinámicas:** Transformación de datos en representaciones visuales impactantes
-- **🎵 Efectos Visuales y Sonoros:** Animaciones y paisajes sonoros reactivos que dan vida a la interfaz
-
----
-
-## ✨ Características Principales
-
-### 🎯 **Experiencias Inmersivas**
-- Interfaces HUD con visualización de datos en tiempo real
-- Animaciones fluidas y transiciones suaves
-- Efectos sonoros reactivos y paisajes sonoros ambientales
-
-### 🔧 **Arquitectura Modular**
-- Monorepo con componentes reutilizables
-- Sistema de plugins extensible
-- Configuración centralizada y gestión de estado avanzada
-
-### 🛡️ **Seguridad y Rendimiento**
-- Auditorías de seguridad automatizadas
-- Optimización de Core Web Vitals
-- Implementación de mejores prácticas de seguridad
-
-### 📱 **Responsive y Accesible**
-- Diseño adaptativo para todos los dispositivos
-- Cumplimiento de estándares WCAG 2.1
-- Navegación por teclado y lectores de pantalla
-
----
-
-## 🖼️ Demo y Capturas
-
-> **💡 Prueba la demo en vivo:** [https://jarmando.github.io/githubpagetest](https://jarmando.github.io/githubpagetest)
-
-### 🎮 Componentes Interactivos
-- **HUD Dashboard:** Visualización de datos en tiempo real
-- **React UI Login:** Sistema de autenticación moderno
-- **Blog Dinámico:** Gestión de contenido con animaciones
-- **Portfolio Inmersivo:** Experiencia de navegación futurista
-
----
-
-## 🏗️ Arquitectura del Sistema
-
-```mermaid
-graph TB
-    A[Frontend Core] --> B[React Components]
-    A --> C[Vanilla JS Modules]
-    A --> D[CSS Animations]
-    
-    B --> E[HUD Interface]
-    B --> F[Login System]
-    B --> G[Blog Engine]
-    
-    C --> H[Audio System]
-    C --> I[Security Layer]
-    C --> J[Data Visualization]
-    
-    D --> K[Responsive Design]
-    D --> L[Accessibility]
-    
-    M[Backend Services] --> N[Node.js API]
-    M --> O[Python Scripts]
-    M --> P[Docker Containers]
+### 1. Clonar y Instalar
+```bash
+git clone https://github.com/1inmortal/githubpagetest.git
+cd githubpagetest
+npm ci
+cd server && npm ci
+cd ..
 ```
 
-### 📁 Estructura del Monorepo
+### 2. Configurar Variables de Entorno
+```bash
+cp server/.env.example server/.env
+# Editar server/.env con tus valores
+```
+
+### 3. Inicializar Base de Datos
+```bash
+npm run db:migrate
+npm run db:seed
+```
+
+### 4. Ejecutar Aplicación Completa
+```bash
+# Terminal 1: Backend
+npm run dev:api
+
+# Terminal 2: Frontend
+npm run dev:frontend
+
+# Terminal 3: Docker Compose (opcional)
+docker-compose -f config/compose.dev.yml up -d
+```
+
+## 📁 Estructura del Proyecto
 
 ```
 githubpagetest/
-├── 📄 index.html                 # Página principal del portfolio
-├── 🎨 src/
-│   ├── assets/                   # Recursos estáticos
-│   ├── components/               # Componentes React
-│   └── js/                      # Módulos JavaScript
-├── 🧪 tests/                    # Suite de pruebas
-├── 📚 docs/                     # Documentación técnica
-├── 🔧 scripts/                  # Scripts de automatización
-└── 📦 config/                   # Configuraciones del proyecto
+├── src/                    # Frontend source
+│   ├── core/              # Core functionality
+│   │   └── store.js       # State management
+│   ├── services/          # Data services
+│   │   └── dataClient.js  # API client with SWR
+│   └── components/        # UI components
+├── server/                 # Backend API
+│   ├── src/               # Server source
+│   ├── prisma/            # Database schema & migrations
+│   └── package.json       # Backend dependencies
+├── tests/                  # Test suites
+│   ├── unit/              # Unit tests (Vitest)
+│   ├── api/               # API tests (Supertest)
+│   └── e2e/               # E2E tests (Playwright)
+├── config/                 # Configuration files
+├── docs/                   # Documentation
+└── .github/                # GitHub workflows
 ```
 
----
+## 🛠️ Scripts Disponibles
 
-## ⚡ Instalación Rápida
-
-### 📋 Prerrequisitos
-
-- **Node.js** (v16.0.0 o superior)
-- **Python** (v3.8 o superior)
-- **Git** (v2.20.0 o superior)
-- **Navegador moderno** (Chrome 90+, Firefox 88+, Safari 14+)
-
-### 🚀 Instalación en 3 Pasos
-
+### Frontend
 ```bash
-# 1. Clonar el repositorio
-git clone https://github.com/Jarmando/githubpagetest.git
-cd githubpagetest
-
-# 2. Instalar dependencias (opcional para vista estática)
-npm install
-
-# 3. Abrir en el navegador
-open index.html
+npm run dev:frontend      # Desarrollo frontend
+npm run build             # Build para producción
+npm run preview           # Preview del build
+npm run lint              # Linting del código
 ```
 
-### 🐳 Con Docker (Recomendado)
-
+### Backend
 ```bash
-# Construir y ejecutar con Docker Compose
-docker-compose up -d
-
-# Acceder a la aplicación
-open http://localhost:3000
+npm run dev:api           # Desarrollo API
+npm run db:migrate        # Ejecutar migraciones
+npm run db:seed           # Poblar base de datos
+npm run db:studio         # Abrir Prisma Studio
 ```
 
----
-
-## 🚀 Guía de Uso
-
-### 🎯 Uso Básico
-
+### Testing
 ```bash
-# Ver el portfolio principal
-open index.html
-
-# Ejecutar componentes React
-cd src/components/react-ui-login
-npm start
+npm run test              # Todos los tests
+npm run test:unit         # Tests unitarios
+npm run test:api          # Tests de API
+npm run test:e2e          # Tests E2E
+npm run test:coverage     # Reporte de cobertura
 ```
 
-### 🔧 Desarrollo Local
-
+### Docker
 ```bash
-# Instalar dependencias globales
-npm install -g live-server
-
-# Servidor de desarrollo
-live-server --port=8080
-
-# Ejecutar pruebas
-npm test
-
-# Linting y formateo
-npm run lint
-npm run format
+docker-compose -f config/compose.dev.yml up -d    # Levantar servicios
+docker-compose -f config/compose.dev.yml down     # Detener servicios
+docker-compose -f config/compose.dev.yml logs     # Ver logs
 ```
 
-### 📊 Monitoreo y Analytics
+## 🔧 Configuración
 
-```bash
-# Análisis de rendimiento
-npm run analyze
-
-# Auditoría de seguridad
-npm run audit
-
-# Generar reporte de cobertura
-npm run coverage
-```
-
----
-
-## 🔧 Configuración Avanzada
-
-### 🌍 Variables de Entorno
-
-Crea un archivo `.env` en la raíz del proyecto:
-
+### Variables de Entorno
 ```env
-# Configuración de desarrollo
+# Backend (.env)
+JWT_SECRET=tu_jwt_secret_super_seguro
+DATABASE_URL="file:./dev.db"
 NODE_ENV=development
-PORT=3000
-API_URL=http://localhost:8000
+PORT=3001
 
-# Configuración de seguridad
-SECURE_COOKIES=true
-CSP_ENABLED=true
-
-# Configuración de analytics
-GA_TRACKING_ID=GA_MEASUREMENT_ID
+# Frontend
+VITE_API_URL=http://localhost:3001/api
+VITE_APP_NAME=INMORTAL_OS v3.0
 ```
 
-### ⚙️ Configuración de Build
+### Base de Datos
+El proyecto usa SQLite con Prisma para desarrollo local. Los modelos incluyen:
+- **Project**: Proyectos con título, descripción, tags y URL
+- **Certification**: Certificaciones con nombre, emisor y fecha
+- **User**: Usuarios con email, password hash y rol
 
-```json
-{
-  "scripts": {
-    "build": "webpack --mode production",
-    "dev": "webpack serve --mode development",
-    "test": "jest --coverage",
-    "lint": "eslint src/**/*.{js,jsx}",
-    "format": "prettier --write src/**/*.{js,jsx,css,html}"
-  }
-}
-```
+## 🧪 Testing
 
-### 🛡️ Configuración de Seguridad
-
-```javascript
-// security-loader.js
-const securityConfig = {
-  csp: {
-    'default-src': ["'self'"],
-    'script-src': ["'self'", "'unsafe-inline'"],
-    'style-src': ["'self'", "'unsafe-inline'"],
-    'img-src': ["'self'", "data:", "https:"]
-  },
-  headers: {
-    'X-Frame-Options': 'DENY',
-    'X-Content-Type-Options': 'nosniff',
-    'Referrer-Policy': 'strict-origin-when-cross-origin'
-  }
-};
-```
-
----
-
-## 🤝 Contribución
-
-### 📝 Cómo Contribuir
-
-1. **Fork** el repositorio
-2. **Crea** una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. **Commit** tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. **Push** a la rama (`git push origin feature/AmazingFeature`)
-5. **Abre** un Pull Request
-
-### 🎯 Áreas de Contribución
-
-- **🐛 Bug Fixes:** Reporta y corrige errores
-- **✨ Nuevas Features:** Implementa funcionalidades innovadoras
-- **📚 Documentación:** Mejora la documentación técnica
-- **🎨 UI/UX:** Optimiza la experiencia de usuario
-- **🧪 Testing:** Añade pruebas unitarias y de integración
-
-### 📋 Estándares de Código
-
-```javascript
-// Ejemplo de estándar de código
-/**
- * Componente HUD para visualización de datos
- * @param {Object} props - Propiedades del componente
- * @param {Array} props.data - Datos a visualizar
- * @param {Function} props.onUpdate - Callback de actualización
- * @returns {JSX.Element} Componente renderizado
- */
-const HUDComponent = ({ data, onUpdate }) => {
-  // Implementación del componente
-};
-```
-
-### 🧪 Testing
-
+### Tests Unitarios (Vitest)
 ```bash
-# Ejecutar todas las pruebas
-npm test
+npm run test:unit
+```
+- Store: gestión de estado y persistencia
+- Utilidades: funciones auxiliares
+- Componentes: lógica de UI
 
-# Ejecutar pruebas con coverage
-npm run test:coverage
+### Tests de API (Supertest)
+```bash
+npm run test:api
+```
+- Endpoints CRUD para projects y certifications
+- Autenticación JWT
+- Validación de datos
+- Manejo de errores
 
-# Ejecutar pruebas específicas
-npm test -- --grep "HUD"
+### Tests E2E (Playwright)
+```bash
+npm run test:e2e
+```
+- Flujos de usuario completos
+- Renderizado de páginas
+- Responsividad en diferentes dispositivos
+- Accesibilidad básica
+
+## 🚀 CI/CD
+
+### Pipeline Automático
+El pipeline se ejecuta en cada push y PR:
+1. **Lint**: Verificación de código y formato
+2. **Tests**: Unit, API, y E2E automáticos
+3. **Build**: Verificación de build exitoso
+4. **Despliegue**: Automático a GitHub Pages (solo main)
+
+### Dependabot
+- Actualizaciones semanales de dependencias
+- Pull requests automáticos para npm y GitHub Actions
+- Revisión manual antes de merge
+
+## 🔒 Seguridad
+
+- **JWT**: Tokens firmados con secret seguro
+- **Cookies**: HttpOnly+Secure+SameSite=Strict
+- **CORS**: Configuración restrictiva
+- **Validación**: Sanitización de inputs
+- **Rate Limiting**: Protección contra abuso
+
+## 📚 Documentación Adicional
+
+- [CONTRIBUTING.md](./CONTRIBUTING.md) - Guía de contribución
+- [API.md](./docs/API.md) - Documentación de la API
+- [SECURITY.md](./docs/SECURITY.md) - Políticas de seguridad
+- [CHANGELOG.md](./CHANGELOG.md) - Historial de cambios
+
+## 🐛 Problemas Comunes
+
+### Error de Base de Datos
+```bash
+# Resetear base de datos
+rm server/dev.db
+npm run db:migrate
+npm run db:seed
 ```
 
----
+### Puerto en Uso
+```bash
+# Cambiar puerto en .env
+PORT=3002
+```
 
-## 📈 Roadmap
+### Tests Fallando
+```bash
+# Limpiar cache y reinstalar
+rm -rf node_modules
+npm ci
+```
 
-### 🎯 Q1 2024
-- [ ] Implementación de WebGL para visualizaciones 3D
-- [ ] Sistema de autenticación biométrica
-- [ ] Integración con APIs de IA para personalización
+### Docker no Inicia
+```bash
+# Verificar que Docker esté corriendo
+docker --version
+docker-compose --version
+```
 
-### 🚀 Q2 2024
-- [ ] PWA con funcionalidades offline
-- [ ] Sistema de analytics avanzado
-- [ ] Optimización de Core Web Vitals
+## 🤝 Contribuir
 
-### 🔮 Q3 2024
-- [ ] Integración con WebAssembly
-- [ ] Sistema de microservicios
-- [ ] Implementación de WebRTC
-
-### 🌟 Q4 2024
-- [ ] Realidad aumentada (AR) en navegador
-- [ ] Machine Learning en el frontend
-- [ ] Blockchain para autenticación descentralizada
-
----
+Ver [CONTRIBUTING.md](./CONTRIBUTING.md) para detalles sobre:
+- Flujo de trabajo con Git
+- Convención de commits
+- Proceso de Pull Request
+- Estándares de código
 
 ## 📄 Licencia
 
-Este proyecto está distribuido bajo la **Licencia Pública General de GNU v3.0**. 
+Este proyecto está bajo la Licencia MIT. Ver [LICENSE](./LICENSE) para más detalles.
 
-```bash
-# Ver la licencia completa
-cat LICENSE
-```
+## 👨‍💻 Autor
 
-### 📋 Términos de Uso
-
-- ✅ **Uso comercial permitido**
-- ✅ **Modificación permitida**
-- ✅ **Distribución permitida**
-- ✅ **Uso privado permitido**
-- ❌ **Garantía limitada**
-- ❌ **Responsabilidad limitada**
+**INMORTAL_OS** - [GitHub](https://github.com/1inmortal)
 
 ---
 
-## 🙏 Agradecimientos
-
-### 🏆 Contribuidores Destacados
-
-- **Jarmando** - Desarrollador principal y arquitecto del sistema
-- **Comunidad Open Source** - Librerías y herramientas que hacen posible este proyecto
-
-### 🛠️ Tecnologías y Herramientas
-
-- **Frontend:** React, Three.js, Bootstrap, Vanilla JavaScript
-- **Backend:** Node.js, Python, Docker
-- **Testing:** Jest, Cypress, Playwright
-- **CI/CD:** GitHub Actions, Docker Compose
-- **Documentación:** Markdown, Mermaid, JSDoc
-
-### 📚 Recursos y Referencias
-
-- [Documentación de React](https://reactjs.org/docs/)
-- [Guía de Three.js](https://threejs.org/docs/)
-- [Estándares Web](https://developer.mozilla.org/en-US/docs/Web)
-- [Mejores Prácticas de Seguridad](https://owasp.org/www-project-top-ten/)
-
----
-
-## 📞 Contacto
-
-- **📧 Email:** [jarmando2965@gmail.com](mailto:jarmando2965@gmail.com)
-- **🐙 GitHub:** [@Jarmando](https://github.com/Jarmando)
-- **💼 LinkedIn:** [Perfil Profesional](https://linkedin.com/in/jarmando)
-
----
-
-<div align="center">
-
-**🌟 ¡Únete a la revolución de las interfaces del futuro! 🌟**
-
-[![Star on GitHub](https://img.shields.io/github/stars/Jarmando/githubpagetest?style=social)](https://github.com/Jarmando/githubpagetest)
-[![Fork on GitHub](https://img.shields.io/github/forks/Jarmando/githubpagetest?style=social)](https://github.com/Jarmando/githubpagetest/fork)
-
-*Forjando realidades digitales con la arquitectura del futuro* 🚀
-
-</div>
+⭐ Si este proyecto te ayuda, ¡dale una estrella!
