@@ -77,33 +77,48 @@ def get_git_info():
         repo_name = repo_name.split('/')[-1].replace('.git', '')
         
         # Obtener estadísticas del commit
-        stats = subprocess.check_output(
-            ['git', 'diff', '--stat', 'HEAD~1', 'HEAD'], 
-            text=True, 
-            stderr=subprocess.PIPE
-        )
-        
-        # Parsear estadísticas
         files_changed = 0
         insertions = 0
         deletions = 0
         
-        if stats:
-            lines = stats.strip().split('\n')
-            if len(lines) >= 2:
-                last_line = lines[-1]
-                # Formato: " X files changed, Y insertions(+), Z deletions(-)"
-                match = re.search(r'(\d+)\s+files?\s+changed', last_line)
-                if match:
-                    files_changed = int(match.group(1))
-                
-                match = re.search(r'(\d+)\s+insertions?', last_line)
-                if match:
-                    insertions = int(match.group(1))
-                
-                match = re.search(r'(\d+)\s+deletions?', last_line)
-                if match:
-                    deletions = int(match.group(1))
+        try:
+            stats = subprocess.check_output(
+                ['git', 'diff', '--stat', 'HEAD~1', 'HEAD'], 
+                text=True, 
+                stderr=subprocess.PIPE
+            )
+            
+            if stats:
+                lines = stats.strip().split('\n')
+                if len(lines) >= 2:
+                    last_line = lines[-1]
+                    # Formato: " X files changed, Y insertions(+), Z deletions(-)"
+                    match = re.search(r'(\d+)\s+files?\s+changed', last_line)
+                    if match:
+                        files_changed = int(match.group(1))
+                    
+                    match = re.search(r'(\d+)\s+insertions?', last_line)
+                    if match:
+                        insertions = int(match.group(1))
+                    
+                    match = re.search(r'(\d+)\s+deletions?', last_line)
+                    if match:
+                        deletions = int(match.group(1))
+        except:
+            # Si no hay commits anteriores, usar información del working directory
+            try:
+                status = subprocess.check_output(
+                    ['git', 'status', '--porcelain'], 
+                    text=True, 
+                    stderr=subprocess.PIPE
+                )
+                files_changed = len([line for line in status.strip().split('\n') if line])
+                insertions = 0
+                deletions = 0
+            except:
+                files_changed = 0
+                insertions = 0
+                deletions = 0
         
         return {
             'commit_hash': commit_hash[:8],  # Solo los primeros 8 caracteres
