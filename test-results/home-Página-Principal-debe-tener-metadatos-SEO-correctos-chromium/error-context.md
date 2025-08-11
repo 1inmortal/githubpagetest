@@ -4,22 +4,15 @@
 - banner:
   - link "INMORTAL_OS":
     - /url: "#"
+  - navigation:
+    - link "Servicios ▾":
+      - /url: "#services"
+    - link "Portafolio ▾":
+      - /url: "#portfolio"
+    - link "Legal ▾":
+      - /url: "#"
   - button "Activar/Desactivar Sonido":
     - img
-  - button "Abrir menú de navegación"
-- navigation:
-  - heading "Información" [level=3]
-  - link "📋 Blog":
-    - /url: "#process"
-  - link "💬 Testimonios":
-    - /url: "#testimonials"
-  - link "❓ Preguntas Frecuentes":
-    - /url: "#faq"
-  - heading "Legal" [level=3]
-  - link "🔒 Política de Privacidad":
-    - /url: privacy-policy.html
-  - link "📄 Términos y Condiciones":
-    - /url: terms.html
 - main:
   - heading "D i s e ñ o y D e s a r r o l l o I n t e g r a l p a r a P r o y e c t o s W e b 3 . 0 |" [level=1]
   - paragraph: Soy un Ingeniero de Sistemas Full-Stack, especializado en crear experiencias digitales inmersivas que fusionan tecnología de punta con una estética futurista.
@@ -134,6 +127,8 @@
     - text: "[ DATA-VIZ ] [ AI/ML ]"
     - 'heading "PROYECTO: ORACLE" [level=3]'
     - paragraph: Visualización de datos para un modelo de ML que predice tendencias de mercado.
+  - button "←"
+  - button "→"
   - heading "Certificaciones y Formación Continua" [level=2]
   - paragraph: Ecosistema de conocimiento validado por instituciones reconocidas globalmente.
   - img "Google Cybersecurity Certificate"

@@ -37,7 +37,7 @@ jobs:
       uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
-        setup: advanced
+        setup: basic  # Cambiar de advanced a basic para evitar problemas
 
     - name: Set up Node.js (for JavaScript analysis)
       if: matrix.language == 'javascript'
@@ -49,11 +49,19 @@ jobs:
     - name: Install Node dependencies
       if: matrix.language == 'javascript'
       run: |
-        if [ -f "config/package.json" ]; then
-          cd config && npm ci
+        # Instalar dependencias del proyecto principal
+        npm ci --ignore-scripts || npm install --ignore-scripts
+        
+        # Instalar dependencias del servidor si existe
+        if [ -f "server/package.json" ]; then
+          cd server && npm ci --ignore-scripts || npm install --ignore-scripts
+          cd ..
         fi
+        
+        # Instalar dependencias de componentes si existen
         if [ -f "src/components/react-ui-login/package.json" ]; then
-          cd src/components/react-ui-login && npm ci
+          cd src/components/react-ui-login && npm ci --ignore-scripts || npm install --ignore-scripts
+          cd ../../..
         fi
 
     - name: Set up Python
@@ -63,20 +71,27 @@ jobs:
         python-version: '3.11'
 
     - name: Install Python dependencies
-      if: matrix.language == 'python' && hashFiles('config/requirements.txt') != ''
+      if: matrix.language == 'python'
       run: |
         pip install --upgrade pip
-        pip install -r config/requirements.txt
-
-    - name: Install config package
-      if: matrix.language == 'python' && hashFiles('config/setup.py') != ''
-      run: pip install -e config
+        
+        # Instalar dependencias si existen
+        if [ -f "config/requirements.txt" ]; then
+          pip install -r config/requirements.txt
+        fi
+        
+        # Instalar paquete de configuración si existe
+        if [ -f "config/setup.py" ]; then
+          pip install -e config
+        fi
 
     - name: Autobuild
       uses: github/codeql-action/autobuild@v3
+      timeout-minutes: 10  # Agregar timeout
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
       with:
         output: results.sarif
         category: "/language:${{matrix.language}}"
+      timeout-minutes: 15  # Agregar timeout
