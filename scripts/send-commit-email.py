@@ -184,22 +184,8 @@ def send_email(html_content, git_info):
         return False
 
 def save_html_email(html_content, git_info):
-    """Guardar el correo HTML generado localmente también"""
-    
-    # Crear directorio de salida si no existe
-    output_dir = Path(__file__).parent.parent / 'commit-emails'
-    output_dir.mkdir(exist_ok=True)
-    
-    # Generar nombre de archivo
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"commit_{git_info['commit_hash']}_{timestamp}.html"
-    output_path = output_dir / filename
-    
-    # Guardar archivo
-    with open(output_path, 'w', encoding='utf-8') as f:
-        f.write(html_content)
-    
-    return output_path
+    """No guarda el email HTML localmente - solo envío por email"""
+    return None
 
 def main():
     """Función principal"""
@@ -219,15 +205,11 @@ def main():
         print("❌ No se pudo generar el HTML")
         sys.exit(1)
     
-    # Guardar archivo localmente
-    output_path = save_html_email(html_content, git_info)
-    print(f"✅ Correo HTML guardado localmente: {output_path}")
-    
-    # Enviar por email
+    # Enviar por email (sin guardar localmente)
     if send_email(html_content, git_info):
         print("📧 Correo enviado por email exitosamente")
     else:
-        print("⚠️ Correo no enviado por email, pero guardado localmente")
+        print("❌ Error enviando correo por email")
     
     # Mostrar resumen
     print(f"\n📊 Resumen del commit:")
@@ -238,13 +220,7 @@ def main():
     print(f"🌿 Rama: {git_info['branch_name']}")
     print(f"📊 Archivos: {git_info['files_changed']}, +{git_info['insertions']}, -{git_info['deletions']}")
     
-    # Abrir en el navegador
-    try:
-        import webbrowser
-        webbrowser.open(f"file://{output_path.absolute()}")
-        print("🌐 Abriendo en el navegador...")
-    except ImportError:
-        print("💡 Abre el archivo HTML en tu navegador para ver el resultado")
+    print("✅ Email enviado sin guardar archivos locales")
 
 if __name__ == "__main__":
     main()
