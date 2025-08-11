@@ -6,18 +6,20 @@ Script para encontrar todos los archivos index.* en el repositorio
 import os
 from pathlib import Path
 
+
 def find_index_files(root_path="."):
     """Encuentra todos los archivos index.* en el repositorio"""
+    root_path = Path(root_path)
     index_files = []
-    
-    for root, dirs, files in os.walk(root_path):
+
+    for root, _, files in os.walk(root_path):
         for file in files:
-            if file.startswith('index.'):
+            if file.lower().startswith("index."):
                 file_path = Path(root) / file
                 relative_path = file_path.relative_to(root_path)
-                file_type = file.split('.')[-1]
+                file_type = file_path.suffix.lstrip(".")
                 index_files.append((str(relative_path), file_type))
-    
+
     return index_files
 
 def main():
