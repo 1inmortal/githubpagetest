@@ -1112,14 +1112,6 @@
         // ESCAPAR TODAS las comillas simples usando regex con bandera global
         return s.replace(/'/g, "''");
     }
-    
-    // Crear enlaces clickables para comandos
-    function createCommandLink(command, text = null) {
-        const displayText = text || command;
-        // Sanitizar command antes de usarlo en el onclick usando escape mejorado
-        const safeCommand = command.replace(/'/g, "\\'").replace(/"/g, '\\"');
-        return `<a href="#" onclick="executeCommandFromLink('${safeCommand}'); return false;">${sanitizeHTML(displayText)}</a>`;
-    }
      // Función para ejecutar comando desde enlace
     window.executeCommandFromLink = function(command) {
         terminalInput.value = command;
@@ -1561,16 +1553,15 @@
             const expression = args.join(' ');
             try {
                 // ¡PRECAUCIÓN! eval() es peligroso. Usar una librería segura como math.js en producción.
-                // Para esta demo, hacemos una validación MUY BÁSICA.
-                if (!/^[0-9+\-*/().\s]+$/.test(expression)) {
-                    throw new Error("Expresión inválida. Solo números y operadores básicos permitidos.");
-                }
-                // eslint-disable-next-line no-eval
-                const result = eval(expression);
-                 if (isNaN(result)) throw new Error("Resultado inválido.");
-                return `<span class="success">= ${result}</span>`;
-            } catch (e) {
-                return `<span class="error">Error al calcular: ${sanitizeHTML(e.message)}</span>`;
+                // Usar función segura en lugar de eval
+                const result = window.safeEval ? window.safeEval(expression) : 
+                              (window.SecurityUtils && window.SecurityUtils.evaluator ? 
+                               window.SecurityUtils.evaluator.evaluate(expression) : 
+                               'Función de evaluación segura no disponible');
+                return result;
+            } catch (error) {
+                console.error('Error al evaluar expresión:', error);
+                return 'Error en evaluación';
             }
         },
 

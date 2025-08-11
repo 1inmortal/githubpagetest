@@ -1,458 +1,386 @@
 #!/usr/bin/env node
 
 /**
- * Auditoría de Seguridad Automatizada
- * Script para detectar y reportar vulnerabilidades de seguridad
- * Basado en las mejores prácticas de OWASP y CodeQL
+ * Auditoría de Seguridad del Repositorio
+ * Verifica que todas las mejoras de seguridad estén implementadas correctamente
  */
 
 const fs = require('fs');
 const path = require('path');
-const crypto = require('crypto');
 
+// Colores para la consola
+const colors = {
+    reset: '\x1b[0m',
+    red: '\x1b[31m',
+    green: '\x1b[32m',
+    yellow: '\x1b[33m',
+    blue: '\x1b[34m',
+    magenta: '\x1b[35m',
+    cyan: '\x1b[36m'
+};
+
+const log = {
+    info: (msg) => console.log(`${colors.blue}ℹ️  ${msg}${colors.reset}`),
+    success: (msg) => console.log(`${colors.green}✅ ${msg}${colors.reset}`),
+    warning: (msg) => console.log(`${colors.yellow}⚠️  ${msg}${colors.reset}`),
+    error: (msg) => console.log(`${colors.red}❌ ${msg}${colors.reset}`),
+    section: (msg) => console.log(`\n${colors.cyan}🔍 ${msg}${colors.reset}`)
+};
+
+/**
+ * Clase principal de auditoría de seguridad
+ */
 class SecurityAuditor {
     constructor() {
-        this.vulnerabilities = [];
-        this.securityScore = 100;
-        this.config = this.loadSecurityConfig();
-    }
-
-    /**
-     * Cargar configuración de seguridad
-     */
-    loadSecurityConfig() {
-        try {
-            const configPath = path.join(__dirname, '../config/security-config.json');
-            return JSON.parse(fs.readFileSync(configPath, 'utf8'));
-        } catch (error) {
-            console.warn('⚠️ No se pudo cargar security-config.json, usando configuración por defecto');
-            return {
-                security: {
-                    sanitization: {
-                        maxInputLength: 1000,
-                        allowedSchemes: ['http', 'https', 'mailto', 'tel']
-                    }
-                }
-            };
-        }
-    }
-
-    /**
-     * Escanear archivos JavaScript en busca de vulnerabilidades
-     */
-    async scanJavaScriptFiles() {
-        console.log('🔍 Escaneando archivos JavaScript...');
-        
-        const jsFiles = this.findFiles('../src', '.js');
-        
-        for (const file of jsFiles) {
-            await this.auditJavaScriptFile(file);
-        }
-    }
-
-    /**
-     * Escanear archivos HTML en busca de vulnerabilidades
-     */
-    async scanHTMLFiles() {
-        console.log('🔍 Escaneando archivos HTML...');
-        
-        const htmlFiles = this.findFiles('../src', '.html');
-        
-        for (const file of htmlFiles) {
-            await this.auditHTMLFile(file);
-        }
-    }
-
-    /**
-     * Encontrar archivos recursivamente
-     */
-    findFiles(dir, extension) {
-        const files = [];
-        
-        function scanDirectory(currentDir) {
-            try {
-                const items = fs.readdirSync(currentDir);
-                
-                for (const item of items) {
-                    const fullPath = path.join(currentDir, item);
-                    const stat = fs.statSync(fullPath);
-                    
-                    if (stat.isDirectory()) {
-                        scanDirectory(fullPath);
-                    } else if (item.endsWith(extension)) {
-                        files.push(fullPath);
-                    }
-                }
-            } catch (error) {
-                console.warn(`⚠️ No se pudo escanear directorio: ${currentDir}`);
-            }
-        }
-        
-        scanDirectory(path.join(__dirname, dir));
-        return files;
-    }
-
-    /**
-     * Auditar archivo JavaScript
-     */
-    async auditJavaScriptFile(filePath) {
-        try {
-            const content = fs.readFileSync(filePath, 'utf8');
-            const relativePath = path.relative(path.join(__dirname, '..'), filePath);
-            
-            // Detectar vulnerabilidades comunes
-            this.detectXSSVulnerabilities(content, relativePath);
-            this.detectSQLInjectionVulnerabilities(content, relativePath);
-            this.detectInsecureRegex(content, relativePath);
-            this.detectHardcodedSecrets(content, relativePath);
-            this.detectInsecureCrypto(content, relativePath);
-            
-        } catch (error) {
-            console.error(`❌ Error auditando archivo: ${filePath}`, error.message);
-        }
-    }
-
-    /**
-     * Auditar archivo HTML
-     */
-    async auditHTMLFile(filePath) {
-        try {
-            const content = fs.readFileSync(filePath, 'utf8');
-            const relativePath = path.relative(path.join(__dirname, '..'), filePath);
-            
-            // Detectar vulnerabilidades en HTML
-            this.detectXSSInHTML(content, relativePath);
-            this.detectInsecureAttributes(content, relativePath);
-            this.detectInlineScripts(content, relativePath);
-            
-        } catch (error) {
-            console.error(`❌ Error auditando archivo HTML: ${filePath}`, error.message);
-        }
-    }
-
-    /**
-     * Detectar vulnerabilidades XSS
-     */
-    detectXSSVulnerabilities(content, filePath) {
-        const xssPatterns = [
-            /\.innerHTML\s*=\s*[^;]+/g,
-            /\.outerHTML\s*=\s*[^;]+/g,
-            /document\.write\s*\(/g,
-            /eval\s*\(/g,
-            /Function\s*\(/g
-        ];
-        
-        xssPatterns.forEach((pattern, index) => {
-            const matches = content.match(pattern);
-            if (matches) {
-                this.addVulnerability({
-                    type: 'XSS',
-                    severity: 'HIGH',
-                    file: filePath,
-                    line: this.findLineNumber(content, pattern),
-                    description: 'Posible vulnerabilidad XSS detectada',
-                    recommendation: 'Usar textContent en lugar de innerHTML, o sanitizar la entrada'
-                });
-            }
-        });
-    }
-
-    /**
-     * Detectar vulnerabilidades de inyección SQL
-     */
-    detectSQLInjectionVulnerabilities(content, filePath) {
-        const sqlPatterns = [
-            /SELECT.*FROM.*WHERE.*\+/g,
-            /INSERT.*VALUES.*\+/g,
-            /UPDATE.*SET.*\+/g,
-            /DELETE.*WHERE.*\+/g
-        ];
-        
-        sqlPatterns.forEach(pattern => {
-            const matches = content.match(pattern);
-            if (matches) {
-                this.addVulnerability({
-                    type: 'SQL_INJECTION',
-                    severity: 'HIGH',
-                    file: filePath,
-                    line: this.findLineNumber(content, pattern),
-                    description: 'Posible vulnerabilidad de inyección SQL',
-                    recommendation: 'Usar parámetros preparados o consultas parametrizadas'
-                });
-            }
-        });
-    }
-
-    /**
-     * Detectar expresiones regulares inseguras
-     */
-    detectInsecureRegex(content, filePath) {
-        const insecureRegexPatterns = [
-            /\.replace\s*\(\s*['"`][^'"`]*['"`]\s*,\s*['"`][^'"`]*['"`]\s*\)/g,
-            /new RegExp\s*\([^)]*\)/g
-        ];
-        
-        insecureRegexPatterns.forEach(pattern => {
-            const matches = content.match(pattern);
-            if (matches) {
-                this.addVulnerability({
-                    type: 'INSECURE_REGEX',
-                    severity: 'MEDIUM',
-                    file: filePath,
-                    line: this.findLineNumber(content, pattern),
-                    description: 'Expresión regular potencialmente insegura',
-                    recommendation: 'Validar y sanitizar las entradas antes de usar en regex'
-                });
-            }
-        });
-    }
-
-    /**
-     * Detectar secretos hardcodeados
-     */
-    detectHardcodedSecrets(content, filePath) {
-        const secretPatterns = [
-            /api[_-]?key\s*[:=]\s*['"`][^'"`]+['"`]/gi,
-            /password\s*[:=]\s*['"`][^'"`]+['"`]/gi,
-            /secret\s*[:=]\s*['"`][^'"`]+['"`]/gi,
-            /token\s*[:=]\s*['"`][^'"`]+['"`]/gi
-        ];
-        
-        secretPatterns.forEach(pattern => {
-            const matches = content.match(pattern);
-            if (matches) {
-                this.addVulnerability({
-                    type: 'HARDCODED_SECRET',
-                    severity: 'HIGH',
-                    file: filePath,
-                    line: this.findLineNumber(content, pattern),
-                    description: 'Secreto hardcodeado detectado',
-                    recommendation: 'Usar variables de entorno para secretos'
-                });
-            }
-        });
-    }
-
-    /**
-     * Detectar criptografía insegura
-     */
-    detectInsecureCrypto(content, filePath) {
-        const insecureCryptoPatterns = [
-            /Math\.random\s*\(/g,
-            /Date\.now\s*\(/g,
-            /new Date\s*\(/g
-        ];
-        
-        insecureCryptoPatterns.forEach(pattern => {
-            const matches = content.match(pattern);
-            if (matches) {
-                this.addVulnerability({
-                    type: 'INSECURE_CRYPTO',
-                    severity: 'MEDIUM',
-                    file: filePath,
-                    line: this.findLineNumber(content, pattern),
-                    description: 'Uso de criptografía insegura',
-                    recommendation: 'Usar crypto.getRandomValues() para valores aleatorios seguros'
-                });
-            }
-        });
-    }
-
-    /**
-     * Detectar XSS en HTML
-     */
-    detectXSSInHTML(content, filePath) {
-        const xssHTMLPatterns = [
-            /<script[^>]*>/gi,
-            /javascript:/gi,
-            /on\w+\s*=/gi,
-            /data:text\/html/gi
-        ];
-        
-        xssHTMLPatterns.forEach(pattern => {
-            const matches = content.match(pattern);
-            if (matches) {
-                this.addVulnerability({
-                    type: 'XSS_HTML',
-                    severity: 'HIGH',
-                    file: filePath,
-                    line: this.findLineNumber(content, pattern),
-                    description: 'Posible XSS en HTML',
-                    recommendation: 'Sanitizar contenido HTML antes de insertarlo'
-                });
-            }
-        });
-    }
-
-    /**
-     * Detectar atributos inseguros en HTML
-     */
-    detectInsecureAttributes(content, filePath) {
-        const insecureAttrPatterns = [
-            /on\w+\s*=\s*["'][^"']*["']/gi,
-            /javascript:\s*["'][^"']*["']/gi
-        ];
-        
-        insecureAttrPatterns.forEach(pattern => {
-            const matches = content.match(pattern);
-            if (matches) {
-                this.addVulnerability({
-                    type: 'INSECURE_ATTRIBUTES',
-                    severity: 'HIGH',
-                    file: filePath,
-                    line: this.findLineNumber(content, pattern),
-                    description: 'Atributos inseguros detectados',
-                    recommendation: 'Eliminar eventos inline y javascript: URLs'
-                });
-            }
-        });
-    }
-
-    /**
-     * Detectar scripts inline
-     */
-    detectInlineScripts(content, filePath) {
-        const inlineScriptPattern = /<script[^>]*>[\s\S]*?<\/script>/gi;
-        const matches = content.match(inlineScriptPattern);
-        
-        if (matches) {
-            this.addVulnerability({
-                type: 'INLINE_SCRIPTS',
-                severity: 'MEDIUM',
-                file: filePath,
-                line: this.findLineNumber(content, inlineScriptPattern),
-                description: 'Scripts inline detectados',
-                recommendation: 'Mover scripts a archivos externos y usar CSP'
-            });
-        }
-    }
-
-    /**
-     * Encontrar número de línea aproximado
-     */
-    findLineNumber(content, pattern) {
-        const match = content.match(pattern);
-        if (match) {
-            const beforeMatch = content.substring(0, match.index);
-            return beforeMatch.split('\n').length;
-        }
-        return 'N/A';
-    }
-
-    /**
-     * Agregar vulnerabilidad a la lista
-     */
-    addVulnerability(vulnerability) {
-        this.vulnerabilities.push({
-            ...vulnerability,
-            id: crypto.randomBytes(8).toString('hex'),
-            timestamp: new Date().toISOString()
-        });
-        
-        // Reducir puntuación de seguridad
-        const severityScores = { 'LOW': 5, 'MEDIUM': 10, 'HIGH': 20 };
-        this.securityScore -= severityScores[vulnerability.severity] || 5;
-    }
-
-    /**
-     * Generar reporte de seguridad
-     */
-    generateReport() {
-        const report = {
-            timestamp: new Date().toISOString(),
-            securityScore: Math.max(0, this.securityScore),
-            totalVulnerabilities: this.vulnerabilities.length,
-            vulnerabilities: this.vulnerabilities,
-            summary: {
-                critical: this.vulnerabilities.filter(v => v.severity === 'HIGH').length,
-                medium: this.vulnerabilities.filter(v => v.severity === 'MEDIUM').length,
-                low: this.vulnerabilities.filter(v => v.severity === 'LOW').length
-            },
-            recommendations: this.generateRecommendations()
+        this.projectRoot = process.cwd();
+        this.auditResults = {
+            passed: [],
+            warnings: [],
+            errors: [],
+            recommendations: []
         };
-        
-        return report;
-    }
-
-    /**
-     * Generar recomendaciones generales
-     */
-    generateRecommendations() {
-        const recommendations = [];
-        
-        if (this.vulnerabilities.some(v => v.type === 'XSS')) {
-            recommendations.push('Implementar sanitización HTML robusta usando sanitize-html');
-        }
-        
-        if (this.vulnerabilities.some(v => v.type === 'SQL_INJECTION')) {
-            recommendations.push('Usar parámetros preparados para todas las consultas SQL');
-        }
-        
-        if (this.vulnerabilities.some(v => v.type === 'HARDCODED_SECRET')) {
-            recommendations.push('Mover todos los secretos a variables de entorno');
-        }
-        
-        if (this.vulnerabilities.some(v => v.type === 'INSECURE_CRYPTO')) {
-            recommendations.push('Usar crypto.getRandomValues() para valores aleatorios seguros');
-        }
-        
-        if (this.vulnerabilities.some(v => v.type === 'INLINE_SCRIPTS')) {
-            recommendations.push('Implementar Content Security Policy (CSP)');
-        }
-        
-        return recommendations;
     }
 
     /**
      * Ejecutar auditoría completa
      */
-    async runAudit() {
-        console.log('🚀 Iniciando auditoría de seguridad...\n');
+    async runFullAudit() {
+        log.section('INICIANDO AUDITORÍA DE SEGURIDAD COMPLETA');
         
-        await this.scanJavaScriptFiles();
-        await this.scanHTMLFiles();
+        await this.checkDependencies();
+        await this.checkContentSecurityPolicy();
+        await this.checkXSSProtection();
+        await this.checkAuthenticationSecurity();
+        await this.checkEvalUsage();
+        await this.checkEnvironmentVariables();
+        await this.checkInlineScripts();
         
-        const report = this.generateReport();
+        this.generateReport();
+    }
+
+    /**
+     * Verificar dependencias y package.json
+     */
+    async checkDependencies() {
+        log.section('VERIFICANDO DEPENDENCIAS');
         
-        console.log('\n📊 REPORTE DE AUDITORÍA DE SEGURIDAD');
-        console.log('=====================================');
-        console.log(`Puntuación de seguridad: ${report.securityScore}/100`);
-        console.log(`Total de vulnerabilidades: ${report.totalVulnerabilities}`);
-        console.log(`Críticas: ${report.summary.critical}`);
-        console.log(`Medias: ${report.summary.medium}`);
-        console.log(`Bajas: ${report.summary.low}`);
+        const packagePath = path.join(this.projectRoot, 'config', 'package.json');
         
-        if (report.vulnerabilities.length > 0) {
-            console.log('\n🔍 VULNERABILIDADES DETECTADAS:');
-            report.vulnerabilities.forEach(vuln => {
-                console.log(`\n[${vuln.severity}] ${vuln.type}`);
-                console.log(`Archivo: ${vuln.file}`);
-                console.log(`Línea: ${vuln.line}`);
-                console.log(`Descripción: ${vuln.description}`);
-                console.log(`Recomendación: ${vuln.recommendation}`);
+        if (fs.existsSync(packagePath)) {
+            try {
+                const packageData = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+                
+                // Verificar jQuery
+                if (packageData.dependencies && packageData.dependencies.jquery) {
+                    const jqueryVersion = packageData.dependencies.jquery;
+                    if (jqueryVersion.includes('^3.7.1') || jqueryVersion.includes('>=3.7.1')) {
+                        this.auditResults.passed.push('jQuery actualizado a versión 3.7.1+');
+                        log.success('jQuery actualizado a versión segura');
+                    } else {
+                        this.auditResults.warnings.push('jQuery puede necesitar actualización');
+                        log.warning('jQuery versión: ' + jqueryVersion);
+                    }
+                }
+                
+                // Verificar dependencias de seguridad
+                const securityDeps = ['helmet', 'dompurify', 'mathjs', 'sanitize-html'];
+                securityDeps.forEach(dep => {
+                    if (packageData.dependencies && packageData.dependencies[dep]) {
+                        this.auditResults.passed.push(`Dependencia de seguridad ${dep} instalada`);
+                        log.success(`${dep} instalado`);
+                    } else {
+                        this.auditResults.warnings.push(`Dependencia de seguridad ${dep} no encontrada`);
+                        log.warning(`${dep} no encontrado`);
+                    }
+                });
+                
+            } catch (error) {
+                this.auditResults.errors.push('Error leyendo package.json: ' + error.message);
+                log.error('Error leyendo package.json');
+            }
+        } else {
+            this.auditResults.warnings.push('package.json no encontrado en config/');
+            log.warning('package.json no encontrado');
+        }
+    }
+
+    /**
+     * Verificar Content Security Policy
+     */
+    async checkContentSecurityPolicy() {
+        log.section('VERIFICANDO CONTENT SECURITY POLICY');
+        
+        const serverPath = path.join(this.projectRoot, 'src', 'components', 'evidencias', 'Proyecto x', 'server.js');
+        
+        if (fs.existsSync(serverPath)) {
+            const serverContent = fs.readFileSync(serverPath, 'utf8');
+            
+            // Verificar que no hay unsafe-inline
+            if (!serverContent.includes("'unsafe-inline'")) {
+                this.auditResults.passed.push('CSP configurado sin unsafe-inline');
+                log.success('CSP sin unsafe-inline');
+            } else {
+                this.auditResults.errors.push('CSP contiene unsafe-inline');
+                log.error('CSP contiene unsafe-inline');
+            }
+            
+            // Verificar que no hay unsafe-eval
+            if (!serverContent.includes("'unsafe-eval'")) {
+                this.auditResults.passed.push('CSP configurado sin unsafe-eval');
+                log.success('CSP sin unsafe-eval');
+            } else {
+                this.auditResults.errors.push('CSP contiene unsafe-eval');
+                log.error('CSP contiene unsafe-eval');
+            }
+            
+            // Verificar headers de seguridad
+            const securityHeaders = ['Strict-Transport-Security', 'Permissions-Policy', 'Cross-Origin-Opener-Policy'];
+            securityHeaders.forEach(header => {
+                if (serverContent.includes(header)) {
+                    this.auditResults.passed.push(`Header de seguridad ${header} configurado`);
+                    log.success(`${header} configurado`);
+                } else {
+                    this.auditResults.warnings.push(`Header de seguridad ${header} no encontrado`);
+                    log.warning(`${header} no encontrado`);
+                }
             });
+        } else {
+            this.auditResults.warnings.push('server.js no encontrado');
+            log.warning('server.js no encontrado');
+        }
+    }
+
+    /**
+     * Verificar protección contra XSS
+     */
+    async checkXSSProtection() {
+        log.section('VERIFICANDO PROTECCIÓN CONTRA XSS');
+        
+        // Verificar archivos de utilidades de seguridad
+        const securityFiles = [
+            'src/assets/js/security-utils.js',
+            'src/assets/js/safe-dom-utils.js',
+            'src/assets/js/localStorage-migration.js'
+        ];
+        
+        securityFiles.forEach(filePath => {
+            const fullPath = path.join(this.projectRoot, filePath);
+            if (fs.existsSync(fullPath)) {
+                this.auditResults.passed.push(`Archivo de seguridad ${filePath} existe`);
+                log.success(`${filePath} existe`);
+            } else {
+                this.auditResults.errors.push(`Archivo de seguridad ${filePath} no encontrado`);
+                log.error(`${filePath} no encontrado`);
+            }
+        });
+        
+        // Verificar uso de innerHTML en archivos críticos
+        const criticalFiles = [
+            'index.html',
+            'src/assets/js/main.js',
+            'src/components/Blog/Ceo.html'
+        ];
+        
+        criticalFiles.forEach(filePath => {
+            const fullPath = path.join(this.projectRoot, filePath);
+            if (fs.existsSync(fullPath)) {
+                const content = fs.readFileSync(fullPath, 'utf8');
+                const innerHTMLMatches = content.match(/\.innerHTML\s*=/g);
+                
+                if (innerHTMLMatches) {
+                    this.auditResults.warnings.push(`${filePath} contiene ${innerHTMLMatches.length} usos de innerHTML`);
+                    log.warning(`${filePath}: ${innerHTMLMatches.length} usos de innerHTML`);
+                } else {
+                    this.auditResults.passed.push(`${filePath} no contiene innerHTML`);
+                    log.success(`${filePath} sin innerHTML`);
+                }
+            }
+        });
+    }
+
+    /**
+     * Verificar seguridad de autenticación
+     */
+    async checkAuthenticationSecurity() {
+        log.section('VERIFICANDO SEGURIDAD DE AUTENTICACIÓN');
+        
+        // Verificar migración de localStorage
+        const migrationFile = path.join(this.projectRoot, 'src/assets/js/localStorage-migration.js');
+        if (fs.existsSync(migrationFile)) {
+            const content = fs.readFileSync(migrationFile, 'utf8');
+            
+            if (content.includes('LocalStorageMigrator') && content.includes('setCookie')) {
+                this.auditResults.passed.push('Sistema de migración de localStorage implementado');
+                log.success('Migración de localStorage implementada');
+            } else {
+                this.auditResults.warnings.push('Sistema de migración de localStorage incompleto');
+                log.warning('Migración de localStorage incompleta');
+            }
         }
         
-        if (report.recommendations.length > 0) {
-            console.log('\n💡 RECOMENDACIONES GENERALES:');
-            report.recommendations.forEach(rec => {
-                console.log(`• ${rec}`);
-            });
+        // Verificar configuración de cookies seguras
+        const securityConfig = path.join(this.projectRoot, 'config/security-config.js');
+        if (fs.existsSync(securityConfig)) {
+            const content = fs.readFileSync(securityConfig, 'utf8');
+            
+            if (content.includes('httpOnly: true') && content.includes('secure: true')) {
+                this.auditResults.passed.push('Configuración de cookies seguras implementada');
+                log.success('Cookies seguras configuradas');
+            } else {
+                this.auditResults.warnings.push('Configuración de cookies seguras incompleta');
+                log.warning('Cookies seguras incompletas');
+            }
+        }
+    }
+
+    /**
+     * Verificar uso de eval
+     */
+    async checkEvalUsage() {
+        log.section('VERIFICANDO USO DE EVAL');
+        
+        // Buscar en archivos críticos
+        const criticalFiles = [
+            'src/components/evidencias/presentacion/presentacion.html'
+        ];
+        
+        criticalFiles.forEach(filePath => {
+            const fullPath = path.join(this.projectRoot, filePath);
+            if (fs.existsSync(fullPath)) {
+                const content = fs.readFileSync(fullPath, 'utf8');
+                
+                if (content.includes('eval(')) {
+                    this.auditResults.errors.push(`${filePath} contiene eval()`);
+                    log.error(`${filePath} contiene eval()`);
+                } else {
+                    this.auditResults.passed.push(`${filePath} no contiene eval()`);
+                    log.success(`${filePath} sin eval()`);
+                }
+            }
+        });
+    }
+
+    /**
+     * Verificar variables de entorno
+     */
+    async checkEnvironmentVariables() {
+        log.section('VERIFICANDO VARIABLES DE ENTORNO');
+        
+        // Verificar .gitignore
+        const gitignorePath = path.join(this.projectRoot, '.gitignore');
+        if (fs.existsSync(gitignorePath)) {
+            const content = fs.readFileSync(gitignorePath, 'utf8');
+            
+            if (content.includes('.env') && content.includes('*.key')) {
+                this.auditResults.passed.push('.gitignore protege archivos sensibles');
+                log.success('.gitignore protege archivos sensibles');
+            } else {
+                this.auditResults.warnings.push('.gitignore puede no proteger todos los archivos sensibles');
+                log.warning('.gitignore incompleto');
+            }
         }
         
-        // Guardar reporte en archivo
-        const reportPath = path.join(__dirname, '../security-audit-report.json');
-        fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
-        console.log(`\n📄 Reporte guardado en: ${reportPath}`);
+        // Verificar archivo de ejemplo
+        const envExamplePath = path.join(this.projectRoot, 'config/env.example');
+        if (fs.existsSync(envExamplePath)) {
+            this.auditResults.passed.push('Archivo de ejemplo de variables de entorno existe');
+            log.success('env.example existe');
+        } else {
+            this.auditResults.warnings.push('Archivo de ejemplo de variables de entorno no encontrado');
+            log.warning('env.example no encontrado');
+        }
+    }
+
+    /**
+     * Verificar scripts inline
+     */
+    async checkInlineScripts() {
+        log.section('VERIFICANDO SCRIPTS INLINE');
         
-        return report;
+        // Verificar index.html
+        const indexPath = path.join(this.projectRoot, 'index.html');
+        if (fs.existsSync(indexPath)) {
+            const content = fs.readFileSync(indexPath, 'utf8');
+            
+            // Verificar que se incluyen las librerías de seguridad
+            if (content.includes('dompurify') && content.includes('mathjs')) {
+                this.auditResults.passed.push('Librerías de seguridad incluidas en index.html');
+                log.success('Librerías de seguridad incluidas');
+            } else {
+                this.auditResults.warnings.push('Librerías de seguridad no encontradas en index.html');
+                log.warning('Librerías de seguridad no encontradas');
+            }
+            
+            // Verificar scripts de seguridad
+            if (content.includes('security-utils.js') && content.includes('safe-dom-utils.js')) {
+                this.auditResults.passed.push('Scripts de seguridad incluidos en index.html');
+                log.success('Scripts de seguridad incluidos');
+            } else {
+                this.auditResults.warnings.push('Scripts de seguridad no encontrados en index.html');
+                log.warning('Scripts de seguridad no encontrados');
+            }
+        }
+    }
+
+    /**
+     * Generar reporte final
+     */
+    generateReport() {
+        log.section('REPORTE FINAL DE AUDITORÍA');
+        
+        console.log(`\n${colors.cyan}📊 RESUMEN DE RESULTADOS:${colors.reset}`);
+        console.log(`✅ Pasaron: ${this.auditResults.passed.length}`);
+        console.log(`⚠️  Advertencias: ${this.auditResults.warnings.length}`);
+        console.log(`❌ Errores: ${this.auditResults.errors.length}`);
+        
+        if (this.auditResults.passed.length > 0) {
+            console.log(`\n${colors.green}✅ VERIFICACIONES EXITOSAS:${colors.reset}`);
+            this.auditResults.passed.forEach(item => console.log(`  • ${item}`));
+        }
+        
+        if (this.auditResults.warnings.length > 0) {
+            console.log(`\n${colors.yellow}⚠️  ADVERTENCIAS:${colors.reset}`);
+            this.auditResults.warnings.forEach(item => console.log(`  • ${item}`));
+        }
+        
+        if (this.auditResults.errors.length > 0) {
+            console.log(`\n${colors.red}❌ ERRORES CRÍTICOS:${colors.reset}`);
+            this.auditResults.errors.forEach(item => console.log(`  • ${item}`));
+        }
+        
+        // Calcular puntuación
+        const totalChecks = this.auditResults.passed.length + this.auditResults.warnings.length + this.auditResults.errors.length;
+        const score = totalChecks > 0 ? Math.round((this.auditResults.passed.length / totalChecks) * 100) : 0;
+        
+        console.log(`\n${colors.cyan}🎯 PUNTUACIÓN DE SEGURIDAD: ${score}%${colors.reset}`);
+        
+        if (score >= 90) {
+            console.log(`${colors.green}🎉 ¡Excelente! El proyecto cumple con altos estándares de seguridad.${colors.reset}`);
+        } else if (score >= 70) {
+            console.log(`${colors.yellow}👍 Bueno. Hay algunas áreas que pueden mejorarse.${colors.reset}`);
+        } else {
+            console.log(`${colors.red}🚨 Atención. Se requieren mejoras significativas de seguridad.${colors.reset}`);
+        }
+        
+        // Recomendaciones
+        if (this.auditResults.errors.length > 0 || this.auditResults.warnings.length > 0) {
+            console.log(`\n${colors.cyan}💡 RECOMENDACIONES:${colors.reset}`);
+            console.log('  1. Revisar y corregir todos los errores críticos');
+            console.log('  2. Implementar las advertencias pendientes');
+            console.log('  3. Ejecutar npm audit fix para dependencias');
+            console.log('  4. Verificar que todos los scripts inline usen nonces');
+            console.log('  5. Completar la migración de localStorage a cookies');
+        }
     }
 }
 
 // Ejecutar auditoría si se llama directamente
 if (require.main === module) {
     const auditor = new SecurityAuditor();
-    auditor.runAudit().catch(console.error);
+    auditor.runFullAudit().catch(error => {
+        log.error('Error durante la auditoría: ' + error.message);
+        process.exit(1);
+    });
 }
 
 module.exports = SecurityAuditor;

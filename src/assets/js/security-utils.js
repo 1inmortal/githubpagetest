@@ -1,497 +1,317 @@
 /**
- * Utilidades de Seguridad - Refactorización Completa para CodeQL
- * Implementación robusta usando sanitize-html y mejores prácticas de OWASP
- * CVE-2025-7783 Mitigation
+ * Utilidades de Seguridad para el Portafolio
+ * Reemplaza funcionalidades inseguras por alternativas seguras
  */
 
-// ============================================================================
-// IMPORTACIÓN DE LIBRERÍAS DE SEGURIDAD
-// ============================================================================
+// Importar mathjs para reemplazar eval
+import * as math from 'https://cdn.jsdelivr.net/npm/mathjs@12.3.1/+esm';
 
-// Intentar cargar sanitize-html si está disponible
-let sanitizeHtml = null;
-let he = null;
-
-try {
-    if (typeof require !== 'undefined') {
-        sanitizeHtml = require('sanitize-html');
-        he = require('he');
-    }
-} catch (error) {
-    console.warn('⚠️ Librerías de seguridad no disponibles, usando fallbacks');
-}
-
-// ============================================================================
-// SANITIZACIÓN HTML ROBUSTA
-// ============================================================================
+// Importar DOMPurify para sanitización
+import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3.0.8/+esm';
 
 /**
- * Función robusta de sanitización HTML usando sanitize-html
- * Previene XSS y ataques de inyección HTML
- * @param {string} str - Cadena a sanitizar
- * @param {object} options - Opciones de sanitización
- * @returns {string} - Cadena sanitizada
+ * Clase para manejo seguro de cookies
  */
-function sanitizeHTML(str, options = {}) {
-    if (typeof str !== 'string') {
-        return '';
+class SecureCookieManager {
+    constructor() {
+        this.domain = '.github.io';
+        this.secure = true;
+        this.sameSite = 'strict';
+        this.maxAge = 86400000; // 24 horas
     }
-    
-    // Configuración por defecto segura
-    const defaultOptions = {
-        allowedTags: [
-            'b', 'i', 'em', 'strong', 'a', 'p', 'br', 'div', 'span',
-            'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li',
-            'blockquote', 'code', 'pre', 'table', 'thead', 'tbody', 'tr', 'td', 'th'
-        ],
-        allowedAttributes: {
-            'a': ['href', 'title', 'target'],
-            'img': ['src', 'alt', 'title', 'width', 'height'],
-            'div': ['class', 'id'],
-            'span': ['class', 'id'],
-            'p': ['class'],
-            'h1': ['class'], 'h2': ['class'], 'h3': ['class'],
-            'h4': ['class'], 'h5': ['class'], 'h6': ['class']
-        },
-        allowedSchemes: ['http', 'https', 'mailto', 'tel'],
-        allowedSchemesByTag: {
-            'img': ['http', 'https', 'data']
-        },
-        allowedClasses: {
-            'div': ['container', 'row', 'col', 'text-center', 'text-left', 'text-right'],
-            'span': ['badge', 'label', 'highlight'],
-            'p': ['lead', 'text-muted', 'text-primary']
-        },
-        transformTags: {
-            'a': function(tagName, attribs) {
-                // Validar URLs
-                if (attribs.href) {
-                    const url = attribs.href.toLowerCase();
-                    if (url.startsWith('javascript:') || url.startsWith('data:')) {
-                        delete attribs.href;
-                    }
-                }
-                return { tagName, attribs };
-            }
-        }
-    };
-    
-    // Fusionar opciones personalizadas con las por defecto
-    const sanitizeOptions = { ...defaultOptions, ...options };
-    
-    try {
-        if (sanitizeHtml) {
-            // Usar librería sanitize-html
-            return sanitizeHtml(str, sanitizeOptions);
-        } else {
-            // Fallback robusto si no está disponible la librería
-            return fallbackSanitizeHTML(str);
-        }
-    } catch (error) {
-        console.error('❌ Error en sanitización HTML:', error);
-        return fallbackSanitizeHTML(str);
-    }
-}
 
-/**
- * Fallback de sanitización HTML robusta
- * @param {string} str - Cadena a sanitizar
- * @returns {string} - Cadena sanitizada
- */
-function fallbackSanitizeHTML(str) {
-    if (typeof str !== 'string') {
-        return '';
-    }
-    
-    // Crear elemento temporal
-    const temp = document.createElement('div');
-    temp.textContent = str;
-    
-    // Obtener el contenido HTML escapado
-    let sanitized = temp.innerHTML;
-    
-    // Eliminar scripts maliciosos
-    sanitized = sanitized.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-    
-    // Eliminar eventos inline
-    sanitized = sanitized.replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, '');
-    
-    // Eliminar javascript: en href
-    sanitized = sanitized.replace(/href\s*=\s*["']\s*javascript:/gi, 'href="#"');
-    
-    // Eliminar data: URLs peligrosas
-    sanitized = sanitized.replace(/src\s*=\s*["']\s*data:image\/svg\+xml/gi, 'src="#"');
-    
-    // Eliminar expresiones de estilo peligrosas
-    sanitized = sanitized.replace(/style\s*=\s*["'][^"']*expression\s*\([^"']*["']/gi, '');
-    
-    return sanitized;
-}
-
-/**
- * Sanitización estricta para contenido que debe ser solo texto
- * @param {string} str - Cadena a sanitizar
- * @returns {string} - Solo texto, sin HTML
- */
-function sanitizeTextOnly(str) {
-    if (typeof str !== 'string') {
-        return '';
-    }
-    
-    try {
-        if (he) {
-            // Usar librería he para decode HTML entities
-            return he.decode(str);
-        } else {
-            // Fallback nativo
-            const temp = document.createElement('div');
-            temp.textContent = str;
-            return temp.textContent || temp.innerText || '';
-        }
-    } catch (error) {
-        console.error('❌ Error en sanitización de texto:', error);
-        return str.replace(/<[^>]*>/g, '');
-    }
-}
-
-// ============================================================================
-// ESCAPE DE COMILLAS MEJORADO
-// ============================================================================
-
-/**
- * Función robusta para escapar comillas simples en SQL
- * Usa expresión regular con bandera global para reemplazar TODAS las ocurrencias
- * @param {string} s - Cadena a escapar
- * @returns {string} - Cadena con comillas escapadas
- */
-function escapeQuotes(s) {
-    if (typeof s !== 'string') {
-        return '';
-    }
-    
-    // ESCAPAR TODAS las comillas simples usando regex con bandera global
-    return s.replace(/'/g, "''");
-}
-
-/**
- * Escape de comillas dobles para uso en atributos HTML
- * @param {string} s - Cadena a escapar
- * @returns {string} - Cadena con comillas dobles escapadas
- */
-function escapeDoubleQuotes(s) {
-    if (typeof s !== 'string') {
-        return '';
-    }
-    
-    try {
-        if (he) {
-            return he.escape(s);
-        } else {
-            return s.replace(/"/g, '&quot;');
-        }
-    } catch (error) {
-        console.error('❌ Error escapando comillas dobles:', error);
-        return s.replace(/"/g, '&quot;');
-    }
-}
-
-/**
- * Escape completo para uso en JavaScript
- * @param {string} s - Cadena a escapar
- * @returns {string} - Cadena escapada para JavaScript
- */
-function escapeForJavaScript(s) {
-    if (typeof s !== 'string') {
-        return '';
-    }
-    
-    return s
-        .replace(/\\/g, '\\\\')  // Escapar barras invertidas primero
-        .replace(/'/g, "\\'")    // Escapar comillas simples
-        .replace(/"/g, '\\"')    // Escapar comillas dobles
-        .replace(/\n/g, '\\n')   // Escapar saltos de línea
-        .replace(/\r/g, '\\r')   // Escapar retornos de carro
-        .replace(/\t/g, '\\t');  // Escapar tabulaciones
-}
-
-// ============================================================================
-// VALIDACIÓN Y SANITIZACIÓN DE ENTRADA
-// ============================================================================
-
-/**
- * Validación y sanitización robusta de entrada
- * @param {string} input - Entrada a validar
- * @param {string} type - Tipo de validación
- * @returns {object} - Resultado de validación
- */
-function validateAndSanitizeInput(input, type = 'text') {
-    if (typeof input !== 'string') {
-        return {
-            isValid: false,
-            sanitized: '',
-            error: 'Entrada inválida: debe ser una cadena de texto'
+    /**
+     * Establecer una cookie segura
+     * @param {string} name - Nombre de la cookie
+     * @param {string} value - Valor de la cookie
+     * @param {Object} options - Opciones adicionales
+     */
+    setCookie(name, value, options = {}) {
+        const cookieOptions = {
+            domain: this.domain,
+            secure: this.secure,
+            sameSite: this.sameSite,
+            maxAge: this.maxAge,
+            path: '/',
+            ...options
         };
-    }
-    
-    // Eliminar espacios en blanco al inicio y final
-    let sanitized = input.trim();
-    
-    // Validar longitud mínima y máxima
-    if (sanitized.length === 0) {
-        return {
-            isValid: false,
-            sanitized: '',
-            error: 'La entrada no puede estar vacía'
-        };
-    }
-    
-    if (sanitized.length > 1000) {
-        return {
-            isValid: false,
-            sanitized: '',
-            error: 'La entrada es demasiado larga (máximo 1000 caracteres)'
-        };
-    }
-    
-    switch (type) {
-        case 'email':
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(sanitized)) {
-                return {
-                    isValid: false,
-                    sanitized: '',
-                    error: 'Formato de email inválido'
-                };
-            }
-            // Sanitizar email
-            sanitized = sanitized.toLowerCase();
-            break;
-            
-        case 'name':
-            // Solo letras, espacios, guiones y apóstrofes
-            const nameRegex = /^[a-zA-ZÀ-ÿ\s\-']+$/;
-            if (!nameRegex.test(sanitized)) {
-                return {
-                    isValid: false,
-                    sanitized: '',
-                    error: 'El nombre contiene caracteres inválidos'
-                };
-            }
-            break;
-            
-        case 'number':
-            const numberRegex = /^[0-9]+$/;
-            if (!numberRegex.test(sanitized)) {
-                return {
-                    isValid: false,
-                    sanitized: '',
-                    error: 'Debe ser un número válido'
-                };
-            }
-            break;
-            
-        case 'url':
-            try {
-                const url = new URL(sanitized);
-                if (!['http:', 'https:'].includes(url.protocol)) {
-                    return {
-                        isValid: false,
-                        sanitized: '',
-                        error: 'URL debe usar protocolo HTTP o HTTPS'
-                    };
-                }
-            } catch (error) {
-                return {
-                    isValid: false,
-                    sanitized: '',
-                    error: 'Formato de URL inválido'
-                };
-            }
-            break;
-            
-        case 'text':
-        default:
-            // Para texto general, eliminar caracteres peligrosos
-            sanitized = sanitized.replace(/[<>]/g, '');
-            break;
-    }
-    
-    return {
-        isValid: true,
-        sanitized: sanitized,
-        error: null
-    };
-}
 
-// ============================================================================
-// PREVENCIÓN DE INYECCIÓN SQL
-// ============================================================================
-
-/**
- * Crear consultas SQL seguras usando parámetros preparados
- * @param {string} query - Consulta SQL con placeholders
- * @param {Array} params - Parámetros para la consulta
- * @returns {string} - Consulta SQL segura
- */
-function createSafeSQLQuery(query, params = []) {
-    if (typeof query !== 'string') {
-        throw new Error('Query debe ser una cadena de texto');
-    }
-    
-    if (!Array.isArray(params)) {
-        throw new Error('Parámetros debe ser un array');
-    }
-    
-    let safeQuery = query;
-    
-    params.forEach((param, index) => {
-        const placeholder = `$${index + 1}`;
-        const escapedValue = escapeQuotes(String(param));
-        safeQuery = safeQuery.replace(placeholder, `'${escapedValue}'`);
-    });
-    
-    return safeQuery;
-}
-
-// ============================================================================
-// PREVENCIÓN DE XSS
-// ============================================================================
-
-/**
- * Crear elementos HTML de forma segura
- * @param {string} tagName - Nombre del elemento
- * @param {object} attributes - Atributos del elemento
- * @param {string} content - Contenido del elemento
- * @returns {HTMLElement} - Elemento HTML seguro
- */
-function createSafeElement(tagName, attributes = {}, content = '') {
-    if (typeof tagName !== 'string') {
-        throw new Error('tagName debe ser una cadena de texto');
-    }
-    
-    const element = document.createElement(tagName);
-    
-    // Agregar atributos de forma segura
-    Object.keys(attributes).forEach(key => {
-        const value = attributes[key];
-        if (typeof value === 'string' && value.length > 0) {
-            // Sanitizar el valor del atributo
-            const sanitizedValue = sanitizeTextOnly(value);
-            element.setAttribute(key, sanitizedValue);
-        }
-    });
-    
-    // Agregar contenido de forma segura
-    if (content) {
-        const sanitizedContent = sanitizeHTML(content);
-        element.innerHTML = sanitizedContent;
-    }
-    
-    return element;
-}
-
-/**
- * Insertar HTML de forma segura en un contenedor
- * @param {HTMLElement} container - Contenedor donde insertar
- * @param {string} html - HTML a insertar
- */
-function insertSafeHTML(container, html) {
-    if (!container || !(container instanceof HTMLElement)) {
-        throw new Error('Container debe ser un elemento HTML válido');
-    }
-    
-    if (typeof html !== 'string') {
-        throw new Error('HTML debe ser una cadena de texto');
-    }
-    
-    const sanitized = sanitizeHTML(html);
-    container.innerHTML = sanitized;
-}
-
-// ============================================================================
-// UTILIDADES PARA FORMULARIOS
-// ============================================================================
-
-/**
- * Sanitizar formulario completo
- * @param {HTMLFormElement} form - Formulario a sanitizar
- * @returns {object} - Datos sanitizados del formulario
- */
-function sanitizeForm(form) {
-    if (!form || !(form instanceof HTMLFormElement)) {
-        return {
-            data: {},
-            errors: ['Formulario inválido'],
-            isValid: false
-        };
-    }
-    
-    const formData = {};
-    const errors = [];
-    
-    // Obtener todos los campos del formulario
-    const inputs = form.querySelectorAll('input, textarea, select');
-    
-    inputs.forEach(input => {
-        const name = input.name;
-        const value = input.value;
-        const type = input.type || 'text';
+        let cookieString = `${encodeURIComponent(name)}=${encodeURIComponent(value)}`;
         
-        if (name) {
-            const validation = validateAndSanitizeInput(value, type);
-            
-            if (validation.isValid) {
-                formData[name] = validation.sanitized;
-            } else {
-                errors.push(`${name}: ${validation.error}`);
+        if (cookieOptions.domain) cookieString += `; domain=${cookieOptions.domain}`;
+        if (cookieOptions.path) cookieString += `; path=${cookieOptions.path}`;
+        if (cookieOptions.maxAge) cookieString += `; max-age=${cookieOptions.maxAge}`;
+        if (cookieOptions.secure) cookieString += '; secure';
+        if (cookieOptions.sameSite) cookieString += `; samesite=${cookieOptions.sameSite}`;
+
+        document.cookie = cookieString;
+    }
+
+    /**
+     * Obtener el valor de una cookie
+     * @param {string} name - Nombre de la cookie
+     * @returns {string|null} - Valor de la cookie o null si no existe
+     */
+    getCookie(name) {
+        const nameEQ = encodeURIComponent(name) + "=";
+        const ca = document.cookie.split(';');
+        
+        for (let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) === 0) {
+                return decodeURIComponent(c.substring(nameEQ.length, c.length));
             }
         }
-    });
-    
-    return {
-        data: formData,
-        errors: errors,
-        isValid: errors.length === 0
-    };
+        return null;
+    }
+
+    /**
+     * Eliminar una cookie
+     * @param {string} name - Nombre de la cookie
+     */
+    deleteCookie(name) {
+        this.setCookie(name, '', { maxAge: -1 });
+    }
 }
 
-// ============================================================================
-// EXPORTAR FUNCIONES PARA USO GLOBAL
-// ============================================================================
+/**
+ * Clase para sanitización segura de contenido
+ */
+class ContentSanitizer {
+    constructor() {
+        this.domPurify = DOMPurify;
+        this.configureDOMPurify();
+    }
 
-// Hacer las funciones disponibles globalmente
-window.SecurityUtils = {
-    sanitizeHTML,
-    sanitizeTextOnly,
-    escapeQuotes,
-    escapeDoubleQuotes,
-    escapeForJavaScript,
-    validateAndSanitizeInput,
-    createSafeSQLQuery,
-    createSafeElement,
-    insertSafeHTML,
-    sanitizeForm
+    /**
+     * Configurar DOMPurify con opciones seguras
+     */
+    configureDOMPurify() {
+        this.domPurify.setConfig({
+            ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'span', 'div'],
+            ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'id'],
+            ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+            FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed', 'form', 'input'],
+            FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur']
+        });
+    }
+
+    /**
+     * Sanitizar texto HTML
+     * @param {string} html - HTML a sanitizar
+     * @returns {string} - HTML sanitizado
+     */
+    sanitizeHTML(html) {
+        if (typeof html !== 'string') return '';
+        return this.domPurify.sanitize(html);
+    }
+
+    /**
+     * Sanitizar texto plano
+     * @param {string} text - Texto a sanitizar
+     * @returns {string} - Texto sanitizado
+     */
+    sanitizeText(text) {
+        if (typeof text !== 'string') return '';
+        return this.domPurify.sanitize(text, { ALLOWED_TAGS: [] });
+    }
+
+    /**
+     * Sanitizar URL
+     * @param {string} url - URL a sanitizar
+     * @returns {string} - URL sanitizada o cadena vacía si es insegura
+     */
+    sanitizeURL(url) {
+        if (typeof url !== 'string') return '';
+        
+        try {
+            const parsed = new URL(url);
+            if (['http:', 'https:', 'mailto:', 'tel:'].includes(parsed.protocol)) {
+                return url;
+            }
+        } catch (e) {
+            // URL inválida
+        }
+        
+        return '';
+    }
+}
+
+/**
+ * Clase para evaluación segura de expresiones matemáticas
+ */
+class SafeExpressionEvaluator {
+    constructor() {
+        this.math = math;
+        this.configureMathJS();
+    }
+
+    /**
+     * Configurar mathjs con opciones seguras
+     */
+    configureMathJS() {
+        this.math.config({
+            number: 'BigNumber',
+            precision: 20,
+            predictable: true
+        });
+    }
+
+    /**
+     * Evaluar expresión matemática de forma segura
+     * @param {string} expression - Expresión matemática
+     * @returns {*} - Resultado de la evaluación
+     * @throws {Error} - Si la expresión es inválida o insegura
+     */
+    evaluate(expression) {
+        if (typeof expression !== 'string') {
+            throw new Error('La expresión debe ser una cadena de texto');
+        }
+
+        // Validar que solo contenga caracteres matemáticos seguros
+        const safePattern = /^[0-9+\-*/()., \s]+$/;
+        if (!safePattern.test(expression)) {
+            throw new Error('La expresión contiene caracteres no permitidos');
+        }
+
+        try {
+            return this.math.evaluate(expression);
+        } catch (error) {
+            throw new Error(`Error al evaluar la expresión: ${error.message}`);
+        }
+    }
+
+    /**
+     * Validar si una expresión es segura
+     * @param {string} expression - Expresión a validar
+     * @returns {boolean} - true si es segura
+     */
+    isSafe(expression) {
+        try {
+            this.evaluate(expression);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+}
+
+/**
+ * Clase para migración de localStorage a cookies seguras
+ */
+class LocalStorageMigrator {
+    constructor() {
+        this.cookieManager = new SecureCookieManager();
+        this.migrationMap = new Map();
+        this.initializeMigrationMap();
+    }
+
+    /**
+     * Inicializar mapa de migración
+     */
+    initializeMigrationMap() {
+        this.migrationMap.set('isAudioEnabled', 'audio_enabled');
+        this.migrationMap.set('menuMuted', 'menu_muted');
+        this.migrationMap.set('dashboardMuted', 'dashboard_muted');
+        this.migrationMap.set('themePrimaryColor', 'theme_primary');
+        this.migrationMap.set('themeSecondaryColor', 'theme_secondary');
+        this.migrationMap.set('themeAccentColor', 'theme_accent');
+        this.migrationMap.set('highContrast', 'high_contrast');
+        this.migrationMap.set('volume', 'volume_level');
+        this.migrationMap.set('animationsEnabled', 'animations_enabled');
+        this.migrationMap.set('soundNotificationsEnabled', 'sound_enabled');
+        this.migrationMap.set('vibrationEnabled', 'vibration_enabled');
+        this.migrationMap.set('animationSpeedFactor', 'animation_speed');
+        this.migrationMap.set('layoutDragEnabled', 'layout_drag_enabled');
+        this.migrationMap.set('projectOrder', 'project_order');
+        this.migrationMap.set('achievements', 'achievements_data');
+        this.migrationMap.set('tutorialShown', 'tutorial_shown');
+    }
+
+    /**
+     * Migrar un valor de localStorage a cookie segura
+     * @param {string} localStorageKey - Clave en localStorage
+     * @param {string} defaultValue - Valor por defecto
+     * @returns {string} - Valor migrado
+     */
+    migrateValue(localStorageKey, defaultValue = '') {
+        const cookieKey = this.migrationMap.get(localStorageKey);
+        if (!cookieKey) return defaultValue;
+
+        // Intentar obtener de cookie primero
+        let value = this.cookieManager.getCookie(cookieKey);
+        
+        if (value === null) {
+            // Si no hay cookie, intentar localStorage y migrar
+            const localValue = localStorage.getItem(localStorageKey);
+            if (localValue !== null) {
+                value = localValue;
+                // Migrar a cookie
+                this.cookieManager.setCookie(cookieKey, value);
+                // Limpiar localStorage
+                localStorage.removeItem(localStorageKey);
+            } else {
+                value = defaultValue;
+            }
+        }
+
+        return value;
+    }
+
+    /**
+     * Establecer valor en cookie segura
+     * @param {string} localStorageKey - Clave original de localStorage
+     * @param {string} value - Valor a establecer
+     */
+    setSecureValue(localStorageKey, value) {
+        const cookieKey = this.migrationMap.get(localStorageKey);
+        if (cookieKey) {
+            this.cookieManager.setCookie(cookieKey, value);
+        }
+    }
+
+    /**
+     * Obtener valor de cookie segura
+     * @param {string} localStorageKey - Clave original de localStorage
+     * @param {string} defaultValue - Valor por defecto
+     * @returns {string} - Valor de la cookie
+     */
+    getSecureValue(localStorageKey, defaultValue = '') {
+        return this.migrateValue(localStorageKey, defaultValue);
+    }
+}
+
+// Exportar utilidades
+export {
+    SecureCookieManager,
+    ContentSanitizer,
+    SafeExpressionEvaluator,
+    LocalStorageMigrator
 };
 
-// También exportar individualmente para compatibilidad
-window.sanitizeHTML = sanitizeHTML;
-window.escapeQuotes = escapeQuotes;
-window.validateAndSanitizeInput = validateAndSanitizeInput;
+// Crear instancias globales para compatibilidad
+window.SecurityUtils = {
+    cookies: new SecureCookieManager(),
+    sanitizer: new ContentSanitizer(),
+    evaluator: new SafeExpressionEvaluator(),
+    migrator: new LocalStorageMigrator()
+};
 
-// Exportar para Node.js
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        sanitizeHTML,
-        sanitizeTextOnly,
-        escapeQuotes,
-        escapeDoubleQuotes,
-        escapeForJavaScript,
-        validateAndSanitizeInput,
-        createSafeSQLQuery,
-        createSafeElement,
-        insertSafeHTML,
-        sanitizeForm
-    };
-}
+// Función de compatibilidad para reemplazar eval
+window.safeEval = (expression) => {
+    return window.SecurityUtils.evaluator.evaluate(expression);
+};
 
-console.log('✅ Utilidades de seguridad cargadas correctamente');
+// Función de compatibilidad para reemplazar innerHTML
+window.safeSetContent = (element, content, useHTML = false) => {
+    if (!element) return;
+    
+    if (useHTML) {
+        const sanitized = window.SecurityUtils.sanitizer.sanitizeHTML(content);
+        element.innerHTML = sanitized;
+    } else {
+        const sanitized = window.SecurityUtils.sanitizer.sanitizeText(content);
+        element.textContent = sanitized;
+    }
+};
