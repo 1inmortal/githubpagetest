@@ -12,7 +12,7 @@ dotenv.config();
 const PORT = process.env.PORT || 3001;
 
 // Función para iniciar el servidor
-async function startServer() {
+async function startServer () {
   try {
     // Verificar conexión a la base de datos
     await prisma.$connect();

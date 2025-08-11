@@ -12,6 +12,11 @@ env:
   NODE_VERSION: '20.x'
   NPM_VERSION: '10.x'
 
+# Configuración de concurrencia para evitar builds simultáneos
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # Análisis de código y linting
   lint:
@@ -143,7 +148,7 @@ jobs:
       run: npm run test:e2e
 
     - name: Subir reportes de Playwright
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v5
       if: always()
       with:
         name: playwright-report

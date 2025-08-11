@@ -14,14 +14,14 @@ const indexedDB = {
       onupgradeneeded: null,
       result: null
     };
-    
+
     // Simular error para forzar fallback a localStorage
     setTimeout(() => {
       if (request.onerror) {
         request.onerror({ error: new Error('IndexedDB not available') });
       }
     }, 0);
-    
+
     return request;
   }),
   deleteDatabase: vi.fn(),
@@ -93,14 +93,14 @@ window.idbKeyval = {
 global.ResizeObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
-  disconnect: vi.fn(),
+  disconnect: vi.fn()
 }));
 
 // Mock de IntersectionObserver
 global.IntersectionObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
-  disconnect: vi.fn(),
+  disconnect: vi.fn()
 }));
 
 // Mock de matchMedia
@@ -114,8 +114,8 @@ Object.defineProperty(window, 'matchMedia', {
     removeListener: vi.fn(),
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
+    dispatchEvent: vi.fn()
+  }))
 });
 
 // Mock de console para tests

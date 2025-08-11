@@ -11,14 +11,14 @@ dotenv.config();
 
 const prisma = new PrismaClient();
 
-async function main() {
+async function main () {
   console.log('🌱 Iniciando seed de la base de datos...');
 
   try {
     // Crear usuario administrador
     console.log('👤 Creando usuario administrador...');
     const adminPassword = await bcrypt.hash('admin123', 12);
-    
+
     const adminUser = await prisma.user.upsert({
       where: { email: 'admin@inmortal.com' },
       update: {},
@@ -32,7 +32,7 @@ async function main() {
 
     // Crear proyectos de ejemplo
     console.log('🚀 Creando proyectos de ejemplo...');
-    
+
     const projects = [
       {
         title: 'PROYECTO: CERBERUS',
@@ -65,7 +65,7 @@ async function main() {
       const existingProject = await prisma.project.findFirst({
         where: { title: projectData.title }
       });
-      
+
       if (!existingProject) {
         const project = await prisma.project.create({
           data: {
@@ -83,7 +83,7 @@ async function main() {
 
     // Crear certificaciones de ejemplo
     console.log('🏆 Creando certificaciones de ejemplo...');
-    
+
     const certifications = [
       {
         name: 'Certificación en Ciberseguridad',
@@ -125,7 +125,7 @@ async function main() {
 
     for (const certData of certifications) {
       const certification = await prisma.certification.upsert({
-        where: { 
+        where: {
           name_issuer: {
             name: certData.name,
             issuer: certData.issuer
@@ -144,12 +144,12 @@ async function main() {
 
     console.log('🎉 Seed completado exitosamente!');
     console.log('\n📋 Resumen:');
-    console.log(`   - Usuarios: 1`);
+    console.log('   - Usuarios: 1');
     console.log(`   - Proyectos: ${projects.length}`);
     console.log(`   - Certificaciones: ${certifications.length}`);
     console.log('\n🔑 Credenciales de administrador:');
-    console.log(`   - Email: admin@inmortal.com`);
-    console.log(`   - Contraseña: admin123`);
+    console.log('   - Email: admin@inmortal.com');
+    console.log('   - Contraseña: admin123');
 
   } catch (error) {
     console.error('❌ Error durante el seed:', error);

@@ -1,6 +1,6 @@
 // main.js
 onload = () => {
-  document.body.classList.remove("container");
+  document.body.classList.remove('container');
 
   const audio = document.querySelector('audio');
   // Necesitamos una interacción del usuario para reproducir el audio

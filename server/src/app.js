@@ -28,14 +28,14 @@ const prisma = new PrismaClient();
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      scriptSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://www.googletagmanager.com"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'"],
-      frameSrc: ["'self'"],
-      objectSrc: ["'none'"],
+      defaultSrc: ['\'self\''],
+      styleSrc: ['\'self\'', '\'unsafe-inline\'', 'https://fonts.googleapis.com'],
+      fontSrc: ['\'self\'', 'https://fonts.gstatic.com'],
+      scriptSrc: ['\'self\'', 'https://cdnjs.cloudflare.com', 'https://www.googletagmanager.com'],
+      imgSrc: ['\'self\'', 'data:', 'https:'],
+      connectSrc: ['\'self\''],
+      frameSrc: ['\'self\''],
+      objectSrc: ['\'none\''],
       upgradeInsecureRequests: []
     }
   }
@@ -126,10 +126,10 @@ app.use('*', (req, res) => {
 // Middleware de manejo de errores global
 app.use((err, req, res, next) => {
   console.error('Error global:', err);
-  
+
   res.status(err.status || 500).json({
-    error: process.env.NODE_ENV === 'production' 
-      ? 'Error interno del servidor' 
+    error: process.env.NODE_ENV === 'production'
+      ? 'Error interno del servidor'
       : err.message,
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
   });

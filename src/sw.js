@@ -101,7 +101,7 @@ self.addEventListener('fetch', event => {
           })
           .catch(error => {
             console.error('Service Worker: Fetch failed', error);
-            
+
             // Return offline page for navigation requests
             if (event.request.mode === 'navigate') {
               return caches.match('/githubpagetest/index.html');
@@ -119,7 +119,7 @@ self.addEventListener('sync', event => {
   }
 });
 
-function doBackgroundSync() {
+function doBackgroundSync () {
   // Handle offline form submissions or other background tasks
   console.log('Service Worker: Processing background sync');
   return Promise.resolve();
@@ -128,7 +128,7 @@ function doBackgroundSync() {
 // Push notification handling (for future use)
 self.addEventListener('push', event => {
   console.log('Service Worker: Push notification received');
-  
+
   const options = {
     body: event.data ? event.data.text() : 'Nueva notificación de INMORTAL_OS',
     icon: '/githubpagetest/assets/img/FAVICON/LOGO.png',
@@ -160,7 +160,7 @@ self.addEventListener('push', event => {
 // Notification click handling
 self.addEventListener('notificationclick', event => {
   console.log('Service Worker: Notification clicked');
-  
+
   event.notification.close();
 
   if (event.action === 'explore') {
@@ -168,4 +168,4 @@ self.addEventListener('notificationclick', event => {
       clients.openWindow('/githubpagetest/')
     );
   }
-}); 
+});
