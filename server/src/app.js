@@ -15,6 +15,7 @@ import { PrismaClient } from '@prisma/client';
 import authRoutes from './routes/auth.js';
 import projectRoutes from './routes/projects.js';
 import certificationRoutes from './routes/certifications.js';
+import userRoutes from './routes/users.js';
 
 // Configurar variables de entorno
 dotenv.config();
@@ -88,6 +89,7 @@ app.use((err, req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/certifications', certificationRoutes);
+app.use('/api/users', userRoutes);
 
 // Ruta de health check
 app.get('/api/health', (req, res) => {
