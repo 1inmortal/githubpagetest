@@ -8,6 +8,12 @@ on:
   schedule:
     - cron: '0 2 * * 0' # Semanal los domingos a las 2 AM
 
+permissions: read-all
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   NODE_VERSION: '20.x'
   NPM_VERSION: '10.x'
@@ -23,12 +29,12 @@ jobs:
     
     steps:
     - name: Checkout código
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4 # TODO: pin SHA
       with:
         fetch-depth: 0
 
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v4 # TODO: pin SHA
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
@@ -56,10 +62,10 @@ jobs:
     
     steps:
     - name: Checkout código
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4 # TODO: pin SHA
 
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v4 # TODO: pin SHA
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
@@ -76,7 +82,7 @@ jobs:
       run: npm run test:coverage
 
     - name: Subir cobertura a Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4 # TODO: pin SHA
       with:
         file: ./coverage/lcov.info
         flags: unittests
@@ -91,10 +97,10 @@ jobs:
     
     steps:
     - name: Checkout código
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4 # TODO: pin SHA
 
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v4 # TODO: pin SHA
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
@@ -125,10 +131,10 @@ jobs:
     
     steps:
     - name: Checkout código
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4 # TODO: pin SHA
 
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v4 # TODO: pin SHA
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
@@ -143,8 +149,8 @@ jobs:
       run: npm run test:e2e
 
     - name: Subir reportes de Playwright
-      uses: actions/upload-artifact@v3
       if: always()
+      uses: actions/upload-artifact@v4 # TODO: pin SHA
       with:
         name: playwright-report
         path: |
@@ -162,10 +168,10 @@ jobs:
     
     steps:
     - name: Checkout código
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4 # TODO: pin SHA
 
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v4 # TODO: pin SHA
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
@@ -213,7 +219,7 @@ jobs:
       run: npm ci
 
     - name: Setup Pages
-      uses: actions/configure-pages@v4
+      uses: actions/configure-pages@v4 # TODO: pin SHA
 
     - name: Build para Pages
       run: |
@@ -228,13 +234,13 @@ jobs:
         cp LICENSE dist/
 
     - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
+      uses: actions/upload-pages-artifact@v3 # TODO: pin SHA
       with:
         path: './dist'
 
     - name: Deploy to GitHub Pages
       id: deployment
-      uses: actions/deploy-pages@v4
+      uses: actions/deploy-pages@v4 # TODO: pin SHA
 
   # Notificaciones
   notify:
