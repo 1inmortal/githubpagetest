@@ -15,6 +15,7 @@ import { PrismaClient } from '@prisma/client';
 import authRoutes from './routes/auth.js';
 import projectRoutes from './routes/projects.js';
 import certificationRoutes from './routes/certifications.js';
+import userRoutes from './routes/users.js';
 
 // Configurar variables de entorno
 dotenv.config();
@@ -28,14 +29,14 @@ const prisma = new PrismaClient();
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      scriptSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://www.googletagmanager.com"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'"],
-      frameSrc: ["'self'"],
-      objectSrc: ["'none'"],
+      defaultSrc: ['\'self\''],
+      styleSrc: ['\'self\'', '\'unsafe-inline\'', 'https://fonts.googleapis.com'],
+      fontSrc: ['\'self\'', 'https://fonts.gstatic.com'],
+      scriptSrc: ['\'self\'', 'https://cdnjs.cloudflare.com', 'https://www.googletagmanager.com'],
+      imgSrc: ['\'self\'', 'data:', 'https:'],
+      connectSrc: ['\'self\''],
+      frameSrc: ['\'self\''],
+      objectSrc: ['\'none\''],
       upgradeInsecureRequests: []
     }
   }
@@ -88,6 +89,7 @@ app.use((err, req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/certifications', certificationRoutes);
+app.use('/api/users', userRoutes);
 
 // Ruta de health check
 app.get('/api/health', (req, res) => {
@@ -126,10 +128,10 @@ app.use('*', (req, res) => {
 // Middleware de manejo de errores global
 app.use((err, req, res, next) => {
   console.error('Error global:', err);
-  
+
   res.status(err.status || 500).json({
-    error: process.env.NODE_ENV === 'production' 
-      ? 'Error interno del servidor' 
+    error: process.env.NODE_ENV === 'production'
+      ? 'Error interno del servidor'
       : err.message,
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
   });

@@ -11,7 +11,7 @@ const config = {
     frontendURL: 'http://localhost:3000',
     environment: 'development'
   },
-  
+
   // Producción (GitHub Pages)
   production: {
     // IMPORTANTE: Cambiar esta URL por tu servidor real en producción
@@ -22,18 +22,18 @@ const config = {
 };
 
 // Función para obtener la configuración actual
-export function getConfig() {
+export function getConfig () {
   const hostname = window.location.hostname;
-  
+
   // Detectar entorno
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
     return config.development;
   }
-  
+
   if (hostname.includes('github.io')) {
     return config.production;
   }
-  
+
   // Fallback para otros entornos
   return config.development;
 }
@@ -47,17 +47,17 @@ export const FRONTEND_URL = currentConfig.frontendURL;
 export const ENVIRONMENT = currentConfig.environment;
 
 // Función para construir URLs completas
-export function buildApiUrl(endpoint) {
+export function buildApiUrl (endpoint) {
   return `${API_BASE_URL}${endpoint}`;
 }
 
 // Función para verificar si estamos en desarrollo
-export function isDevelopment() {
+export function isDevelopment () {
   return ENVIRONMENT === 'development';
 }
 
 // Función para verificar si estamos en producción
-export function isProduction() {
+export function isProduction () {
   return ENVIRONMENT === 'production';
 }
 

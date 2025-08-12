@@ -2,10 +2,9 @@ let scene, camera, renderer, particles;
 let audioContext, analyser, dataArray;
 let isAudioInitialized = false;
 let uniforms;
-let init =()=> {
+const init = () => {
   scene = new THREE.Scene();
-  scene.background = new THREE.Color("#222")
-  
+  scene.background = new THREE.Color('#222');
 
   camera = new THREE.PerspectiveCamera(
     75,
@@ -14,7 +13,7 @@ let init =()=> {
     5000
   );
   // renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer:true });
-  renderer = new THREE.WebGLRenderer({ antialias: true});
+  renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   // renderer.autoClearColor = false;
   document.body.appendChild(renderer.domElement);
@@ -26,9 +25,9 @@ let init =()=> {
   };
   const geometry = new THREE.BufferGeometry();
   const positions = [];
-  //add craploads of particles here! 
+  //add craploads of particles here!
   //youll wanna change the size over in the shader tho:
-  //float size = 5.0; <<-- looks like that. change it to a smaller size if you add tons. 
+  //float size = 5.0; <<-- looks like that. change it to a smaller size if you add tons.
   const particleCount = 5500;
   for (let i = 0; i < particleCount; i++) {
     const theta = Math.random() * Math.PI * 2;
@@ -41,45 +40,45 @@ let init =()=> {
     );
   }
   geometry.setAttribute(
-    "position",
+    'position',
     new THREE.Float32BufferAttribute(positions, 3)
   );
   geometry.setAttribute(
-    "normal",
+    'normal',
     new THREE.Float32BufferAttribute(positions, 3)
   );
-  const vertexShader = document.getElementById("vertexShader").textContent;
-  const fragmentShader = document.getElementById("fragmentShader").textContent;
+  const vertexShader = document.getElementById('vertexShader').textContent;
+  const fragmentShader = document.getElementById('fragmentShader').textContent;
   const material = new THREE.ShaderMaterial({
-    uniforms: uniforms,
-    vertexShader: vertexShader,
-    fragmentShader: fragmentShader,
+    uniforms,
+    vertexShader,
+    fragmentShader,
     transparent: true,
-    depthWrite: false,
+    depthWrite: false
     // blending: THREE.AdditiveBlending
   });
   particles = new THREE.Points(geometry, material);
   scene.add(particles);
   camera.position.z = 1;
-  
-}
-let onMouseMove =(event)=> {
+
+};
+const onMouseMove = (event) => {
   const rotationSpeed = 0.001;
   camera.position.x = Math.sin(event.clientX * rotationSpeed) * 5;
   camera.position.z = Math.cos(event.clientX * rotationSpeed) * 5;
   camera.lookAt(scene.position);
-}
-let onTouchMove=(event)=> {
+};
+const onTouchMove = (event) => {
   event.preventDefault();
   const touch = event.touches[0];
   const rotationSpeed = 0.001;
   camera.position.x = Math.sin(touch.clientX * rotationSpeed) * 5;
   camera.position.z = Math.cos(touch.clientX * rotationSpeed) * 5;
   camera.lookAt(scene.position);
-}
-async function initAudio() {
-  document.addEventListener("mousemove", onMouseMove);
-  document.addEventListener("touchmove", onTouchMove, { passive: false });
+};
+async function initAudio () {
+  document.addEventListener('mousemove', onMouseMove);
+  document.addEventListener('touchmove', onTouchMove, { passive: false });
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -90,45 +89,45 @@ async function initAudio() {
     dataArray = new Uint8Array(analyser.frequencyBinCount);
     isAudioInitialized = true;
   } catch (error) {
-    console.error("Error accessing microphone:", error);
+    console.error('Error accessing microphone:', error);
   }
 }
-let getAverageFrequencyRange=(start, end)=> {
+const getAverageFrequencyRange = (start, end) => {
   let sum = 0;
   for (let i = start; i < end; i++) {
     sum += dataArray[i];
   }
   return sum / (end - start) / 255;
-}
-let animate=()=> {
+};
+const animate = () => {
   requestAnimationFrame(animate);
   uniforms.uTime.value = performance.now() * 0.001;
   if (isAudioInitialized) {
-        analyser.getByteFrequencyData(dataArray);
-        const low = getAverageFrequencyRange(0, 20)*0.7;
-        const mid = getAverageFrequencyRange(20, 50)*0.7;
-        const high = getAverageFrequencyRange(50, 100)*0.7;
-        
-        uniforms.uAudioLow.value = low;
-        uniforms.uAudioMid.value = mid;
-        uniforms.uAudioHigh.value = high;
-        
-        document.getElementById('lowFreq').textContent = low.toFixed(3);
-        document.getElementById('midFreq').textContent = mid.toFixed(3);
-        document.getElementById('highFreq').textContent = high.toFixed(3);
-    }
+    analyser.getByteFrequencyData(dataArray);
+    const low = getAverageFrequencyRange(0, 20) * 0.7;
+    const mid = getAverageFrequencyRange(20, 50) * 0.7;
+    const high = getAverageFrequencyRange(50, 100) * 0.7;
+
+    uniforms.uAudioLow.value = low;
+    uniforms.uAudioMid.value = mid;
+    uniforms.uAudioHigh.value = high;
+
+    document.getElementById('lowFreq').textContent = low.toFixed(3);
+    document.getElementById('midFreq').textContent = mid.toFixed(3);
+    document.getElementById('highFreq').textContent = high.toFixed(3);
+  }
   renderer.render(scene, camera);
-}
-let onWindowResize=()=> {
+};
+const onWindowResize = () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
-}
-window.addEventListener("resize", onWindowResize);
-document.addEventListener("click", () => {
+};
+window.addEventListener('resize', onWindowResize);
+document.addEventListener('click', () => {
   if (!isAudioInitialized) {
     initAudio();
-      document.querySelector("#info").classList.add("hide");
+    document.querySelector('#info').classList.add('hide');
   }
 });
 init();

@@ -134,7 +134,7 @@ router.post('/refresh', async (req, res) => {
 
     // Verificar refresh token
     const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
-    
+
     // Verificar que el usuario existe
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
@@ -166,7 +166,7 @@ router.post('/refresh', async (req, res) => {
         error: 'Refresh token expirado'
       });
     }
-    
+
     console.error('Error en refresh:', error);
     res.status(500).json({
       error: 'Error interno del servidor'

@@ -13,8 +13,8 @@ const loaderOverlayEl = document.getElementById('loaderOverlay');
 // Intervalo para simular la carga (incrementa 1% cada 30ms)
 const simulateLoading = setInterval(() => {
   progress += 1;
-  loaderBar.style.width = progress + '%';
-  loaderPercentage.textContent = progress + '%';
+  loaderBar.style.width = `${progress}%`;
+  loaderPercentage.textContent = `${progress}%`;
 
   if (progress >= 100) {
     clearInterval(simulateLoading);
@@ -31,13 +31,12 @@ const simulateLoading = setInterval(() => {
   }
 }, 30);
 
-
 /******************************************************
  MENÚ FILTRAR + OVERLAY + SONIDO DE CLIC
 -------------------------------------------------------
 Se despliega un panel de filtros al pulsar el botón,
 mostrando también un overlay semitransparente detrás.
-Incluimos un sonido de clic y cerramos todo al hacer 
+Incluimos un sonido de clic y cerramos todo al hacer
 clic en el overlay o fuera del panel.
 ******************************************************/
 const filterBtn = document.getElementById('filter-btn');
@@ -69,11 +68,10 @@ document.addEventListener('click', (e) => {
   }
 });
 
-
 /******************************************************
  SCROLL REVEAL
 -------------------------------------------------------
-Hace que ciertos elementos (con clase .reveal, 
+Hace que ciertos elementos (con clase .reveal,
 .section-title, etc.) se animen al entrar en el viewport.
 ******************************************************/
 const reveals = document.querySelectorAll(
@@ -82,7 +80,7 @@ const reveals = document.querySelectorAll(
 
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
-    if(entry.isIntersecting) {
+    if (entry.isIntersecting) {
       entry.target.classList.add('visible');
     } else {
       entry.target.classList.remove('visible');
@@ -92,7 +90,6 @@ const observer = new IntersectionObserver((entries) => {
 
 // Observamos cada elemento "reveal"
 reveals.forEach(el => observer.observe(el));
-
 
 /******************************************************
  CARRUSEL DE TESTIMONIOS
@@ -110,7 +107,7 @@ buttons.forEach((btn, i) => {
   });
 });
 
-function changeTestimonial(index) {
+function changeTestimonial (index) {
   testimonials[currentIndex].classList.remove('active');
   buttons[currentIndex].classList.remove('active');
   currentIndex = index;
@@ -118,11 +115,10 @@ function changeTestimonial(index) {
   buttons[currentIndex].classList.add('active');
 }
 
-
 /******************************************************
  PARTÍCULAS ALEATORIAS
 -------------------------------------------------------
-Genera un número definido de partículas que flotan 
+Genera un número definido de partículas que flotan
 aleatoriamente desde abajo hacia arriba en la pantalla.
 ******************************************************/
 const particlesContainer = document.querySelector('.particles');
@@ -132,20 +128,19 @@ for (let i = 0; i < particleCount; i++) {
   const p = document.createElement('div');
   p.classList.add('particle');
   const size = Math.random() * 5 + 5;
-  p.style.width = size + 'px';
-  p.style.height = size + 'px';
-  p.style.left = (Math.random() * 100) + 'vw';
-  p.style.top = (Math.random() * 100) + 'vh';
-  p.style.animationDelay = (Math.random() * 5) + 's';
-  p.style.animationDuration = (10 + Math.random() * 10) + 's';
+  p.style.width = `${size}px`;
+  p.style.height = `${size}px`;
+  p.style.left = `${Math.random() * 100}vw`;
+  p.style.top = `${Math.random() * 100}vh`;
+  p.style.animationDelay = `${Math.random() * 5}s`;
+  p.style.animationDuration = `${10 + Math.random() * 10}s`;
   particlesContainer.appendChild(p);
 }
-
 
 /******************************************************
  AUDIO DE FONDO AL PRIMER CLIC
 -------------------------------------------------------
-Reproduce la música de fondo (si está en pausa) 
+Reproduce la música de fondo (si está en pausa)
 cuando el usuario hace clic por primera vez en la página.
 ******************************************************/
 document.body.addEventListener('click', () => {
@@ -154,5 +149,4 @@ document.body.addEventListener('click', () => {
     audioElement.play();
   }
 }, { once: true });
-
 

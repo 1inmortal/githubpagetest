@@ -7,14 +7,14 @@ import { store } from '../core/store.js';
 import { API_BASE_URL, isDevelopment, isProduction } from '../config/environment.js';
 
 class DataClient {
-  constructor() {
+  constructor () {
     this.cache = new Map();
     this.subscribers = new Map();
     // Usar configuración de entorno
     this.baseURL = API_BASE_URL;
     this.revalidationInterval = 30000; // 30 segundos
     this.setupRevalidation();
-    
+
     // Log de configuración en desarrollo
     if (isDevelopment()) {
       console.log('🔧 DataClient configurado para desarrollo:', {
@@ -25,31 +25,31 @@ class DataClient {
   }
 
   // Obtener la URL base según el entorno
-  getBaseURL() {
+  getBaseURL () {
     // En desarrollo local
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       return 'http://localhost:3001/api';
     }
-    
+
     // En GitHub Pages (producción)
     if (window.location.hostname.includes('github.io')) {
       // Cambiar esto por tu servidor real en producción
       return 'https://tu-servidor-produccion.com/api';
     }
-    
+
     // Fallback para otros entornos
     return '/api';
   }
 
   // Configurar revalidación automática
-  setupRevalidation() {
+  setupRevalidation () {
     setInterval(() => {
       this.revalidateAll();
     }, this.revalidationInterval);
   }
 
   // Función principal SWR (Stale-While-Revalidate)
-  async swr(key, fetcher, options = {}) {
+  async swr (key, fetcher, options = {}) {
     const {
       revalidateOnFocus = true,
       revalidateOnReconnect = true,
@@ -63,12 +63,12 @@ class DataClient {
     if (cached && !this.isStale(cached, options)) {
       // Retornar datos del cache inmediatamente
       this.triggerUpdate(key, cached.data);
-      
+
       // Revalidar en background si es necesario
       if (this.shouldRevalidate(cached, options)) {
         this.revalidateInBackground(key, fetcher, options);
       }
-      
+
       return cached.data;
     }
 
@@ -89,9 +89,9 @@ class DataClient {
   }
 
   // Fetch con reintentos
-  async fetchWithRetry(key, fetcher, retryCount, retryInterval) {
+  async fetchWithRetry (key, fetcher, retryCount, retryInterval) {
     let lastError;
-    
+
     for (let i = 0; i <= retryCount; i++) {
       try {
         return await fetcher();
@@ -102,24 +102,24 @@ class DataClient {
         }
       }
     }
-    
+
     throw lastError;
   }
 
   // Verificar si los datos están obsoletos
-  isStale(cached, options) {
+  isStale (cached, options) {
     const { maxAge = 60000 } = options; // 1 minuto por defecto
     return Date.now() - cached.timestamp > maxAge;
   }
 
   // Verificar si se debe revalidar
-  shouldRevalidate(cached, options) {
+  shouldRevalidate (cached, options) {
     const { revalidateInterval = 30000 } = options; // 30 segundos por defecto
     return Date.now() - cached.timestamp > revalidateInterval;
   }
 
   // Revalidar en background
-  async revalidateInBackground(key, fetcher, options) {
+  async revalidateInBackground (key, fetcher, options) {
     try {
       const data = await fetcher();
       this.setCache(key, data);
@@ -130,18 +130,18 @@ class DataClient {
   }
 
   // Cache management
-  getFromCache(key) {
+  getFromCache (key) {
     return this.cache.get(key);
   }
 
-  setCache(key, data) {
+  setCache (key, data) {
     this.cache.set(key, {
       data,
       timestamp: Date.now()
     });
   }
 
-  clearCache(key) {
+  clearCache (key) {
     if (key) {
       this.cache.delete(key);
     } else {
@@ -150,7 +150,7 @@ class DataClient {
   }
 
   // Revalidar todos los datos
-  async revalidateAll() {
+  async revalidateAll () {
     const keys = Array.from(this.cache.keys());
     for (const key of keys) {
       const cached = this.cache.get(key);
@@ -162,7 +162,7 @@ class DataClient {
   }
 
   // Fetch de datos de la API
-  async fetchData(endpoint) {
+  async fetchData (endpoint) {
     try {
       const response = await fetch(`${this.baseURL}${endpoint}`, {
         headers: {
@@ -183,20 +183,20 @@ class DataClient {
   }
 
   // Obtener token de autenticación
-  getAuthToken() {
+  getAuthToken () {
     return store.get('authToken') || localStorage.getItem('authToken');
   }
 
   // Métodos específicos para proyectos
-  async getProjects(options = {}) {
+  async getProjects (options = {}) {
     return this.swr('projects', () => this.fetchData('/projects'), options);
   }
 
-  async getProject(id, options = {}) {
+  async getProject (id, options = {}) {
     return this.swr(`project-${id}`, () => this.fetchData(`/projects/${id}`), options);
   }
 
-  async createProject(projectData) {
+  async createProject (projectData) {
     try {
       const response = await fetch(`${this.baseURL}/projects`, {
         method: 'POST',
@@ -212,13 +212,13 @@ class DataClient {
       }
 
       const newProject = await response.json();
-      
+
       // Invalidar cache de proyectos
       this.clearCache('projects');
-      
+
       // Actualizar store
       store.set('projects', newProject);
-      
+
       return newProject;
     } catch (error) {
       console.error('DataClient: Error creating project:', error);
@@ -226,7 +226,7 @@ class DataClient {
     }
   }
 
-  async updateProject(id, projectData) {
+  async updateProject (id, projectData) {
     try {
       const response = await fetch(`${this.baseURL}/projects/${id}`, {
         method: 'PUT',
@@ -242,14 +242,14 @@ class DataClient {
       }
 
       const updatedProject = await response.json();
-      
+
       // Invalidar cache
       this.clearCache(`project-${id}`);
       this.clearCache('projects');
-      
+
       // Actualizar store
       store.set(`project-${id}`, updatedProject);
-      
+
       return updatedProject;
     } catch (error) {
       console.error('DataClient: Error updating project:', error);
@@ -257,7 +257,7 @@ class DataClient {
     }
   }
 
-  async deleteProject(id) {
+  async deleteProject (id) {
     try {
       const response = await fetch(`${this.baseURL}/projects/${id}`, {
         method: 'DELETE',
@@ -273,10 +273,10 @@ class DataClient {
       // Invalidar cache
       this.clearCache(`project-${id}`);
       this.clearCache('projects');
-      
+
       // Actualizar store
       store.delete(`project-${id}`);
-      
+
       return true;
     } catch (error) {
       console.error('DataClient: Error deleting project:', error);
@@ -285,15 +285,15 @@ class DataClient {
   }
 
   // Métodos específicos para certificaciones
-  async getCertifications(options = {}) {
+  async getCertifications (options = {}) {
     return this.swr('certifications', () => this.fetchData('/certifications'), options);
   }
 
-  async getCertification(id, options = {}) {
+  async getCertification (id, options = {}) {
     return this.swr(`certification-${id}`, () => this.fetchData(`/certifications/${id}`), options);
   }
 
-  async createCertification(certData) {
+  async createCertification (certData) {
     try {
       const response = await fetch(`${this.baseURL}/certifications`, {
         method: 'POST',
@@ -309,13 +309,13 @@ class DataClient {
       }
 
       const newCert = await response.json();
-      
+
       // Invalidar cache
       this.clearCache('certifications');
-      
+
       // Actualizar store
       store.set('certifications', newCert);
-      
+
       return newCert;
     } catch (error) {
       console.error('DataClient: Error creating certification:', error);
@@ -323,7 +323,7 @@ class DataClient {
     }
   }
 
-  async updateCertification(id, certData) {
+  async updateCertification (id, certData) {
     try {
       const response = await fetch(`${this.baseURL}/certifications/${id}`, {
         method: 'PUT',
@@ -339,14 +339,14 @@ class DataClient {
       }
 
       const updatedCert = await response.json();
-      
+
       // Invalidar cache
       this.clearCache(`certification-${id}`);
       this.clearCache('certifications');
-      
+
       // Actualizar store
       store.set(`certification-${id}`, updatedCert);
-      
+
       return updatedCert;
     } catch (error) {
       console.error('DataClient: Error updating certification:', error);
@@ -354,7 +354,7 @@ class DataClient {
     }
   }
 
-  async deleteCertification(id) {
+  async deleteCertification (id) {
     try {
       const response = await fetch(`${this.baseURL}/certifications/${id}`, {
         method: 'DELETE',
@@ -370,10 +370,10 @@ class DataClient {
       // Invalidar cache
       this.clearCache(`certification-${id}`);
       this.clearCache('certifications');
-      
+
       // Actualizar store
       store.delete(`certification-${id}`);
-      
+
       return true;
     } catch (error) {
       console.error('DataClient: Error deleting certification:', error);
@@ -382,12 +382,12 @@ class DataClient {
   }
 
   // Sistema de suscripciones para actualizaciones en tiempo real
-  subscribe(key, callback) {
+  subscribe (key, callback) {
     if (!this.subscribers.has(key)) {
       this.subscribers.set(key, new Set());
     }
     this.subscribers.get(key).add(callback);
-    
+
     return () => {
       const callbacks = this.subscribers.get(key);
       if (callbacks) {
@@ -400,7 +400,7 @@ class DataClient {
   }
 
   // Disparar actualizaciones
-  triggerUpdate(key, data) {
+  triggerUpdate (key, data) {
     const callbacks = this.subscribers.get(key);
     if (callbacks) {
       callbacks.forEach(callback => callback(data));
@@ -408,18 +408,18 @@ class DataClient {
   }
 
   // Método para migrar datos existentes
-  async migrateExistingData() {
+  async migrateExistingData () {
     try {
       // Intentar cargar datos de archivos JSON existentes
       const projectsResponse = await fetch('/src/data/proyectos.json');
       const certificationsResponse = await fetch('/src/data/certificaciones.json');
-      
+
       if (projectsResponse.ok) {
         const projects = await projectsResponse.json();
         store.set('projects', projects);
         this.setCache('projects', projects);
       }
-      
+
       if (certificationsResponse.ok) {
         const certifications = await certificationsResponse.json();
         store.set('certifications', certifications);

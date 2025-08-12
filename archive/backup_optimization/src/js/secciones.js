@@ -4,7 +4,7 @@
 const themeToggle = document.getElementById('themeToggle');
 const htmlEl = document.documentElement;
 themeToggle.addEventListener('click', () => {
-  if(htmlEl.getAttribute('data-theme') === 'dark') {
+  if (htmlEl.getAttribute('data-theme') === 'dark') {
     htmlEl.setAttribute('data-theme','light');
     // Ajustar colores para modo claro, si deseas
     themeToggle.textContent = 'Dark Mode';
@@ -37,7 +37,7 @@ const gamificationMessage = document.getElementById('gamificationMessage');
 let clicks = 0;
 gamificationBanner.addEventListener('click', () => {
   clicks++;
-  if(clicks === 3){
+  if (clicks === 3) {
     gamificationMessage.textContent = '¡Felicidades! Has descubierto el Easter Egg. 🎉';
   } else {
     gamificationMessage.textContent = `Has hecho clic ${clicks} veces... ¡Sigue intentando!`;
@@ -49,7 +49,7 @@ gamificationBanner.addEventListener('click', () => {
 // ================================
 const downloadButtons = document.querySelectorAll('.download-item button');
 downloadButtons.forEach(btn => {
-  btn.addEventListener('click', ()=> {
+  btn.addEventListener('click', () => {
     const file = btn.getAttribute('data-file');
     window.open(file, '_blank');
   });
@@ -60,11 +60,11 @@ downloadButtons.forEach(btn => {
 // ================================
 const langToggle = document.getElementById('langToggle');
 langToggle.addEventListener('click', () => {
-  if(langToggle.textContent === 'EN'){
+  if (langToggle.textContent === 'EN') {
     // Cambiar a inglés (Ejemplo mínimo)
     langToggle.textContent = 'ES';
     document.getElementById('heroTitle').textContent = 'IMMORTAL PORTFOLIO';
-    document.getElementById('heroSubtitle').textContent = 
+    document.getElementById('heroSubtitle').textContent =
       'Creating impossible digital experiences, merging aesthetics, technology, and glitch effects that defy logic, with dancing auroras and interactive particles.';
     document.getElementById('testimonialsTitle').textContent = 'What They Say';
     document.getElementById('aboutText').innerHTML = `
@@ -74,7 +74,7 @@ langToggle.addEventListener('click', () => {
       I always seek to stay up-to-date with the latest trends and technologies to ensure each project is relevant and cutting-edge.</p>
     `;
     document.getElementById('contactTitle').textContent = 'Let’s Talk';
-    document.getElementById('contactIntro').textContent = 
+    document.getElementById('contactIntro').textContent =
       'Ready to boost your next project? This is where technology, art, and interaction converge. Get in touch.';
     document.getElementById('contactBtn').textContent = 'Contact Me';
     document.getElementById('footerCopy').textContent = '© 2024 Futurism. All rights reserved.';
@@ -82,7 +82,7 @@ langToggle.addEventListener('click', () => {
     // Cambiar a español
     langToggle.textContent = 'EN';
     document.getElementById('heroTitle').textContent = 'PORTAFOLIO DE INMORTAL';
-    document.getElementById('heroSubtitle').textContent = 
+    document.getElementById('heroSubtitle').textContent =
       'Creando experiencias digitales imposibles, fusionando estética, tecnología y efectos glitch que desafían la lógica, con auroras danzantes y partículas interactivas.';
     document.getElementById('testimonialsTitle').textContent = 'Lo Que Dicen';
     document.getElementById('aboutText').innerHTML = `
@@ -96,7 +96,7 @@ langToggle.addEventListener('click', () => {
       sea relevante y de vanguardia.</p>
     `;
     document.getElementById('contactTitle').textContent = 'Hablemos';
-    document.getElementById('contactIntro').textContent = 
+    document.getElementById('contactIntro').textContent =
       '¿Listo para impulsar tu siguiente proyecto? Aquí la tecnología, el arte y la interacción convergen. Contáctame.';
     document.getElementById('contactBtn').textContent = 'Contactar';
     document.getElementById('footerCopy').textContent = '© 2024 Futurismo. Todos los derechos reservados.';
@@ -109,13 +109,13 @@ langToggle.addEventListener('click', () => {
 const skillFills = document.querySelectorAll('.progress-bar-fill');
 const skillsObserver = new IntersectionObserver(entries => {
   entries.forEach(entry => {
-    if(entry.isIntersecting){
+    if (entry.isIntersecting) {
       const fillEl = entry.target;
       const level = fillEl.getAttribute('data-skill-level');
-      fillEl.style.width = level + '%';
+      fillEl.style.width = `${level}%`;
     }
   });
-}, {threshold:0.5});
+}, { threshold:0.5 });
 skillFills.forEach(el => skillsObserver.observe(el));
 
 // ================================
@@ -135,17 +135,17 @@ faqItems.forEach(item => {
 const lazyImages = document.querySelectorAll('img[data-src], video[data-src]');
 const lazyObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
-    if(entry.isIntersecting){
+    if (entry.isIntersecting) {
       const lazyEl = entry.target;
       const src = lazyEl.getAttribute('data-src');
-      if(src){
+      if (src) {
         lazyEl.src = src;
         lazyEl.removeAttribute('data-src');
       }
       lazyObserver.unobserve(lazyEl);
     }
   });
-}, {rootMargin: "0px 0px 200px 0px"});
+}, { rootMargin: '0px 0px 200px 0px' });
 lazyImages.forEach(el => {
   lazyObserver.observe(el);
 });
@@ -155,7 +155,7 @@ lazyImages.forEach(el => {
 // ================================
 const menuLinks = document.querySelectorAll('.nav-link');
 menuLinks.forEach(link => {
-  let originalText = link.textContent;
+  const originalText = link.textContent;
   let scrambling = false;
   let scrambleInterval;
   link.addEventListener('mouseenter', () => {
@@ -166,13 +166,13 @@ menuLinks.forEach(link => {
     const totalIterations = 20;
     scrambleInterval = setInterval(() => {
       link.textContent = originalText.split('').map((char, index) => {
-        if(index < iteration){
+        if (index < iteration) {
           return originalText[index];
         }
         return chars[Math.floor(Math.random() * chars.length)];
       }).join('');
       iteration++;
-      if(iteration > originalText.length || iteration > totalIterations){
+      if (iteration > originalText.length || iteration > totalIterations) {
         clearInterval(scrambleInterval);
         link.textContent = originalText;
         scrambling = false;
@@ -180,7 +180,7 @@ menuLinks.forEach(link => {
     }, 50);
   });
   link.addEventListener('mouseleave', () => {
-    if(scrambling){
+    if (scrambling) {
       clearInterval(scrambleInterval);
       link.textContent = originalText;
       scrambling = false;
@@ -204,22 +204,21 @@ filterLinks.forEach(link => {
 // ================================
 // FUNCIONES PARA MODALES DE CERTIFICADOS
 // ================================
-function openModal(modalId) {
-  document.getElementById(modalId).style.display = "block";
+function openModal (modalId) {
+  document.getElementById(modalId).style.display = 'block';
 }
 
-function closeModal(modalId) {
-  document.getElementById(modalId).style.display = "none";
+function closeModal (modalId) {
+  document.getElementById(modalId).style.display = 'none';
 }
 
 // Cerrar el modal al hacer clic fuera del contenido
-window.onclick = function(event) {
+window.onclick = function (event) {
   const modals = document.getElementsByClassName('modal');
-  for (let modal of modals) {
+  for (const modal of modals) {
     if (event.target === modal) {
-      modal.style.display = "none";
+      modal.style.display = 'none';
     }
   }
 };
-
 

@@ -19,7 +19,7 @@ describe('API Endpoints', () => {
   describe('Health Check', () => {
     it('debe responder con estado OK', async () => {
       const response = await request(app).get('/api/health');
-      
+
       expect(response.status).toBe(200);
       expect(response.body.status).toBe('OK');
       expect(response.body).toHaveProperty('timestamp');
@@ -30,7 +30,7 @@ describe('API Endpoints', () => {
   describe('Rutas de la API', () => {
     it('debe tener ruta raíz', async () => {
       const response = await request(app).get('/');
-      
+
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('GitHub Page Test API');
       expect(response.body).toHaveProperty('endpoints');
@@ -38,7 +38,7 @@ describe('API Endpoints', () => {
 
     it('debe manejar rutas no encontradas', async () => {
       const response = await request(app).get('/api/nonexistent');
-      
+
       expect(response.status).toBe(404);
       expect(response.body.error).toBe('Endpoint no encontrado');
     });
@@ -47,14 +47,14 @@ describe('API Endpoints', () => {
   describe('Middleware de seguridad', () => {
     it('debe incluir headers de seguridad', async () => {
       const response = await request(app).get('/api/health');
-      
+
       // Verificar que Helmet esté configurado
       expect(response.headers).toHaveProperty('x-frame-options');
     });
 
     it('debe tener CORS configurado', async () => {
       const response = await request(app).get('/api/health');
-      
+
       // Verificar que CORS esté configurado
       expect(response.headers).toHaveProperty('access-control-allow-origin');
     });

@@ -4,7 +4,7 @@
  */
 
 class Store {
-  constructor(name = 'app-store') {
+  constructor (name = 'app-store') {
     this.name = name;
     this.subscribers = new Set();
     this.data = {};
@@ -12,7 +12,7 @@ class Store {
     this.init();
   }
 
-  async init() {
+  async init () {
     try {
       // Intentar usar IndexedDB primero
       if (typeof window !== 'undefined' && 'indexedDB' in window && window.idbKeyval) {
@@ -33,7 +33,7 @@ class Store {
     this.initialized = true;
   }
 
-  async initIndexedDB() {
+  async initIndexedDB () {
     // Usar idb-keyval si está disponible
     if (typeof window !== 'undefined' && window.idbKeyval) {
       try {
@@ -49,24 +49,24 @@ class Store {
       // Implementación básica de IndexedDB
       return new Promise((resolve, reject) => {
         const request = indexedDB.open('StoreDB', 1);
-        
+
         request.onerror = () => reject(request.error);
         request.onsuccess = () => {
           const db = request.result;
           const transaction = db.transaction(['stores'], 'readonly');
           const store = transaction.objectStore('stores');
           const getRequest = store.get(this.name);
-          
+
           getRequest.onsuccess = () => {
             if (getRequest.result) {
               this.data = { ...this.data, ...getRequest.result };
             }
             resolve();
           };
-          
+
           getRequest.onerror = () => reject(getRequest.error);
         };
-        
+
         request.onupgradeneeded = () => {
           const db = request.result;
           if (!db.objectStoreNames.contains('stores')) {
@@ -77,7 +77,7 @@ class Store {
     }
   }
 
-  initLocalStorage() {
+  initLocalStorage () {
     try {
       if (typeof window !== 'undefined' && 'localStorage' in window) {
         const stored = localStorage.getItem(this.name);
@@ -90,9 +90,9 @@ class Store {
     }
   }
 
-  async set(key, value) {
+  async set (key, value) {
     this.data[key] = value;
-    
+
     // Persistir datos
     try {
       if (typeof window !== 'undefined' && 'indexedDB' in window && window.idbKeyval) {
@@ -110,31 +110,31 @@ class Store {
     } catch (error) {
       console.warn('Store: Error persistiendo datos:', error);
     }
-    
+
     // Notificar suscriptores
     this.subscribers.forEach(callback => callback(key, value, this.data));
   }
 
-  get(key) {
+  get (key) {
     return this.data[key];
   }
 
-  getAll() {
+  getAll () {
     return { ...this.data };
   }
 
-  subscribe(callback) {
+  subscribe (callback) {
     this.subscribers.add(callback);
-    
+
     // Retornar función para desuscribirse
     return () => {
       this.subscribers.delete(callback);
     };
   }
 
-  async delete(key) {
+  async delete (key) {
     delete this.data[key];
-    
+
     try {
       if (typeof window !== 'undefined' && 'indexedDB' in window && window.idbKeyval) {
         try {
@@ -151,13 +151,13 @@ class Store {
     } catch (error) {
       console.warn('Store: Error persistiendo datos después de eliminar:', error);
     }
-    
+
     this.subscribers.forEach(callback => callback(key, undefined, this.data));
   }
 
-  async clear() {
+  async clear () {
     this.data = {};
-    
+
     try {
       if (typeof window !== 'undefined' && 'indexedDB' in window && window.idbKeyval) {
         try {
@@ -174,11 +174,11 @@ class Store {
     } catch (error) {
       console.warn('Store: Error limpiando datos:', error);
     }
-    
+
     this.subscribers.forEach(callback => callback(null, undefined, {}));
   }
 
-  isInitialized() {
+  isInitialized () {
     return this.initialized;
   }
 }
