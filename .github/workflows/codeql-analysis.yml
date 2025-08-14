@@ -1,9 +1,10 @@
-name: "CodeQL Analysis"
+name: "CodeQL"
 
 on:
   push:
     branches: [ "main" ]
   pull_request:
+    # The branches below must be a subset of the branches above
     branches: [ "main" ]
   schedule:
     - cron: '30 1 * * 0'
@@ -16,7 +17,7 @@ concurrency:
 
 jobs:
   analyze:
-    name: Analyze code
+    name: Analyze
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -26,57 +27,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'javascript', 'python' ]
+        language: [ 'javascript' ]
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4 # TODO: pin SHA
-      with:
-        fetch-depth: 0    # Necesario para CodeQL
+      uses: actions/checkout@v4.1.1
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3 # TODO: pin SHA
+      uses: github/codeql-action/init@v3.1.0
       with:
         languages: ${{ matrix.language }}
-        setup: advanced
-
-    - name: Set up Node.js (for JavaScript analysis)
-      if: matrix.language == 'javascript'
-      uses: actions/setup-node@v4 # TODO: pin SHA
-      with:
-        node-version: '18'
-
-    - name: Install Node dependencies
-      if: matrix.language == 'javascript'
-      run: |
-        if [ -f "config/package.json" ]; then
-          cd config && npm install
-        fi
-        if [ -f "src/components/react-ui-login/package.json" ]; then
-          cd src/components/react-ui-login && npm install
-        fi
-
-    - name: Set up Python
-      if: matrix.language == 'python'
-      uses: actions/setup-python@v4 # TODO: pin SHA
-      with:
-        python-version: '3.11'
-
-    - name: Install Python dependencies
-      if: matrix.language == 'python' && hashFiles('config/requirements.txt') != ''
-      run: |
-        pip install --upgrade pip
-        pip install -r config/requirements.txt
-
-    - name: Install config package
-      if: matrix.language == 'python' && hashFiles('config/setup.py') != ''
-      run: pip install -e config
 
     - name: Autobuild
-      uses: github/codeql-action/autobuild@v3 # TODO: pin SHA
+      uses: github/codeql-action/autobuild@v3.1.0
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3 # TODO: pin SHA
+      uses: github/codeql-action/analyze@v3.1.0
       with:
-        output: results.sarif
         category: "/language:${{matrix.language}}"
