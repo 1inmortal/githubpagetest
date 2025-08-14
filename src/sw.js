@@ -4,7 +4,7 @@ const urlsToCache = [
   '/githubpagetest/index.html',
   '/githubpagetest/assets/css/main.css',
   '/githubpagetest/assets/js/main.js',
-  '/githubpagetest/assets/img/FAVICON/LOGO.png',
+  '/githubpagetestsrcsrc/assets/img/FAVICON/LOGO.png',
   '/githubpagetest/assets/img/ID/1.jpg',
   '/githubpagetest/privacy-policy.html',
   '/githubpagetest/terms.html',
@@ -131,8 +131,8 @@ self.addEventListener('push', event => {
   
   const options = {
     body: event.data ? event.data.text() : 'Nueva notificación de INMORTAL_OS',
-    icon: '/githubpagetest/assets/img/FAVICON/LOGO.png',
-    badge: '/githubpagetest/assets/img/FAVICON/LOGO.png',
+    icon: '/githubpagetestsrcsrc/assets/img/FAVICON/LOGO.png',
+    badge: '/githubpagetestsrcsrc/assets/img/FAVICON/LOGO.png',
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
@@ -142,12 +142,12 @@ self.addEventListener('push', event => {
       {
         action: 'explore',
         title: 'Ver Portafolio',
-        icon: '/githubpagetest/assets/img/FAVICON/LOGO.png'
+        icon: '/githubpagetestsrcsrc/assets/img/FAVICON/LOGO.png'
       },
       {
         action: 'close',
         title: 'Cerrar',
-        icon: '/githubpagetest/assets/img/FAVICON/LOGO.png'
+        icon: '/githubpagetestsrcsrc/assets/img/FAVICON/LOGO.png'
       }
     ]
   };
