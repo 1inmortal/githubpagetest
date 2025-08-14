@@ -9,6 +9,7 @@ Portfolio profesional moderno con arquitectura full-stack, sistema de gestión d
 ## 🏗️ Arquitectura
 
 ### Frontend
+- **Framework**: React 18 con Vite para desarrollo rápido
 - **Estado**: Store minimal con persistencia en IndexedDB (fallback a localStorage)
 - **Datos**: Cliente de datos con cache SWR y revalidación en background
 - **UI**: Componentes modulares con diseño responsive y accesible
@@ -21,7 +22,7 @@ Portfolio profesional moderno con arquitectura full-stack, sistema de gestión d
 - **Testing**: Supertest para tests de API
 
 ### Infraestructura
-- **CI/CD**: GitHub Actions con pipeline completo
+- **CI/CD**: GitHub Actions con pipeline completo y acciones fijadas por SHA
 - **Testing**: Unit, API, y E2E automatizados
 - **Despliegue**: GitHub Pages automático
 - **Dependencias**: Dependabot para actualizaciones automáticas
@@ -63,7 +64,7 @@ npm run dev:api
 npm run dev:frontend
 
 # Terminal 3: Docker Compose (opcional)
-docker-compose -f config/compose.dev.yml up -d
+docker-compose -f docker-compose.dev.yml up -d
 ```
 
 ## 📁 Estructura del Proyecto
@@ -93,7 +94,7 @@ githubpagetest/
 
 ### Frontend
 ```bash
-npm run dev:frontend      # Desarrollo frontend
+npm run dev:frontend      # Desarrollo frontend con Vite
 npm run build             # Build para producción
 npm run preview           # Preview del build
 npm run lint              # Linting del código
@@ -118,9 +119,9 @@ npm run test:coverage     # Reporte de cobertura
 
 ### Docker
 ```bash
-docker-compose -f config/compose.dev.yml up -d    # Levantar servicios
-docker-compose -f config/compose.dev.yml down     # Detener servicios
-docker-compose -f config/compose.dev.yml logs     # Ver logs
+docker-compose -f docker-compose.dev.yml up -d    # Levantar servicios
+docker-compose -f docker-compose.dev.yml down     # Detener servicios
+docker-compose -f docker-compose.dev.yml logs     # Ver logs
 ```
 
 ## 🔧 Configuración
@@ -132,6 +133,9 @@ JWT_SECRET=tu_jwt_secret_super_seguro
 DATABASE_URL="file:./dev.db"
 NODE_ENV=development
 PORT=3001
+CORS_ORIGIN=http://localhost:3000
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
 
 # Frontend
 VITE_API_URL=http://localhost:3001/api
@@ -178,7 +182,7 @@ npm run test:e2e
 El pipeline se ejecuta en cada push y PR:
 1. **Lint**: Verificación de código y formato
 2. **Tests**: Unit, API, y E2E automáticos
-3. **Build**: Verificación de build exitoso
+3. **Build**: Verificación de build exitoso con Vite
 4. **Despliegue**: Automático a GitHub Pages (solo main)
 
 ### Dependabot
@@ -193,6 +197,7 @@ El pipeline se ejecuta en cada push y PR:
 - **CORS**: Configuración restrictiva
 - **Validación**: Sanitización de inputs
 - **Rate Limiting**: Protección contra abuso
+- **Vulnerabilidades**: 0 vulnerabilidades de seguridad
 
 ## 📚 Documentación Adicional
 
