@@ -5,17 +5,19 @@ self.onmessage = function(e) {
     const { type, data } = e.data;
     
     switch (type) {
-        case 'HEAVY_CALCULATION':
+        case 'HEAVY_CALCULATION': {
             // Ejecutar cálculos pesados aquí
             const result = performHeavyCalculation(data);
             self.postMessage({ type: 'HEAVY_CALCULATION_RESULT', result });
             break;
+        }
             
-        case 'DATA_PROCESSING':
+        case 'DATA_PROCESSING': {
             // Procesar datos grandes aquí
             const processedData = processData(data);
             self.postMessage({ type: 'DATA_PROCESSING_RESULT', data: processedData });
             break;
+        }
             
         default:
             self.postMessage({ type: 'ERROR', error: 'Tipo de tarea no reconocido' });

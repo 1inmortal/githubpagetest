@@ -1,3 +1,6 @@
+/* eslint-disable no-undef */
+/* global clients, caches, fetch, self, registration */
+
 const CACHE_NAME = 'inmortal-os-v1.0.0';
 const urlsToCache = [
   '/',
