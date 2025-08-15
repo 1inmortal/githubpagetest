@@ -1,0 +1,275 @@
+# Page snapshot
+
+```yaml
+- banner:
+  - link "INMORTAL_OS":
+    - /url: "#"
+  - navigation:
+    - link "Servicios ▾":
+      - /url: "#services"
+    - link "Portafolio ▾":
+      - /url: "#portfolio"
+    - link "Legal ▾":
+      - /url: "#"
+  - button "Activar/Desactivar Sonido":
+    - img
+- main:
+  - heading "D i s e ñ o y D e s a r r o l l o I n t e g r a l p a r a P r o y e c t o s W e b 3 . 0 |" [level=1]
+  - paragraph: Soy un Ingeniero de Sistemas Full-Stack, especializado en crear experiencias digitales inmersivas que fusionan tecnología de punta con una estética futurista.
+  - link "Discutir el Proyecto":
+    - /url: "#contact-form"
+  - heading "Acerca de Mí" [level=2]
+  - paragraph: Estación de Control - Sistema INMORTAL_OS
+  - img "Ingeniero Full-Stack - INMORTAL_OS"
+  - paragraph:
+    - text: Como
+    - strong: Ingeniero de Sistemas Full-Stack
+    - text: ", mi pasión radica en la construcción de ecosistemas digitales completos. Desde la conceptualización de interfaces de usuario intuitivas y estéticamente atractivas hasta la robusta implementación de la lógica de backend y la infraestructura, abarco todo el ciclo de vida del desarrollo."
+  - paragraph:
+    - text: Mi enfoque se centra en tecnologías de vanguardia y metodologías ágiles para entregar productos de alta calidad. Mi especialidad incluye la integración de principios de
+    - strong: Web 3.0
+    - text: ", exploración de la"
+    - strong: Inteligencia Artificial
+    - text: en aplicaciones interactivas y la creación de experiencias
+    - strong: 3D en la web
+    - text: .
+  - paragraph: Creo firmemente que el código es una forma de arte y cada proyecto es una oportunidad para superar los límites de lo posible, diseñando el futuro línea a línea.
+  - paragraph: "\"Diseñando el futuro, línea a línea de código. La innovación es mi lenguaje, la estética futurista mi lienzo.\""
+  - text: "- INMORTAL_OS"
+  - heading "Descubre mi Arsenal Tecnológico" [level=2]
+  - paragraph: Un botón que te llevará a explorar mis habilidades técnicas y certificaciones profesionales
+  - paragraph: ¿Quieres conocer en detalle mis capacidades técnicas? Haz clic en el botón de abajo para explorar mi matriz de habilidades, certificaciones y experiencia en tecnologías de vanguardia.
+  - button "Conoce mis habilidades": Conoce mis habilidades →
+  - heading "Cómo Puedo Ayudar" [level=2]
+  - paragraph: Ofrezco un ciclo completo de diseño y desarrollo para asegurar que tu proyecto no solo se vea increíble, sino que también funcione a la perfección.
+  - text: "01"
+  - heading "Creación de Sitios Web" [level=3]
+  - text: ↗
+  - list:
+    - listitem: "-- Desarrollo de un diseño que te diferenciará en el espacio digital."
+    - listitem: "-- Construcción de sitios web con animaciones dinámicas e interactivas."
+    - listitem: "-- Integración con APIs y servicios de terceros."
+  - text: "02"
+  - heading "Desarrollo de Colecciones" [level=3]
+  - text: ↗
+  - list:
+    - listitem: "-- Definición del estilo visual y la narrativa de tu colección."
+    - listitem: "-- Creación de personajes o elementos únicos y generativos."
+    - listitem: "-- Asesoramiento técnico para la implementación en blockchain."
+  - text: "03"
+  - heading "Branding Complejo" [level=3]
+  - text: ↗
+  - list:
+    - listitem: "-- Diseño de logotipos, banners y material promocional para redes sociales."
+    - listitem: "-- Creación de una identidad de marca cohesiva y potente."
+    - listitem: "-- Desarrollo de presentaciones para comunidad o inversores."
+  - heading "Mi Enfoque" [level=2]
+  - paragraph: Un proceso claro y colaborativo para asegurar que cada proyecto se entregue con excelencia y supere las expectativas.
+  - text: "1"
+  - heading "Descubrimiento" [level=3]
+  - paragraph: Inmersión profunda en tus ideas, objetivos y visión. Definimos el alcance, las funcionalidades clave y el público objetivo.
+  - text: "2"
+  - heading "Diseño" [level=3]
+  - paragraph: Conceptualización de la experiencia de usuario (UX) y la interfaz de usuario (UI), creando wireframes, prototipos y diseños visuales.
+  - text: "3"
+  - heading "Desarrollo" [level=3]
+  - paragraph: Transformación del diseño en código funcional, construyendo el frontend y el backend con tecnologías robustas y escalables.
+  - text: "4"
+  - heading "Pruebas & Ajustes" [level=3]
+  - paragraph: Rigurosas pruebas de funcionalidad, rendimiento y seguridad. Iteraciones basadas en feedback para perfeccionar el producto.
+  - text: "5"
+  - heading "Implementación" [level=3]
+  - paragraph: Despliegue del proyecto en producción, asegurando una transición suave y una puesta en marcha eficiente y sin interrupciones.
+  - text: "6"
+  - heading "Soporte & Optimización" [level=3]
+  - paragraph: Mantenimiento continuo, monitoreo, actualizaciones y optimizaciones para garantizar el rendimiento a largo plazo y la evolución.
+  - heading "Portafolio Destacado" [level=2]
+  - paragraph: Una selección de mis proyectos más ambiciosos. Desliza para explorar la fusión entre tecnología y creatividad.
+  - 'link "Proyecto Cerberus [ UI/UX ] [ WEBSITE ] PROYECTO: CERBERUS Un menú de seguridad biométrico diseñado para una experiencia de autenticación segura y amigable."':
+    - /url: "#"
+    - img "Proyecto Cerberus"
+    - text: "[ UI/UX ] [ WEBSITE ]"
+    - 'heading "PROYECTO: CERBERUS" [level=3]'
+    - paragraph: Un menú de seguridad biométrico diseñado para una experiencia de autenticación segura y amigable.
+  - 'link "Proyecto Sphere [ 3D WEB ] [ FULLSTACK ] PROYECTO: SPHERE Experiencia de navegación revolucionaria con una interfaz esférica intuitiva y dinámica en WebGL."':
+    - /url: "#"
+    - img "Proyecto Sphere"
+    - text: "[ 3D WEB ] [ FULLSTACK ]"
+    - 'heading "PROYECTO: SPHERE" [level=3]'
+    - paragraph: Experiencia de navegación revolucionaria con una interfaz esférica intuitiva y dinámica en WebGL.
+  - 'link "Proyecto Neural [ AI ] [ CREATIVE CODING ] PROYECTO: NEURAL Landing page con tipografía deformable impulsada por inteligencia artificial generativa."':
+    - /url: "#"
+    - img "Proyecto Neural"
+    - text: "[ AI ] [ CREATIVE CODING ]"
+    - 'heading "PROYECTO: NEURAL" [level=3]'
+    - paragraph: Landing page con tipografía deformable impulsada por inteligencia artificial generativa.
+  - 'link "Proyecto Nexus [ WEB3 ] [ SOLIDITY ] PROYECTO: NEXUS Plataforma descentralizada para la gestión de activos digitales y contratos inteligentes."':
+    - /url: "#"
+    - img "Proyecto Nexus"
+    - text: "[ WEB3 ] [ SOLIDITY ]"
+    - 'heading "PROYECTO: NEXUS" [level=3]'
+    - paragraph: Plataforma descentralizada para la gestión de activos digitales y contratos inteligentes.
+  - 'link "Proyecto Arcadian [ BRANDING ] [ DASHBOARD ] PROYECTO: ARCADIAN Dashboard de análisis de datos con una identidad de marca y estética retro-futurista."':
+    - /url: "#"
+    - img "Proyecto Arcadian"
+    - text: "[ BRANDING ] [ DASHBOARD ]"
+    - 'heading "PROYECTO: ARCADIAN" [level=3]'
+    - paragraph: Dashboard de análisis de datos con una identidad de marca y estética retro-futurista.
+  - 'link "Proyecto Cygnus [ DEVOPS ] [ API ] PROYECTO: CYGNUS Infraestructura escalable y pipeline CI/CD para una API de alto tráfico con monitorización real."':
+    - /url: "#"
+    - img "Proyecto Cygnus"
+    - text: "[ DEVOPS ] [ API ]"
+    - 'heading "PROYECTO: CYGNUS" [level=3]'
+    - paragraph: Infraestructura escalable y pipeline CI/CD para una API de alto tráfico con monitorización real.
+  - 'link "Proyecto Oracle [ DATA-VIZ ] [ AI/ML ] PROYECTO: ORACLE Visualización de datos para un modelo de ML que predice tendencias de mercado."':
+    - /url: "#"
+    - img "Proyecto Oracle"
+    - text: "[ DATA-VIZ ] [ AI/ML ]"
+    - 'heading "PROYECTO: ORACLE" [level=3]'
+    - paragraph: Visualización de datos para un modelo de ML que predice tendencias de mercado.
+  - button "←"
+  - button "→"
+  - heading "Certificaciones y Formación Continua" [level=2]
+  - paragraph: Ecosistema de conocimiento validado por instituciones reconocidas globalmente.
+  - img "Google Cybersecurity Certificate"
+  - heading "Foundations of Cybersecurity" [level=3]
+  - paragraph: "2024"
+  - text: Cybersecurity Security Fundamentals Network Security
+  - img "Google Security Risk Management Certificate"
+  - 'heading "Play It Safe: Manage Security Risks" [level=3]'
+  - paragraph: "2025"
+  - text: Security Risk Management Threat Analysis Security Protocols
+  - img "Cisco Network Defense Certificate"
+  - heading "Defensa de la Red" [level=3]
+  - paragraph: "2025"
+  - text: Network Defense Security Operations Incident Response
+  - img "IBM Full Stack Developer Certificate"
+  - heading "Full Stack Software Developer Assessment" [level=3]
+  - paragraph: "2025"
+  - text: Full Stack Development Software Engineering Web Development
+  - img "IBM Web Development Certificate"
+  - heading "Introduction to HTML, CSS, & JavaScript" [level=3]
+  - paragraph: "2025"
+  - text: HTML CSS JavaScript
+  - img "IBM Software Engineering Certificate"
+  - heading "Introduction to Software Engineering" [level=3]
+  - paragraph: "2025"
+  - text: Software Engineering Development Lifecycle Best Practices
+  - img "IBM Python Data Science Certificate"
+  - heading "Python for Data Science, AI & Development" [level=3]
+  - paragraph: "2025"
+  - text: Python Data Science Artificial Intelligence
+  - img "Cisco AI Certificate"
+  - heading "Introduction to Modern AI" [level=3]
+  - paragraph: "2025"
+  - text: Artificial Intelligence Machine Learning AI Applications
+  - img "IBM Git GitHub Certificate"
+  - heading "Getting Started with Git and GitHub" [level=3]
+  - paragraph: "2025"
+  - text: Git GitHub Version Control
+  - img "IBM Generative AI Certificate"
+  - 'heading "Generative AI: Elevate your Software Development Career" [level=3]'
+  - paragraph: "2025"
+  - text: Generative AI Software Development AI Tools
+  - img "Digital Marketing Certificate"
+  - heading "Marketing Digital" [level=3]
+  - paragraph: "2025"
+  - text: Digital Marketing Marketing Strategy Brand Management
+  - heading "Testimonios" [level=2]
+  - paragraph: Mensajes interceptados de clientes satisfechos con el sistema INMORTAL_OS.
+  - paragraph: "\"La visión de José Armando transformó por completo nuestra plataforma. Su atención al detalle y su capacidad para integrar Web3 fueron excepcionales. ¡Un verdadero socio innovador!\""
+  - img "Avatar de Cliente 1"
+  - strong: Elara Vance
+  - text: CEO, NovaCorp Innovations "
+  - paragraph: "\"INMORTAL_OS entregó una experiencia 3D en la web que superó todas nuestras expectativas. La fluidez y el diseño futurista realmente capturaron la esencia de nuestra marca.\""
+  - img "Avatar de Cliente 2"
+  - strong: Marcus Thorne
+  - text: Director de Producto, CyberDynamics "
+  - paragraph: "\"La colaboración con José Armando fue fluida y altamente profesional. Su expertise en IA generativa añadió una capa de originalidad que nos diferenció en el mercado.\""
+  - img "Avatar de Cliente 3"
+  - strong: Dr. Aris Thorne
+  - text: Líder de Investigación, Quantum Nexus "
+  - button "←"
+  - button "→"
+  - heading "Preguntas Frecuentes" [level=2]
+  - paragraph: Respuestas a las preguntas más comunes sobre mis servicios y el proceso de trabajo.
+  - heading "¿Qué tecnologías utilizas principalmente?" [level=3]
+  - text: ↗ Principalmente me especializo en el stack MERN (MongoDB, Express.js, React.js, Node.js) para desarrollo full-stack. Para experiencias inmersivas, uso Three.js y WebGL. También tengo experiencia con Python, Django, Next.js, y tecnologías Web3 como Solidity y Ethers.js.
+  - heading "¿Cuánto tiempo tarda un proyecto?" [level=3]
+  - text: ↗ La duración de un proyecto varía significativamente según su complejidad, alcance y tus requisitos específicos. Proyectos más pequeños pueden tomar unas pocas semanas, mientras que los más grandes y complejos pueden extenderse a varios meses. Proporcionaré una estimación detallada después de nuestra fase de descubrimiento inicial.
+  - heading "¿Ofreces servicios de mantenimiento después del lanzamiento?" [level=3]
+  - text: ↗ Sí, absolutamente. Ofrezco paquetes de soporte y mantenimiento post-lanzamiento para asegurar que tu sitio web o aplicación funcione sin problemas, se mantenga actualizado y seguro. Esto puede incluir actualizaciones de software, monitoreo de rendimiento y solución de problemas.
+  - heading "¿Cómo es el proceso de pago?" [level=3]
+  - text: ↗ Generalmente, mi proceso de pago se divide en fases, con un porcentaje inicial requerido antes de comenzar el trabajo (normalmente 30-50%), y pagos subsiguientes basados en hitos del proyecto. El pago final se realiza una vez que el proyecto ha sido aprobado y lanzado. Todas las condiciones se detallan claramente en el contrato.
+  - heading "Hablemos de tu Próximo Proyecto" [level=2]
+  - paragraph: ¿Listo para transformar tu visión en una realidad digital? Rellena el formulario y me pondré en contacto contigo a la brevedad.
+  - text: Nombre Completo *
+  - textbox "Nombre Completo *"
+  - text: Email *
+  - textbox "Email *"
+  - text: Asunto *
+  - textbox "Asunto *"
+  - text: Mensaje *
+  - textbox "Mensaje *"
+  - button "Enviar Mensaje"
+- contentinfo:
+  - heading "INMORTAL_OS" [level=3]
+  - paragraph: Desarrollo Full-Stack & Innovación Tecnológica
+  - paragraph: Diseñando el futuro, línea a línea de código
+  - heading "Servicios" [level=4]
+  - list:
+    - listitem:
+      - link "Desarrollo Web":
+        - /url: "#services"
+    - listitem:
+      - link "Aplicaciones Móviles":
+        - /url: "#services"
+    - listitem:
+      - link "DevOps & Cloud":
+        - /url: "#services"
+    - listitem:
+      - link "Inteligencia Artificial":
+        - /url: "#services"
+  - heading "Enlaces" [level=4]
+  - list:
+    - listitem:
+      - link "Acerca de":
+        - /url: "#about"
+    - listitem:
+      - link "Portafolio":
+        - /url: "#portfolio"
+    - listitem:
+      - link "Contacto":
+        - /url: "#contact-form"
+    - listitem:
+      - link "Blog":
+        - /url: /Blog/
+  - heading "Legal" [level=4]
+  - list:
+    - listitem:
+      - link "Política de Privacidad":
+        - /url: privacy-policy.html
+    - listitem:
+      - link "Términos y Condiciones":
+        - /url: terms.html
+    - listitem:
+      - link "Sitemap":
+        - /url: src/sitemap.xml
+    - listitem:
+      - link "Robots.txt":
+        - /url: src/robots.txt
+  - heading "Conecta" [level=4]
+  - link "GitHub":
+    - /url: https://github.com/1inmortal
+  - link "LinkedIn":
+    - /url: https://linkedin.com/in/1inmortal
+  - link "Email":
+    - /url: mailto:contact@inmortal.dev
+  - paragraph: © 2024 INMORTAL_OS. Todos los derechos reservados.
+  - paragraph: Construido con ❤️ y tecnologías de vanguardia
+  - link "Política de Privacidad":
+    - /url: privacy-policy.html
+  - text: "|"
+  - link "Términos y Condiciones":
+    - /url: terms.html
+```
