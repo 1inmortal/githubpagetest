@@ -1,4 +1,10 @@
+/* eslint-disable no-undef */
+/* global THREE, gsap, ScrollTrigger */
 
+/**
+ * Sistema principal de la aplicación INMORTAL_OS
+ * Maneja todas las funcionalidades core del portafolio
+ */
         document.addEventListener('DOMContentLoaded', () => {
     
             /**
