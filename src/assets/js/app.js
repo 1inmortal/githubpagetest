@@ -1007,7 +1007,5 @@ export {
     ContentSanitizer,
     SafeDOMUtils,
     LocalStorageMigrator,
-    FormDataSecurity,
-    AudioSystem,
-    UIManager
+    FormDataSecurity
 };

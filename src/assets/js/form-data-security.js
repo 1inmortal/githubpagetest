@@ -191,7 +191,7 @@ class FormDataSecurity {
         try {
             const boundary = this.generateSecureBoundary();
             results.boundaryGeneration = this.validateBoundary(boundary);
-            const validUrl = this.validateUrl('https:
+            const validUrl = this.validateUrl('https://example.com');
             const invalidUrl = this.validateUrl('javascript:alert(1)');
             results.urlValidation = validUrl.isValid && !invalidUrl.isValid;
             const testFormData = new FormData();

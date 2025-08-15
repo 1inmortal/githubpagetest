@@ -1,15 +1,15 @@
 const CACHE_NAME = 'inmortal-os-v1.0.0';
 const urlsToCache = [
-  '/githubpagetest/',
-  '/githubpagetest/index.html',
-  '/githubpagetest/assets/css/main.css',
-  '/githubpagetest/assets/js/main.js',
-  '/githubpagetestsrcsrc/assets/img/FAVICON/LOGO.png',
-  '/githubpagetest/assets/img/ID/1.jpg',
-  '/githubpagetest/privacy-policy.html',
-  '/githubpagetest/terms.html',
-  '/githubpagetest/sitemap.xml',
-  '/githubpagetest/robots.txt',
+  '/',
+  '/index.html',
+  '/src/assets/css/main.css',
+  '/src/assets/js/main.js',
+  '/src/assets/img/FAVICON/LOGO.png',
+  '/src/assets/img/ID/1.jpg',
+  '/privacy-policy.html',
+  '/terms.html',
+  '/sitemap.xml',
+  '/robots.txt',
   'https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap',
   'https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js',
@@ -104,7 +104,7 @@ self.addEventListener('fetch', event => {
             
             // Return offline page for navigation requests
             if (event.request.mode === 'navigate') {
-              return caches.match('/githubpagetest/index.html');
+              return caches.match('/index.html');
             }
           });
       })
@@ -131,8 +131,8 @@ self.addEventListener('push', event => {
   
   const options = {
     body: event.data ? event.data.text() : 'Nueva notificación de INMORTAL_OS',
-    icon: '/githubpagetestsrcsrc/assets/img/FAVICON/LOGO.png',
-    badge: '/githubpagetestsrcsrc/assets/img/FAVICON/LOGO.png',
+    icon: '/src/assets/img/FAVICON/LOGO.png',
+    badge: '/src/assets/img/FAVICON/LOGO.png',
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
@@ -142,12 +142,12 @@ self.addEventListener('push', event => {
       {
         action: 'explore',
         title: 'Ver Portafolio',
-        icon: '/githubpagetestsrcsrc/assets/img/FAVICON/LOGO.png'
+        icon: '/src/assets/img/FAVICON/LOGO.png'
       },
       {
         action: 'close',
         title: 'Cerrar',
-        icon: '/githubpagetestsrcsrc/assets/img/FAVICON/LOGO.png'
+        icon: '/src/assets/img/FAVICON/LOGO.png'
       }
     ]
   };
@@ -165,7 +165,7 @@ self.addEventListener('notificationclick', event => {
 
   if (event.action === 'explore') {
     event.waitUntil(
-      clients.openWindow('/githubpagetest/')
+      clients.openWindow('/')
     );
   }
 }); 
