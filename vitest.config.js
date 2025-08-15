@@ -7,16 +7,17 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./tests/setup.js'],
+    include: ['tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    exclude: ['tests-e2e/**/*', 'node_modules/**/*', 'dist/**/*'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       exclude: [
-        'node_modules/',
-        'dist/',
-        'coverage/',
-        '**/*.d.ts',
-        '**/*.config.js',
-        '**/*.config.ts'
+        'tests/**/*',
+        'tests-e2e/**/*',
+        'node_modules/**/*',
+        'dist/**/*',
+        'src/components/react-ui-login/**/*'
       ]
     }
   }
