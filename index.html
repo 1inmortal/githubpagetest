@@ -38,9 +38,9 @@
     <header class="site-header">
         <div class="header-container">
             <div class="logo-container">
-                <div class="logo-circles">
-                    <div class="circle circle-1"></div>
-                    <div class="circle circle-2"></div>
+                <div class="logo-x" id="logo-x">
+                    <span class="x-character">X</span>
+                    <span class="inmortal-text">INMORTAL</span>
                 </div>
             </div>
             
@@ -506,19 +506,30 @@
                     <p class="section-subtitle">Credenciales que validan mi expertise en tecnologías de vanguardia</p>
                 </div>
                 
-                <div class="certifications-grid">
-                    <!-- Los certificados se cargarán dinámicamente desde certificaciones.json -->
-                    <div class="loading-certificates">
-                        <div class="loading-spinner"></div>
-                        <p>Cargando certificaciones...</p>
+                <div class="certifications-table-container">
+                    <div class="certifications-table-header">
+                        <span class="header-item">ID</span>
+                        <span class="header-item">Certificación</span>
+                        <span class="header-item">Entidad</span>
+                        <span class="header-item">Fecha</span>
+                        <span class="header-item">Estado</span>
+                        <span class="header-item">Acción</span>
+                    </div>
+                    
+                    <div class="certifications-list" id="certifications-list">
+                        <!-- Las certificaciones se cargarán dinámicamente -->
+                        <div class="loading-certificates">
+                            <div class="loading-spinner"></div>
+                            <p>Cargando certificaciones...</p>
+                        </div>
                     </div>
                 </div>
                 
                 <div class="certifications-cta">
-                    <button class="cta-certifications-btn" role="button" aria-label="Verificar certificaciones">
+                    <button class="cta-certifications-btn" role="button" aria-label="Ver todas las certificaciones">
                         <span class="btn-content">
-                            <span class="btn-text">Verificar Credenciales</span>
-                            <span class="btn-icon">🔐</span>
+                            <span class="btn-text">Ver Todas las Credenciales</span>
+                            <span class="btn-icon">🏆</span>
                         </span>
                         <span class="btn-ripple"></span>
                     </button>
@@ -1039,50 +1050,79 @@
             height: 2rem;
         }
         
-        .logo-circles {
+        .logo-x {
             position: relative;
             width: 100%;
             height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.445, 0.05, 0.55, 0.95);
         }
         
-        .circle {
+        .x-character {
+            color: var(--text-color);
+            font-family: var(--font-primary);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: bold;
+            transition: all 0.3s cubic-bezier(0.445, 0.05, 0.55, 0.95);
+            position: relative;
+            z-index: 2;
+        }
+        
+        .logo-x:hover .x-character {
+            color: rgba(245, 245, 245, 1);
+            transform: scale(1.1);
+        }
+        
+        .logo-x.clicked .x-character {
+            opacity: 0;
+            transform: scale(0.8) rotate(180deg);
+        }
+        
+        .logo-x .inmortal-text {
             position: absolute;
-            border-radius: 50%;
-            transition: transform 0.5s cubic-bezier(0.445, 0.05, 0.55, 0.95);
-            -webkit-transition: -webkit-transform 0.5s cubic-bezier(0.445, 0.05, 0.55, 0.95);
-            -moz-transition: -moz-transform 0.5s cubic-bezier(0.445, 0.05, 0.55, 0.95);
-            -o-transition: -o-transform 0.5s cubic-bezier(0.445, 0.05, 0.55, 0.95);
-            width: 1.8rem;
-            height: 1.8rem;
-            background-color: var(--text-color);
             top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            color: var(--text-color);
+            font-family: var(--font-primary);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: bold;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.445, 0.05, 0.55, 0.95);
+            white-space: nowrap;
+            z-index: 1;
         }
         
-        .circle-1 {
-            left: 0;
-            transform: translate(0, -50%);
+        .logo-x.clicked .inmortal-text {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
         }
         
-        .circle-2 {
-            left: 1rem;
-            transform: translate(0, -50%);
-            mix-blend-mode: exclusion;
+        /* Animación de partículas de transformación */
+        @keyframes particleExplosion {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1) rotate(180deg);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(0) rotate(360deg);
+                opacity: 0;
+            }
         }
         
-        .logo-container:hover .circle-1 {
-            transform: translate(-0.5rem, -50%);
-            -webkit-transform: translate(-0.5rem, -50%);
-            -moz-transform: translate(-0.5rem, -50%);
-            -ms-transform: translate(-0.5rem, -50%);
-            -o-transform: translate(-0.5rem, -50%);
-        }
-        
-        .logo-container:hover .circle-2 {
-            transform: translate(0.5rem, -50%);
-            -webkit-transform: translate(0.5rem, -50%);
-            -moz-transform: translate(0.5rem, -50%);
-            -ms-transform: translate(0.5rem, -50%);
-            -o-transform: translate(0.5rem, -50%);
+        .transform-particle {
+            animation: particleExplosion 0.8s ease-out forwards;
         }
         
         /* Navigation */
@@ -2436,9 +2476,6 @@
             white-space: nowrap;
         }
         
-        .char:nth-child(1) { animation-delay: 0.1s; }
-        .char:nth-child(2) { animation-delay: 0.2s; }
-        .char:nth-child(3) { animation-delay: 0.3s; }
         .char:nth-child(4) { animation-delay: 0.4s; }
         .char:nth-child(5) { animation-delay: 0.5s; }
         .char:nth-child(6) { animation-delay: 0.6s; }
@@ -4048,43 +4085,823 @@
             border-color: rgba(255, 107, 107, 0.7);
         }
         
-        .certifications-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 2.5rem;
+        /* Nueva tabla de certificaciones estilo proyectos.html */
+        .certifications-table-container {
             margin-top: 4rem;
-        }
-        
-        .certification-item {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 2.5rem;
-            transition: all 0.4s ease;
-            position: relative;
-            overflow: hidden;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
+            overflow: hidden;
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
+        }
+        
+        .certifications-table-header {
+            display: grid;
+            grid-template-columns: 80px 2fr 1.5fr 1fr 1fr 100px;
+            gap: 1rem;
+            padding: 1.5rem 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.9rem;
+        }
+        
+        .header-item {
+            color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+        }
+        
+        .certifications-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .certification-row {
+            display: grid;
+            grid-template-columns: 80px 2fr 1.5fr 1fr 1fr 100px;
+            gap: 1rem;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
             cursor: pointer;
+            position: relative;
         }
         
-        /* Fallback para navegadores que no soportan backdrop-filter */
-        @supports not (backdrop-filter: blur(15px)) {
-            .certification-item {
-                background: rgba(255, 255, 255, 0.12);
-                border-color: rgba(255, 255, 255, 0.2);
-            }
+        .certification-row:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(5px);
         }
         
-        .certification-item::before {
+        .certification-row::after {
             content: '';
             position: absolute;
             top: 0;
-            left: -100%;
-            width: 100%;
+            left: 0;
+            width: 0;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
-            transition: left 0.6s ease;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: width 0.6s ease;
+            z-index: -1;
+        }
+        
+        .certification-row:hover::after {
+            width: 100%;
+        }
+        
+        .certification-id {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
+            display: flex;
+            align-items: center;
+        }
+        
+        .certification-title {
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+        }
+        
+        .certification-entity {
+            color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .entity-logo {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        .certification-date {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .certification-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .status-verified {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+        
+        .status-pending {
+            background: rgba(255, 193, 7, 0.2);
+            color: #FFC107;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+        
+        .certification-action {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .verify-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .verify-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        /* Responsive para la tabla */
+        @media (max-width: 1200px) {
+            .certifications-table-header,
+            .certification-row {
+                grid-template-columns: 60px 2fr 1.5fr 1fr 80px;
+                gap: 0.75rem;
+                padding: 1.25rem 1.5rem;
+            }
+            
+            .header-item:last-child,
+            .certification-action {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .certifications-table-header,
+            .certification-row {
+                grid-template-columns: 50px 2fr 1fr;
+                gap: 0.5rem;
+                padding: 1rem;
+            }
+            
+            .header-item:nth-child(3),
+            .header-item:nth-child(4),
+            .header-item:nth-child(5),
+            .certification-entity,
+            .certification-date,
+            .certification-status {
+                display: none;
+            }
+        }
+        
+        /* Animaciones para mensajes de verificación */
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+        
+        /* Estilos completos para el modal de certificaciones */
+        .certification-modal .modal-content {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            max-width: 95%;
+            max-height: 95%;
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        /* Header del modal */
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 2rem 2rem 1rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .modal-title-section {
+            flex: 1;
+        }
+        
+        .certification-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            color: #4CAF50;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+        
+        .modal-title {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 0 0 1rem 0;
+            line-height: 1.3;
+        }
+        
+        .certification-meta {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+        
+        .meta-icon {
+            font-size: 1rem;
+        }
+        
+        /* Botón de cerrar */
+        .modal-close {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+        
+        .close-icon {
+            line-height: 1;
+        }
+        
+        /* Cuerpo del modal */
+        .modal-body {
+            display: flex;
+            gap: 2rem;
+            padding: 2rem;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .certification-image-section {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        
+        .image-container {
+            position: relative;
+            max-width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .certification-image {
+            width: 100%;
+            height: auto;
+            max-height: 400px;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+            cursor: zoom-in;
+        }
+        
+        .certification-image.zoomed {
+            transform: scale(1.5);
+            cursor: zoom-out;
+        }
+        
+        .image-overlay {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .image-container:hover .image-overlay {
+            opacity: 1;
+        }
+        
+        .zoom-btn {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .zoom-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+            transform: scale(1.1);
+        }
+        
+        /* Sección de información */
+        .certification-info-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+        
+        .info-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .info-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .info-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0 0 1rem 0;
+        }
+        
+        .title-icon {
+            font-size: 1.2rem;
+        }
+        
+        .info-description,
+        .info-applications {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        .skills-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .skill-tag {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.9);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .skill-tag:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        /* Footer del modal */
+        .modal-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .verification-status {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: rgba(76, 175, 80, 0.9);
+            font-weight: 500;
+        }
+        
+        .status-icon {
+            font-size: 1.2rem;
+        }
+        
+        .download-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.9);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .download-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        /* Responsive para tablets */
+        @media (max-width: 1024px) {
+            .modal-body {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+            
+            .certification-image-section {
+                order: 1;
+            }
+            
+            .certification-info-section {
+                order: 2;
+                max-height: none;
+            }
+            
+            .certification-image {
+                max-height: 300px;
+            }
+        }
+        
+        /* Responsive para móviles */
+        @media (max-width: 768px) {
+            .certification-modal .modal-content {
+                max-width: 100%;
+                max-height: 100%;
+                border-radius: 0;
+                margin: 0;
+            }
+            
+            .modal-header {
+                padding: 1.5rem 1rem 1rem 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .modal-title {
+                font-size: 1.4rem;
+            }
+            
+            .certification-meta {
+                gap: 1rem;
+            }
+            
+            .modal-body {
+                padding: 1rem;
+                gap: 1rem;
+            }
+            
+            .certification-image {
+                max-height: 250px;
+            }
+            
+            .info-card {
+                padding: 1rem;
+            }
+            
+            .modal-footer {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .download-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+        
+        /* Responsive para móviles pequeños */
+        @media (max-width: 480px) {
+            .modal-title {
+                font-size: 1.2rem;
+            }
+            
+            .certification-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .certification-image {
+                max-height: 200px;
+            }
+            
+            .info-card {
+                padding: 0.75rem;
+            }
+            
+            .skill-tag {
+                font-size: 0.75rem;
+                padding: 0.3rem 0.6rem;
+            }
+        }
+        
+        /* Estilos para el cursor en el modal */
+        .certification-modal {
+            cursor: default;
+        }
+        
+        .certification-modal .modal-content {
+            cursor: default;
+        }
+        
+        .certification-modal button {
+            cursor: pointer;
+        }
+        
+        .certification-modal .modal-close {
+            cursor: pointer;
+        }
+        
+        .certification-modal .zoom-btn {
+            cursor: pointer;
+        }
+        
+        .certification-modal .download-btn {
+            cursor: pointer;
+        }
+        
+        .certification-modal .certification-image {
+            cursor: zoom-in;
+        }
+        
+        .certification-modal .certification-image.zoomed {
+            cursor: zoom-out;
+        }
+        
+        .certification-modal .skill-tag {
+            cursor: default;
+        }
+        
+        .certification-modal .info-card {
+            cursor: default;
+        }
+        
+        /* Indicador visual de que el cursor personalizado está deshabilitado */
+        .certification-modal::before {
+            content: '';
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 12px;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10001;
+            animation: cursorIndicator 2s ease-in-out infinite;
+        }
+        
+        @keyframes cursorIndicator {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.2); }
+        }
+        
+        /* Estilos para barras de desplazamiento personalizadas */
+        .certifications-list::-webkit-scrollbar,
+        .certification-info-section::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .certifications-list::-webkit-scrollbar-track,
+        .certification-info-section::-webkit-scrollbar-track {
+            background: linear-gradient(135deg, 
+                rgba(0, 255, 255, 0.1) 0%, 
+                rgba(0, 100, 255, 0.1) 50%, 
+                rgba(128, 0, 255, 0.1) 100%);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            box-shadow: 
+                inset 0 0 10px rgba(0, 255, 255, 0.1),
+                0 0 20px rgba(0, 255, 255, 0.05);
+        }
+
+        .certifications-list::-webkit-scrollbar-thumb,
+        .certification-info-section::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, 
+                rgba(0, 255, 255, 0.8) 0%, 
+                rgba(0, 100, 255, 0.8) 50%, 
+                rgba(128, 0, 255, 0.8) 100%);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 255, 255, 0.9);
+            box-shadow: 
+                0 0 10px rgba(0, 255, 255, 0.5),
+                inset 0 0 5px rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .certifications-list::-webkit-scrollbar-thumb:hover,
+        .certification-info-section::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, 
+                rgba(0, 255, 255, 1) 0%, 
+                rgba(0, 100, 255, 1) 50%, 
+                rgba(128, 0, 255, 1) 100%);
+            box-shadow: 
+                0 0 20px rgba(0, 255, 255, 0.8),
+                inset 0 0 10px rgba(255, 255, 255, 0.5);
+            transform: scale(1.1);
+        }
+
+        .certifications-list::-webkit-scrollbar-thumb:active,
+        .certification-info-section::-webkit-scrollbar-thumb:active {
+            background: linear-gradient(135deg, 
+                rgba(0, 255, 255, 0.9) 0%, 
+                rgba(0, 100, 255, 0.9) 50%, 
+                rgba(128, 0, 255, 0.9) 100%);
+            box-shadow: 
+                0 0 15px rgba(0, 255, 255, 0.6),
+                inset 0 0 8px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Estilos para Firefox */
+        .certifications-list,
+        .certification-info-section {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 255, 255, 0.8) rgba(0, 255, 255, 0.1);
+        }
+
+        /* Estilos para la barra de desplazamiento horizontal en dispositivos móviles */
+        .certifications-list::-webkit-scrollbar:horizontal,
+        .certification-info-section::-webkit-scrollbar:horizontal {
+            height: 6px;
+        }
+
+        .certifications-list::-webkit-scrollbar-track:horizontal,
+        .certification-info-section::-webkit-scrollbar-track:horizontal {
+            background: linear-gradient(90deg, 
+                rgba(0, 255, 255, 0.1) 0%, 
+                rgba(0, 100, 255, 0.1) 50%, 
+                rgba(128, 0, 255, 0.1) 100%);
+        }
+
+        .certifications-list::-webkit-scrollbar-thumb:horizontal,
+        .certifications-list::-webkit-scrollbar-thumb:horizontal {
+            background: linear-gradient(90deg, 
+                rgba(0, 255, 255, 0.8) 0%, 
+                rgba(0, 100, 255, 0.8) 50%, 
+                rgba(128, 0, 255, 0.8) 100%);
+        }
+
+        /* Animación de pulso para la barra de desplazamiento */
+        @keyframes scrollbarPulse {
+            0%, 100% {
+                opacity: 0.8;
+                box-shadow: 
+                    0 0 10px rgba(0, 255, 255, 0.5),
+                    inset 0 0 5px rgba(255, 255, 255, 0.3);
+            }
+            50% {
+                opacity: 1;
+                box-shadow: 
+                    0 0 20px rgba(0, 255, 255, 0.8),
+                    inset 0 0 10px rgba(255, 255, 255, 0.5);
+            }
+        }
+
+        .certifications-list:hover::-webkit-scrollbar-thumb,
+        .certification-info-section:hover::-webkit-scrollbar-thumb {
+            animation: scrollbarPulse 2s ease-in-out infinite;
+        }
+
+        /* Estilos específicos para la barra de desplazamiento del modal */
+        .certification-modal .certification-info-section::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .certification-modal .certification-info-section::-webkit-scrollbar-track {
+            background: linear-gradient(135deg, 
+                rgba(0, 255, 255, 0.05) 0%, 
+                rgba(0, 100, 255, 0.05) 50%, 
+                rgba(128, 0, 255, 0.05) 100%);
+            border: 1px solid rgba(0, 255, 255, 0.1);
+        }
+
+        .certification-modal .certification-info-section::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, 
+                rgba(0, 255, 255, 0.6) 0%, 
+                rgba(0, 100, 255, 0.6) 50%, 
+                rgba(128, 0, 255, 0.6) 100%);
+            border: 1px solid rgba(0, 255, 255, 0.7);
+        }
+
+        /* Estilos responsivos para barras de desplazamiento en dispositivos móviles */
+        @media (max-width: 768px) {
+            .certifications-list::-webkit-scrollbar,
+            .certification-info-section::-webkit-scrollbar {
+                width: 6px;
+                height: 6px;
+            }
+
+            .certifications-list::-webkit-scrollbar-thumb,
+            .certification-info-section::-webkit-scrollbar-thumb {
+                background: linear-gradient(135deg, 
+                    rgba(0, 255, 255, 0.9) 0%, 
+                    rgba(0, 100, 255, 0.9) 50%, 
+                    rgba(128, 0, 255, 0.9) 100%);
+            }
+
+            .certifications-list::-webkit-scrollbar-track,
+            .certification-info-section::-webkit-scrollbar-track {
+                background: linear-gradient(135deg, 
+                    rgba(0, 255, 255, 0.15) 0%, 
+                    rgba(0, 100, 255, 0.15) 50%, 
+                    rgba(128, 0, 255, 0.15) 100%);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .certifications-list::-webkit-scrollbar,
+            .certification-info-section::-webkit-scrollbar {
+                width: 4px;
+                height: 4px;
+            }
+
+            .certifications-list::-webkit-scrollbar-thumb,
+            .certification-info-section::-webkit-scrollbar-thumb {
+                background: linear-gradient(135deg, 
+                    rgba(0, 255, 255, 1) 0%, 
+                    rgba(0, 100, 255, 1) 50%, 
+                    rgba(128, 0, 255, 1) 100%);
+            }
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px) scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
         }
         
         .certification-item:hover::before {
@@ -7851,8 +8668,92 @@
             // Pequeño retraso para asegurar que todo esté listo
             setTimeout(() => {
                 setupCustomCursor();
+                setupLogoX();
             }, 100);
         });
+        
+        // ===== FUNCIONALIDAD DEL LOGO X =====
+        
+        function setupLogoX() {
+            const logoX = document.getElementById('logo-x');
+            if (!logoX) return;
+            
+            let isClicked = false;
+            
+            logoX.addEventListener('click', () => {
+                if (!isClicked) {
+                    // Primera vez: transformar X en INMORTAL
+                    logoX.classList.add('clicked');
+                    isClicked = true;
+                    
+                    // Reproducir sonido de transformación
+                    playTransformSound();
+                    
+                    // Crear partículas de transformación
+                    createTransformParticles(logoX);
+                    
+                    // Resetear después de 3 segundos
+                    setTimeout(() => {
+                        logoX.classList.remove('clicked');
+                        isClicked = false;
+                    }, 3000);
+                }
+            });
+        }
+        
+        function playTransformSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
+                
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
+            } catch (error) {
+                console.log('Audio no disponible');
+            }
+        }
+        
+        function createTransformParticles(element) {
+            const rect = element.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            for (let i = 0; i < 8; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'transform-particle';
+                particle.style.cssText = `
+                    position: fixed;
+                    left: ${centerX}px;
+                    top: ${centerY}px;
+                    width: 4px;
+                    height: 4px;
+                    background: var(--text-color);
+                    border-radius: 50%;
+                    pointer-events: none;
+                    z-index: 1000;
+                    animation: particleExplosion 0.8s ease-out forwards;
+                `;
+                
+                document.body.appendChild(particle);
+                
+                // Eliminar partícula después de la animación
+                setTimeout(() => {
+                    if (particle.parentNode) {
+                        particle.parentNode.removeChild(particle);
+                    }
+                }, 800);
+            }
+        }
         
         // ===== FUNCIONALIDAD DE CERTIFICACIONES DINÁMICAS =====
         
@@ -7888,18 +8789,112 @@
             }
         }
         
-        // Función para renderizar certificaciones
+        // Función para renderizar certificaciones en formato tabla
         function renderCertifications(certificaciones) {
-            const grid = document.querySelector('.certifications-grid');
-            if (!grid) return;
+            const list = document.getElementById('certifications-list');
+            if (!list) return;
             
-            // Limpiar grid
-            grid.innerHTML = '';
+            // Limpiar lista
+            list.innerHTML = '';
             
-            // Crear elementos de certificación
-            certificaciones.forEach((cert, index) => {
-                const certElement = createCertificationElement(cert, index);
-                grid.appendChild(certElement);
+            // Certificados reales con información de las imágenes
+            const realCertifications = [
+                {
+                    id: "CERT-001",
+                    titulo: "Defensa de la Red",
+                    entidad: "Cisco",
+                    logo: "src/assets/img/LOGOS/cisco.svg",
+                    fecha: "2024-01-15",
+                    imagen: "src/assets/img/Certificados/Defensa de la red.jpeg",
+                    estado: "verificada"
+                },
+                {
+                    id: "CERT-002",
+                    titulo: "Introduction to Modern AI",
+                    entidad: "Microsoft",
+                    logo: "src/assets/img/LOGOS/microsoft.svg",
+                    fecha: "2024-03-20",
+                    imagen: "src/assets/img/Certificados/Introduction to Modern Al.jpeg",
+                    estado: "verificada"
+                },
+                {
+                    id: "CERT-003",
+                    titulo: "Full Stack Software Developer Assessment",
+                    entidad: "Meta",
+                    logo: "src/assets/img/LOGOS/meta.svg",
+                    fecha: "2024-05-12",
+                    imagen: "src/assets/img/Certificados/Full Stack Software Developer Assessment.jpg",
+                    estado: "verificada"
+                },
+                {
+                    id: "CERT-004",
+                    titulo: "Python for Data Science, AI & Development",
+                    entidad: "Python Institute",
+                    logo: "src/assets/img/LOGOS/python.svg",
+                    fecha: "2024-06-18",
+                    imagen: "src/assets/img/Certificados/Python for Data Science, Al & Development.jpg",
+                    estado: "verificada"
+                },
+                {
+                    id: "CERT-005",
+                    titulo: "Introduction to Software Engineering",
+                    entidad: "IBM",
+                    logo: "src/assets/img/LOGOS/ibm.svg",
+                    fecha: "2024-07-25",
+                    imagen: "src/assets/img/Certificados/Introduction to Software Engineering.jpg",
+                    estado: "verificada"
+                },
+                {
+                    id: "CERT-006",
+                    titulo: "Play It Safe: Manage Security Risks",
+                    entidad: "Google",
+                    logo: "src/assets/img/LOGOS/google.svg",
+                    fecha: "2024-08-10",
+                    imagen: "src/assets/img/Certificados/Play It Safe_ Manage Security Risks.jpg",
+                    estado: "verificada"
+                },
+                {
+                    id: "CERT-007",
+                    titulo: "Foundations of Cybersecurity",
+                    entidad: "Cisco",
+                    logo: "src/assets/img/LOGOS/cisco.svg",
+                    fecha: "2024-09-05",
+                    imagen: "src/assets/img/Certificados/Foundations of Cybersecurity.jpg",
+                    estado: "verificada"
+                },
+                {
+                    id: "CERT-008",
+                    titulo: "Generative AI: Elevate your Software Development Career",
+                    entidad: "Microsoft",
+                    logo: "src/assets/img/LOGOS/microsoft.svg",
+                    fecha: "2024-10-15",
+                    imagen: "src/assets/img/Certificados/Generative Al_ Elevate your Software Development Career.jpg",
+                    estado: "verificada"
+                },
+                {
+                    id: "CERT-009",
+                    titulo: "Getting Started with Git and GitHub",
+                    entidad: "GitHub",
+                    logo: "src/assets/img/LOGOS/github.svg",
+                    fecha: "2024-11-20",
+                    imagen: "src/assets/img/Certificados/Getting Started with Git and GitHub.jpg",
+                    estado: "verificada"
+                },
+                {
+                    id: "CERT-010",
+                    titulo: "Introduction to HTML, CSS & JavaScript",
+                    entidad: "W3Schools",
+                    logo: "src/assets/img/LOGOS/w3schools.svg",
+                    fecha: "2024-12-01",
+                    imagen: "src/assets/img/Certificados/Introduction to HTML, CSS, & JavaScript.jpg",
+                    estado: "verificada"
+                }
+            ];
+            
+            // Crear elementos de certificación en formato tabla
+            realCertifications.forEach((cert, index) => {
+                const certElement = createCertificationRow(cert, index);
+                list.appendChild(certElement);
             });
             
             // Aplicar animaciones después de renderizar
@@ -7908,89 +8903,469 @@
             }, 100);
         }
         
-        // Función para crear elemento de certificación
-        function createCertificationElement(cert, index) {
-            const certDiv = document.createElement('div');
-            certDiv.className = 'certification-item reveal-up';
-            certDiv.setAttribute('data-cert', cert.id);
+        // Función para crear fila de certificación
+        function createCertificationRow(cert, index) {
+            const certRow = document.createElement('div');
+            certRow.className = 'certification-row reveal-up';
+            certRow.setAttribute('data-cert', cert.id);
             
             // Formatear fecha
             const fecha = new Date(cert.fecha);
-            const fechaFormateada = fecha.getFullYear();
+            const fechaFormateada = fecha.toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
             
-            certDiv.innerHTML = `
-                <div class="cert-header">
-                    <div class="cert-logo" style="color: ${cert.color}">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                        </svg>
+            // Usar el estado real del certificado
+            const isVerified = cert.estado === 'verificada';
+            const statusClass = isVerified ? 'status-verified' : 'status-pending';
+            const statusText = isVerified ? 'Verificada' : 'Pendiente';
+            
+            certRow.innerHTML = `
+                <span class="certification-id">${cert.id}</span>
+                <span class="certification-title">${cert.titulo}</span>
+                <span class="certification-entity">
+                    <img src="${cert.logo}" alt="${cert.entidad}" class="entity-logo" onerror="this.style.display='none'">
+                    ${cert.entidad}
+                </span>
+                <span class="certification-date">${fechaFormateada}</span>
+                <span class="certification-status">
+                    <span class="status-badge ${statusClass}">${statusText}</span>
+                </span>
+                <span class="certification-action">
+                    <button class="verify-btn" onclick="viewCertification('${cert.id}', '${cert.imagen}')">
+                        Ver Imagen
+                    </button>
+                </span>
+            `;
+            
+            // Agregar event listeners
+            addCertificationRowEventListeners(certRow, cert);
+            
+            return certRow;
+        }
+        
+        // Función para agregar event listeners a filas de certificación
+        function addCertificationRowEventListeners(certRow, certData) {
+            // Hover effect
+            certRow.addEventListener('mouseenter', () => {
+                certRow.style.transform = 'translateX(5px)';
+            });
+            
+            certRow.addEventListener('mouseleave', () => {
+                certRow.style.transform = 'translateX(0)';
+            });
+            
+            // Click effect
+            certRow.addEventListener('mousedown', () => {
+                certRow.style.transform = 'translateX(3px) scale(0.98)';
+            });
+            
+            certRow.addEventListener('mouseup', () => {
+                certRow.style.transform = 'translateX(5px) scale(1)';
+            });
+        }
+        
+        // Función para ver la imagen del certificado
+        function viewCertification(certId, imagePath) {
+            // Manejar cursor personalizado cuando se abre el modal
+            handleModalCursor();
+            
+            // Crear modal para mostrar la imagen
+            const modal = document.createElement('div');
+            modal.className = 'certification-modal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.95);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                padding: 1rem;
+                cursor: default;
+            `;
+            
+            // Obtener información detallada de la certificación
+            const certInfo = getCertificationDetails(certId);
+            
+            // Contenido del modal mejorado
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title-section">
+                            <div class="certification-badge">
+                                <span class="badge-icon">🏆</span>
+                                <span class="badge-text">Certificación Verificada</span>
+                            </div>
+                            <h2 class="modal-title">${certInfo.titulo}</h2>
+                            <div class="certification-meta">
+                                <span class="meta-item">
+                                    <span class="meta-icon">🏢</span>
+                                    <span class="meta-text">${certInfo.entidad}</span>
+                                </span>
+                                <span class="meta-item">
+                                    <span class="meta-icon">📅</span>
+                                    <span class="meta-text">${certInfo.fecha}</span>
+                                </span>
+                                <span class="meta-item">
+                                    <span class="meta-icon">🆔</span>
+                                    <span class="meta-text">${certInfo.id}</span>
+                                </span>
+                            </div>
+                        </div>
+                        <button class="modal-close" onclick="closeCertificationModal()">
+                            <span class="close-icon">&times;</span>
+                        </button>
                     </div>
-                    <div class="cert-info">
-                        <h3 class="cert-title">${cert.titulo}</h3>
-                        <p class="cert-entity">${cert.entidad}</p>
+                    
+                    <div class="modal-body">
+                        <div class="certification-image-section">
+                            <div class="image-container">
+                                <img src="${imagePath}" alt="${certInfo.titulo}" class="certification-image">
+                                <div class="image-overlay">
+                                    <button class="zoom-btn" onclick="toggleImageZoom(this)">
+                                        <span class="zoom-icon">🔍</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="certification-info-section">
+                            <div class="info-card">
+                                <h3 class="info-title">
+                                    <span class="title-icon">📚</span>
+                                    Descripción del Curso
+                                </h3>
+                                <p class="info-description">${certInfo.descripcion}</p>
+                            </div>
+                            
+                            <div class="info-card">
+                                <h3 class="info-title">
+                                    <span class="title-icon">🎯</span>
+                                    Habilidades Adquiridas
+                                </h3>
+                                <div class="skills-grid">
+                                    ${certInfo.habilidades.map(skill => 
+                                        `<span class="skill-tag">${skill}</span>`
+                                    ).join('')}
+                                </div>
+                            </div>
+                            
+                            <div class="info-card">
+                                <h3 class="info-title">
+                                    <span class="title-icon">💼</span>
+                                    Aplicaciones Profesionales
+                                </h3>
+                                <p class="info-applications">${certInfo.aplicaciones}</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="cert-date">${fechaFormateada}</div>
-                </div>
-                <div class="cert-details">
-                    <p class="cert-description">${cert.descripcion}</p>
-                    <div class="cert-skills">
-                        ${cert.habilidades.map(habilidad => 
-                            `<span class="skill-tag">${habilidad}</span>`
-                        ).join('')}
+                    
+                    <div class="modal-footer">
+                        <div class="verification-status">
+                            <span class="status-icon">✅</span>
+                            <span class="status-text">Certificación autenticada y verificada</span>
+                        </div>
+                        <button class="download-btn" onclick="downloadCertification('${certId}')">
+                            <span class="download-icon">⬇️</span>
+                            <span class="download-text">Descargar PDF</span>
+                        </button>
                     </div>
                 </div>
             `;
             
-            // Agregar event listeners
-            addCertificationEventListeners(certDiv, cert);
+            // Agregar modal al body
+            document.body.appendChild(modal);
             
-            return certDiv;
-        }
-        
-        // Función para agregar event listeners a certificaciones
-        function addCertificationEventListeners(certElement, certData) {
-            // Hover effect
-            certElement.addEventListener('mouseenter', () => {
-                certElement.style.transform = 'translateY(-5px) scale(1.02)';
-                certElement.style.boxShadow = '0 20px 40px rgba(0,0,0,0.3)';
+            // Mostrar modal con animación
+            setTimeout(() => {
+                modal.style.opacity = '1';
+            }, 10);
+            
+            // Cerrar modal al hacer clic fuera
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeCertificationModal();
+                }
             });
             
-            certElement.addEventListener('mouseleave', () => {
-                certElement.style.transform = 'translateY(0) scale(1)';
-                certElement.style.boxShadow = '0 10px 30px rgba(0,0,0,0.2)';
+            // Cerrar modal con ESC
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeCertificationModal();
+                }
             });
             
-            // Click effect
-            certElement.addEventListener('mousedown', () => {
-                certElement.style.transform = 'translateY(-2px) scale(0.98)';
-            });
-            
-            certElement.addEventListener('mouseup', () => {
-                certElement.style.transform = 'translateY(-5px) scale(1.02)';
-            });
-            
-            // Click para verificar
-            certElement.addEventListener('click', () => {
-                if (certData.urlVerificacion) {
-                    window.open(certData.urlVerificacion, '_blank');
+            // Restaurar cursor personalizado si se cierra el modal de otra manera
+            window.addEventListener('beforeunload', () => {
+                const customCursor = document.querySelector('.custom-cursor');
+                if (customCursor) {
+                    customCursor.style.display = 'block';
                 }
             });
         }
         
-        // Función para aplicar animaciones
+        // Función para cerrar el modal
+        function closeCertificationModal() {
+            const modal = document.querySelector('.certification-modal');
+            if (modal) {
+                modal.style.opacity = '0';
+                setTimeout(() => {
+                    if (modal.parentNode) {
+                        modal.parentNode.removeChild(modal);
+                    }
+                    // Restaurar cursor personalizado cuando se cierra el modal
+                    restoreCustomCursor();
+                }, 300);
+            }
+        }
+        
+        // Función para alternar zoom de imagen
+        function toggleImageZoom(button) {
+            const image = button.closest('.image-container').querySelector('.certification-image');
+            if (image.classList.contains('zoomed')) {
+                image.classList.remove('zoomed');
+                button.querySelector('.zoom-icon').textContent = '🔍';
+            } else {
+                image.classList.add('zoomed');
+                button.querySelector('.zoom-icon').textContent = '🔍-';
+            }
+        }
+        
+        // Función para descargar certificación
+        function downloadCertification(certId) {
+            const certInfo = getCertificationDetails(certId);
+            const link = document.createElement('a');
+            link.href = `src/assets/img/Certificados/${getCertificationImageName(certId)}`;
+            link.download = `${certInfo.titulo.replace(/[^a-zA-Z0-9]/g, '_')}.jpg`;
+            link.click();
+        }
+        
+        // Función para obtener el nombre de la imagen del certificado
+        function getCertificationImageName(certId) {
+            const imageNames = {
+                'CERT-001': 'Defensa de la red.jpeg',
+                'CERT-002': 'Introduction to Modern Al.jpeg',
+                'CERT-003': 'Full Stack Software Developer Assessment.jpg',
+                'CERT-004': 'Python for Data Science, Al & Development.jpg',
+                'CERT-005': 'Introduction to Software Engineering.jpg',
+                'CERT-006': 'Play It Safe_ Manage Security Risks.jpg',
+                'CERT-007': 'Foundations of Cybersecurity.jpg',
+                'CERT-008': 'Generative Al_ Elevate your Software Development Career.jpg',
+                'CERT-009': 'Getting Started with Git and GitHub.jpg',
+                'CERT-010': 'Introduction to HTML, CSS, & JavaScript.jpg'
+            };
+            return imageNames[certId] || 'certification.jpg';
+        }
+        
+        // Función para manejar el cursor personalizado en el modal
+        function handleModalCursor() {
+            const customCursor = document.querySelector('.custom-cursor');
+            const cursorRing = document.querySelector('.cursor-ring');
+            const cursorTrail = document.querySelector('.cursor-trail');
+            
+            if (customCursor && cursorRing && cursorTrail) {
+                // Ocultar cursor personalizado
+                customCursor.style.display = 'none';
+                cursorRing.style.display = 'none';
+                cursorTrail.style.display = 'none';
+                
+                // Restaurar cursor del sistema
+                document.body.style.cursor = 'default';
+            }
+        }
+        
+        // Función para restaurar el cursor personalizado
+        function restoreCustomCursor() {
+            const customCursor = document.querySelector('.custom-cursor');
+            const cursorRing = document.querySelector('.cursor-ring');
+            const cursorTrail = document.querySelector('.cursor-trail');
+            
+            if (customCursor && cursorRing && cursorTrail) {
+                // Mostrar cursor personalizado
+                customCursor.style.display = 'block';
+                cursorRing.style.display = 'block';
+                cursorTrail.style.display = 'block';
+                
+                // Restaurar cursor del sistema
+                document.body.style.cursor = 'none';
+            }
+        }
+        
+        // Función para obtener información detallada de la certificación
+        function getCertificationDetails(certId) {
+            const details = {
+                'CERT-001': {
+                    titulo: 'Defensa de la Red',
+                    entidad: 'Cisco',
+                    fecha: '15 Enero 2024',
+                    id: 'CERT-001',
+                    descripcion: 'Certificación avanzada en seguridad de redes y protección de sistemas informáticos. Incluye conocimientos en firewalls, VPNs, detección de intrusiones y respuesta a incidentes de ciberseguridad.',
+                    habilidades: ['Ciberseguridad', 'Redes', 'Firewalls', 'VPN', 'Detección de Intrusiones', 'Respuesta a Incidentes'],
+                    aplicaciones: 'Ideal para roles de seguridad informática, administración de redes empresariales y consultoría en ciberseguridad.'
+                },
+                'CERT-002': {
+                    titulo: 'Introduction to Modern AI',
+                    entidad: 'Microsoft',
+                    fecha: '20 Marzo 2024',
+                    id: 'CERT-002',
+                    descripcion: 'Fundamentos de inteligencia artificial moderna, incluyendo machine learning, deep learning y aplicaciones prácticas en el desarrollo de software.',
+                    habilidades: ['Inteligencia Artificial', 'Machine Learning', 'Deep Learning', 'Azure AI', 'Python', 'Algoritmos'],
+                    aplicaciones: 'Desarrollo de aplicaciones inteligentes, automatización de procesos y creación de sistemas de recomendación.'
+                },
+                'CERT-003': {
+                    titulo: 'Full Stack Software Developer Assessment',
+                    entidad: 'Meta',
+                    fecha: '12 Mayo 2024',
+                    id: 'CERT-003',
+                    descripcion: 'Evaluación completa de habilidades en desarrollo full-stack, desde frontend hasta backend, incluyendo bases de datos y despliegue.',
+                    habilidades: ['React', 'Node.js', 'JavaScript', 'Bases de Datos', 'APIs', 'DevOps'],
+                    aplicaciones: 'Desarrollo de aplicaciones web completas, startups tecnológicas y empresas de desarrollo de software.'
+                },
+                'CERT-004': {
+                    titulo: 'Python for Data Science, AI & Development',
+                    entidad: 'Python Institute',
+                    fecha: '18 Junio 2024',
+                    id: 'CERT-004',
+                    descripcion: 'Programación avanzada en Python para ciencia de datos, inteligencia artificial y desarrollo de aplicaciones empresariales.',
+                    habilidades: ['Python', 'Data Science', 'Pandas', 'NumPy', 'Scikit-learn', 'Machine Learning'],
+                    aplicaciones: 'Análisis de datos, investigación científica, desarrollo de modelos de IA y automatización empresarial.'
+                },
+                'CERT-005': {
+                    titulo: 'Introduction to Software Engineering',
+                    entidad: 'IBM',
+                    fecha: '25 Julio 2024',
+                    id: 'CERT-005',
+                    descripcion: 'Principios fundamentales de ingeniería de software, metodologías ágiles y mejores prácticas en el desarrollo de software.',
+                    habilidades: ['Ingeniería de Software', 'Metodologías Ágiles', 'Scrum', 'Testing', 'Documentación', 'Arquitectura'],
+                    aplicaciones: 'Liderazgo de equipos de desarrollo, consultoría en software y gestión de proyectos tecnológicos.'
+                },
+                'CERT-006': {
+                    titulo: 'Play It Safe: Manage Security Risks',
+                    entidad: 'Google',
+                    fecha: '10 Agosto 2024',
+                    id: 'CERT-006',
+                    descripcion: 'Gestión de riesgos de seguridad en entornos digitales, análisis de amenazas y implementación de medidas de protección.',
+                    habilidades: ['Gestión de Riesgos', 'Análisis de Amenazas', 'Seguridad Digital', 'Compliance', 'Auditoría', 'Protección de Datos'],
+                    aplicaciones: 'Oficiales de seguridad de la información, consultores de seguridad y compliance officers.'
+                },
+                'CERT-007': {
+                    titulo: 'Foundations of Cybersecurity',
+                    entidad: 'Cisco',
+                    fecha: '5 Septiembre 2024',
+                    id: 'CERT-007',
+                    descripcion: 'Bases fundamentales de ciberseguridad, incluyendo principios de seguridad, amenazas comunes y estrategias de protección.',
+                    habilidades: ['Ciberseguridad', 'Principios de Seguridad', 'Amenazas', 'Protección', 'Concienciación', 'Mejores Prácticas'],
+                    aplicaciones: 'Primeros pasos en ciberseguridad, concienciación empresarial y formación de equipos de seguridad.'
+                },
+                'CERT-008': {
+                    titulo: 'Generative AI: Elevate your Software Development Career',
+                    entidad: 'Microsoft',
+                    fecha: '15 Octubre 2024',
+                    id: 'CERT-008',
+                    descripcion: 'Aplicación práctica de inteligencia artificial generativa en el desarrollo de software, incluyendo ChatGPT, GitHub Copilot y herramientas similares.',
+                    habilidades: ['IA Generativa', 'ChatGPT', 'GitHub Copilot', 'Prompt Engineering', 'Integración IA', 'Desarrollo Asistido'],
+                    aplicaciones: 'Desarrollo de software más eficiente, creación de herramientas inteligentes y automatización de tareas de programación.'
+                },
+                'CERT-009': {
+                    titulo: 'Getting Started with Git and GitHub',
+                    entidad: 'GitHub',
+                    fecha: '20 Noviembre 2024',
+                    id: 'CERT-009',
+                    descripcion: 'Control de versiones con Git y colaboración en GitHub. Gestión eficiente de repositorios, ramas y flujos de trabajo colaborativos.',
+                    habilidades: ['Git', 'GitHub', 'Control de Versiones', 'Colaboración', 'Pull Requests', 'Workflows'],
+                    aplicaciones: 'Desarrollo colaborativo, open source, gestión de código empresarial y DevOps.'
+                },
+                'CERT-010': {
+                    titulo: 'Introduction to HTML, CSS & JavaScript',
+                    entidad: 'W3Schools',
+                    fecha: '1 Diciembre 2024',
+                    id: 'CERT-010',
+                    descripcion: 'Fundamentos del desarrollo web frontend con HTML5, CSS3 y JavaScript moderno para crear sitios web interactivos y responsivos.',
+                    habilidades: ['HTML5', 'CSS3', 'JavaScript', 'Responsive Design', 'Web Standards', 'Frontend Development'],
+                    aplicaciones: 'Desarrollo web, diseño de interfaces, creación de sitios web y aplicaciones web básicas.'
+                }
+            };
+            return details[certId] || {
+                titulo: 'Certificación',
+                entidad: 'Entidad',
+                fecha: 'Fecha',
+                id: 'ID',
+                descripcion: 'Descripción no disponible',
+                habilidades: ['Habilidades'],
+                aplicaciones: 'Aplicaciones no especificadas'
+            };
+        }
+        
+        // Función para mostrar mensajes de verificación
+        function showVerificationMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `verification-message ${type}`;
+            messageDiv.textContent = message;
+            
+            // Estilos del mensaje
+            messageDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 10000;
+                animation: slideInRight 0.3s ease;
+                max-width: 300px;
+            `;
+            
+            if (type === 'success') {
+                messageDiv.style.background = 'rgba(76, 175, 80, 0.9)';
+                messageDiv.style.border = '1px solid rgba(76, 175, 80, 0.3)';
+            } else {
+                messageDiv.style.background = 'rgba(255, 193, 7, 0.9)';
+                messageDiv.style.border = '1px solid rgba(255, 193, 7, 0.3)';
+            }
+            
+            document.body.appendChild(messageDiv);
+            
+            // Remover mensaje después de 3 segundos
+            setTimeout(() => {
+                messageDiv.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => {
+                    if (messageDiv.parentNode) {
+                        messageDiv.parentNode.removeChild(messageDiv);
+                    }
+                }, 300);
+            }, 3000);
+        }
+        
+        // Función para aplicar animaciones a las filas de certificación
         function applyCertificationAnimations() {
-            const certificationItems = document.querySelectorAll('.certification-item');
-            const skillTags = document.querySelectorAll('.skill-tag');
+            const certificationRows = document.querySelectorAll('.certification-row');
             
-            certificationItems.forEach((item, index) => {
-                item.style.animationDelay = `${index * 0.1}s`;
-                item.style.animation = 'fadeInUp 0.8s ease forwards';
+            certificationRows.forEach((row, index) => {
+                row.style.animationDelay = `${index * 0.1}s`;
+                row.style.animation = 'fadeInUp 0.8s ease forwards';
+                row.style.opacity = '0';
+                row.style.transform = 'translateY(20px)';
             });
             
-            skillTags.forEach((tag, index) => {
-                tag.style.animationDelay = `${index * 0.05}s`;
-                tag.style.animation = 'slideInLeft 0.5s ease forwards';
-            });
+            // Aplicar animación de entrada
+            setTimeout(() => {
+                certificationRows.forEach((row, index) => {
+                    setTimeout(() => {
+                        row.style.transition = 'all 0.6s ease';
+                        row.style.opacity = '1';
+                        row.style.transform = 'translateY(0)';
+                    }, index * 100);
+                });
+            }, 100);
         }
         
         // Cargar certificaciones cuando el DOM esté listo
