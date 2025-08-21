@@ -48,7 +48,7 @@ class FormDataSecurity {
             boundary.length > this.securityConfig.maxBoundaryLength) {
             return false;
         }
-        const dangerousChars = /[<>\"'&]/;
+        const dangerousChars = /[<>"'&]/;
         if (dangerousChars.test(boundary)) {
             return false;
         }
@@ -124,7 +124,7 @@ class FormDataSecurity {
             return '';
         }
         return str
-            .replace(/[<>\"'&]/g, '')
+            .replace(/[<>"'&]/g, '')
             .trim();
     }
     validateFile(file) {
