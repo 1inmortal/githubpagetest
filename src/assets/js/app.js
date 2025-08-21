@@ -9,8 +9,8 @@
 // 1. UTILIDADES DE SEGURIDAD
 // ========================================================
 
-// Importar mathjs para reemplazar eval
-import * as math from 'https://cdn.jsdelivr.net/npm/mathjs@12.3.1/+esm';
+// Importar mathjs para reemplazar eval (comentado por ahora)
+// import * as math from 'https://cdn.jsdelivr.net/npm/mathjs@12.3.1/+esm';
 
 // Importar DOMPurify para sanitización
 import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3.0.8/+esm';
@@ -330,7 +330,7 @@ class FormDataSecurity {
             boundary.length > this.securityConfig.maxBoundaryLength) {
             return false;
         }
-        const dangerousChars = /[<>\"'&]/;
+        const dangerousChars = /[<>"'&]/;
         if (dangerousChars.test(boundary)) {
             return false;
         }
@@ -714,8 +714,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         setupTestimonials() {
             // Sistema de testimonios
-            const testimonialCards = document.querySelectorAll('.testimonial-card');
-            let currentIndex = 0;
+            // const testimonialCards = document.querySelectorAll('.testimonial-card');
+            // let currentIndex = 0;
             
             // Auto-rotación de testimonios
             setInterval(() => {
@@ -741,7 +741,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 if (question && answer) {
                     question.addEventListener('click', () => {
-                        const isActive = item.classList.contains('active');
+                        // const isActive = item.classList.contains('active');
                         
                         // Cerrar todos los otros items
                         faqItems.forEach(otherItem => {
@@ -976,7 +976,8 @@ if (document.readyState === 'loading') {
     verifySections();
 }
 
-// Función global de scroll suave con animación
+// Función global de scroll suave con animación (comentada por ahora)
+/*
 function smoothScrollWithAnimation(targetPosition) {
     const startPosition = window.pageYOffset;
     const distance = targetPosition - startPosition;
@@ -1000,6 +1001,7 @@ function smoothScrollWithAnimation(targetPosition) {
 
     requestAnimationFrame(animation);
 }
+*/
 
 // Exportar para uso en módulos
 export {

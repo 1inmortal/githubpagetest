@@ -1191,11 +1191,12 @@
                     let errorMessage = '';
                     
                     switch (field.type) {
-                        case 'email':
+                        case 'email': {
                             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                             isValid = emailRegex.test(value);
                             errorMessage = 'Por favor ingresa un email válido';
                             break;
+                        }
                             
                         case 'text':
                         case 'textarea':
@@ -1259,8 +1260,8 @@
                             formData = secureFormData.formData;
                             secureBoundary = secureFormData.boundary;
                             
-                            // Sanitizar datos del formulario
-                            formData = formDataSecurity.sanitizeFormData(formData);
+                                                    // Sanitizar datos del formulario
+                        const sanitizedFormData = formDataSecurity.sanitizeFormData(formData);
                         } else {
                             // Fallback si no están disponibles las utilidades de seguridad
                             formData = new FormData(this.form);
