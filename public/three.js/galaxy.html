@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Galaxia Interactiva Avanzada</title>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: radial-gradient(circle at center, #1a0033 0%, #000 100%);
+      font-family: 'Inter', sans-serif;
+    }
+    canvas {
+      position: fixed;
+      top: 50%; left: 50%;
+      width: 100%; height: 100vh;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+      display: block;
+    }
+    /* UI mínima opcional (puedes quitarla si no la necesitas) */
+    .hud {
+      position: fixed;
+      left: 16px; bottom: 16px; z-index: 2; color: #a8b3ff;
+      font-size: 12px; letter-spacing: .04em; opacity: .85;
+      background: rgba(10, 10, 22, 0.35);
+      border: 1px solid rgba(120, 120, 180, 0.25);
+      border-radius: 10px; padding: 10px 12px; backdrop-filter: blur(6px);
+    }
+    .hud b { color: #e0e4ff; }
+
+    /* Panel de Control Avanzado */
+    .control-panel {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      background: rgba(10, 10, 22, 0.85);
+      border: 1px solid rgba(120, 120, 180, 0.4);
+      border-radius: 15px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      color: #a8b3ff;
+      font-size: 13px;
+      min-width: 320px;
+      max-width: 400px;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .control-panel.hidden {
+      transform: translateX(-50%) translateY(100%);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .control-panel h3 {
+      color: #e0e4ff;
+      margin-bottom: 15px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .control-group {
+      margin-bottom: 15px;
+    }
+
+    .control-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: #b8c3ff;
+      font-weight: 500;
+    }
+
+    .control-group input[type="range"] {
+      width: 100%;
+      height: 6px;
+      background: rgba(120, 120, 180, 0.2);
+      border-radius: 3px;
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    .control-group input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      background: linear-gradient(45deg, #ff66cc, #7ec9ff);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .control-group input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      background: linear-gradient(45deg, #ff66cc, #7ec9ff);
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .control-value {
+      display: inline-block;
+      background: rgba(120, 120, 180, 0.2);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      color: #e0e4ff;
+      margin-left: 10px;
+      min-width: 40px;
+      text-align: center;
+    }
+
+    .control-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .control-btn {
+      flex: 1;
+      padding: 8px 16px;
+      background: linear-gradient(45deg, #ff66cc, #7ec9ff);
+      border: none;
+      border-radius: 8px;
+      color: #000;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 12px;
+    }
+
+    .control-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255, 102, 204, 0.4);
+    }
+
+    .control-btn.secondary {
+      background: linear-gradient(45deg, #39ffb6, #bdc7ff);
+    }
+
+    .toggle-panel-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 11;
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(45deg, #ff66cc, #7ec9ff);
+      border: none;
+      border-radius: 50%;
+      color: #000;
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .toggle-panel-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(255, 102, 204, 0.5);
+    }
+
+    .toggle-panel-btn.hidden {
+      background: linear-gradient(45deg, #39ffb6, #bdc7ff);
+    }
+
+    /* Controles de Audio */
+    .audio-controls {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 12;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .audio-btn {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(45deg, #ff66cc, #7ec9ff);
+      border: none;
+      border-radius: 50%;
+      color: #000;
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .audio-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(255, 102, 204, 0.5);
+    }
+
+    .audio-btn.muted {
+      background: linear-gradient(45deg, #ff4444, #ff6666);
+    }
+
+    .volume-slider {
+      background: rgba(10, 10, 22, 0.8);
+      border: 1px solid rgba(120, 120, 180, 0.3);
+      border-radius: 10px;
+      padding: 8px;
+      backdrop-filter: blur(8px);
+    }
+
+    .volume-slider input[type="range"] {
+      width: 80px;
+      height: 4px;
+      background: rgba(120, 120, 180, 0.3);
+      border-radius: 2px;
+      outline: none;
+      -webkit-appearance: none;
+      transform: rotate(-90deg);
+    }
+
+    .volume-slider input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: linear-gradient(45deg, #ff66cc, #7ec9ff);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+  </style>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Importmap Three.js r0.162.0 -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.162.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div class="hud">💫 <b>Galaxia</b> — arrastra el mouse para curvar la luz</div>
+  
+  <!-- Controles de Audio -->
+  <div class="audio-controls">
+    <button id="audioToggle" class="audio-btn">🔊</button>
+    <div class="volume-slider">
+      <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="0.7">
+    </div>
+  </div>
+
+  <!-- Panel de Control Avanzado -->
+  <div class="control-panel" id="controlPanel">
+    <h3>🎛️ Panel de Control</h3>
+    
+    <div class="control-group">
+      <label>Bloom Strength <span class="control-value" id="bloomStrengthValue">1.25</span></label>
+      <input type="range" id="bloomStrength" min="0" max="3" step="0.05" value="1.25">
+    </div>
+    
+    <div class="control-group">
+      <label>Bloom Radius <span class="control-value" id="bloomRadiusValue">0.75</span></label>
+      <input type="range" id="bloomRadius" min="0" max="2" step="0.05" value="0.75">
+    </div>
+    
+    <div class="control-group">
+      <label>Bloom Threshold <span class="control-value" id="bloomThresholdValue">0.08</span></label>
+      <input type="range" id="bloomThreshold" min="0" max="1" step="0.01" value="0.08">
+    </div>
+    
+    <div class="control-group">
+      <label>Film Grain <span class="control-value" id="filmGrainValue">0.45</span></label>
+      <input type="range" id="filmGrain" min="0" max="1" step="0.05" value="0.45">
+    </div>
+    
+    <div class="control-group">
+      <label>Film Scanlines <span class="control-value" id="filmScanlinesValue">0.35</span></label>
+      <input type="range" id="filmScanlines" min="0" max="1" step="0.05" value="0.35">
+    </div>
+    
+    <div class="control-group">
+      <label>RGB Shift <span class="control-value" id="rgbShiftValue">0.0018</span></label>
+      <input type="range" id="rgbShift" min="0" max="0.01" step="0.0001" value="0.0018">
+    </div>
+    
+    <div class="control-group">
+      <label>Galaxy Rotation Speed <span class="control-value" id="rotationSpeedValue">0.0008</span></label>
+      <input type="range" id="rotationSpeed" min="0" max="0.005" step="0.0001" value="0.0008">
+    </div>
+    
+    <div class="control-group">
+      <label>Starfield Rotation <span class="control-value" id="starfieldSpeedValue">0.0002</span></label>
+      <input type="range" id="starfieldSpeed" min="0" max="0.002" step="0.0001" value="0.0002">
+    </div>
+    
+    <div class="control-buttons">
+      <button class="control-btn secondary" id="resetBtn">🔄 Reset</button>
+      <button class="control-btn" id="hideBtn">👁️ Ocultar</button>
+    </div>
+  </div>
+
+  <!-- Botón para mostrar/ocultar panel -->
+  <button class="toggle-panel-btn" id="togglePanelBtn">⚙️</button>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+    import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+    import { RGBShiftShader } from 'three/addons/shaders/RGBShiftShader.js';
+    import { FilmPass } from 'three/addons/postprocessing/FilmPass.js';
+
+    // ----- Escena base -----
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x000000, 0.02);
+
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 0.2, 12);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.rotateSpeed = 0.4;
+    controls.minDistance = 4;
+    controls.maxDistance = 28;
+    controls.target.set(0, 0, 0);
+    controls.update();
+
+    // Luces sutiles
+    scene.add(new THREE.AmbientLight(0x130025, 0.8));
+    const lightA = new THREE.DirectionalLight(0xff66cc, 0.35); lightA.position.set(5, 8, 7); scene.add(lightA);
+    const lightB = new THREE.DirectionalLight(0x00ffff, 0.25); lightB.position.set(-6, -9, -6); scene.add(lightB);
+
+    // ----- Post-procesado -----
+    const composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
+
+    const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.1, 0.6, 0.9);
+    bloom.threshold = 0.08; // recoge brillos finos
+    bloom.strength = 1.25;
+    bloom.radius = 0.75;
+    composer.addPass(bloom);
+
+    const film = new FilmPass(0.45, 0.35, 1024, false); // grano + scanlines sutiles
+    composer.addPass(film);
+
+    const rgbShift = new ShaderPass(RGBShiftShader);
+    rgbShift.uniforms.amount.value = 0.0018; // aberración cromática muy leve
+    composer.addPass(rgbShift);
+
+    // ----- Variables de control -----
+    let galaxyRotationSpeed = 0.0008;
+    let starfieldRotationSpeed = 0.0002;
+
+    // ----- Sistema de Audio -----
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    let isAudioEnabled = true;
+    let masterVolume = 0.7;
+    
+    // Nodos de audio
+    const masterGain = audioContext.createGain();
+    const backgroundGain = audioContext.createGain();
+    const effectsGain = audioContext.createGain();
+    
+    masterGain.connect(audioContext.destination);
+    backgroundGain.connect(masterGain);
+    effectsGain.connect(masterGain);
+    
+    // Configurar volúmenes
+    masterGain.gain.value = masterVolume;
+    backgroundGain.gain.value = 0.4;
+    effectsGain.gain.value = 0.6;
+    
+    // Sonido de fondo (generado proceduralmente)
+    function createBackgroundSound() {
+      const oscillator = audioContext.createOscillator();
+      const filter = audioContext.createBiquadFilter();
+      const gain = audioContext.createGain();
+      
+      oscillator.type = 'sine';
+      oscillator.frequency.value = 55; // Nota A1
+      
+      filter.type = 'lowpass';
+      filter.frequency.value = 200;
+      filter.Q.value = 0.5;
+      
+      gain.gain.value = 0.02;
+      
+      oscillator.connect(filter);
+      filter.connect(gain);
+      gain.connect(backgroundGain);
+      
+      // Modulación lenta
+      const lfo = audioContext.createOscillator();
+      const lfoGain = audioContext.createGain();
+      lfo.frequency.value = 0.1;
+      lfoGain.gain.value = 20;
+      lfo.connect(lfoGain);
+      lfoGain.connect(oscillator.frequency);
+      lfo.connect(lfoGain);
+      lfoGain.connect(filter.frequency);
+      
+      lfo.start();
+      oscillator.start();
+      
+      return { oscillator, filter, gain, lfo };
+    }
+    
+    // Efecto de sonido al arrastrar
+    function createDragSound(intensity) {
+      const oscillator = audioContext.createOscillator();
+      const filter = audioContext.createBiquadFilter();
+      const gain = audioContext.createGain();
+      const delay = audioContext.createDelay();
+      const feedback = audioContext.createGain();
+      
+      oscillator.type = 'sawtooth';
+      oscillator.frequency.value = 200 + intensity * 300;
+      
+      filter.type = 'lowpass';
+      filter.frequency.value = 800 + intensity * 400;
+      filter.Q.value = 2;
+      
+      gain.gain.value = 0.1 * intensity;
+      gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
+      
+      delay.delayTime.value = 0.1;
+      feedback.gain.value = 0.3;
+      
+      oscillator.connect(filter);
+      filter.connect(gain);
+      gain.connect(delay);
+      delay.connect(feedback);
+      feedback.connect(delay);
+      delay.connect(effectsGain);
+      
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + 0.3);
+      
+      return { oscillator, filter, gain, delay, feedback };
+    }
+    
+    // Sonido de estrellas
+    function createStarSound() {
+      const oscillator = audioContext.createOscillator();
+      const filter = audioContext.createBiquadFilter();
+      const gain = audioContext.createGain();
+      
+      oscillator.type = 'sine';
+      oscillator.frequency.value = 800 + Math.random() * 400;
+      
+      filter.type = 'bandpass';
+      filter.frequency.value = oscillator.frequency.value;
+      filter.Q.value = 8;
+      
+      gain.gain.value = 0.05;
+      gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.2);
+      
+      oscillator.connect(filter);
+      filter.connect(gain);
+      gain.connect(effectsGain);
+      
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + 0.2);
+      
+      return { oscillator, filter, gain };
+    }
+    
+    // Iniciar sonido de fondo
+    let backgroundSound;
+    function startBackgroundAudio() {
+      if (isAudioEnabled && !backgroundSound) {
+        backgroundSound = createBackgroundSound();
+      }
+    }
+    
+    // Detener sonido de fondo
+    function stopBackgroundAudio() {
+      if (backgroundSound) {
+        backgroundSound.oscillator.stop();
+        backgroundSound.lfo.stop();
+        backgroundSound = null;
+      }
+    }
+    
+    // Función para activar/desactivar audio
+    function toggleAudio() {
+      isAudioEnabled = !isAudioEnabled;
+      const audioBtn = document.getElementById('audioToggle');
+      
+      if (isAudioEnabled) {
+        audioBtn.textContent = '🔊';
+        audioBtn.classList.remove('muted');
+        startBackgroundAudio();
+        audioContext.resume();
+      } else {
+        audioBtn.textContent = '🔇';
+        audioBtn.classList.add('muted');
+        stopBackgroundAudio();
+      }
+    }
+    
+    // Función para cambiar volumen
+    function changeVolume(value) {
+      masterVolume = value;
+      masterGain.gain.value = masterVolume;
+    }
+
+    // ----- Utilidades -----
+    const clock = new THREE.Clock();
+    const tmpVec3 = new THREE.Vector3();
+
+    function randn() { // Box–Muller
+      let u = 0, v = 0;
+      while (u === 0) u = Math.random();
+      while (v === 0) v = Math.random();
+      return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+    }
+
+    function createSpriteTexture(size = 128) {
+      const c = document.createElement('canvas');
+      c.width = c.height = size;
+      const ctx = c.getContext('2d');
+      const g = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+      g.addColorStop(0.0, 'rgba(255,255,255,1)');
+      g.addColorStop(0.2, 'rgba(255,255,255,0.85)');
+      g.addColorStop(0.6, 'rgba(255,255,255,0.15)');
+      g.addColorStop(1.0, 'rgba(255,255,255,0)');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, size, size);
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.minFilter = THREE.LinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      return tex;
+    }
+
+    // ----- Galaxy ShaderMaterial (puntos redondos + twinkle + lens) -----
+    const galaxyVertex = /* glsl */`
+      attribute float aSize;
+      attribute float aTwinkle;
+      attribute vec3 aColor;
+      uniform float uTime;
+      uniform float uSizeBase;
+      uniform float uPixelRatio;
+      uniform vec3 uPointer; // en espacio de mundo
+      uniform float uPointerStrength;
+      varying vec3 vColor;
+      varying float vTwinkle;
+      varying float vDistToPointer;
+      void main() {
+        vec3 pos = position;
+        float radius = length(pos.xy);
+        float angle = atan(pos.y, pos.x);
+        // sutil deriva de espiral viva
+        float swirl = 0.06 * sin(uTime * 0.15 + radius * 2.3);
+        angle += swirl;
+        pos.x = cos(angle) * radius;
+        pos.y = sin(angle) * radius;
+
+        // "lente gravitacional" alrededor del puntero
+        vec3 toPtr = uPointer - pos;
+        float d = length(toPtr) + 1e-3;
+        float lens = uPointerStrength * 0.02 / (d * d); // caída ~1/r^2
+        pos += toPtr * lens;
+
+        vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+        gl_Position = projectionMatrix * mvPosition;
+
+        float size = aSize * uSizeBase * uPixelRatio / max(1.0, -mvPosition.z);
+        size *= (1.0 + clamp(0.6 / (d + 0.05), 0.0, 1.8));
+        gl_PointSize = size;
+
+        vColor = aColor;
+        vTwinkle = aTwinkle;
+        vDistToPointer = d;
+      }
+    `;
+
+    const galaxyFragment = /* glsl */`
+      precision highp float;
+      varying vec3 vColor;
+      varying float vTwinkle;
+      varying float vDistToPointer;
+      uniform float uTime;
+      void main(){
+        // forma circular suave
+        vec2 uv = gl_PointCoord - 0.5;
+        float d = length(uv);
+        float core = smoothstep(0.5, 0.0, d);
+        float halo = smoothstep(0.5, 0.2, d) * (1.0 - smoothstep(0.25, 0.5, d));
+
+        // titileo
+        float flicker = pow(abs(sin(uTime * (2.0 + vTwinkle) + vTwinkle * 10.0)), 8.0);
+        float pointerBoost = clamp(0.7 / (vDistToPointer + 0.06), 0.0, 2.0);
+
+        vec3 color = vColor * (1.0 + 0.85 * flicker + 0.45 * pointerBoost);
+        color *= 1.0 + 0.12 * (0.5 - d);
+
+        float alpha = core * (0.75 + 0.25 * flicker);
+        alpha += halo * 0.15;
+        if(alpha < 0.01) discard;
+        gl_FragColor = vec4(color, alpha);
+      }
+    `;
+
+    // ----- Generación procedural de galaxia -----
+    function generateGalaxy({
+      count = 52000,
+      arms = 4,
+      radius = 10,
+      coreRadius = 1.2,
+      armSpread = 0.5,    // dispersión lateral de brazos
+      twist = 1.6,        // cuánto gira la espiral (rad/unidad de radio)
+      thickness = 0.28,   // grosor vertical del disco
+      halo = 0.18,        // proporción de estrellas en halo
+      core = 0.16         // proporción de estrellas en bulbo
+    } = {}) {
+      const positions = new Float32Array(count * 3);
+      const colors = new Float32Array(count * 3);
+      const sizes = new Float32Array(count);
+      const twinkles = new Float32Array(count);
+
+      const coreCount = Math.floor(count * core);
+      const haloCount = Math.floor(count * halo);
+      const diskCount = count - coreCount - haloCount;
+
+      const paletteCore = [ new THREE.Color('#ffd7a5'), new THREE.Color('#ff9fbf') ];
+      const paletteDisk = [ new THREE.Color('#ff66cc'), new THREE.Color('#7ec9ff'), new THREE.Color('#39ffb6') ];
+      const paletteHalo = [ new THREE.Color('#bdc7ff'), new THREE.Color('#ffffff') ];
+
+      let i = 0;
+
+      // Bulbo central (cálido)
+      for (let n = 0; n < coreCount; n++, i++) {
+        const r = Math.abs(randn()) * coreRadius * 0.9;
+        const a = Math.random() * Math.PI * 2;
+        const z = randn() * thickness * 0.7;
+        positions[i*3+0] = Math.cos(a) * r;
+        positions[i*3+1] = Math.sin(a) * r;
+        positions[i*3+2] = z;
+        const c = paletteCore[Math.floor(Math.random()*paletteCore.length)].clone().multiplyScalar(1.2);
+        colors.set([c.r, c.g, c.b], i*3);
+        sizes[i] = 3.0 + Math.random() * 3.0;
+        twinkles[i] = 0.8 + Math.random() * 1.6;
+      }
+
+      // Disco con brazos espirales
+      for (let n = 0; n < diskCount; n++, i++) {
+        const arm = Math.floor(Math.random() * arms);
+        const r = Math.pow(Math.random(), 0.55) * (radius - coreRadius) + coreRadius; // más denso hacia el centro
+        const baseAngle = arm * (Math.PI * 2 / arms) + r * twist;
+        const offset = (randn() * armSpread) / Math.pow(r / radius + 0.15, 0.35); // más estrecho cerca del centro
+        const a = baseAngle + offset;
+        const z = randn() * thickness * (0.35 + 0.65 * (r / radius));
+        positions[i*3+0] = Math.cos(a) * r;
+        positions[i*3+1] = Math.sin(a) * r;
+        positions[i*3+2] = z;
+        const t = r / radius;
+        const from = paletteDisk[0].clone().lerp(paletteDisk[1], t * 0.7);
+        const to = paletteDisk[2];
+        const c = from.lerp(to, Math.pow(t, 1.2) * 0.6);
+        colors.set([c.r, c.g, c.b], i*3);
+        sizes[i] = 1.8 + Math.random() * 2.2; // discos más pequeños que el bulbo
+        twinkles[i] = Math.random() * 2.5 + 0.5;
+      }
+
+      // Halo esférico
+      for (let n = 0; n < haloCount; n++, i++) {
+        const rr = radius * (1.0 + Math.random() * 0.9);
+        const theta = Math.acos(1 - 2 * Math.random());
+        const phi = Math.random() * Math.PI * 2;
+        positions[i*3+0] = rr * Math.sin(theta) * Math.cos(phi);
+        positions[i*3+1] = rr * Math.sin(theta) * Math.sin(phi);
+        positions[i*3+2] = rr * Math.cos(theta) * 0.45; // halo algo achatado
+        const c = paletteHalo[Math.floor(Math.random()*paletteHalo.length)].clone().multiplyScalar(0.9);
+        colors.set([c.r, c.g, c.b], i*3);
+        sizes[i] = 1.2 + Math.random() * 1.6;
+        twinkles[i] = Math.random() * 1.5 + 0.3;
+      }
+
+      const geom = new THREE.BufferGeometry();
+      geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geom.setAttribute('aColor', new THREE.BufferAttribute(colors, 3));
+      geom.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
+      geom.setAttribute('aTwinkle', new THREE.BufferAttribute(twinkles, 1));
+      return geom;
+    }
+
+    // ----- Material y malla de la galaxia -----
+    const galaxyGeom = generateGalaxy({
+      count: (window.innerWidth * window.innerHeight > 1_000_000) ? 70000 : 42000,
+      arms: 4, radius: 11.5, coreRadius: 1.35, armSpread: 0.55, twist: 1.7, thickness: 0.3, halo: 0.18, core: 0.16
+    });
+
+    const galaxyMat = new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: { value: 0 },
+        uSizeBase: { value: 6.0 },
+        uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) },
+        uPointer: { value: new THREE.Vector3(0, 0, 0) },
+        uPointerStrength: { value: 0.0 }
+      },
+      vertexShader: galaxyVertex,
+      fragmentShader: galaxyFragment,
+      blending: THREE.AdditiveBlending,
+      transparent: true,
+      depthWrite: false
+    });
+
+    const galaxy = new THREE.Points(galaxyGeom, galaxyMat);
+    scene.add(galaxy);
+
+    // ----- Campo estelar de fondo (con sprite de canvas) -----
+    const bgTex = createSpriteTexture(128);
+    const bgCount = 2400;
+    const bgPos = new Float32Array(bgCount * 3);
+    for (let i = 0; i < bgCount; i++) {
+      const r = 120 + Math.random() * 120;
+      const theta = Math.acos(1 - 2 * Math.random());
+      const phi = Math.random() * Math.PI * 2;
+      bgPos[i*3+0] = r * Math.sin(theta) * Math.cos(phi);
+      bgPos[i*3+1] = r * Math.sin(theta) * Math.sin(phi);
+      bgPos[i*3+2] = r * Math.cos(theta);
+    }
+    const bgGeom = new THREE.BufferGeometry();
+    bgGeom.setAttribute('position', new THREE.BufferAttribute(bgPos, 3));
+    const bgMat = new THREE.PointsMaterial({
+      size: 1.5,
+      transparent: true,
+      opacity: 0.7,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      map: bgTex,
+      sizeAttenuation: true
+    });
+    const starfield = new THREE.Points(bgGeom, bgMat);
+    scene.add(starfield);
+
+    // ----- Interacción con el puntero: proyección a plano Z=0 -----
+    const raycaster = new THREE.Raycaster();
+    const ndc = new THREE.Vector2();
+    const planeZ = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0); // z=0
+    const pointerWorld = new THREE.Vector3(0, 0, 0);
+    let lastPointer = new THREE.Vector2();
+    let pointerStrengthTarget = 0.0;
+
+    function updatePointer(clientX, clientY) {
+      ndc.x = (clientX / window.innerWidth) * 2 - 1;
+      ndc.y = -(clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(ndc, camera);
+      raycaster.ray.intersectPlane(planeZ, pointerWorld);
+      galaxyMat.uniforms.uPointer.value.copy(pointerWorld);
+
+      // Fuerza basada en velocidad del movimiento
+      const dx = (clientX - lastPointer.x);
+      const dy = (clientY - lastPointer.y);
+      const v = Math.sqrt(dx*dx + dy*dy) / Math.max(window.innerWidth, window.innerHeight);
+      pointerStrengthTarget = THREE.MathUtils.clamp(v * 22.0, 0, 1.8);
+      lastPointer.set(clientX, clientY);
+
+      // Efectos de sonido al arrastrar
+      if (isAudioEnabled && v > 0.01) {
+        const intensity = Math.min(v * 5, 1.0);
+        createDragSound(intensity);
+        
+        // Sonido de estrellas ocasionales
+        if (Math.random() < 0.1) {
+          createStarSound();
+        }
+      }
+    }
+
+    window.addEventListener('mousemove', (e) => updatePointer(e.clientX, e.clientY));
+    window.addEventListener('touchmove', (e) => {
+      const t = e.touches[0]; if (!t) return; updatePointer(t.clientX, t.clientY);
+    }, { passive: true });
+
+    // Centrar fuerza al iniciar
+    updatePointer(window.innerWidth * 0.5, window.innerHeight * 0.5);
+
+    // ----- Controles del Panel -----
+    const controlPanel = document.getElementById('controlPanel');
+    const togglePanelBtn = document.getElementById('togglePanelBtn');
+    const hideBtn = document.getElementById('hideBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    // Valores por defecto
+    const defaultValues = {
+      bloomStrength: 1.25,
+      bloomRadius: 0.75,
+      bloomThreshold: 0.08,
+      filmGrain: 0.45,
+      filmScanlines: 0.35,
+      rgbShift: 0.0018,
+      rotationSpeed: 0.0008,
+      starfieldSpeed: 0.0002
+    };
+
+    // Función para actualizar valores del panel
+    function updateControlValue(id, value) {
+      const valueElement = document.getElementById(id + 'Value');
+      if (valueElement) {
+        valueElement.textContent = value.toFixed(4);
+      }
+    }
+
+    // Función para resetear valores
+    function resetToDefaults() {
+      bloom.strength = defaultValues.bloomStrength;
+      bloom.radius = defaultValues.bloomRadius;
+      bloom.threshold = defaultValues.bloomThreshold;
+      film.uniforms.grayscale.value = defaultValues.filmGrain;
+      film.uniforms.nIntensity.value = defaultValues.filmScanlines;
+      rgbShift.uniforms.amount.value = defaultValues.rgbShift;
+      galaxyRotationSpeed = defaultValues.rotationSpeed;
+      starfieldRotationSpeed = defaultValues.starfieldSpeed;
+
+      // Actualizar sliders
+      document.getElementById('bloomStrength').value = defaultValues.bloomStrength;
+      document.getElementById('bloomRadius').value = defaultValues.bloomRadius;
+      document.getElementById('bloomThreshold').value = defaultValues.bloomThreshold;
+      document.getElementById('filmGrain').value = defaultValues.filmGrain;
+      document.getElementById('filmScanlines').value = defaultValues.filmScanlines;
+      document.getElementById('rgbShift').value = defaultValues.rgbShift;
+      document.getElementById('rotationSpeed').value = defaultValues.rotationSpeed;
+      document.getElementById('starfieldSpeed').value = defaultValues.starfieldSpeed;
+
+      // Actualizar valores mostrados
+      Object.keys(defaultValues).forEach(key => {
+        updateControlValue(key, defaultValues[key]);
+      });
+    }
+
+    // Event listeners para los controles
+    document.getElementById('bloomStrength').addEventListener('input', (e) => {
+      const value = parseFloat(e.target.value);
+      bloom.strength = value;
+      updateControlValue('bloomStrength', value);
+    });
+
+    document.getElementById('bloomRadius').addEventListener('input', (e) => {
+      const value = parseFloat(e.target.value);
+      bloom.radius = value;
+      updateControlValue('bloomRadius', value);
+    });
+
+    document.getElementById('bloomThreshold').addEventListener('input', (e) => {
+      const value = parseFloat(e.target.value);
+      bloom.threshold = value;
+      updateControlValue('bloomThreshold', value);
+    });
+
+    document.getElementById('filmGrain').addEventListener('input', (e) => {
+      const value = parseFloat(e.target.value);
+      film.uniforms.grayscale.value = value;
+      updateControlValue('filmGrain', value);
+    });
+
+    document.getElementById('filmScanlines').addEventListener('input', (e) => {
+      const value = parseFloat(e.target.value);
+      film.uniforms.nIntensity.value = value;
+      updateControlValue('filmScanlines', value);
+    });
+
+    document.getElementById('rgbShift').addEventListener('input', (e) => {
+      const value = parseFloat(e.target.value);
+      rgbShift.uniforms.amount.value = value;
+      updateControlValue('rgbShift', value);
+    });
+
+    document.getElementById('rotationSpeed').addEventListener('input', (e) => {
+      const value = parseFloat(e.target.value);
+      galaxyRotationSpeed = value;
+      updateControlValue('rotationSpeed', value);
+    });
+
+    document.getElementById('starfieldSpeed').addEventListener('input', (e) => {
+      const value = parseFloat(e.target.value);
+      starfieldRotationSpeed = value;
+      updateControlValue('starfieldSpeed', value);
+    });
+
+    // Botón de reset
+    resetBtn.addEventListener('click', resetToDefaults);
+
+    // Botón de ocultar
+    hideBtn.addEventListener('click', () => {
+      controlPanel.classList.add('hidden');
+      togglePanelBtn.classList.add('hidden');
+      togglePanelBtn.textContent = '👁️';
+    });
+
+    // Botón de mostrar/ocultar panel
+    togglePanelBtn.addEventListener('click', () => {
+      if (controlPanel.classList.contains('hidden')) {
+        controlPanel.classList.remove('hidden');
+        togglePanelBtn.classList.remove('hidden');
+        togglePanelBtn.textContent = '⚙️';
+      } else {
+        controlPanel.classList.add('hidden');
+        togglePanelBtn.classList.add('hidden');
+        togglePanelBtn.textContent = '👁️';
+      }
+    });
+
+    // ----- Controles de Audio -----
+    const audioToggle = document.getElementById('audioToggle');
+    const volumeControl = document.getElementById('volumeControl');
+    
+    audioToggle.addEventListener('click', toggleAudio);
+    volumeControl.addEventListener('input', (e) => changeVolume(parseFloat(e.target.value)));
+    
+    // Iniciar audio al hacer clic (requerido por navegadores)
+    document.addEventListener('click', () => {
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+      if (isAudioEnabled && !backgroundSound) {
+        startBackgroundAudio();
+      }
+    }, { once: true });
+
+    // ----- Animación -----
+    function animate() {
+      requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+
+      // Relajar fuerza del puntero suavemente
+      galaxyMat.uniforms.uPointerStrength.value = THREE.MathUtils.damp(
+        galaxyMat.uniforms.uPointerStrength.value,
+        pointerStrengthTarget,
+        3.5, clock.getDelta()
+      );
+      pointerStrengthTarget *= 0.985; // decae con el tiempo
+
+      galaxyMat.uniforms.uTime.value = t;
+
+      // Rotación sutil para sensación de vida
+      galaxy.rotation.z += galaxyRotationSpeed;
+      starfield.rotation.y += starfieldRotationSpeed;
+
+      controls.update();
+      composer.render();
+    }
+
+    // ----- Resize -----
+    window.addEventListener('resize', () => {
+      const w = window.innerWidth, h = window.innerHeight;
+      camera.aspect = w / h; camera.updateProjectionMatrix();
+      renderer.setSize(w, h); composer.setSize(w, h);
+      galaxyMat.uniforms.uPixelRatio.value = Math.min(window.devicePixelRatio, 2);
+    });
+
+    animate();
+
+  </script>
+</body>
+</html>
