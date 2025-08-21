@@ -1,0 +1,1918 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Historial 3D con Three.js y GSAP (HUD)</title>
+  <style>
+    :root {
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      --bg-primary: #0a1a0a;
+      --text-primary: #e8e8ea;
+      --accent-green: #6bc06b;
+      --accent-green-light: #8fef8f;
+      --accent-green-dark: #4a8a4a;
+      --panel-bg: rgba(10, 26, 10, 0.3);
+      --panel-border: rgba(111, 239, 111, 0.15);
+      --section-bg: rgba(26, 46, 26, 0.2);
+      --section-border: rgba(111, 239, 111, 0.1);
+      --btn-bg: #1a1d23;
+      --btn-hover: #1f232a;
+      --shadow-light: rgba(255, 255, 255, 0.06);
+      --shadow-dark: rgba(0, 0, 0, 0.35);
+      --transition-fast: 0.2s ease;
+      --transition-medium: 0.3s ease;
+      --border-radius-sm: 6px;
+      --border-radius-md: 8px;
+      --border-radius-lg: 10px;
+      --border-radius-xl: 12px;
+      --border-radius-2xl: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow: hidden;
+    }
+
+    #bg-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      outline: none;
+      z-index: 0;
+    }
+
+    .ui-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 20px 30px;
+      z-index: 1;
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .header {
+      width: 100%;
+      max-width: 1200px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      pointer-events: auto;
+    }
+
+    .title {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+
+    .title h1 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      color: #ffffff;
+    }
+
+    .title .sub {
+      opacity: 0.7;
+      font-size: 12px;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      appearance: none;
+      border: 0;
+      outline: none;
+      padding: 8px 12px;
+      border-radius: var(--border-radius-lg);
+      background: var(--btn-bg);
+      color: var(--text-primary);
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 0.2px;
+      cursor: pointer;
+      transition: transform var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
+      box-shadow: 0 0 0 1px var(--shadow-light) inset, 0 6px 16px var(--shadow-dark);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      background: var(--btn-hover);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .tooltip {
+      position: fixed;
+      pointer-events: none;
+      background: #1a1e25;
+      color: var(--text-primary);
+      border-radius: var(--border-radius-lg);
+      padding: 8px 10px;
+      font-size: 12px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45), inset 0 0 0 1px var(--shadow-light);
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.14s ease, transform 0.14s ease;
+      z-index: 9999;
+      white-space: nowrap;
+    }
+
+    .tooltip.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+         /* Panel de Control */
+     .control-panel {
+       position: fixed;
+       bottom: 20px;
+       left: 20px;
+       right: 20px;
+       background: var(--panel-bg);
+       backdrop-filter: blur(15px);
+       border: 1px solid var(--panel-border);
+       border-radius: var(--border-radius-2xl);
+       padding: 25px 35px;
+       z-index: 10;
+       transform: translateY(calc(100% + 40px)); /* Oculto por defecto */
+       transition: transform var(--transition-medium);
+       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+     }
+
+     .control-panel.collapsed {
+       transform: translateY(calc(100% + 40px));
+     }
+
+     .control-panel.visible {
+       transform: translateY(0);
+     }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .panel-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent-green);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .toggle-panel {
+      background: rgba(111, 239, 111, 0.1);
+      border: 1px solid rgba(111, 239, 111, 0.25);
+      color: var(--accent-green);
+      padding: 8px 16px;
+      border-radius: var(--border-radius-md);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      backdrop-filter: blur(5px);
+      font-weight: 500;
+    }
+
+    .toggle-panel:hover {
+      background: rgba(111, 239, 111, 0.2);
+      border-color: rgba(111, 239, 111, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .control-sections {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .control-section {
+      background: var(--section-bg);
+      border: 1px solid var(--section-border);
+      border-radius: var(--border-radius-xl);
+      padding: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-green-dark);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .color-palette {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+
+    .color-option {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all var(--transition-fast);
+      position: relative;
+    }
+
+    .color-option:hover {
+      transform: scale(1.1);
+    }
+
+    .color-option.active {
+      border-color: #ffffff;
+      box-shadow: 0 0 0 2px rgba(111, 239, 111, 0.5);
+    }
+
+    .animation-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .control-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .control-label {
+      font-size: 11px;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .control-input {
+      background: rgba(26, 46, 26, 0.3);
+      border: 1px solid rgba(111, 239, 111, 0.2);
+      border-radius: var(--border-radius-sm);
+      color: var(--text-primary);
+      padding: 6px 10px;
+      font-size: 11px;
+      width: 60px;
+      text-align: center;
+      backdrop-filter: blur(5px);
+    }
+
+    .control-input:focus {
+      outline: none;
+      border-color: rgba(111, 239, 111, 0.4);
+      background: rgba(26, 46, 26, 0.4);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .control-btn {
+      background: rgba(111, 239, 111, 0.08);
+      border: 1px solid rgba(111, 239, 111, 0.2);
+      color: var(--accent-green);
+      padding: 8px 12px;
+      border-radius: var(--border-radius-sm);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font-weight: 500;
+      backdrop-filter: blur(5px);
+    }
+
+    .control-btn:hover {
+      background: rgba(111, 239, 111, 0.15);
+      border-color: rgba(111, 239, 111, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .control-btn.active {
+      background: rgba(111, 239, 111, 0.25);
+      border-color: rgba(111, 239, 111, 0.4);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(111, 239, 111, 0.2);
+    }
+
+    /* Botón flotante */
+         .show-panel-btn {
+       position: fixed;
+       bottom: 20px;
+       right: 20px;
+       background: rgba(111, 239, 111, 0.15);
+       border: 1px solid rgba(111, 239, 111, 0.3);
+       color: var(--accent-green);
+       padding: 12px 16px;
+       border-radius: var(--border-radius-xl);
+       font-size: 12px;
+       cursor: pointer;
+       transition: all var(--transition-medium);
+       backdrop-filter: blur(10px);
+       font-weight: 600;
+       text-transform: uppercase;
+       letter-spacing: 0.5px;
+       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+       z-index: 5;
+       opacity: 1; /* Visible por defecto */
+       transform: translateY(0); /* Posición normal por defecto */
+       pointer-events: auto; /* Interactivo por defecto */
+     }
+
+     .show-panel-btn.visible {
+       opacity: 1;
+       transform: translateY(0);
+       pointer-events: auto;
+     }
+
+    .show-panel-btn:hover {
+      background: rgba(111, 239, 111, 0.25);
+      border-color: rgba(111, 239, 111, 0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .show-panel-btn:active {
+      transform: translateY(0);
+    }
+
+    /* Panel de Aviso Móvil */
+    .mobile-warning-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.95);
+      backdrop-filter: blur(20px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.5s ease;
+    }
+
+    .mobile-warning-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .mobile-warning-panel {
+      background: linear-gradient(135deg, #1a2e1a 0%, #0a1a0a 100%);
+      border: 2px solid var(--accent-green);
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(111, 239, 111, 0.3);
+      transform: scale(0.8) translateY(30px);
+      transition: all 0.5s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mobile-warning-overlay.show .mobile-warning-panel {
+      transform: scale(1) translateY(0);
+    }
+
+    .mobile-warning-panel::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent-green), var(--accent-green-light), var(--accent-green));
+      animation: shimmer 2s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+      0%, 100% { transform: translateX(-100%); }
+      50% { transform: translateX(100%); }
+    }
+
+    .warning-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 20px;
+      background: radial-gradient(circle, rgba(111, 239, 111, 0.2) 0%, rgba(111, 239, 111, 0.1) 100%);
+      border: 3px solid var(--accent-green);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      color: var(--accent-green);
+      animation: pulse-warning 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-warning {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(111, 239, 111, 0.7); }
+      50% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(111, 239, 111, 0); }
+    }
+
+    .warning-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .warning-subtitle {
+      font-size: 16px;
+      color: var(--accent-green);
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    .warning-message {
+      font-size: 14px;
+      color: var(--text-primary);
+      line-height: 1.6;
+      margin-bottom: 25px;
+      opacity: 0.9;
+    }
+
+    .warning-features {
+      background: rgba(111, 239, 111, 0.1);
+      border: 1px solid rgba(111, 239, 111, 0.2);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 25px;
+      text-align: left;
+    }
+
+    .warning-features h4 {
+      font-size: 12px;
+      color: var(--accent-green);
+      margin: 0 0 10px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .warning-features ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .warning-features li {
+      font-size: 12px;
+      color: var(--text-primary);
+      margin-bottom: 5px;
+      padding-left: 20px;
+      position: relative;
+      opacity: 0.8;
+    }
+
+    .warning-features li::before {
+      content: '⚠️';
+      position: absolute;
+      left: 0;
+      top: 0;
+      font-size: 10px;
+    }
+
+    .accept-risks-btn {
+      background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-green-light) 100%);
+      border: none;
+      color: #000000;
+      padding: 15px 30px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 8px 25px rgba(111, 239, 111, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .accept-risks-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .accept-risks-btn:hover::before {
+      left: 100%;
+    }
+
+    .accept-risks-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 35px rgba(111, 239, 111, 0.6);
+    }
+
+    .accept-risks-btn:active {
+      transform: translateY(0);
+    }
+
+    .device-info {
+      font-size: 11px;
+      color: var(--accent-green-dark);
+      margin-top: 15px;
+      opacity: 0.7;
+    }
+
+    /* Ocultar panel en desktop */
+    @media (min-width: 768px) {
+      .mobile-warning-overlay {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Canvas para la escena de Three.js -->
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- Panel de Aviso Móvil -->
+  <div class="mobile-warning-overlay" id="mobileWarningOverlay">
+    <div class="mobile-warning-panel">
+      <div class="warning-icon">📱</div>
+      <h2 class="warning-title">Advertencia de Rendimiento</h2>
+      <p class="warning-subtitle">Esta aplicación está optimizada para PC</p>
+      <p class="warning-message">
+        Esta página web utiliza tecnologías avanzadas de gráficos 3D que pueden causar problemas de rendimiento en dispositivos móviles.
+      </p>
+      
+      <div class="warning-features">
+        <h4>Problemas potenciales:</h4>
+        <ul>
+          <li>Baja velocidad de fotogramas</li>
+          <li>Consumo excesivo de batería</li>
+          <li>Calentamiento del dispositivo</li>
+          <li>Experiencia de usuario degradada</li>
+        </ul>
+      </div>
+      
+      <button class="accept-risks-btn" id="acceptRisksBtn">
+        Acepto los Riesgos
+      </button>
+      
+      <div class="device-info">
+        Dispositivo: <span id="deviceInfo"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenedor para la UI de HTML flotante -->
+  <div class="ui-overlay">
+    <div class="header">
+      <div class="title">
+        <h1>Historial de Contribuciones 3D</h1>
+        <span class="sub" id="year-sub"></span>
+      </div>
+      <div class="controls">
+        <button class="btn" id="togglePlay" type="button">▶︎ Barrido de Energía</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tooltip" id="tooltip" role="tooltip" aria-hidden="true"></div>
+
+  <!-- Botón flotante para mostrar panel -->
+  <button class="show-panel-btn" id="showPanelBtn">Panel de Control</button>
+
+  <!-- Panel de Control Profesional -->
+  <div class="control-panel" id="controlPanel">
+         <div class="panel-header">
+       <div class="panel-title">Panel de Control</div>
+       <button class="toggle-panel" id="togglePanel">Mostrar</button>
+     </div>
+    
+    <div class="control-sections">
+      <!-- Paletas de Colores -->
+      <div class="control-section">
+        <div class="section-title">Paletas de Colores</div>
+        <div class="color-palette">
+          <div class="color-option active" data-palette="green" style="background: #6bc06b;"></div>
+          <div class="color-option" data-palette="blue" style="background: #4a90e2;"></div>
+          <div class="color-option" data-palette="purple" style="background: #9b59b6;"></div>
+          <div class="color-option" data-palette="orange" style="background: #e67e22;"></div>
+          <div class="color-option" data-palette="red" style="background: #e74c3c;"></div>
+          <div class="color-option" data-palette="cyan" style="background: #00d4aa;"></div>
+          <div class="color-option" data-palette="crystal" style="background: linear-gradient(45deg, #ffffff, #e8f4f8, #b3d9e6); border: 2px solid #95c9db;"></div>
+        </div>
+        <div class="control-row">
+          <span class="control-label">Intensidad:</span>
+          <input type="range" class="control-input" id="intensitySlider" min="0.5" max="3.0" step="0.1" value="1.0">
+        </div>
+      </div>
+      
+      <!-- Animaciones -->
+      <div class="control-section">
+        <div class="section-title">Animaciones</div>
+        <div class="animation-controls">
+          <div class="control-row">
+            <span class="control-label">Respiración:</span>
+            <div class="btn-group">
+              <button class="control-btn active" data-animation="breathing">ON</button>
+              <button class="control-btn" data-animation="breathing">OFF</button>
+            </div>
+          </div>
+          <div class="control-row">
+            <span class="control-label">Velocidad:</span>
+            <input type="range" class="control-input" id="breathingSpeed" min="0.5" max="3.0" step="0.1" value="1.0">
+          </div>
+          <div class="control-row">
+            <span class="control-label">Onda:</span>
+            <div class="btn-group">
+              <button class="control-btn" data-animation="wave">ON</button>
+              <button class="control-btn active" data-animation="wave">OFF</button>
+            </div>
+          </div>
+          <div class="control-row">
+            <span class="control-label">Pulso:</span>
+            <div class="btn-group">
+              <button class="control-btn" data-animation="pulse">ON</button>
+              <button class="control-btn active" data-animation="pulse">OFF</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Efectos Visuales -->
+      <div class="control-section">
+        <div class="section-title">Efectos Visuales</div>
+        <div class="animation-controls">
+          <div class="control-row">
+            <span class="control-label">Bloom:</span>
+            <div class="btn-group">
+              <button class="control-btn active" data-effect="bloom">ON</button>
+              <button class="control-btn" data-effect="bloom">OFF</button>
+            </div>
+          </div>
+          <div class="control-row">
+            <span class="control-label">Fuerza Bloom:</span>
+            <input type="range" class="control-input" id="bloomStrength" min="0.0" max="2.0" step="0.1" value="1.0">
+          </div>
+          <div class="control-row">
+            <span class="control-label">Rotación:</span>
+            <div class="btn-group">
+              <button class="control-btn" data-effect="rotation">ON</button>
+              <button class="control-btn active" data-effect="rotation">OFF</button>
+            </div>
+          </div>
+          <div class="control-row">
+            <span class="control-label">Velocidad Rot.:</span>
+            <input type="range" class="control-input" id="rotationSpeed" min="0.1" max="2.0" step="0.1" value="0.5">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Perspectivas 3D/4D -->
+      <div class="control-section">
+        <div class="section-title">Perspectivas 3D/4D</div>
+        <div class="animation-controls">
+          <div class="control-row">
+            <span class="control-label">Modo Cámara:</span>
+            <div class="btn-group">
+              <button class="control-btn active" data-perspective="2d">2D</button>
+              <button class="control-btn" data-perspective="3d">3D</button>
+              <button class="control-btn" data-perspective="4d">4D</button>
+            </div>
+          </div>
+          <div class="control-row">
+            <span class="control-label">Control Mouse:</span>
+            <div class="btn-group">
+              <button class="control-btn" data-control="mouse">ON</button>
+              <button class="control-btn active" data-control="mouse">OFF</button>
+            </div>
+          </div>
+          <div class="control-row">
+            <span class="control-label">Distancia:</span>
+            <input type="range" class="control-input" id="cameraDistance" min="15" max="60" step="1" value="30">
+          </div>
+          <div class="control-row">
+            <span class="control-label">FOV:</span>
+            <input type="range" class="control-input" id="cameraFOV" min="30" max="120" step="5" value="75">
+          </div>
+          <div class="control-row">
+            <span class="control-label">Inclinación X:</span>
+            <input type="range" class="control-input" id="cameraTiltX" min="-45" max="45" step="1" value="0">
+          </div>
+          <div class="control-row">
+            <span class="control-label">Inclinación Y:</span>
+            <input type="range" class="control-input" id="cameraTiltY" min="-45" max="45" step="1" value="0">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Librerías -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
+      }
+    }
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+    // ===== CONFIGURACIÓN Y CONSTANTES =====
+    const CONFIG = {
+      YEAR: new Date().getFullYear(),
+      CELL_SIZE: 1,
+      CELL_GAP: 0.3,
+      WEEKS: 53,
+      DAYS: 7,
+      CAMERA: {
+        DEFAULT_DISTANCE: 30,
+        DEFAULT_FOV: 75,
+        MIN_DISTANCE: 15,
+        MAX_DISTANCE: 60,
+        MIN_FOV: 30,
+        MAX_FOV: 120,
+        MIN_TILT: -45,
+        MAX_TILT: 45
+      },
+      ANIMATION: {
+        BREATHING_SPEED_RANGE: { min: 0.5, max: 3.0, default: 1.0 },
+        INTENSITY_RANGE: { min: 0.5, max: 3.0, default: 1.0 },
+        BLOOM_STRENGTH_RANGE: { min: 0.0, max: 2.0, default: 1.0 },
+        ROTATION_SPEED_RANGE: { min: 0.1, max: 2.0, default: 0.5 }
+      }
+    };
+
+    // Calcular valores derivados
+    const isLeap = (y) => ((y % 4 === 0 && y % 100 !== 0) || (y % 400 === 0));
+    const DAYS_IN_YEAR = isLeap(CONFIG.YEAR) ? 366 : 365;
+    const GRID_WIDTH = CONFIG.WEEKS * (CONFIG.CELL_SIZE + CONFIG.CELL_GAP);
+    const GRID_HEIGHT = CONFIG.DAYS * (CONFIG.CELL_SIZE + CONFIG.CELL_GAP);
+
+    // ===== PALETAS DE COLORES =====
+    const COLOR_PALETTES = {
+      green: [
+        new THREE.Color("#1a2e1a"), // Nivel 0
+        new THREE.Color("#2d5a2d"), // Nivel 1
+        new THREE.Color("#4a8a4a"), // Nivel 2
+        new THREE.Color("#6bc06b"), // Nivel 3
+        new THREE.Color("#8fef8f")  // Nivel 4
+      ],
+      blue: [
+        new THREE.Color("#1a1a2e"), // Nivel 0
+        new THREE.Color("#2d2d5a"), // Nivel 1
+        new THREE.Color("#4a4a8a"), // Nivel 2
+        new THREE.Color("#4a90e2"), // Nivel 3
+        new THREE.Color("#8f8fef")  // Nivel 4
+      ],
+      purple: [
+        new THREE.Color("#2e1a2e"), // Nivel 0
+        new THREE.Color("#5a2d5a"), // Nivel 1
+        new THREE.Color("#8a4a8a"), // Nivel 2
+        new THREE.Color("#9b59b6"), // Nivel 3
+        new THREE.Color("#ef8fef")  // Nivel 4
+      ],
+      orange: [
+        new THREE.Color("#2e1a1a"), // Nivel 0
+        new THREE.Color("#5a2d2d"), // Nivel 1
+        new THREE.Color("#8a4a4a"), // Nivel 2
+        new THREE.Color("#e67e22"), // Nivel 3
+        new THREE.Color("#ef8f8f")  // Nivel 4
+      ],
+      red: [
+        new THREE.Color("#2e1a1a"), // Nivel 0
+        new THREE.Color("#5a2d2d"), // Nivel 1
+        new THREE.Color("#8a4a4a"), // Nivel 2
+        new THREE.Color("#e74c3c"), // Nivel 3
+        new THREE.Color("#ef8f8f")  // Nivel 4
+      ],
+      cyan: [
+        new THREE.Color("#1a2e2e"), // Nivel 0
+        new THREE.Color("#2d5a5a"), // Nivel 1
+        new THREE.Color("#4a8a8a"), // Nivel 2
+        new THREE.Color("#00d4aa"), // Nivel 3
+        new THREE.Color("#8fefef")  // Nivel 4
+      ],
+      crystal: [
+        new THREE.Color("#ffffff"), // Nivel 0 - Cristal puro
+        new THREE.Color("#e8f4f8"), // Nivel 1 - Cristal azulado
+        new THREE.Color("#d1e9f1"), // Nivel 2 - Cristal turquesa
+        new THREE.Color("#b3d9e6"), // Nivel 3 - Cristal azul claro
+        new THREE.Color("#95c9db")  // Nivel 4 - Cristal azul medio
+      ]
+    };
+
+    const INTENSITY_LEVELS = [0.1, 0.8, 1.5, 1.8, 2.5];
+
+    // ===== ESTADO DE LA APLICACIÓN =====
+    const AppState = {
+      currentPalette: 'green',
+      currentIntensity: CONFIG.ANIMATION.INTENSITY_RANGE.default,
+      breathingEnabled: true,
+      waveEnabled: false,
+      pulseEnabled: false,
+      bloomEnabled: true,
+      rotationEnabled: false,
+      breathingSpeed: CONFIG.ANIMATION.BREATHING_SPEED_RANGE.default,
+      bloomStrength: CONFIG.ANIMATION.BLOOM_STRENGTH_RANGE.default,
+      rotationSpeed: CONFIG.ANIMATION.ROTATION_SPEED_RANGE.default,
+      currentPerspective: '2d',
+      mouseControlEnabled: false,
+      cameraDistance: CONFIG.CAMERA.DEFAULT_DISTANCE,
+      cameraFOV: CONFIG.CAMERA.DEFAULT_FOV,
+      cameraTiltX: 0,
+      cameraTiltY: 0,
+      isMouseDragging: false,
+      lastMousePosition: { x: 0, y: 0 }
+    };
+
+    // ===== ELEMENTOS DOM =====
+    const DOM = {
+      yearSub: document.getElementById('year-sub'),
+      togglePlayBtn: document.getElementById('togglePlay'),
+      tooltip: document.getElementById('tooltip'),
+      controlPanel: document.getElementById('controlPanel'),
+      togglePanelBtn: document.getElementById('togglePanel'),
+      showPanelBtn: document.getElementById('showPanelBtn'),
+      colorOptions: document.querySelectorAll('.color-option'),
+      intensitySlider: document.getElementById('intensitySlider'),
+      breathingSpeedSlider: document.getElementById('breathingSpeed'),
+      bloomStrengthSlider: document.getElementById('bloomStrength'),
+      rotationSpeedSlider: document.getElementById('rotationSpeed'),
+      cameraDistanceSlider: document.getElementById('cameraDistance'),
+      cameraFOVSlider: document.getElementById('cameraFOV'),
+      cameraTiltXSlider: document.getElementById('cameraTiltX'),
+      cameraTiltYSlider: document.getElementById('cameraTiltY'),
+      mobileWarningOverlay: document.getElementById('mobileWarningOverlay'),
+      acceptRisksBtn: document.getElementById('acceptRisksBtn'),
+      deviceInfo: document.getElementById('deviceInfo')
+    };
+
+    // Inicializar elementos UI
+    DOM.yearSub.textContent = CONFIG.YEAR;
+
+    // ===== DETECCIÓN DE DISPOSITIVOS MÓVILES =====
+    const DeviceDetector = {
+      isMobile() {
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
+        return mobileRegex.test(userAgent.toLowerCase());
+      },
+
+      isTablet() {
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        const tabletRegex = /ipad|android(?!.*mobile)|tablet/i;
+        return tabletRegex.test(userAgent.toLowerCase());
+      },
+
+      isLowEndDevice() {
+        // Detectar dispositivos de gama baja basándose en características del hardware
+        const memory = navigator.deviceMemory || 0;
+        const cores = navigator.hardwareConcurrency || 0;
+        const connection = navigator.connection;
+        
+        return memory < 4 || cores < 4 || (connection && connection.effectiveType === 'slow-2g');
+      },
+
+      getDeviceInfo() {
+        const userAgent = navigator.userAgent;
+        const platform = navigator.platform;
+        const vendor = navigator.vendor;
+        
+        if (this.isMobile()) {
+          if (userAgent.includes('Android')) {
+            return 'Android Móvil';
+          } else if (userAgent.includes('iPhone')) {
+            return 'iPhone';
+          } else if (userAgent.includes('iPad')) {
+            return 'iPad';
+          } else {
+            return 'Dispositivo Móvil';
+          }
+        } else if (this.isTablet()) {
+          return 'Tablet';
+        } else {
+          return 'PC/Desktop';
+        }
+      },
+
+      getScreenInfo() {
+        return {
+          width: window.screen.width,
+          height: window.screen.height,
+          pixelRatio: window.devicePixelRatio,
+          orientation: window.screen.orientation ? window.screen.orientation.type : 'unknown',
+          viewport: {
+            width: window.innerWidth,
+            height: window.innerHeight
+          }
+        };
+      },
+
+      getPerformanceInfo() {
+        const memory = navigator.deviceMemory || 'Desconocido';
+        const cores = navigator.hardwareConcurrency || 'Desconocido';
+        const connection = navigator.connection;
+        
+        let connectionInfo = 'Desconocida';
+        if (connection) {
+          connectionInfo = `${connection.effectiveType || 'Desconocida'} (${connection.downlink || '?'} Mbps)`;
+        }
+        
+        return {
+          memory: `${memory} GB`,
+          cores: cores,
+          connection: connectionInfo
+        };
+      }
+    };
+
+    // ===== GESTIÓN DEL PANEL DE AVISO MÓVIL =====
+    const MobileWarningManager = {
+      init() {
+        if (DeviceDetector.isMobile() || DeviceDetector.isTablet()) {
+          this.showWarning();
+          this.setupEventListeners();
+        } else {
+          // En PC, ocultar el panel y continuar normalmente
+          this.hideWarning();
+        }
+      },
+
+      showWarning() {
+        // Mostrar información del dispositivo
+        const deviceInfo = DeviceDetector.getDeviceInfo();
+        const screenInfo = DeviceDetector.getScreenInfo();
+        const performanceInfo = DeviceDetector.getPerformanceInfo();
+        const isLowEnd = DeviceDetector.isLowEndDevice();
+        
+        // Crear información detallada del dispositivo
+        let deviceDetails = `${deviceInfo} (${screenInfo.width}x${screenInfo.height})`;
+        if (performanceInfo.memory !== 'Desconocido') {
+          deviceDetails += ` | ${performanceInfo.memory} RAM`;
+        }
+        if (performanceInfo.cores !== 'Desconocido') {
+          deviceDetails += ` | ${performanceInfo.cores} núcleos`;
+        }
+        
+        DOM.deviceInfo.textContent = deviceDetails;
+        
+        // Actualizar mensaje de advertencia según el dispositivo
+        if (isLowEnd) {
+          const warningMessage = DOM.mobileWarningOverlay.querySelector('.warning-message');
+          warningMessage.innerHTML = `
+            <strong>⚠️ ADVERTENCIA CRÍTICA:</strong><br>
+            Este dispositivo tiene especificaciones limitadas que pueden causar <strong>problemas graves de rendimiento</strong>.
+            Se recomienda encarecidamente usar una computadora de escritorio.
+          `;
+          
+          // Cambiar color del botón para dispositivos de gama baja
+          DOM.acceptRisksBtn.style.background = 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)';
+          DOM.acceptRisksBtn.style.color = '#ffffff';
+          DOM.acceptRisksBtn.textContent = '⚠️ Acepto los Riesgos (NO RECOMENDADO)';
+        }
+        
+        // Mostrar panel con animación
+        setTimeout(() => {
+          DOM.mobileWarningOverlay.classList.add('show');
+        }, 100);
+      },
+
+      hideWarning() {
+        DOM.mobileWarningOverlay.style.display = 'none';
+      },
+
+      setupEventListeners() {
+        DOM.acceptRisksBtn.addEventListener('click', () => {
+          this.acceptRisks();
+        });
+
+        // Prevenir scroll y interacciones mientras el panel esté visible
+        document.body.style.overflow = 'hidden';
+        document.body.style.touchAction = 'none';
+        
+        // Detectar cambios de orientación
+        if (window.screen && window.screen.orientation) {
+          window.screen.orientation.addEventListener('change', () => {
+            this.handleOrientationChange();
+          });
+        }
+        
+        // Detectar cambios de tamaño de ventana
+        window.addEventListener('resize', () => {
+          this.handleResize();
+        });
+      },
+
+      handleOrientationChange() {
+        // Ajustar el panel según la orientación
+        const orientation = window.screen.orientation.type;
+        const isPortrait = orientation.includes('portrait');
+        
+        if (isPortrait) {
+          // En modo vertical, ajustar el panel
+          const panel = DOM.mobileWarningOverlay.querySelector('.mobile-warning-panel');
+          panel.style.maxHeight = '80vh';
+          panel.style.overflowY = 'auto';
+        } else {
+          // En modo horizontal, restaurar
+          const panel = DOM.mobileWarningOverlay.querySelector('.mobile-warning-panel');
+          panel.style.maxHeight = 'none';
+          panel.style.overflowY = 'visible';
+        }
+      },
+
+      handleResize() {
+        // Ajustar el panel según el nuevo tamaño
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        
+        if (viewportWidth < 400) {
+          // Pantallas muy pequeñas
+          const panel = DOM.mobileWarningOverlay.querySelector('.mobile-warning-panel');
+          panel.style.padding = '20px';
+          panel.style.maxWidth = '90vw';
+        } else {
+          // Restaurar tamaño normal
+          const panel = DOM.mobileWarningOverlay.querySelector('.mobile-warning-panel');
+          panel.style.padding = '30px';
+          panel.style.maxWidth = '400px';
+        }
+      },
+
+      acceptRisks() {
+        // Ocultar panel con animación
+        DOM.mobileWarningOverlay.classList.remove('show');
+        
+        setTimeout(() => {
+          this.hideWarning();
+          // Restaurar scroll y interacciones
+          document.body.style.overflow = '';
+          document.body.style.touchAction = '';
+          
+          // Continuar con la inicialización de la aplicación
+          this.continueAppInitialization();
+        }, 500);
+      },
+
+      continueAppInitialization() {
+        // Inicializar la aplicación después de aceptar los riesgos
+        console.log('Usuario aceptó los riesgos, continuando con la aplicación...');
+        
+        // Inicializar la aplicación completa
+        EventManager.init();
+        animate();
+        
+        // Opcional: Mostrar un mensaje de confirmación
+        setTimeout(() => {
+          // Crear un toast de confirmación
+          const toast = document.createElement('div');
+          toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--accent-green);
+            color: #000;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            z-index: 10000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 20px rgba(111, 239, 111, 0.4);
+          `;
+          toast.textContent = '✅ Aplicación iniciada - ¡Disfruta la experiencia!';
+          document.body.appendChild(toast);
+          
+          // Animar entrada
+          setTimeout(() => {
+            toast.style.transform = 'translateX(0)';
+          }, 100);
+          
+          // Remover después de 3 segundos
+          setTimeout(() => {
+            toast.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+              document.body.removeChild(toast);
+            }, 300);
+          }, 3000);
+        }, 500);
+      }
+    };
+
+    // ===== FUNCIONES UTILITARIAS =====
+    const Utils = {
+      clamp: (value, min, max) => Math.max(min, Math.min(max, value)),
+      lerp: (start, end, factor) => start + (end - start) * factor,
+      randomRange: (min, max) => Math.random() * (max - min) + min,
+      degToRad: (degrees) => THREE.MathUtils.degToRad(degrees)
+    };
+
+    // ===== GESTIÓN DE COLORES =====
+    const ColorManager = {
+      updateColors() {
+        const palette = COLOR_PALETTES[AppState.currentPalette];
+        
+        // Crear nuevos materiales si es necesario
+        const newMaterials = createMaterials(AppState.currentPalette);
+        
+        cellMeshes.forEach((mesh, index) => {
+          const level = mesh.userData.level;
+          
+          // Si cambiamos a cristal, necesitamos reemplazar el material
+          if (AppState.currentPalette === 'crystal' && !(mesh.material instanceof THREE.MeshPhysicalMaterial)) {
+            const newMaterial = newMaterials[level].clone();
+            mesh.material = newMaterial;
+          } else if (AppState.currentPalette !== 'crystal' && !(mesh.material instanceof THREE.MeshStandardMaterial)) {
+            // Si cambiamos de cristal a otro material, reemplazar
+            const newMaterial = newMaterials[level].clone();
+            mesh.material = newMaterial;
+          }
+          
+          // Actualizar propiedades del material
+          mesh.material.color = palette[level];
+          mesh.material.emissive = palette[level];
+          mesh.userData.originalIntensity = INTENSITY_LEVELS[level] * AppState.currentIntensity;
+          
+          if (!mesh.userData.additionalBreathing && !mesh.userData.isInSweep) {
+            mesh.material.emissiveIntensity = mesh.userData.originalIntensity;
+          }
+        });
+      }
+    };
+
+    // ===== GESTIÓN DE EFECTOS =====
+    const EffectManager = {
+      updateBloom() {
+        if (AppState.bloomEnabled) {
+          bloomPass.strength = AppState.bloomStrength;
+          bloomPass.enabled = true;
+        } else {
+          bloomPass.enabled = false;
+        }
+      },
+
+      updateBreathing() {
+        if (AppState.breathingEnabled) {
+          cellMeshes.forEach(mesh => {
+            if (!mesh.userData.additionalBreathing) {
+              mesh.userData.additionalBreathing = gsap.to(mesh.material, {
+                emissiveIntensity: mesh.userData.originalIntensity * 1.3,
+                duration: (1.5 + Utils.randomRange(0, 1)) / AppState.breathingSpeed,
+                repeat: -1,
+                yoyo: true,
+                ease: "sine.inOut",
+                delay: Utils.randomRange(0, 1)
+              });
+            }
+          });
+        } else {
+          cellMeshes.forEach(mesh => {
+            if (mesh.userData.additionalBreathing) {
+              mesh.userData.additionalBreathing.kill();
+              mesh.userData.additionalBreathing = null;
+            }
+          });
+        }
+      },
+
+      updateWave() {
+        if (AppState.waveEnabled) {
+          cellMeshes.forEach(mesh => {
+            if (!mesh.userData.waveAnimation) {
+              mesh.userData.waveAnimation = gsap.to(mesh.position, {
+                z: Math.sin(mesh.userData.week * 0.5 + Date.now() * 0.001) * 0.3,
+                duration: 2,
+                repeat: -1,
+                ease: "sine.inOut"
+              });
+            }
+          });
+        } else {
+          cellMeshes.forEach(mesh => {
+            if (mesh.userData.waveAnimation) {
+              mesh.userData.waveAnimation.kill();
+              mesh.userData.waveAnimation = null;
+              gsap.to(mesh.position, { z: 0, duration: 0.5 });
+            }
+          });
+        }
+      },
+
+      updatePulse() {
+        if (AppState.pulseEnabled) {
+          cellMeshes.forEach(mesh => {
+            if (!mesh.userData.pulseAnimation) {
+              mesh.userData.pulseAnimation = gsap.to(mesh.scale, {
+                x: 1 + Math.sin(mesh.userData.week * 0.3 + Date.now() * 0.002) * 0.08,
+                y: 1 + Math.sin(mesh.userData.week * 0.3 + Date.now() * 0.002) * 0.08,
+                duration: 1.5,
+                repeat: -1,
+                ease: "sine.inOut"
+              });
+            }
+          });
+        } else {
+          cellMeshes.forEach(mesh => {
+            if (mesh.userData.pulseAnimation) {
+              mesh.userData.pulseAnimation.kill();
+              mesh.userData.pulseAnimation = null;
+              gsap.to(mesh.scale, { x: 1, y: 1, duration: 0.5 });
+            }
+          });
+        }
+      },
+
+      updateRotation() {
+        if (AppState.rotationEnabled) {
+          gsap.to(cellGroup.rotation, {
+            y: Math.PI * 2,
+            duration: 10 / AppState.rotationSpeed,
+            repeat: -1,
+            ease: "none"
+          });
+        } else {
+          gsap.killTweensOf(cellGroup.rotation);
+          gsap.to(cellGroup.rotation, { y: 0, duration: 1 });
+        }
+      }
+    };
+
+    // ===== GESTIÓN DE CÁMARA =====
+    const CameraManager = {
+      updatePerspective() {
+        switch (AppState.currentPerspective) {
+          case '2d':
+            camera.position.set(0, 0, AppState.cameraDistance);
+            camera.lookAt(0, 0, 0);
+            camera.fov = AppState.cameraFOV;
+            break;
+            
+          case '3d':
+            const angle = Math.PI / 4;
+            const distance = AppState.cameraDistance * 1.4;
+            camera.position.set(
+              distance * Math.cos(angle),
+              distance * Math.sin(angle),
+              distance * Math.sin(angle)
+            );
+            camera.lookAt(0, 0, 0);
+            camera.fov = AppState.cameraFOV;
+            break;
+            
+          case '4d':
+            const time = Date.now() * 0.001;
+            const radius = AppState.cameraDistance * 1.5;
+            const angle4d = Math.PI / 4;
+            camera.position.set(
+              radius * Math.cos(time * 0.5) * Math.cos(angle4d),
+              radius * Math.sin(time * 0.3) * Math.sin(angle4d),
+              radius * Math.sin(time * 0.7)
+            );
+            camera.lookAt(0, 0, 0);
+            camera.fov = AppState.cameraFOV * 1.2;
+            break;
+        }
+        
+        camera.rotation.x = Utils.degToRad(AppState.cameraTiltX);
+        camera.rotation.y = Utils.degToRad(AppState.cameraTiltY);
+        camera.updateProjectionMatrix();
+      },
+
+      updateDistance() {
+        this.updatePerspective();
+      },
+
+      updateFOV() {
+        camera.fov = AppState.cameraFOV;
+        camera.updateProjectionMatrix();
+      },
+
+      updateTilt() {
+        this.updatePerspective();
+      }
+    };
+
+    // ===== CONTROL DE MOUSE =====
+    const MouseController = {
+      setup() {
+        if (AppState.mouseControlEnabled) {
+          document.addEventListener('mousedown', this.onMouseDown);
+          document.addEventListener('mousemove', this.onMouseMove);
+          document.addEventListener('mouseup', this.onMouseUp);
+          document.body.style.cursor = 'grab';
+        } else {
+          document.removeEventListener('mousedown', this.onMouseDown);
+          document.removeEventListener('mousemove', this.onMouseMove);
+          document.removeEventListener('mouseup', this.onMouseUp);
+          document.body.style.cursor = 'default';
+        }
+      },
+
+      onMouseDown(event) {
+        if (!AppState.mouseControlEnabled) return;
+        AppState.isMouseDragging = true;
+        AppState.lastMousePosition = { x: event.clientX, y: event.clientY };
+        document.body.style.cursor = 'grabbing';
+      },
+
+      onMouseMove(event) {
+        if (AppState.mouseControlEnabled && AppState.isMouseDragging) {
+          const deltaX = event.clientX - AppState.lastMousePosition.x;
+          const deltaY = event.clientY - AppState.lastMousePosition.y;
+          
+          AppState.cameraTiltY += deltaX * 0.5;
+          AppState.cameraTiltX += deltaY * 0.5;
+          AppState.cameraTiltX = Utils.clamp(AppState.cameraTiltX, CONFIG.CAMERA.MIN_TILT, CONFIG.CAMERA.MAX_TILT);
+          
+          CameraManager.updatePerspective();
+          AppState.lastMousePosition = { x: event.clientX, y: event.clientY };
+          return;
+        }
+        
+        // Raycaster para tooltip
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      },
+
+      onMouseUp() {
+        if (!AppState.mouseControlEnabled) return;
+        AppState.isMouseDragging = false;
+        document.body.style.cursor = 'grab';
+      }
+    };
+
+    // ===== GESTIÓN DE EVENTOS =====
+    const EventManager = {
+      init() {
+        this.setupPanelEvents();
+        this.setupControlEvents();
+        this.setupAnimationEvents();
+        this.setupEffectEvents();
+        this.setupPerspectiveEvents();
+        this.setupCameraEvents();
+      },
+
+             setupPanelEvents() {
+         DOM.togglePanelBtn.addEventListener('click', () => {
+           DOM.controlPanel.classList.toggle('visible');
+           DOM.togglePanelBtn.textContent = DOM.controlPanel.classList.contains('visible') ? 'Ocultar' : 'Mostrar';
+           
+           if (!DOM.controlPanel.classList.contains('visible')) {
+             DOM.showPanelBtn.classList.add('visible');
+           } else {
+             DOM.showPanelBtn.classList.remove('visible');
+           }
+         });
+
+         DOM.showPanelBtn.addEventListener('click', () => {
+           DOM.controlPanel.classList.add('visible');
+           DOM.togglePanelBtn.textContent = 'Ocultar';
+           DOM.showPanelBtn.classList.remove('visible');
+         });
+       },
+
+      setupControlEvents() {
+        DOM.colorOptions.forEach(option => {
+          option.addEventListener('click', () => {
+            DOM.colorOptions.forEach(opt => opt.classList.remove('active'));
+            option.classList.add('active');
+            AppState.currentPalette = option.dataset.palette;
+            ColorManager.updateColors();
+          });
+        });
+
+        DOM.intensitySlider.addEventListener('input', (e) => {
+          AppState.currentIntensity = parseFloat(e.target.value);
+          ColorManager.updateColors();
+        });
+      },
+
+      setupAnimationEvents() {
+        DOM.breathingSpeedSlider.addEventListener('input', (e) => {
+          AppState.breathingSpeed = parseFloat(e.target.value);
+          if (AppState.breathingEnabled) EffectManager.updateBreathing();
+        });
+
+        // Botones de animación
+        document.querySelectorAll('[data-animation="breathing"]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('[data-animation="breathing"]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            AppState.breathingEnabled = btn.textContent === 'ON';
+            EffectManager.updateBreathing();
+          });
+        });
+
+        document.querySelectorAll('[data-animation="wave"]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('[data-animation="wave"]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            AppState.waveEnabled = btn.textContent === 'ON';
+            EffectManager.updateWave();
+          });
+        });
+
+        document.querySelectorAll('[data-animation="pulse"]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('[data-animation="pulse"]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            AppState.pulseEnabled = btn.textContent === 'ON';
+            EffectManager.updatePulse();
+          });
+        });
+      },
+
+      setupEffectEvents() {
+        DOM.bloomStrengthSlider.addEventListener('input', (e) => {
+          AppState.bloomStrength = parseFloat(e.target.value);
+          EffectManager.updateBloom();
+        });
+
+        DOM.rotationSpeedSlider.addEventListener('input', (e) => {
+          AppState.rotationSpeed = parseFloat(e.target.value);
+          if (AppState.rotationEnabled) EffectManager.updateRotation();
+        });
+
+        // Botones de efectos
+        document.querySelectorAll('[data-effect="bloom"]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('[data-effect="bloom"]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            AppState.bloomEnabled = btn.textContent === 'ON';
+            EffectManager.updateBloom();
+          });
+        });
+
+        document.querySelectorAll('[data-effect="rotation"]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('[data-effect="rotation"]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            AppState.rotationEnabled = btn.textContent === 'ON';
+            EffectManager.updateRotation();
+          });
+        });
+      },
+
+      setupPerspectiveEvents() {
+        document.querySelectorAll('[data-perspective]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('[data-perspective]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            AppState.currentPerspective = btn.dataset.perspective;
+            CameraManager.updatePerspective();
+          });
+        });
+
+        document.querySelectorAll('[data-control="mouse"]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('[data-control="mouse"]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            AppState.mouseControlEnabled = btn.textContent === 'ON';
+            MouseController.setup();
+          });
+        });
+      },
+
+      setupCameraEvents() {
+        DOM.cameraDistanceSlider.addEventListener('input', (e) => {
+          AppState.cameraDistance = parseFloat(e.target.value);
+          CameraManager.updateDistance();
+        });
+
+        DOM.cameraFOVSlider.addEventListener('input', (e) => {
+          AppState.cameraFOV = parseFloat(e.target.value);
+          CameraManager.updateFOV();
+        });
+
+        DOM.cameraTiltXSlider.addEventListener('input', (e) => {
+          AppState.cameraTiltX = parseFloat(e.target.value);
+          CameraManager.updateTilt();
+        });
+
+        DOM.cameraTiltYSlider.addEventListener('input', (e) => {
+          AppState.cameraTiltY = parseFloat(e.target.value);
+          CameraManager.updateTilt();
+        });
+      }
+    };
+
+    // ===== SETUP DE LA ESCENA 3D (THREE.JS) =====
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ 
+      canvas: document.getElementById('bg-canvas'), 
+      antialias: true, 
+      alpha: true,
+      powerPreference: "high-performance"
+    });
+    
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limitar pixel ratio para mejor rendimiento
+    renderer.toneMapping = THREE.ReinhardToneMapping;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMappingExposure = 1.2;
+    
+    // Configuración de cámara inicial
+    camera.position.set(0, 0, CONFIG.CAMERA.DEFAULT_DISTANCE);
+    camera.lookAt(0, 0, 0);
+
+    // Iluminación optimizada
+    scene.add(new THREE.AmbientLight(0x90ff90, 0.15));
+    const dirLight = new THREE.DirectionalLight(0x90ff90, 0.4);
+    dirLight.position.set(5, -10, 20);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 1024;
+    dirLight.shadow.mapSize.height = 1024;
+    scene.add(dirLight);
+    
+    // Luz adicional para cristal
+    const crystalLight = new THREE.PointLight(0xffffff, 0.3);
+    crystalLight.position.set(-10, 10, 10);
+    scene.add(crystalLight);
+    
+    // Crear mapa de entorno para reflejos en cristal
+    const envMap = new THREE.CubeTextureLoader().load([
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
+    ]);
+    scene.environment = envMap;
+
+    // ===== EFECTO DE RESPLANDOR (BLOOM) =====
+    const renderScene = new RenderPass(scene, camera);
+    const bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(window.innerWidth, window.innerHeight), 
+      1.2, 0.4, 0.85
+    );
+    bloomPass.threshold = 0;
+    bloomPass.strength = CONFIG.ANIMATION.BLOOM_STRENGTH_RANGE.default;
+    bloomPass.radius = 0.8;
+    
+    const composer = new EffectComposer(renderer);
+    composer.addPass(renderScene);
+    composer.addPass(bloomPass);
+
+    // ===== GENERACIÓN DEL GRID 3D OPTIMIZADA =====
+    const cellMeshes = [];
+    const cellGroup = new THREE.Group();
+
+    // Generar datos de actividad de forma más eficiente
+    const weights = [0, 0, 0, 1, 1, 2, 2, 3, 4];
+    const activityData = new Array(DAYS_IN_YEAR);
+    for (let i = 0; i < DAYS_IN_YEAR; i++) {
+      activityData[i] = weights[Math.floor(Math.random() * weights.length)];
+    }
+
+    const firstDay = new Date(CONFIG.YEAR, 0, 1).getDay();
+    const offset = (firstDay === 0) ? 6 : firstDay - 1;
+
+    // Crear geometría y material compartidos para mejor rendimiento
+    const sharedGeometry = new THREE.BoxGeometry(CONFIG.CELL_SIZE, CONFIG.CELL_SIZE, 0.2);
+    
+    // Función para crear materiales según la paleta seleccionada
+    const createMaterials = (palette) => {
+      if (palette === 'crystal') {
+        // Material de cristal especial
+        return COLOR_PALETTES[palette].map(color => 
+          new THREE.MeshPhysicalMaterial({
+            color: color,
+            emissive: color,
+            emissiveIntensity: INTENSITY_LEVELS[0],
+            transparent: true,
+            opacity: 0.85,
+            metalness: 0.1,
+            roughness: 0.0,
+            clearcoat: 1.0,
+            clearcoatRoughness: 0.0,
+            ior: 1.5, // Índice de refracción del cristal
+            transmission: 0.9,
+            thickness: 0.2,
+            envMapIntensity: 1.0
+          })
+        );
+      } else {
+        // Material estándar para otras paletas
+        return COLOR_PALETTES[palette].map(color => 
+          new THREE.MeshStandardMaterial({
+            color: color,
+            emissive: color,
+            emissiveIntensity: INTENSITY_LEVELS[0]
+          })
+        );
+      }
+    };
+    
+    let sharedMaterials = createMaterials(AppState.currentPalette);
+
+    // Generar celdas de forma optimizada
+    for (let i = 0; i < DAYS_IN_YEAR; i++) {
+      const day = i + offset;
+      const week = Math.floor(day / 7);
+      const dayOfWeek = day % 7;
+      const level = activityData[i];
+      const date = new Date(CONFIG.YEAR, 0, i + 1);
+
+      const mesh = new THREE.Mesh(sharedGeometry, sharedMaterials[level].clone());
+      mesh.position.set(
+        week * (CONFIG.CELL_SIZE + CONFIG.CELL_GAP),
+        dayOfWeek * (CONFIG.CELL_SIZE + CONFIG.CELL_GAP),
+        0
+      );
+      
+      mesh.userData = { 
+        level, 
+        date, 
+        week, 
+        dayOfWeek, 
+        originalIntensity: INTENSITY_LEVELS[level] 
+      };
+      
+      cellMeshes.push(mesh);
+      cellGroup.add(mesh);
+    }
+    
+    // Posicionar el grupo centrado
+    cellGroup.position.x = -GRID_WIDTH / 2 + (CONFIG.CELL_SIZE + CONFIG.CELL_GAP) / 2;
+    cellGroup.position.y = -GRID_HEIGHT / 2 + (CONFIG.CELL_SIZE + CONFIG.CELL_GAP) / 2;
+    scene.add(cellGroup);
+
+    // ===== INTERACCIÓN (RAYCASTER) =====
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2(-1, -1);
+    let intersectedObject = null;
+
+    // Eventos de mouse optimizados
+    window.addEventListener('mousemove', MouseController.onMouseMove);
+    window.addEventListener('mousedown', MouseController.onMouseDown);
+    window.addEventListener('mouseup', MouseController.onMouseUp);
+
+    // ===== ANIMACIONES (GSAP) OPTIMIZADAS =====
+    
+    // 1. Animación de entrada con mejor rendimiento
+    gsap.from(cellMeshes.map(m => m.scale), {
+      z: 0.01,
+      duration: 1,
+      ease: "expo.out",
+      stagger: {
+        each: 0.005,
+        from: "start",
+        grid: [CONFIG.DAYS, CONFIG.WEEKS]
+      }
+    });
+
+    // 2. Animación de "respiración" idle optimizada
+    cellMeshes.forEach(mesh => {
+      gsap.to(mesh.material, {
+        emissiveIntensity: mesh.userData.originalIntensity * 1.5,
+        duration: 2 + Utils.randomRange(0, 2),
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+        delay: Utils.randomRange(0, 2)
+      });
+      
+      // Efecto especial para cristal - rotación sutil
+      if (AppState.currentPalette === 'crystal') {
+        gsap.to(mesh.rotation, {
+          z: Math.sin(mesh.userData.week * 0.1 + Date.now() * 0.0005) * 0.02,
+          duration: 3 + Utils.randomRange(0, 2),
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
+          delay: Utils.randomRange(0, 2)
+        });
+      }
+    });
+    
+         // ===== INICIALIZACIÓN =====
+     ColorManager.updateColors();
+     EffectManager.updateBloom();
+     CameraManager.updatePerspective();
+     // El botón del panel ya está visible por defecto
+
+    // ===== ANIMACIÓN DE BARRIDO OPTIMIZADA =====
+    let sweepAnimation;
+    DOM.togglePlayBtn.addEventListener('click', () => {
+      if (sweepAnimation && sweepAnimation.isActive()) {
+        sweepAnimation.kill();
+        DOM.togglePlayBtn.textContent = "▶︎ Barrido de Energía";
+        
+        // Limpiar estado de barrido
+        cellMeshes.forEach(mesh => {
+          mesh.userData.isInSweep = false;
+        });
+        return;
+      }
+      
+      DOM.togglePlayBtn.textContent = "■ Detener Barrido";
+      
+      sweepAnimation = gsap.timeline({
+        repeat: -1,
+        onRepeat: () => {
+          if (!sweepAnimation.isActive()) {
+            DOM.togglePlayBtn.textContent = "▶︎ Barrido de Energía";
+          }
+        },
+        onComplete: () => {
+          DOM.togglePlayBtn.textContent = "▶︎ Barrido de Energía";
+        }
+      });
+      
+      // Crear animación de barrido por columnas
+      for (let week = 0; week < CONFIG.WEEKS; week++) {
+        const columnMeshes = cellMeshes.filter(m => m.userData.week === week);
+        
+        sweepAnimation.to(columnMeshes.map(m => m.material), {
+          emissiveIntensity: (i) => {
+            const mesh = columnMeshes[i];
+            if (mesh) {
+              mesh.userData.isInSweep = true;
+              return (mesh.userData.originalIntensity ?? 0) + 4;
+            }
+            return 0;
+          },
+          duration: 0.2,
+          ease: "power2.out",
+          yoyo: true,
+          repeat: 1,
+          stagger: 0.02,
+          onComplete: () => {
+            columnMeshes.forEach(mesh => {
+              mesh.userData.isInSweep = false;
+            });
+          }
+        }, week * 0.05);
+      }
+    });
+
+    // ===== BUCLE DE RENDERIZADO OPTIMIZADO =====
+    let lastTime = 0;
+    const targetFPS = 60;
+    const frameInterval = 1000 / targetFPS;
+
+    function animate(currentTime) {
+      requestAnimationFrame(animate);
+
+      // Control de FPS para mejor rendimiento
+      if (currentTime - lastTime < frameInterval) {
+        return;
+      }
+      lastTime = currentTime;
+
+      // Raycaster optimizado
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(cellMeshes, false);
+
+      if (intersects.length > 0) {
+        const newIntersect = intersects[0].object;
+        
+        if (intersectedObject !== newIntersect) {
+          // Restaurar objeto anterior
+          if (intersectedObject) {
+            gsap.to(intersectedObject.position, { 
+              z: 0, 
+              duration: 0.3, 
+              ease: 'power2.out' 
+            });
+            gsap.to(intersectedObject.material, { 
+              emissiveIntensity: intersectedObject.userData.originalIntensity, 
+              duration: 0.3 
+            });
+          }
+
+          intersectedObject = newIntersect;
+
+          // Animar nuevo objeto
+          gsap.to(intersectedObject.position, { 
+            z: 1.5, 
+            duration: 0.3, 
+            ease: 'back.out(1.7)' 
+          });
+          gsap.to(intersectedObject.material, { 
+            emissiveIntensity: intersectedObject.userData.originalIntensity + 5, 
+            duration: 0.3 
+          });
+
+          // Actualizar tooltip
+          const { date, level } = intersectedObject.userData;
+          const contributions = level > 0 ? `${Math.pow(5, level-1)} contribuciones` : 'Sin contribuciones';
+          const dateString = date.toLocaleDateString('es-ES', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          });
+          
+          DOM.tooltip.innerHTML = `${dateString} • ${contributions}`;
+          DOM.tooltip.classList.add('show');
+        }
+
+        // Posicionar tooltip
+        const pad = 12;
+        // Usar las coordenadas del mouse almacenadas en el vector mouse
+        const mouseX = ((mouse.x + 1) / 2) * window.innerWidth;
+        const mouseY = ((1 - mouse.y) / 2) * window.innerHeight;
+        DOM.tooltip.style.left = `${mouseX + pad}px`;
+        DOM.tooltip.style.top = `${mouseY + pad}px`;
+
+      } else {
+        if (intersectedObject) {
+          gsap.to(intersectedObject.position, { 
+            z: 0, 
+            duration: 0.3, 
+            ease: 'power2.out' 
+          });
+          gsap.to(intersectedObject.material, { 
+            emissiveIntensity: intersectedObject.userData.originalIntensity, 
+            duration: 0.3 
+          });
+          intersectedObject = null;
+          DOM.tooltip.classList.remove('show');
+        }
+      }
+      
+      // Renderizar escena
+      composer.render();
+    }
+
+    // ===== MANEJO DE REDIMENSIONAMIENTO OPTIMIZADO =====
+    let resizeTimeout;
+    const handleResize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+        
+        renderer.setSize(width, height);
+        composer.setSize(width, height);
+        
+        // Actualizar bloom pass
+        bloomPass.resolution.set(width, height);
+      }, 100); // Debounce para mejor rendimiento
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    // ===== INICIALIZACIÓN FINAL =====
+    // Inicializar el panel de aviso móvil primero
+    MobileWarningManager.init();
+    
+    // Solo continuar con la aplicación si no es móvil o si el usuario aceptó los riesgos
+    if (!DeviceDetector.isMobile() && !DeviceDetector.isTablet()) {
+      // En PC, inicializar directamente
+      EventManager.init();
+      animate();
+    } else {
+      // En móvil, esperar a que el usuario acepte los riesgos
+      // La inicialización se hará en continueAppInitialization()
+    }
+  </script>
+</body>
+</html>
