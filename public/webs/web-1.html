@@ -1,0 +1,2158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sense - Enterprise AI Intelligence Platform</title>
+    
+    <style>
+        /* --- FONTS & GLOBAL STYLES --- */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap');
+
+        :root {
+            --background-color: #0A0A0F;
+            --text-primary: #FFFFFF;
+            --text-secondary: #A0A0B0;
+            --accent-purple: #8B5CF6;
+            --accent-blue: #3B82F6;
+            --accent-green: #10B981;
+            --accent-dark-purple: #1E1B4B;
+            --button-bg: #FFFFFF;
+            --button-text: #0A0A0F;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --gradient-primary: linear-gradient(135deg, #8B5CF6, #3B82F6);
+            --gradient-secondary: linear-gradient(135deg, #1E1B4B, #312E81);
+            
+            /* Dynamic Color System */
+            --gradient-purple-blue: linear-gradient(135deg, #8B5CF6, #3B82F6, #06B6D4);
+            --gradient-green-blue: linear-gradient(135deg, #10B981, #3B82F6, #8B5CF6);
+            --gradient-aurora: linear-gradient(135deg, #8B5CF6, #06B6D4, #10B981, #F59E0B);
+            --glow-purple: 0 0 20px rgba(139, 92, 246, 0.4);
+            --glow-blue: 0 0 20px rgba(59, 130, 246, 0.4);
+            --glow-green: 0 0 20px rgba(16, 185, 129, 0.4);
+            
+            /* Enhanced Shadows */
+            --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --shadow-medium: 0 8px 30px rgba(0, 0, 0, 0.15);
+            --shadow-strong: 0 15px 50px rgba(0, 0, 0, 0.2);
+            --shadow-glow: 0 0 30px rgba(139, 92, 246, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* --- THREE.JS CANVAS --- */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            outline: none;
+        }
+
+        /* --- MAIN LAYOUT & HERO SECTION --- */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .hero-section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: radial-gradient(ellipse at center, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+        }
+
+        /* --- HEADER / NAVBAR --- */
+        header {
+            padding: 2rem 0;
+            opacity: 0; /* Animated with GSAP */
+        }
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 1rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .sign-in-btn {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .sign-in-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+
+        /* --- HERO CONTENT --- */
+        .hero-content {
+            flex-grow: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: center;
+            gap: 2rem;
+            padding-bottom: 8rem; /* Space for logos */
+        }
+
+        .hero-text {
+            opacity: 0; /* Animated with GSAP */
+        }
+
+        .pill {
+            display: inline-block;
+            background: var(--gradient-primary);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            margin-bottom: 2rem;
+            font-weight: 600;
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        .pill::before {
+            content: '🚀';
+            margin-right: 0.75rem;
+            font-size: 1rem;
+            vertical-align: middle;
+        }
+        .pill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shimmer 3s infinite;
+        }
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        h1 {
+            font-size: 4.5rem;
+            font-weight: 800;
+            line-height: 1.05;
+            margin-bottom: 2.5rem;
+            max-width: 600px;
+            background: var(--gradient-aurora);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
+            position: relative;
+            animation: textGlow 3s ease-in-out infinite alternate;
+        }
+        
+        h1::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--gradient-aurora);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: blur(8px);
+            opacity: 0.5;
+            animation: textBlur 4s ease-in-out infinite alternate;
+        }
+        
+        @keyframes textGlow {
+            0% { filter: brightness(1) saturate(1); }
+            100% { filter: brightness(1.2) saturate(1.3); }
+        }
+        
+        @keyframes textBlur {
+            0% { filter: blur(8px); opacity: 0.5; }
+            100% { filter: blur(12px); opacity: 0.3; }
+        }
+
+        .trial-form {
+            display: flex;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 0.75rem;
+            max-width: 450px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        .trial-form:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+        
+        .trial-form input {
+            flex-grow: 1;
+            border: none;
+            background: transparent;
+            padding: 0.75rem;
+            font-size: 1rem;
+            color: var(--button-text);
+            outline: none;
+        }
+
+        .trial-form input::placeholder {
+            color: #888;
+        }
+
+        .trial-form button {
+            background: var(--gradient-primary);
+            color: var(--text-primary);
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+        }
+        
+        .trial-form button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(139, 92, 246, 0.6);
+        }
+        
+        .trial-form button:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+        }
+        
+        .trial-form button.submitting {
+            animation: buttonGlitch 0.3s ease-in-out;
+        }
+        
+        .trial-form button.success {
+            background: var(--accent-green);
+            animation: buttonSuccess 0.5s ease-in-out;
+        }
+        
+        .trial-form button.error {
+            background: #EF4444;
+            animation: buttonError 0.5s ease-in-out;
+        }
+        
+        @keyframes buttonGlitch {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-2px); }
+            75% { transform: translateX(2px); }
+        }
+        
+        @keyframes buttonSuccess {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes buttonError {
+            0% { transform: scale(1); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+            100% { transform: scale(1); }
+        }
+        
+        .hero-subtext {
+            justify-self: center;
+            align-self: center;
+            max-width: 350px;
+            opacity: 0; /* Animated with GSAP */
+        }
+
+        .hero-subtext p {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        
+        .rating {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .stars {
+            color: #FFC700;
+            font-size: 1.25rem;
+        }
+
+        .rating-text {
+            color: var(--text-secondary);
+        }
+
+        /* --- FOOTER LOGOS --- */
+        .footer-logos {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 3rem;
+            align-items: center;
+            opacity: 0; /* Animated with GSAP */
+        }
+
+        .footer-logos .logo-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #777;
+            font-weight: 600;
+        }
+        
+        .footer-logos .logo-item svg {
+            height: 24px;
+            fill: #777;
+        }
+
+        /* --- "SURPRISE" SECTIONS --- */
+        .content-section {
+            padding: 8rem 0;
+            background: var(--background-color);
+            position: relative;
+            z-index: 5; /* Ensure sections are on top of canvas */
+        }
+        
+        .content-section:nth-child(even) {
+            background: linear-gradient(180deg, var(--background-color) 0%, rgba(139, 92, 246, 0.02) 100%);
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .section-title.typewriter {
+            animation: typewriter 2s steps(40, end);
+        }
+        
+        .section-title.typewriter::after {
+            content: '|';
+            animation: blink 1s infinite;
+            margin-left: 2px;
+        }
+        
+        @keyframes typewriter {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 4rem auto;
+        }
+
+        /* 1. Features Section */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+        .feature-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            height: 300px;
+            perspective: 1000px;
+        }
+        .feature-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+        }
+        .feature-card:hover .feature-card-inner {
+            transform: rotateY(180deg);
+        }
+        
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at var(--mouse-x, center) var(--mouse-y, center), 
+                        rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            border-radius: 12px;
+        }
+        
+        .feature-card:hover::after {
+            opacity: 1;
+        }
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            text-align: center;
+        }
+        .card-front {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+        }
+        .card-back {
+            background: var(--accent-dark-purple);
+            transform: rotateY(180deg);
+        }
+        .card-icon { font-size: 3rem; margin-bottom: 1rem; color: var(--accent-purple); }
+        .card-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .card-desc { color: var(--text-secondary); }
+        
+        /* 2. Interactive Demo Section */
+        .demo-container {
+            width: 80%;
+            max-width: 900px;
+            margin: 0 auto;
+            aspect-ratio: 16/9;
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid var(--border-color);
+            user-select: none;
+        }
+        .demo-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+        }
+        .demo-before {
+            background-image: url('https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=1600'); /* Placeholder */
+            width: 50%;
+        }
+        .demo-after {
+            background-image: url('https://images.unsplash.com/photo-1542831371-29b0f74f9713?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=1600'); /* Placeholder */
+        }
+        .slider-handle {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 4px;
+            height: 100%;
+            background: var(--button-bg);
+            cursor: ew-resize;
+            transform: translateX(-50%);
+        }
+        .slider-handle::after {
+            content: '↔';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--button-bg);
+            color: var(--button-text);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+        }
+        
+        /* New Analytics Section */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .analytics-card {
+            background: var(--gradient-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .analytics-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+        }
+        
+        .analytics-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(139, 92, 246, 0.2);
+        }
+        
+        .analytics-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .analytics-card h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+        
+        .analytics-card p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        
+        .metric {
+            background: var(--gradient-primary);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        /* Integration Section */
+        .integration-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .integration-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .integration-item:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-purple);
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.15);
+        }
+        
+        .integration-logo {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .integration-item h4 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+        
+        .integration-item p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* Data Flow Visualization */
+        .data-flow-container {
+            position: relative;
+            width: 100%;
+            height: 600px;
+            margin: 4rem auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .flow-node {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.5s ease;
+        }
+        
+        .flow-node.source {
+            top: 20%;
+        }
+        
+        .flow-node.source:nth-child(1) { left: 10%; }
+        .flow-node.source:nth-child(2) { left: 30%; }
+        .flow-node.source:nth-child(3) { left: 70%; }
+        .flow-node.source:nth-child(4) { left: 90%; }
+        
+        .flow-node.output {
+            bottom: 20%;
+        }
+        
+        .flow-node.output:nth-child(7) { left: 20%; }
+        .flow-node.output:nth-child(8) { left: 50%; }
+        .flow-node.output:nth-child(9) { left: 80%; }
+        
+        .node-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--gradient-purple-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: var(--shadow-glow);
+            position: relative;
+            z-index: 2;
+        }
+        
+        .node-label {
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-align: center;
+            white-space: nowrap;
+        }
+        
+        .flow-line {
+            position: absolute;
+            background: linear-gradient(90deg, transparent, var(--accent-purple), transparent);
+            height: 2px;
+            width: 100px;
+            opacity: 0.6;
+            animation: flowPulse 2s ease-in-out infinite;
+        }
+        
+        .flow-node.source .flow-line {
+            bottom: -50px;
+            transform: rotate(45deg);
+            transform-origin: bottom left;
+        }
+        
+        .flow-node.output .flow-line {
+            top: -50px;
+            transform: rotate(-45deg);
+            transform-origin: top left;
+        }
+        
+        .flow-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 3;
+        }
+        
+        .ai-brain {
+            width: 120px;
+            height: 120px;
+            background: var(--gradient-aurora);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-glow);
+            position: relative;
+        }
+        
+        .brain-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .brain-label {
+            color: var(--text-primary);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .pulse-ring {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border: 2px solid var(--accent-purple);
+            border-radius: 50%;
+            animation: pulseRing 2s ease-in-out infinite;
+        }
+        
+        @keyframes flowPulse {
+            0%, 100% { opacity: 0.3; transform: scaleX(0.8); }
+            50% { opacity: 0.8; transform: scaleX(1.2); }
+        }
+        
+        @keyframes pulseRing {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        
+        .flow-node:hover {
+            transform: scale(1.1);
+        }
+        
+        .flow-node:hover .node-icon {
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.8);
+        }
+        
+        /* Industry Solutions */
+        .industries-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .industry-card {
+            background: var(--gradient-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s ease;
+            cursor: pointer;
+            min-height: 300px;
+        }
+        
+        .industry-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+        }
+        
+        .industry-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: var(--shadow-strong);
+            border-color: var(--accent-purple);
+        }
+        
+        .industry-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .industry-icon {
+            font-size: 2.5rem;
+            background: var(--gradient-primary);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-glow);
+        }
+        
+        .industry-header h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+        
+        .industry-content p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        
+        .industry-metrics {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .industry-metrics .metric {
+            background: var(--gradient-primary);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .industry-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--gradient-aurora);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            opacity: 0;
+            transform: translateY(100%);
+            transition: all 0.5s ease;
+            border-radius: 20px;
+        }
+        
+        .industry-card:hover .industry-overlay {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .industry-overlay h4 {
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .industry-overlay ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .industry-overlay li {
+            color: var(--text-primary);
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 1rem;
+        }
+        
+        .industry-overlay li:last-child {
+            border-bottom: none;
+        }
+        
+        /* AI Ethics Section */
+        .ethics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+        
+        .ethics-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .ethics-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+        
+        .ethics-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .ethics-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-medium);
+            border-color: var(--accent-purple);
+        }
+        
+        .ethics-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            background: var(--gradient-primary);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem auto;
+            box-shadow: var(--shadow-glow);
+        }
+        
+        .ethics-card h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+        
+        .ethics-card p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        
+        .ethics-badge {
+            background: var(--gradient-green-blue);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .ethics-pledge {
+            background: var(--gradient-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+            margin-top: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .ethics-pledge::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+            animation: rotate 30s linear infinite;
+        }
+        
+        .pledge-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .pledge-content h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+        }
+        
+        .pledge-content p {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            font-style: italic;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .pledge-signature {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .signature-line {
+            color: var(--accent-purple);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .signature-date {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* Testimonials Section */
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .testimonial-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .testimonial-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+        }
+        
+        .testimonial-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent-purple);
+            box-shadow: 0 20px 40px rgba(139, 92, 246, 0.15);
+        }
+        
+        .testimonial-content {
+            margin-bottom: 1.5rem;
+        }
+        
+        .testimonial-content p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-style: italic;
+            font-size: 1rem;
+        }
+        
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .author-avatar {
+            font-size: 2rem;
+            background: var(--gradient-primary);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .author-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .author-title {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* 3. Final CTA Section */
+        #cta-section {
+            background: transparent; /* Let body bg show */
+        }
+        .cta-panel {
+            background: linear-gradient(135deg, #1E1B4B, #312E81, #1E1B4B);
+            border-radius: 24px;
+            padding: 4rem;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+            animation: pulse 4s infinite ease-in-out;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cta-panel::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 20px rgba(164, 92, 255, 0.1); }
+            50% { box-shadow: 0 0 40px rgba(164, 92, 255, 0.25); }
+            100% { box-shadow: 0 0 20px rgba(164, 92, 255, 0.1); }
+        }
+        .cta-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+        .cta-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            margin-bottom: 2rem;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 3rem;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            font-size: 1.125rem;
+            font-weight: 600;
+            text-decoration: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cta-button.primary {
+            background: var(--gradient-primary);
+            color: var(--text-primary);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+        }
+        
+        .cta-button.secondary {
+            background: transparent;
+            color: var(--text-primary);
+            border: 2px solid var(--accent-purple);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(139, 92, 246, 0.6);
+        }
+        
+        .cta-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 2rem;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-purple);
+            margin-bottom: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            position: relative;
+        }
+        
+        .stat-number::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--gradient-primary);
+            transform: scaleX(0);
+            transition: transform 0.6s ease;
+        }
+        
+        .stat-number.animated::after {
+            transform: scaleX(1);
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* --- RESPONSIVENESS --- */
+        @media (max-width: 992px) {
+            h1 { font-size: 3rem; }
+            .hero-content { grid-template-columns: 1fr; text-align: center; padding-top: 4rem; }
+            .hero-text { order: 2; }
+            .hero-subtext { order: 1; justify-self: center; text-align: center; max-width: 100%; }
+            .trial-form { margin: 0 auto; }
+            .features-grid { grid-template-columns: 1fr 1fr; }
+            .analytics-grid { grid-template-columns: 1fr; }
+            .integration-grid { grid-template-columns: repeat(2, 1fr); }
+            .testimonials-grid { grid-template-columns: 1fr; }
+            .industries-grid { grid-template-columns: 1fr; }
+            .ethics-grid { grid-template-columns: 1fr; }
+            .cta-buttons { flex-direction: column; align-items: center; }
+            .cta-stats { flex-direction: column; gap: 1.5rem; }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            h1 { font-size: 2.5rem; }
+            .hero-content { padding-top: 2rem; }
+            .features-grid { grid-template-columns: 1fr; }
+            .footer-logos { flex-wrap: wrap; justify-content: center; gap: 1.5rem; }
+            .integration-grid { grid-template-columns: 1fr; }
+            .cta-panel { padding: 2rem; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="hero-section">
+        <header>
+            <div class="container">
+                <nav class="navbar">
+                    <div class="logo">sense</div>
+                    <div class="nav-links">
+                        <a href="#platform">Platform</a>
+                        <a href="#resources">Resources</a>
+                        <a href="#pricing">Pricing</a>
+                        <a href="#use-case">Use Case</a>
+                    </div>
+                    <a href="#signin" class="sign-in-btn">Sign In</a>
+                </nav>
+            </div>
+        </header>
+
+        <main class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <div class="pill">Enterprise AI Intelligence Platform</div>
+                    <h1>Transform Your Business Data Into Strategic Intelligence</h1>
+                    <form class="trial-form" onsubmit="event.preventDefault();">
+                        <input type="email" placeholder="Enter your business email">
+                        <button type="submit">Start Free Enterprise Trial</button>
+                    </form>
+                </div>
+                <div class="hero-subtext">
+                    <p>Unlock hidden insights from your data with AI-powered analytics. Make data-driven decisions in real-time with enterprise-grade security and compliance.</p>
+                    <div class="rating">
+                        <div class="stars">★★★★★ <span style="color:var(--text-secondary); font-weight:400; font-size: 1rem; vertical-align: middle;">4.9 out of 5</span></div>
+                        <div class="rating-text">Trusted by Fortune 500 companies worldwide</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <div class="footer-logos">
+            <div class="logo-item">
+                <svg viewBox="0 0 108 108"><path d="M0 0h51.4v51.4H0z" fill="#f25022"></path><path d="M56.6 0H108v51.4H56.6z" fill="#7fba00"></path><path d="M0 56.6h51.4V108H0z" fill="#00a4ef"></path><path d="M56.6 56.6H108V108H56.6z" fill="#ffb900"></path></svg> Microsoft
+            </div>
+            <div class="logo-item">
+                <svg viewBox="0 0 128 128"><path d="M64 0L0 110.85L128 110.85L64 0Z" fill="#fff"></path><path d="M64 128L21.33 48H106.67L64 128Z" fill="#fff"></path></svg> NEXT.js
+            </div>
+            <div class="logo-item">
+                <svg viewBox="0 0 122.8 122.8"><path d="M25.8 77.6c0 7.1-5.8 12.9-12.9 12.9S0 84.7 0 77.6s5.8-12.9 12.9-12.9h12.9v12.9z" fill="#e01e5a"></path><path d="M38.7 77.6c7.1 0 12.9-5.8 12.9-12.9s-5.8-12.9-12.9-12.9-12.9 5.8-12.9 12.9v25.8h12.9V77.6z" fill="#e01e5a"></path><path d="M45.2 25.8c0-7.1 5.8-12.9 12.9-12.9s12.9 5.8 12.9 12.9-5.8 12.9-12.9 12.9H45.2V25.8z" fill="#36c5f0"></path><path d="M45.2 38.7c-7.1 0-12.9 5.8-12.9 12.9s5.8 12.9 12.9 12.9 12.9-5.8 12.9-12.9V12.9H45.2v25.8z" fill="#36c5f0"></path><path d="M97 45.2c0-7.1 5.8-12.9 12.9-12.9s12.9 5.8 12.9 12.9-5.8 12.9-12.9 12.9H97V45.2z" fill="#2eb67d"></path><path d="M84.1 45.2c-7.1 0-12.9 5.8-12.9 12.9s5.8 12.9 12.9 12.9 12.9-5.8 12.9-12.9V12.9h-12.9v32.3z" fill="#2eb67d"></path><path d="M77.6 97c0 7.1-5.8 12.9-12.9 12.9S51.8 104.1 51.8 97s5.8-12.9 12.9-12.9h12.9v12.9z" fill="#ecb22e"></path><path d="M77.6 84.1c7.1 0 12.9-5.8 12.9-12.9s-5.8-12.9-12.9-12.9-12.9 5.8-12.9 12.9v25.8h12.9V84.1z" fill="#ecb22e"></path></svg> slack
+            </div>
+             <div class="logo-item">
+                <svg viewBox="0 0 108 108"><path d="M0 0h51.4v51.4H0z" fill="#f25022"></path><path d="M56.6 0H108v51.4H56.6z" fill="#7fba00"></path><path d="M0 56.6h51.4V108H0z" fill="#00a4ef"></path><path d="M56.6 56.6H108V108H56.6z" fill="#ffb900"></path></svg> Microsoft
+            </div>
+        </div>
+    </div>
+
+    <!-- Surprise Sections -->
+    <div id="platform" class="content-section">
+        <div class="container">
+            <h2 class="section-title">Strategic Intelligence Features</h2>
+            <p class="section-subtitle">Advanced AI capabilities designed for enterprise decision-making and competitive advantage.</p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-card-inner">
+                        <div class="card-face card-front">
+                            <div class="card-icon">🧠</div>
+                            <h3 class="card-title">Predictive Analytics</h3>
+                            <p class="card-desc">Forecast market trends and customer behavior with 95% accuracy using advanced machine learning algorithms.</p>
+                        </div>
+                        <div class="card-face card-back">
+                            <h3 class="card-title">Strategic Insights</h3>
+                            <p class="card-desc">Real-time pattern recognition across sales, marketing, and operational data to identify growth opportunities and risks.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-card-inner">
+                        <div class="card-face card-front">
+                            <div class="card-icon">⚡️</div>
+                            <h3 class="card-title">Real-Time Intelligence</h3>
+                            <p class="card-desc">Monitor KPIs and business metrics in real-time with automated alerts and intelligent recommendations.</p>
+                        </div>
+                        <div class="card-face card-back">
+                            <h3 class="card-title">Performance Optimization</h3>
+                            <p class="card-desc">AI-driven optimization suggestions for operations, marketing campaigns, and resource allocation to maximize ROI.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="feature-card">
+                     <div class="feature-card-inner">
+                        <div class="card-face card-front">
+                            <div class="card-icon">🔒</div>
+                            <h3 class="card-title">Enterprise Security & Compliance</h3>
+                            <p class="card-desc">SOC 2 Type II, GDPR, HIPAA compliant with zero-trust architecture and end-to-end encryption.</p>
+                        </div>
+                        <div class="card-face card-back">
+                            <h3 class="card-title">Regulatory Excellence</h3>
+                            <p class="card-desc">Built-in compliance frameworks for financial services, healthcare, and government sectors with automated audit trails.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Flow Visualization Section -->
+    <div id="data-flow" class="content-section">
+        <div class="container">
+            <h2 class="section-title">How Data Flows Through Sense</h2>
+            <p class="section-subtitle">Watch as your business data transforms into actionable intelligence in real-time</p>
+            <div class="data-flow-container">
+                <div class="flow-node source" data-type="crm">
+                    <div class="node-icon">📊</div>
+                    <div class="node-label">CRM Data</div>
+                    <div class="flow-line"></div>
+                </div>
+                <div class="flow-node source" data-type="email">
+                    <div class="node-icon">📧</div>
+                    <div class="node-label">Email Comms</div>
+                    <div class="flow-line"></div>
+                </div>
+                <div class="flow-node source" data-type="analytics">
+                    <div class="node-icon">📈</div>
+                    <div class="node-label">Analytics</div>
+                    <div class="flow-line"></div>
+                </div>
+                <div class="flow-node source" data-type="social">
+                    <div class="node-icon">🌐</div>
+                    <div class="node-label">Social Media</div>
+                    <div class="flow-line"></div>
+                </div>
+                
+                <div class="flow-center">
+                    <div class="ai-brain">
+                        <div class="brain-icon">🧠</div>
+                        <div class="brain-label">AI Processing</div>
+                        <div class="pulse-ring"></div>
+                    </div>
+                </div>
+                
+                <div class="flow-node output" data-type="insights">
+                    <div class="flow-line"></div>
+                    <div class="node-icon">💡</div>
+                    <div class="node-label">Strategic Insights</div>
+                </div>
+                <div class="flow-node output" data-type="predictions">
+                    <div class="flow-line"></div>
+                    <div class="node-icon">🔮</div>
+                    <div class="node-label">Predictions</div>
+                </div>
+                <div class="flow-node output" data-type="actions">
+                    <div class="flow-line"></div>
+                    <div class="node-icon">⚡</div>
+                    <div class="node-label">Action Items</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Strategic Sections -->
+    <div id="analytics" class="content-section">
+        <div class="container">
+            <h2 class="section-title">Advanced Analytics Dashboard</h2>
+            <p class="section-subtitle">Comprehensive business intelligence with customizable KPI tracking and automated reporting.</p>
+            <div class="analytics-grid">
+                <div class="analytics-card">
+                    <div class="analytics-icon">📊</div>
+                    <h3>Revenue Intelligence</h3>
+                    <p>Track sales performance, customer lifetime value, and revenue forecasting with AI-powered insights.</p>
+                    <div class="metric">+23% Revenue Growth</div>
+                </div>
+                <div class="analytics-card">
+                    <div class="analytics-icon">🎯</div>
+                    <h3>Customer Analytics</h3>
+                    <p>Deep customer segmentation, behavior analysis, and churn prediction for targeted marketing strategies.</p>
+                    <div class="metric">+45% Customer Retention</div>
+                </div>
+                <div class="analytics-card">
+                    <div class="analytics-icon">⚙️</div>
+                    <h3>Operational Efficiency</h3>
+                    <p>Monitor supply chain, inventory, and process optimization with real-time performance metrics.</p>
+                    <div class="metric">-18% Operational Costs</div>
+                </div>
+            </div>
+        </div>
+        </div>
+    
+    <!-- Industry Solutions Showcase -->
+    <div id="industries" class="content-section">
+        <div class="container">
+            <h2 class="section-title">Industry-Specific Solutions</h2>
+            <p class="section-subtitle">Tailored AI intelligence for your sector's unique challenges</p>
+            <div class="industries-grid">
+                <div class="industry-card" data-industry="finance">
+                    <div class="industry-header">
+                        <div class="industry-icon">🏦</div>
+                        <h3>Financial Services</h3>
+                    </div>
+                    <div class="industry-content">
+                        <p>Fraud detection, risk assessment, and regulatory compliance with real-time market analysis.</p>
+                        <div class="industry-metrics">
+                            <span class="metric">99.9% Fraud Detection</span>
+                            <span class="metric">Real-time Risk Scoring</span>
+                        </div>
+                    </div>
+                    <div class="industry-overlay">
+                        <h4>Key Benefits</h4>
+                        <ul>
+                            <li>Regulatory Compliance Automation</li>
+                            <li>Real-time Fraud Detection</li>
+                            <li>Portfolio Optimization</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="industry-card" data-industry="healthcare">
+                    <div class="industry-header">
+                        <div class="industry-icon">🏥</div>
+                        <h3>Healthcare</h3>
+                    </div>
+                    <div class="industry-content">
+                        <p>Patient data analysis, treatment optimization, and predictive diagnostics with HIPAA compliance.</p>
+                        <div class="industry-metrics">
+                            <span class="metric">95% Diagnosis Accuracy</span>
+                            <span class="metric">30% Cost Reduction</span>
+                        </div>
+                    </div>
+                    <div class="industry-overlay">
+                        <h4>Key Benefits</h4>
+                        <ul>
+                            <li>Predictive Diagnostics</li>
+                            <li>Treatment Optimization</li>
+                            <li>HIPAA Compliance</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="industry-card" data-industry="retail">
+                    <div class="industry-header">
+                        <div class="industry-icon">🛍️</div>
+                        <h3>Retail & E-commerce</h3>
+                    </div>
+                    <div class="industry-content">
+                        <p>Customer behavior analysis, inventory optimization, and personalized marketing campaigns.</p>
+                        <div class="industry-metrics">
+                            <span class="metric">+40% Conversion Rate</span>
+                            <span class="metric">-25% Inventory Costs</span>
+                        </div>
+                    </div>
+                    <div class="industry-overlay">
+                        <h4>Key Benefits</h4>
+                        <ul>
+                            <li>Customer Segmentation</li>
+                            <li>Demand Forecasting</li>
+                            <li>Personalized Marketing</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="industry-card" data-industry="manufacturing">
+                    <div class="industry-header">
+                        <div class="industry-icon">🏭</div>
+                        <h3>Manufacturing</h3>
+                    </div>
+                    <div class="industry-content">
+                        <p>Predictive maintenance, quality control, and supply chain optimization with IoT integration.</p>
+                        <div class="industry-metrics">
+                            <span class="metric">-30% Downtime</span>
+                            <span class="metric">+25% Quality Score</span>
+                        </div>
+                    </div>
+                    <div class="industry-overlay">
+                        <h4>Key Benefits</h4>
+                        <ul>
+                            <li>Predictive Maintenance</li>
+                            <li>Quality Control</li>
+                            <li>Supply Chain Optimization</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="integration" class="content-section">
+        <div class="container">
+            <h2 class="section-title">Seamless Enterprise Integration</h2>
+            <p class="section-subtitle">Connect with your existing tools and workflows without disruption.</p>
+            <div class="integration-grid">
+                <div class="integration-item">
+                    <div class="integration-logo">🔗</div>
+                    <h4>CRM Systems</h4>
+                    <p>Salesforce, HubSpot, Pipedrive</p>
+                </div>
+                <div class="integration-item">
+                    <div class="integration-logo">📧</div>
+                    <h4>Communication</h4>
+                    <p>Slack, Microsoft Teams, Zoom</p>
+                </div>
+                <div class="integration-item">
+                    <div class="integration-logo">💼</div>
+                    <h4>Business Tools</h4>
+                    <p>QuickBooks, SAP, Oracle</p>
+                </div>
+                <div class="integration-item">
+                    <div class="integration-logo">☁️</div>
+                    <h4>Cloud Platforms</h4>
+                    <p>AWS, Azure, Google Cloud</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="resources" class="content-section">
+        <div class="container">
+            <h2 class="section-title">See How It Adapts</h2>
+            <p class="section-subtitle">Drag the slider to see how Sense transforms raw, unstructured data into clear, actionable intelligence.</p>
+            <div class="demo-container" id="demo-slider">
+                <div class="demo-image demo-after"></div>
+                <div class="demo-image demo-before"></div>
+                <div class="slider-handle"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Testimonials Section -->
+    <div id="testimonials" class="content-section">
+        <div class="container">
+            <h2 class="section-title">Trusted by Industry Leaders</h2>
+            <p class="section-subtitle">See how Sense transforms business intelligence across different sectors.</p>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>"Sense has revolutionized our data analytics. We've seen a 40% improvement in decision-making speed and accuracy."</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">👨‍💼</div>
+                        <div class="author-info">
+                            <div class="author-name">Michael Chen</div>
+                            <div class="author-title">CTO, TechCorp</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>"The predictive analytics capabilities have given us a competitive edge in market forecasting."</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">👩‍💼</div>
+                        <div class="author-info">
+                            <div class="author-name">Sarah Johnson</div>
+                            <div class="author-title">VP Analytics, FinServe</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>"Enterprise-grade security with seamless integration. Sense exceeded our compliance requirements."</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">👨‍🔬</div>
+                        <div class="author-info">
+                            <div class="author-name">Dr. Robert Kim</div>
+                            <div class="author-title">Head of IT, HealthTech</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    
+    <!-- AI Ethics & Transparency Section -->
+    <div id="ethics" class="content-section">
+        <div class="container">
+            <h2 class="section-title">AI Ethics & Transparency Pledge</h2>
+            <p class="section-subtitle">Our commitment to responsible AI development and transparent operations</p>
+            <div class="ethics-grid">
+                <div class="ethics-card" data-principle="transparency">
+                    <div class="ethics-icon">🔍</div>
+                    <h3>Algorithm Transparency</h3>
+                    <p>We believe in explainable AI. Every decision made by Sense can be traced back to its source data and reasoning.</p>
+                    <div class="ethics-badge">Core Principle</div>
+                </div>
+                
+                <div class="ethics-card" data-principle="privacy">
+                    <div class="ethics-icon">🛡️</div>
+                    <h3>Data Privacy First</h3>
+                    <p>Your data never leaves your infrastructure. We process everything locally with zero data retention policies.</p>
+                    <div class="ethics-badge">Privacy-First</div>
+                </div>
+                
+                <div class="ethics-card" data-principle="bias">
+                    <div class="ethics-icon">⚖️</div>
+                    <h3>Bias Detection & Mitigation</h3>
+                    <p>Continuous monitoring for algorithmic bias with automated fairness testing and human oversight.</p>
+                    <div class="ethics-badge">Fair AI</div>
+                </div>
+                
+                <div class="ethics-card" data-principle="security">
+                    <div class="ethics-icon">🔐</div>
+                    <h3>Enterprise Security</h3>
+                    <p>Military-grade encryption, regular security audits, and compliance with international security standards.</p>
+                    <div class="ethics-badge">Secure</div>
+                </div>
+            </div>
+            
+            <div class="ethics-pledge">
+                <div class="pledge-content">
+                    <h3>Our Pledge to You</h3>
+                    <p>"We commit to developing AI that serves humanity ethically, transparently, and securely. Every line of code, every algorithm, and every decision is made with these principles in mind."</p>
+                    <div class="pledge-signature">
+                        <span class="signature-line">— Sense AI Team</span>
+                        <span class="signature-date">Est. 2024</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="cta-section" class="content-section">
+        <div class="container">
+                    <div class="cta-panel">
+            <h2 class="cta-title">Ready to Transform Your Business Intelligence?</h2>
+            <p class="cta-subtitle">Join industry leaders who trust Sense for strategic decision-making</p>
+            <div class="cta-buttons">
+                <a href="#" class="cta-button primary">Start Free Enterprise Trial</a>
+                <a href="#" class="cta-button secondary">Schedule Demo</a>
+            </div>
+            <div class="cta-stats">
+                <div class="stat">
+                    <div class="stat-number">500+</div>
+                    <div class="stat-label">Enterprise Clients</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">$2.3B</div>
+                    <div class="stat-label">Revenue Generated</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">99.9%</div>
+                    <div class="stat-label">Uptime SLA</div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+
+    <!-- SCRIPTS -->
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.157.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.157.0/examples/jsm/",
+                "gsap": "https://unpkg.com/gsap@3.12.2/index.js"
+            }
+        }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { gsap } from 'gsap';
+
+        // --- SCENE SETUP ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 5;
+
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg-canvas'), alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+        // --- LIGHTING ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+        scene.add(ambientLight);
+        
+        const keyLight = new THREE.DirectionalLight(0xA45CFF, 2);
+        keyLight.position.set(-1, 1, 3);
+        keyLight.castShadow = true;
+        scene.add(keyLight);
+        
+        const fillLight = new THREE.DirectionalLight(0x5C8DFF, 1.5);
+        fillLight.position.set(1, -1, 2);
+        scene.add(fillLight);
+
+        const rimLight = new THREE.SpotLight(0xFFFFFF, 5, 20, Math.PI / 4, 0.5);
+        rimLight.position.set(0, 3, 2);
+        scene.add(rimLight);
+
+        // --- ENHANCED 3D CUBE ---
+        const cubeGeometry = new THREE.BoxGeometry(2, 2, 2, 32, 32, 32);
+        
+        // Create environment map for reflections
+        const envMap = new THREE.CubeTextureLoader().load([
+            'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+            'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+            'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+            'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+            'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+            'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
+        ]);
+        scene.environment = envMap;
+        
+        const cubeMaterial = new THREE.MeshPhysicalMaterial({
+            color: 0x8B5CF6,
+            metalness: 0.3,
+            roughness: 0.1,
+            transmission: 0.8,
+            thickness: 1.0,
+            ior: 1.6,
+            transparent: true,
+            opacity: 0.95,
+            envMapIntensity: 1.2,
+            specularIntensity: 1.5,
+            clearcoat: 1.0,
+            clearcoatRoughness: 0.05,
+            reflectivity: 0.9,
+            side: THREE.DoubleSide
+        });
+        
+        const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+        cube.castShadow = true;
+        cube.receiveShadow = true;
+        cube.scale.set(0, 0, 0); // Initial scale for GSAP animation
+        scene.add(cube);
+        
+        // Add wireframe cube for extra effect
+        const wireframeMaterial = new THREE.MeshBasicMaterial({
+            color: 0x3B82F6,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.3
+        });
+        const wireframeCube = new THREE.Mesh(cubeGeometry, wireframeMaterial);
+        wireframeCube.scale.set(1.1, 1.1, 1.1);
+        cube.add(wireframeCube);
+
+        // --- GROUND PLANE FOR SHADOWS & REFLECTIONS ---
+        const planeGeometry = new THREE.PlaneGeometry(20, 20);
+        const planeMaterial = new THREE.ShadowMaterial({ opacity: 0.2 });
+        const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+        plane.rotation.x = -Math.PI / 2;
+        plane.position.y = -2;
+        plane.receiveShadow = true;
+        scene.add(plane);
+
+        // --- ENHANCED BACKGROUND SHADER WITH AURORA EFFECT ---
+        const bgGeometry = new THREE.PlaneGeometry(2, 2);
+        const bgMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                uTime: { value: 0 },
+                uMouse: { value: new THREE.Vector2(0,0) },
+                uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+                uMouseVelocity: { value: new THREE.Vector2(0,0) }
+            },
+            vertexShader: `
+                varying vec2 vUv;
+                void main() {
+                    vUv = uv;
+                    gl_Position = vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                uniform float uTime;
+                uniform vec2 uMouse;
+                uniform vec2 uResolution;
+                uniform vec2 uMouseVelocity;
+                varying vec2 vUv;
+
+                // Improved noise function
+                float noise(vec2 st) {
+                    return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+                }
+                
+                // Smooth noise
+                float smoothNoise(vec2 st) {
+                    vec2 i = floor(st);
+                    vec2 f = fract(st);
+                    vec2 u = f*f*(3.0-2.0*f);
+                    
+                    return mix(
+                        mix(noise(i), noise(i+vec2(1.0,0.0)), u.x),
+                        mix(noise(i+vec2(0.0,1.0)), noise(i+vec2(1.0,1.0)), u.x), u.y);
+                }
+                
+                // Aurora borealis effect
+                float aurora(vec2 p, float time) {
+                    float aurora1 = sin(p.x * 3.0 + time * 0.5) * sin(p.y * 2.0 + time * 0.3) * 0.5;
+                    float aurora2 = sin(p.x * 2.0 + time * 0.7) * sin(p.y * 3.0 + time * 0.4) * 0.3;
+                    float aurora3 = sin(p.x * 4.0 + time * 0.2) * sin(p.y * 1.5 + time * 0.6) * 0.4;
+                    
+                    return (aurora1 + aurora2 + aurora3) * 0.5;
+                }
+                
+                void main() {
+                    vec2 p = vUv - 0.5;
+                    p.x *= 2.0;
+                    
+                    // Enhanced mouse interaction with velocity
+                    vec2 mouse = uMouse * 0.5;
+                    float mouseDistance = length(p - mouse);
+                    float mouseInfluence = smoothstep(0.5, 0.0, mouseDistance);
+                    
+                    // Mouse velocity influence
+                    float velocityInfluence = length(uMouseVelocity) * 0.1;
+                    
+                    // Dynamic light beams
+                    float time = uTime * 0.15;
+                    float beam1 = 0.08 / abs(p.y - p.x * 0.7 + sin(time) * 0.4);
+                    float beam2 = 0.06 / abs(p.y + p.x * 0.5 + cos(time * 0.8) * 0.3);
+                    
+                    // Aurora effect
+                    float auroraEffect = aurora(p, time) * (1.0 + mouseInfluence * 0.5);
+                    
+                    // Complex background with multiple layers
+                    vec3 baseColor = mix(
+                        vec3(0.02, 0.01, 0.05), 
+                        vec3(0.08, 0.04, 0.12), 
+                        vUv.y + mouse.y * 0.3
+                    );
+                    
+                    // Add mouse reflection with velocity
+                    vec3 mouseColor = vec3(0.15, 0.08, 0.25) * mouseInfluence * (0.8 + velocityInfluence);
+                    
+                    // Enhanced beam effects
+                    vec3 beamColor = (beam1 + beam2) * vec3(0.12, 0.06, 0.22);
+                    
+                    // Aurora colors
+                    vec3 auroraColor = mix(
+                        vec3(0.1, 0.3, 0.2),  // Green
+                        vec3(0.2, 0.1, 0.3),  // Purple
+                        auroraEffect
+                    ) * 0.3;
+                    
+                    // Animated particles with mouse interaction
+                    float particles = 0.0;
+                    vec2 particle_uv = vUv * 15.0;
+                    particle_uv.x += uTime * 0.08;
+                    particle_uv.y += uTime * 0.05;
+                    
+                    for(int i = 0; i < 3; i++) {
+                        vec2 offset = vec2(float(i) * 0.1, float(i) * 0.15);
+                        float particle = smoothNoise(particle_uv + offset + mouse * 2.0);
+                        if (particle > 0.95) {
+                            particles += smoothstep(0.0, 0.3, 1.0 - fract(particle_uv.x + offset.x));
+                        }
+                    }
+                    
+                    // Final color composition with aurora
+                    vec3 color = baseColor + mouseColor + beamColor + auroraColor + particles * 0.15 * (1.0 + mouseInfluence);
+                    
+                    // Add subtle vignette
+                    float vignette = 1.0 - smoothstep(0.3, 1.0, length(p));
+                    color *= vignette;
+                    
+                    gl_FragColor = vec4(color, 1.0);
+                }
+            `,
+            depthWrite: false
+        });
+        const bgMesh = new THREE.Mesh(bgGeometry, bgMaterial);
+        bgMesh.position.z = -5;
+        scene.add(bgMesh);
+
+
+        // --- ENHANCED INTERACTIVITY ---
+        const mouse = { x: 0, y: 0, velocity: { x: 0, y: 0 } };
+        let lastMouseX = 0, lastMouseY = 0;
+        
+        window.addEventListener('mousemove', (event) => {
+            // Calculate mouse velocity for dynamic effects
+            mouse.velocity.x = event.clientX - lastMouseX;
+            mouse.velocity.y = event.clientY - lastMouseY;
+            lastMouseX = event.clientX;
+            lastMouseY = event.clientY;
+            
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            // Update shader uniforms
+            bgMaterial.uniforms.uMouse.value.set(mouse.x, mouse.y);
+            bgMaterial.uniforms.uMouseVelocity.value.set(mouse.velocity.x, mouse.velocity.y);
+            
+            // Add subtle cube interaction
+            if (cube) {
+                const targetRotationX = mouse.y * 0.3;
+                const targetRotationY = mouse.x * 0.3;
+                
+                gsap.to(cube.rotation, {
+                    x: targetRotationX,
+                    y: targetRotationY,
+                    duration: 1,
+                    ease: "power2.out"
+                });
+            }
+        });
+
+        renderer.domElement.addEventListener('click', () => {
+            gsap.to(cube.rotation, {
+                y: cube.rotation.y + Math.PI * 2,
+                duration: 2.5,
+                ease: "elastic.out(1, 0.5)"
+            });
+            gsap.to(cube.rotation, {
+                x: cube.rotation.x + Math.PI * 2,
+                duration: 3,
+                ease: "elastic.out(1, 0.5)"
+            });
+        });
+
+        // --- ANIMATION LOOP ---
+        const clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const elapsedTime = clock.getElapsedTime();
+
+            // Cube idle animation
+            cube.position.y = Math.sin(elapsedTime * 0.7) * 0.1 - 0.2;
+            cube.rotation.y += 0.002;
+
+            // Cube parallax
+            camera.position.x += (mouse.x * 0.5 - camera.position.x) * 0.05;
+            camera.position.y += (mouse.y * 0.5 - camera.position.y) * 0.05;
+            camera.lookAt(scene.position);
+
+            // Update shader time
+            bgMaterial.uniforms.uTime.value = elapsedTime;
+
+            renderer.render(scene, camera);
+        }
+
+        // --- RESPONSIVE RESIZE ---
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            
+            // Update shader resolution
+            if (bgMaterial && bgMaterial.uniforms.uResolution) {
+                bgMaterial.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+            }
+        });
+
+        // --- PAGE LOAD ANIMATIONS ---
+        window.addEventListener('load', () => {
+            const tl = gsap.timeline();
+            tl.to('header', { opacity: 1, y: 0, duration: 1, ease: 'power2.out' }, 0.5)
+              .to('.hero-text', { opacity: 1, y: 0, duration: 1, ease: 'power2.out' }, 0.8)
+              .to('.hero-subtext', { opacity: 1, y: 0, duration: 1, ease: 'power2.out' }, 1)
+              .to(cube.scale, { x: 1, y: 1, z: 1, duration: 1.5, ease: 'power3.out' }, 0)
+              .to(cube.rotation, { y: Math.PI * 0.25, duration: 2, ease: 'power3.out' }, 0)
+              .to('.footer-logos', { opacity: 1, duration: 1, ease: 'power2.out' }, 1.2);
+        });
+
+        // --- ENHANCED INTERACTIONS & ANIMATIONS ---
+        
+        // Draggable slider
+        const slider = document.getElementById('demo-slider');
+        const handle = slider.querySelector('.slider-handle');
+        const beforeImage = slider.querySelector('.demo-before');
+        let isDragging = false;
+        
+        handle.addEventListener('mousedown', () => { isDragging = true; });
+        document.addEventListener('mouseup', () => { isDragging = false; });
+        slider.addEventListener('mouseleave', () => { isDragging = false; });
+        
+        slider.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const rect = slider.getBoundingClientRect();
+            let x = e.clientX - rect.left;
+            if (x < 0) x = 0;
+            if (x > rect.width) x = rect.width;
+            
+            handle.style.left = `${x}px`;
+            beforeImage.style.width = `${x}px`;
+        });
+
+        // Animated counters for CTA stats
+        function animateCounters() {
+            const counters = document.querySelectorAll('.stat-number');
+            counters.forEach(counter => {
+                const target = parseInt(counter.textContent.replace(/\D/g, ''));
+                const increment = target / 100;
+                let current = 0;
+                
+                const updateCounter = () => {
+                    if (current < target) {
+                        current += increment;
+                        counter.textContent = Math.ceil(current) + counter.textContent.replace(/\d/g, '');
+                        requestAnimationFrame(updateCounter);
+                    } else {
+                        counter.textContent = counter.textContent.replace(/\d/g, '') + target + counter.textContent.replace(/\d/g, '');
+                        counter.classList.add('animated');
+                    }
+                };
+                
+                updateCounter();
+            });
+        }
+
+        // Typewriter effect for section titles
+        function initTypewriter() {
+            const titles = document.querySelectorAll('.section-title');
+            titles.forEach((title, index) => {
+                setTimeout(() => {
+                    title.classList.add('typewriter');
+                }, index * 500);
+            });
+        }
+
+        // Enhanced hover effects for feature cards
+        function initEnhancedHover() {
+            const cards = document.querySelectorAll('.feature-card');
+            cards.forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    card.style.setProperty('--mouse-x', `${x}px`);
+                    card.style.setProperty('--mouse-y', `${y}px`);
+                });
+            });
+        }
+
+        // Form submission with visual feedback
+        function initFormFeedback() {
+            const form = document.querySelector('.trial-form');
+            const button = form.querySelector('button');
+            const input = form.querySelector('input');
+            
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                // Simulate submission
+                button.classList.add('submitting');
+                button.textContent = 'Processing...';
+                
+                setTimeout(() => {
+                    button.classList.remove('submitting');
+                    button.classList.add('success');
+                    button.textContent = '✓ Success!';
+                    
+                    setTimeout(() => {
+                        button.classList.remove('success');
+                        button.textContent = 'Start Free Enterprise Trial';
+                    }, 2000);
+                }, 1500);
+            });
+        }
+
+        // Initialize all enhanced features
+        window.addEventListener('load', () => {
+            initTypewriter();
+            initEnhancedHover();
+            initFormFeedback();
+            
+            // Animate counters when CTA section is visible
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        animateCounters();
+                        observer.unobserve(entry.target);
+                    }
+                });
+            });
+            
+            const ctaSection = document.getElementById('cta-section');
+            if (ctaSection) {
+                observer.observe(ctaSection);
+            }
+        });
+
+        animate();
+    </script>
+</body>
+</html>
