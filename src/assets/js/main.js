@@ -595,6 +595,7 @@
              * Sistema de Certificaciones
              * Maneja la lógica de la sección de certificaciones
              */
+            /*
             class CertificationsSystem {
                 constructor() {
                     this.certData = [
@@ -915,6 +916,7 @@
              * Sistema de Ecosistema 3D
              * Maneja la lógica del ecosistema interactivo 3D
              */
+            /*
             class Ecosystem3D {
                 constructor() {
                     this.nodes = {};
@@ -1148,6 +1150,7 @@
              * Sistema de Formulario de Contacto
              * Maneja la lógica del formulario de contacto
              */
+            /*
             class ContactForm {
                 constructor() {
                     this.form = document.querySelector('.contact-form');
@@ -1261,7 +1264,7 @@
                             secureBoundary = secureFormData.boundary;
                             
                                                     // Sanitizar datos del formulario
-                        const sanitizedFormData = formDataSecurity.sanitizeFormData(formData);
+                        // const sanitizedFormData = formDataSecurity.sanitizeFormData(formData);
                         } else {
                             // Fallback si no están disponibles las utilidades de seguridad
                             formData = new FormData(this.form);
@@ -1327,9 +1330,9 @@
              */
             function initializeSystems() {
                 // Inicializar sistemas principales
-                const certificationsSystem = new CertificationsSystem();
-                const ecosystem3D = new Ecosystem3D();
-                const contactForm = new ContactForm();
+                // const certificationsSystem = new CertificationsSystem();
+                // const ecosystem3D = new Ecosystem3D();
+                // const contactForm = new ContactForm();
                 
                 // Configurar GSAP si está disponible
                 if (typeof gsap !== 'undefined') {
@@ -1402,6 +1405,7 @@ navLinks.forEach(link => {
 });
 
 // === CLASE UNIFICADA PARA MENÚ MÓVIL ===
+/*
 class MobileMenuManager {
     constructor() {
         this.isOpen = false;
@@ -1728,11 +1732,11 @@ class MobileMenuManager {
 // Inicializar el menú móvil cuando el DOM esté listo
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        const mobileMenuManager = new MobileMenuManager();
+        // const mobileMenuManager = new MobileMenuManager();
         // No es necesario llamar a initMobileMenu() aquí, ya que MobileMenuManager maneja su propio init()
     });
 } else {
-    const mobileMenuManager = new MobileMenuManager();
+    // const mobileMenuManager = new MobileMenuManager();
     // No es necesario llamar a initMobileMenu() aquí, ya que MobileMenuManager maneja su propio init()
 }
 
@@ -1891,23 +1895,23 @@ if (document.readyState === 'loading') {
 }
 
 // === FUNCIÓN GLOBAL DE PRUEBA DE NAVEGACIÓN ===
-function testNavigation(targetUrl) {
-    console.log('🧪 Probando navegación a:', targetUrl);
-    console.log('📍 URL actual:', window.location.href);
-    
-    // Navegación directa
-    console.log('🚀 Navegando directamente a:', targetUrl);
-    window.location.href = targetUrl;
-}
+// function testNavigation(targetUrl) {
+//     console.log('🧪 Probando navegación a:', targetUrl);
+//     console.log('📍 URL actual:', window.location.href);
+//     
+//     // Navegación directa
+//     console.log('🚀 Navegando directamente a:', targetUrl);
+//     window.location.href = targetUrl;
+// }
 
 // === FUNCIÓN DE NAVEGACIÓN DIRECTA ===
-function testDirectNavigation(targetUrl) {
-    console.log('🚀 Navegación directa a:', targetUrl);
-    console.log('📍 URL actual:', window.location.href);
-    
-    // Navegación directa sin procesamiento
-    window.location.href = targetUrl;
-}
+// function testDirectNavigation(targetUrl) {
+//     console.log('🚀 Navegación directa a:', targetUrl);
+//     console.log('📍 URL actual:', window.location.href);
+//     
+//     // Navegación directa sin procesamiento
+//     window.location.href = targetUrl;
+// }
 
 // === FUNCIÓN GLOBAL DE SCROLL SUAVE ===
 function smoothScrollWithAnimation(targetPosition) {
