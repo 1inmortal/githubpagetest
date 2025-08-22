@@ -25,7 +25,7 @@ src/
 - `components/Blog/` - Componentes del blog
 - `components/Certificados/` - Componentes de certificados
 - `components/evidencias/` - Componentes de evidencias
-- `components/react-ui-login/` - Componente de login en React
+- `components/Blog/` - Componentes adicionales del blog
 
 ## 🎨 Assets
 
