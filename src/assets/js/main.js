@@ -1728,6 +1728,7 @@ class MobileMenuManager {
         }
     }
 }
+*/
 
 // Inicializar el menú móvil cuando el DOM esté listo
 if (document.readyState === 'loading') {

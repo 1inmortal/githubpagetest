@@ -49,7 +49,7 @@ function initializeFormSecurity() {
     
     forms.forEach(form => {
         // Agregar validación de seguridad al envío
-        form.addEventListener('submit', function(e) {
+        form.addEventListener('submit', function(event) {
             // if (typeof SecurityUtils !== 'undefined') {
             //     const formData = SecurityUtils.sanitizeForm(form);
             //     
