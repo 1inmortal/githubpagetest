@@ -159,14 +159,14 @@ class SEOOptimizer {
 
     // Analytics Helper
     sendToAnalytics(metric, value) {
-        if (typeof gtag !== 'undefined') {
-            gtag('event', 'web_vitals', {
-                event_category: 'Web Vitals',
-                event_label: metric,
-                value: Math.round(value),
-                non_interaction: true
-            });
-        }
+        // if (typeof gtag !== 'undefined') {
+        //     gtag('event', 'web_vitals', {
+        //         event_category: 'Web Vitals',
+        //         event_label: metric,
+        //         value: Math.round(value),
+        //         non_interaction: true
+        //     });
+        // }
     }
 
     // SEO Meta Tags Dynamic Update
