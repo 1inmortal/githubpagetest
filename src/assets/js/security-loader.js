@@ -19,13 +19,13 @@ if (typeof SecurityUtils === 'undefined') {
             console.log('✅ Función sanitizeHTML ya disponible');
         } else {
             // Usar la función de SecurityUtils
-            window.sanitizeHTML = SecurityUtils.sanitizeHTML;
+            // window.sanitizeHTML = SecurityUtils.sanitizeHTML;
         }
         
         if (typeof window.escapeQuotes === 'function') {
             console.log('✅ Función escapeQuotes ya disponible');
         } else {
-            window.escapeQuotes = SecurityUtils.escapeQuotes;
+            // window.escapeQuotes = SecurityUtils.escapeQuotes;
         }
         
         // Inicializar validación de formularios
@@ -50,30 +50,30 @@ function initializeFormSecurity() {
     forms.forEach(form => {
         // Agregar validación de seguridad al envío
         form.addEventListener('submit', function(e) {
-            if (typeof SecurityUtils !== 'undefined') {
-                const formData = SecurityUtils.sanitizeForm(form);
-                
-                if (!formData.isValid) {
-                    e.preventDefault();
-                    
-                    // Mostrar errores de validación
-                    showValidationErrors(formData.errors);
-                    
-                    console.error('❌ Formulario rechazado por errores de validación:', formData.errors);
-                    return false;
-                }
-                
-                console.log('✅ Formulario validado correctamente');
-            }
+            // if (typeof SecurityUtils !== 'undefined') {
+            //     const formData = SecurityUtils.sanitizeForm(form);
+            //     
+            //     if (!formData.isValid) {
+            //         e.preventDefault();
+            //     
+            //     // Mostrar errores de validación
+            //     showValidationErrors(formData.errors);
+            //     
+            //     console.error('❌ Formulario rechazado por errores de validación:', formData.errors);
+            //     return false;
+            //     }
+            //     
+            //     console.log('✅ Formulario validado correctamente');
+            // }
         });
         
         // Agregar validación en tiempo real
-        const inputs = form.querySelectorAll('input, textarea, select');
-        inputs.forEach(input => {
-            input.addEventListener('blur', function() {
-                validateInput(this);
-            });
-        });
+        // const inputs = form.querySelectorAll('input, textarea, select');
+        // inputs.forEach(input => {
+        //     input.addEventListener('blur', function() {
+        //         validateInput(this);
+        //     });
+        // });
     });
 }
 
@@ -81,29 +81,29 @@ function initializeFormSecurity() {
  * Validar un campo de entrada individual
  * @param {HTMLElement} input - Campo de entrada a validar
  */
-function validateInput(input) {
-    if (typeof SecurityUtils === 'undefined') return;
-    
-    const value = input.value;
-    const type = input.type || 'text';
-    
-    const validation = SecurityUtils.validateAndSanitizeInput(value, type);
-    
-    // Remover clases de error previas
-    input.classList.remove('error');
-    
-    if (!validation.isValid) {
-        input.classList.add('error');
-        
-        // Mostrar mensaje de error
-        showInputError(input, validation.error);
-    } else {
-        // Actualizar valor sanitizado
-        if (validation.sanitized !== value) {
-            input.value = validation.sanitized;
-        }
-    }
-}
+// function validateInput(input) {
+//     if (typeof SecurityUtils === 'undefined') return;
+//     
+//     const value = input.value;
+//     const type = input.type || 'text';
+//     
+//     const validation = SecurityUtils.validateAndSanitizeInput(value, type);
+//     
+//     // Remover clases de error previas
+//     input.classList.remove('error');
+//     
+//     if (!validation.isValid) {
+//         input.classList.add('error');
+//         
+//         // Mostrar mensaje de error
+//         showInputError(input, validation.error);
+//     } else {
+//         // Actualizar valor sanitizado
+//         if (validation.sanfo !== value) {
+//         input.value = validation.sanitized;
+//         }
+//     }
+// }
 
 /**
  * Mostrar errores de validación
