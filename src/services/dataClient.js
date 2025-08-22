@@ -4,7 +4,7 @@
  */
 
 import { store } from '../core/store.js';
-import { API_BASE_URL, isDevelopment, isProduction } from '../config/environment.js';
+import { API_BASE_URL, isDevelopment } from '../config/environment.js';
 
 class DataClient {
   constructor() {
@@ -51,9 +51,9 @@ class DataClient {
   // Función principal SWR (Stale-While-Revalidate)
   async swr(key, fetcher, options = {}) {
     const {
-      revalidateOnFocus = true,
-      revalidateOnReconnect = true,
-      dedupingInterval = 2000,
+      // revalidateOnFocus = true,
+      // revalidateOnReconnect = true,
+      // dedupingInterval = 2000,
       errorRetryCount = 3,
       errorRetryInterval = 5000
     } = options;
@@ -188,8 +188,8 @@ class DataClient {
   }
 
   // Métodos específicos para proyectos
-  async getProjects(options = {}) {
-    return this.swr('projects', () => this.fetchData('/projects'), options);
+  async getProjects(/* options = {} */) {
+    return this.swr('projects', () => this.fetchData('/projects'), {});
   }
 
   async getProject(id, options = {}) {
