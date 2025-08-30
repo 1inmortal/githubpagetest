@@ -38,11 +38,22 @@ En la sección "Environment Variables", haz clic en "+ Add Environment Variable"
 
 ## Ejecutar el Esquema de la Base de Datos
 
-```sql
--- Copia y pega el contenido de schema.sql en tu cliente PostgreSQL
--- O ejecuta desde la línea de comandos:
-psql -h tu_host -U tu_usuario -d tu_base_datos -f schema.sql
+### Opción 1: Desde línea de comandos
+```bash
+psql -h dpg-d2p9bbmr433s73d0vm60-a -U backend_db_lhz2_user -d backend_db_lhz2 -f schema.sql
 ```
+
+### Opción 2: Desde pgAdmin o cliente PostgreSQL
+1. Conéctate a tu base de datos usando:
+   - **Host:** `dpg-d2p9bbmr433s73d0vm60-a`
+   - **Usuario:** `backend_db_lhz2_user`
+   - **Contraseña:** `uRcP1glBw2cRnx8WvYuTjKJlBiCObpMC`
+   - **Base de datos:** `backend_db_lhz2`
+
+2. Ejecuta el contenido del archivo `schema.sql`
+
+### Opción 3: Desde la aplicación web
+Si tienes acceso a una interfaz web de PostgreSQL, copia y pega el contenido de `schema.sql`
 
 ## Verificar el Despliegue
 
