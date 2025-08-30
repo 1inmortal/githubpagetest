@@ -15,7 +15,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          utils: ['@prisma/client']
+          utils: []
         }
       }
     }
