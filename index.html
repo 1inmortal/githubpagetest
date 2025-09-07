@@ -12503,7 +12503,7 @@
             });
             
             // Envío del formulario
-            contactForm.addEventListener('submit', (e) => {
+            contactForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
                 const formData = new FormData(contactForm);
@@ -12511,31 +12511,50 @@
                 
                 console.log('Datos del formulario:', data);
                 
-                // Simular envío
-                simulateFormSubmission();
+                // Enviar datos reales al backend
+                await sendFormDataToBackend(data);
             });
         }
         
-        function simulateFormSubmission() {
+        async function sendFormDataToBackend(formData) {
             const submitBtn = document.querySelector('.submit-btn');
             const originalText = submitBtn.querySelector('.btn-text').textContent;
             
-            // Cambiar estado del botón
-            submitBtn.disabled = true;
-            submitBtn.querySelector('.btn-text').textContent = 'TRANSMITIENDO...';
-            submitBtn.style.background = 'linear-gradient(45deg, #ff00ff, #00ffff)';
-            
-            // Simular progreso
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += 20;
+            try {
+                // Cambiar estado del botón
+                submitBtn.disabled = true;
+                submitBtn.querySelector('.btn-text').textContent = 'TRANSMITIENDO...';
+                submitBtn.style.background = 'linear-gradient(45deg, #ff00ff, #00ffff)';
                 
-                if (progress >= 100) {
-                    clearInterval(interval);
+                // URL del backend (cambiar según tu configuración)
+                const backendUrl = 'http://localhost:3000/contacto'; // Para desarrollo local
+                // const backendUrl = 'https://tu-backend-en-render.onrender.com/contacto'; // Para producción
+                
+                // Enviar datos al backend
+                const response = await fetch(backendUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        nombre: formData.name,
+                        email: formData.email,
+                        password: 'contacto_' + Date.now(), // Password temporal
+                        proyecto: formData.project,
+                        mensaje: formData.message
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('Datos guardados en BD:', result);
                     
                     // Mensaje de éxito
                     submitBtn.querySelector('.btn-text').textContent = 'MENSAJE TRANSMITIDO';
                     submitBtn.style.background = 'linear-gradient(45deg, #00ff00, #00ffff)';
+                    
+                    // Mostrar notificación de éxito
+                    showNotification('success', 'Mensaje enviado exitosamente a la base de datos!', 3000);
                     
                     // Resetear formulario
                     setTimeout(() => {
@@ -12544,8 +12563,78 @@
                         submitBtn.querySelector('.btn-text').textContent = originalText;
                         submitBtn.style.background = 'linear-gradient(45deg, #00ffff, #ff00ff)';
                     }, 2000);
+                    
+                } else {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
                 }
-            }, 300);
+                
+            } catch (error) {
+                console.error('Error enviando datos:', error);
+                
+                // Mensaje de error
+                submitBtn.querySelector('.btn-text').textContent = 'ERROR DE TRANSMISIÓN';
+                submitBtn.style.background = 'linear-gradient(45deg, #ff0000, #ff6666)';
+                
+                // Mostrar notificación de error
+                showNotification('error', 'Error al enviar mensaje. Verifica que el backend esté funcionando.', 5000);
+                
+                // Restaurar botón
+                setTimeout(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.querySelector('.btn-text').textContent = originalText;
+                    submitBtn.style.background = 'linear-gradient(45deg, #00ffff, #ff00ff)';
+                }, 3000);
+            }
+        }
+        
+        // Función para mostrar notificaciones
+        function showNotification(type, message, duration = 3000) {
+            // Crear elemento de notificación
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+                <div class="notification-content">
+                    <span class="notification-icon">${type === 'success' ? '✅' : '❌'}</span>
+                    <span class="notification-message">${message}</span>
+                </div>
+            `;
+            
+            // Estilos de la notificación
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? 'rgba(0, 255, 0, 0.9)' : 'rgba(255, 0, 0, 0.9)'};
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                font-family: var(--font-primary);
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+                z-index: 10000;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            
+            // Agregar al DOM
+            document.body.appendChild(notification);
+            
+            // Animar entrada
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Remover después del tiempo especificado
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, duration);
         }
         
 
