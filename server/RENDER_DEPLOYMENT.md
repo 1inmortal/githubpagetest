@@ -1,121 +1,168 @@
-# Despliegue en Render
+# 🚀 DESPLIEGUE EN RENDER - BACKEND INMORTAL
 
-## Configuración de Variables de Entorno en Render
+## 📋 PASOS PARA DESPLEGAR EN RENDER
 
-### 1. Acceder al Panel de Control
-1. Ve a [render.com](https://render.com) y accede a tu cuenta
-2. Selecciona tu servicio web
-3. Haz clic en la pestaña "Environment" en el panel lateral izquierdo
+### 1. **Crear Cuenta en Render**
+- Ve a [render.com](https://render.com)
+- Crea una cuenta gratuita
+- Conecta tu repositorio de GitHub
 
-### 2. Configurar Variables de Entorno
-En la sección "Environment Variables", haz clic en "+ Add Environment Variable" y añade:
+### 2. **Crear Nuevo Servicio Web**
+- Click en "New +"
+- Selecciona "Web Service"
+- Conecta tu repositorio: `githubpagetest`
+- Selecciona la rama: `main`
 
-| Variable | Valor | Descripción |
-|----------|-------|-------------|
-| `DB_USER` | `tu_usuario_postgresql` | Usuario de tu base de datos PostgreSQL |
-| `DB_PASSWORD` | `tu_password_postgresql` | Contraseña de tu base de datos PostgreSQL |
-| `DB_HOST` | `tu_host_postgresql` | Host de tu base de datos (ej: db.render.com) |
-| `DB_PORT` | `5432` | Puerto de PostgreSQL (por defecto 5432) |
-| `DB_NAME` | `tu_nombre_base_datos` | Nombre de tu base de datos |
-| `PORT` | `10000` | Puerto del servidor (Render usa 10000 por defecto) |
-
-### 3. Opciones de Guardado
-- **"Save, rebuild, and deploy"**: Render reconstruirá y desplegará tu servicio
-- **"Save and deploy"**: Render redeployará tu servicio existente
-- **"Save only"**: Render guardará las variables sin desplegar
-
-## Configuración de la Base de Datos
-
-### Opción 1: PostgreSQL en Render (Recomendado)
-1. Crea un nuevo servicio de base de datos PostgreSQL en Render
-2. Usa las credenciales proporcionadas por Render
-3. Ejecuta el archivo `schema.sql` en tu base de datos
-
-### Opción 2: Base de Datos Externa
-- **Supabase**: Servicio gratuito de PostgreSQL
-- **Neon**: PostgreSQL serverless
-- **Railway**: Base de datos PostgreSQL incluida
-
-## Ejecutar el Esquema de la Base de Datos
-
-### Opción 1: Desde línea de comandos
-```bash
-psql -h dpg-d2p9bbmr433s73d0vm60-a -U backend_db_lhz2_user -d backend_db_lhz2 -f schema.sql
+### 3. **Configuración del Servicio**
+```
+Name: inmortal-backend
+Environment: Node
+Build Command: npm install
+Start Command: npm start
 ```
 
-### Opción 2: Desde pgAdmin o cliente PostgreSQL
-1. Conéctate a tu base de datos usando:
-   - **Host:** `dpg-d2p9bbmr433s73d0vm60-a`
-   - **Usuario:** `backend_db_lhz2_user`
-   - **Contraseña:** `uRcP1glBw2cRnx8WvYuTjKJlBiCObpMC`
-   - **Base de datos:** `backend_db_lhz2`
+### 4. **Variables de Entorno (Environment Variables)**
+Agrega estas variables en la sección "Environment Variables":
 
-2. Ejecuta el contenido del archivo `schema.sql`
+| Key | Value |
+|-----|-------|
+| `NODE_ENV` | `production` |
+| `PORT` | `10000` |
+| `DB_USER` | `backend_db_lhz2_user` |
+| `DB_PASSWORD` | `uRcP1glBw2cRnx8WvYuTjKJlBiCObpMC` |
+| `DB_HOST` | `dpg-d2p9bbmr433s73d0vm60-a.oregon-postgres.render.com` |
+| `DB_PORT` | `5432` |
+| `DB_NAME` | `backend_db_lhz2` |
 
-### Opción 3: Desde la aplicación web
-Si tienes acceso a una interfaz web de PostgreSQL, copia y pega el contenido de `schema.sql`
+### 5. **Configuración Avanzada**
+- **Auto-Deploy**: Enabled
+- **Branch**: main
+- **Region**: Oregon (US West)
 
-## Verificar el Despliegue
+### 6. **Crear Servicio**
+- Click en "Create Web Service"
+- Render comenzará a construir y desplegar tu aplicación
 
-### Desde el Navegador
-- Accede a la URL de tu servicio en Render
-- Deberías ver: "API funcionando 🚀"
+## 🔧 VERIFICACIÓN DEL DESPLIEGUE
 
-### Desde Postman
-1. **GET /** - Ruta raíz
-   - URL: `https://tu-servicio.onrender.com/`
-   - Debería devolver: "API funcionando 🚀"
+### **URL de tu API:**
+```
+https://inmortal-backend.onrender.com
+```
 
-2. **GET /usuarios** - Obtener usuarios
-   - URL: `https://tu-servicio.onrender.com/usuarios`
-   - Método: GET
+### **Endpoints disponibles:**
+- `GET /` → "API funcionando 🚀"
+- `GET /test-db` → Prueba conexión BD
+- `GET /usuarios` → Lista usuarios
+- `POST /usuarios` → Crear usuario
+- `POST /contacto` → Formulario contacto
+- `GET /productos` → Lista productos
+- `POST /productos` → Crear producto
 
-3. **POST /usuarios** - Crear usuario
-   - URL: `https://tu-servicio.onrender.com/usuarios`
-   - Método: POST
-   - Headers: `Content-Type: application/json`
-   - Body:
-   ```json
-   {
-     "nombre": "Juan Pérez",
-     "email": "juan@example.com",
-     "password": "password123"
-   }
-   ```
+## 🌐 CONFIGURAR FRONTEND PARA GITHUB PAGES
 
-4. **GET /productos** - Obtener productos
-   - URL: `https://tu-servicio.onrender.com/productos`
-   - Método: GET
+### **Actualizar URL en index.html:**
+Cambia esta línea en tu `index.html`:
 
-5. **POST /productos** - Crear producto
-   - URL: `https://tu-servicio.onrender.com/productos`
-   - Método: POST
-   - Headers: `Content-Type: application/json`
-   - Body:
-   ```json
-   {
-     "nombre": "Producto Test",
-     "descripcion": "Descripción del producto",
-     "precio": 29.99,
-     "stock": 10
-   }
-   ```
+```javascript
+// Cambiar de:
+const backendUrl = 'http://localhost:3000/contacto';
 
-## Solución de Problemas
+// A:
+const backendUrl = 'https://inmortal-backend.onrender.com/contacto';
+```
 
-### Error: "Connection refused"
-- Verifica que las variables de entorno estén correctamente configuradas
-- Asegúrate de que la base de datos esté activa
+### **Hacer Commit y Push:**
+```bash
+git add .
+git commit -m "Configurar frontend para Render"
+git push origin main
+```
 
-### Error: "Authentication failed"
-- Verifica `DB_USER` y `DB_PASSWORD`
-- Asegúrate de que el usuario tenga permisos en la base de datos
+## 📊 VERIFICAR EN PGADMIN
 
-### Error: "Database does not exist"
-- Verifica `DB_NAME`
-- Crea la base de datos si no existe
+### **1. Conectar a tu BD en pgAdmin:**
+- Host: `dpg-d2p9bbmr433s73d0vm60-a.oregon-postgres.render.com`
+- Port: `5432`
+- Database: `backend_db_lhz2`
+- Username: `backend_db_lhz2_user`
+- Password: `uRcP1glBw2cRnx8WvYuTjKJlBiCObpMC`
 
-## Monitoreo
-- Revisa los logs en la pestaña "Logs" de Render
-- Monitorea el estado de tu base de datos
-- Verifica el uptime en la pestaña "Metrics"
+### **2. Verificar Tablas:**
+```sql
+-- Ver usuarios creados desde el formulario
+SELECT * FROM usuarios WHERE email LIKE '%@%';
+
+-- Ver mensajes de contacto
+SELECT 
+    c.id,
+    c.proyecto,
+    c.mensaje,
+    c.fecha,
+    u.nombre,
+    u.email
+FROM contactos c
+JOIN usuarios u ON c.usuario_id = u.id
+ORDER BY c.fecha DESC;
+```
+
+### **3. Verificar Auditorías:**
+```sql
+-- Ver auditorías del sistema
+SELECT * FROM auditorias ORDER BY detectado_en DESC;
+```
+
+## 🧪 PRUEBAS
+
+### **1. Probar API desde navegador:**
+```
+https://inmortal-backend.onrender.com/test-db
+```
+
+### **2. Probar formulario de contacto:**
+- Abre tu sitio en GitHub Pages
+- Llena el formulario de contacto
+- Verifica en pgAdmin que se creen registros
+
+### **3. Verificar logs en Render:**
+- Ve a tu servicio en Render
+- Click en "Logs"
+- Verifica que no haya errores
+
+## 🚨 SOLUCIÓN DE PROBLEMAS
+
+### **Error de CORS:**
+- Verifica que CORS esté habilitado en el servidor
+- Asegúrate de que la URL del frontend esté correcta
+
+### **Error de conexión BD:**
+- Verifica variables de entorno en Render
+- Confirma que la BD esté activa
+- Revisa logs del servidor
+
+### **Error 404:**
+- Verifica que las rutas estén correctas
+- Confirma que el servidor esté corriendo
+
+## 📱 MONITOREO
+
+### **Render Dashboard:**
+- Estado del servicio
+- Logs en tiempo real
+- Métricas de rendimiento
+
+### **pgAdmin:**
+- Monitoreo de BD
+- Verificación de datos
+- Consultas de auditoría
+
+## 🎯 RESULTADO FINAL
+
+Una vez configurado, tu flujo será:
+1. **Usuario llena formulario** en GitHub Pages
+2. **Frontend envía datos** a Render
+3. **Backend procesa** y guarda en PostgreSQL
+4. **Datos visibles** en pgAdmin
+5. **Notificación de éxito** en el frontend
+
+¡Tu sitio estará completamente funcional con base de datos en tiempo real! 🚀
