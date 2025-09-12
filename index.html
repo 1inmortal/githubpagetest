@@ -25,6 +25,112 @@
     
     <!-- Lenis para scroll suave -->
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1/bundled/lenis.min.js"></script>
+
+    <!-- Estilos del menú al estilo proyectos.html -->
+    <style>
+        :root {
+          --nav-color-foreground: rgb(250, 225, 250);
+          --nav-color-background: rgb(5, 5, 5);
+          --nav-color-accent: rgb(255, 223, 0);
+          --nav-font-primary: "PP Supply Mono", monospace;
+        }
+
+        .navigation-menu {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 2rem;
+          padding: 1.25rem 0; /* más compacto para header */
+          margin: 0;
+          border-bottom: 1px solid rgba(200, 255, 200, 0.1);
+          position: relative;
+          z-index: 150;
+        }
+
+        .filter-button {
+          background: none;
+          border: none;
+          color: var(--nav-color-foreground);
+          font-family: var(--nav-font-primary);
+          font-size: 12px;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          padding: 8px 16px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          position: relative;
+          opacity: 0.8;
+          border-radius: 2px;
+          text-decoration: none;
+          display: inline-block;
+        }
+
+        .filter-button::after {
+          content: "";
+          position: absolute;
+          bottom: -2px;
+          left: 0;
+          width: 100%;
+          height: 2px;
+          background: var(--nav-color-accent);
+          transform: scaleX(0);
+          transition: transform 0.3s ease;
+          transform-origin: left;
+        }
+
+        .filter-button:hover {
+          opacity: 1;
+          background-color: rgba(255, 223, 0, 0.08);
+        }
+
+        .filter-button:hover::after,
+        .filter-button.active::after {
+          transform: scaleX(1);
+        }
+
+        .filter-button.active {
+          opacity: 1;
+          background-color: rgba(255, 223, 0, 0.15);
+        }
+
+        .navigation-menu::before {
+          content: "";
+          position: absolute;
+          bottom: 0;
+          left: 50%;
+          width: 0;
+          height: 2px;
+          background: var(--nav-color-accent);
+          transition: all 0.3s ease;
+          transform: translateX(-50%);
+        }
+
+        .navigation-menu:hover::before {
+          width: 100%;
+        }
+
+        .navigation-menu .filter-indicator {
+          position: absolute;
+          bottom: -2px;
+          left: 0;
+          height: 2px;
+          background: var(--nav-color-accent);
+          transition: all 0.3s ease;
+          z-index: 1;
+        }
+
+        @media (max-width: 768px) {
+          .navigation-menu {
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 0.75rem 0;
+          }
+          .filter-button {
+            font-size: 10px;
+            padding: 6px 10px;
+          }
+        }
+    </style>
 </head>
 <body>
     <!-- Cursor personalizado con efecto glass -->
@@ -44,103 +150,101 @@
                 </div>
             </div>
             
-            <nav class="main-nav">
-                <ul>
-                    <li class="nav-item">
-                        <a href="#hero" class="active" data-section="hero">INICIO</a>
-                        <div class="nav-hover-square"></div>
-                        <div class="submenu">
-                            <div class="submenu-content">
-                                <a href="index.html" class="submenu-link">
-                                    <span class="submenu-icon">🏠</span>
-                                    <span class="submenu-text">Página Principal</span>
-                                </a>
-                                <a href="wordpress.html" class="submenu-link">
-                                    <span class="submenu-icon">📝</span>
-                                    <span class="submenu-text">WordPress</span>
-                                </a>
-                            </div>
+            <nav class="navigation-menu" role="navigation" aria-label="Menú principal">
+                <div class="filter-indicator" id="filterIndicator"></div>
+
+                <div class="nav-item">
+                    <a class="filter-button active" href="#hero" data-section="hero" aria-haspopup="true" aria-expanded="false">INICIO</a>
+                    <div class="submenu" role="menu" aria-label="Submenú Inicio">
+                        <div class="submenu-content">
+                            <a href="index.html" class="submenu-link" role="menuitem">
+                                <span class="submenu-icon">🏠</span>
+                                <span class="submenu-text">Inicio Principal</span>
+                            </a>
+                            
                         </div>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#about" data-section="about">ACERCA DE</a>
-                        <div class="nav-hover-square"></div>
-                        <div class="submenu">
-                            <div class="submenu-content">
-                                <a href="#quienes-somos" class="submenu-link">
-                                    <span class="submenu-icon">👥</span>
-                                    <span class="submenu-text">Quiénes somos</span>
-                                </a>
-                                <a href="#mission" class="submenu-link">
-                                    <span class="submenu-icon">🎯</span>
-                                    <span class="submenu-text">Misión</span>
-                                </a>
-                                <a href="#vision" class="submenu-link">
-                                    <span class="submenu-icon">👁️</span>
-                                    <span class="submenu-text">Visión</span>
-                                </a>                            
-                                
-                            </div>
+                    </div>
+                </div>
+
+                <div class="nav-item">
+                    <a class="filter-button" href="#about" data-section="about" aria-haspopup="true" aria-expanded="false">ACERCA DE</a>
+                    <div class="submenu" role="menu" aria-label="Submenú Acerca de">
+                        <div class="submenu-content">
+                            <a href="#mission" class="submenu-link" role="menuitem">
+                                <span class="submenu-icon">🎯</span>
+                                <span class="submenu-text">Misión</span>
+                            </a>
+                            <a href="#vision" class="submenu-link" role="menuitem">
+                                <span class="submenu-icon">👁️</span>
+                                <span class="submenu-text">Visión</span>
+                            </a>
+                            <a href="public/proyectos.html" class="submenu-link" role="menuitem">
+                                <span class="submenu-icon">🔍</span>
+                                <span class="submenu-text">Evidencias</span>
+                            </a>
                         </div>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#skills" data-section="skills">SERVICIOS</a>
-                        <div class="nav-hover-square"></div>
-                        <div class="submenu">
-                            <div class="submenu-content">
-                                <a href="#services" class="submenu-link">
-                                    <span class="submenu-icon">⚡</span>
-                                    <span class="submenu-text">Servicios Premium</span>
-                                </a>
-                                <a href="#certifications" class="submenu-link">
-                                    <span class="submenu-icon">🏆</span>
-                                    <span class="submenu-text">Certificaciones</span>
-                                </a>
-                                
-                            </div>
+                    </div>
+                </div>
+
+                <div class="nav-item">
+                    <a class="filter-button" href="#skills" data-section="skills" aria-haspopup="true" aria-expanded="false">SERVICIOS</a>
+                    <div class="submenu" role="menu" aria-label="Submenú Servicios">
+                        <div class="submenu-content">
+                            <a href="pruebas/tets-tarjeta.html" class="submenu-link" role="menuitem">
+                                <span class="submenu-icon">🎵</span>
+                                <span class="submenu-text">Test Tarjetas</span>
+                            </a>
+                            <a href="pruebas/tarjetas.html" class="submenu-link" role="menuitem">
+                                <span class="submenu-icon">🎴</span>
+                                <span class="submenu-text">Tarjetas</span>
+                            </a>
+                            <a href="src/components/evidencias/presentacion/presentacion.html" class="submenu-link" role="menuitem">
+                                <span class="submenu-icon">🎭</span>
+                                <span class="submenu-text">Presentación</span>
+                            </a>
                         </div>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#projects" data-section="projects">PROYECTOS</a>
-                        <div class="nav-hover-square"></div>
-                        <div class="submenu">
-                            <div class="submenu-content">
-                                <a href="#projects" class="submenu-link">
-                                    <span class="submenu-icon">🚀</span>
-                                    <span class="submenu-text">Portfolio</span>
-                                </a>
-                                <a href="src/components/evidencias/Proyecto x/main.html" class="submenu-link">
-                                    <span class="submenu-icon">⚛️</span>
-                                    <span class="submenu-text">Proyecto X</span>
-                                </a>
-                                <a href="src/components/evidencias/laboratorio/index.html" class="submenu-link">
-                                    <span class="submenu-icon">🧪</span>
-                                    <span class="submenu-text">Laboratorio</span>
-                                </a>
-                            </div>
+                    </div>
+                </div>
+
+                <div class="nav-item">
+                    <a class="filter-button" href="#projects" data-section="projects" aria-haspopup="true" aria-expanded="false">PROYECTOS</a>
+                    <div class="submenu" role="menu" aria-label="Submenú Proyectos">
+                        <div class="submenu-content">
+                            <a href="public/proyectos.html" class="submenu-link" role="menuitem">
+                                <span class="submenu-icon">📁</span>
+                                <span class="submenu-text">Portfolio General</span>
+                            </a>
+                            <a href="src/components/evidencias/Proyecto x/main.html" class="submenu-link" role="menuitem">
+                                <span class="submenu-icon">🚀</span>
+                                <span class="submenu-text">Proyecto X</span>
+                            </a>                       
+                            <a href="src/components/evidencias/laboratorio/index.html" class="submenu-link" role="menuitem">
+                                <span class="submenu-icon">🧪</span>
+                                <span class="submenu-text">Laboratorio</span>
+                            </a>
                         </div>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#contact" data-section="contact">CONTACTO</a>
-                        <div class="nav-hover-square"></div>
-                        <div class="submenu">
-                            <div class="submenu-content">
-                                <a href="#contact" class="submenu-link">
-                                    <span class="submenu-icon">📞</span>
-                                    <span class="submenu-text">Contacto</span>
-                                </a>
-                                <a href="terms.html" class="submenu-link">
-                                    <span class="submenu-icon">📋</span>
-                                    <span class="submenu-text">Términos</span>
-                                </a>
-                                <a href="privacy-policy.html" class="submenu-link">
-                                    <span class="submenu-icon">🔒</span>
-                                    <span class="submenu-text">Privacidad</span>
-                                </a>
-                            </div>
+                    </div>
+                </div>
+
+                <div class="nav-item">
+                    <a class="filter-button" href="#contact" data-section="contact" aria-haspopup="true" aria-expanded="false">CONTACTO</a>
+                    <div class="submenu" role="menu" aria-label="Submenú Contacto">
+                        <div class="submenu-content">
+                            <a href="terms.html" class="submenu-link" role="menuitem">
+                                <span class="submenu-icon">📋</span>
+                                <span class="submenu-text">Términos</span>
+                            </a>
+                            <a href="privacy-policy.html" class="submenu-link" role="menuitem">
+                                <span class="submenu-icon">🔒</span>
+                                <span class="submenu-text">Privacidad</span>
+                            </a>
+                            <a href="sitemap.xml" class="submenu-link" role="menuitem">
+                                <span class="submenu-icon">🗺️</span>
+                                <span class="submenu-text">Sitemap</span>
+                            </a>
                         </div>
-                    </li>
-                </ul>
+                    </div>
+                </div>
             </nav>
             
             <div class="contact-link">
@@ -191,6 +295,14 @@
                     <span class="mobile-nav-arrow">▶</span>
                 </a>
                 <div class="mobile-submenu">
+                    <a href="#mission" class="mobile-submenu-link">
+                        <span class="mobile-submenu-icon">🎯</span>
+                        Misión
+                    </a>
+                    <a href="#vision" class="mobile-submenu-link">
+                        <span class="mobile-submenu-icon">👁️</span>
+                        Visión
+                    </a>
                     <a href="src/components/Blog/Ceo.html" class="mobile-submenu-link">
                         <span class="mobile-submenu-icon">👨‍💼</span>
                         CEO Blog
@@ -1831,6 +1943,9 @@
         /* Submenu Styles - Flotante sin paneles */
         .nav-item {
             position: relative;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
         }
         
         .submenu {
@@ -1842,60 +1957,76 @@
             -moz-transform: translateX(-50%) translateY(15px) scale(0.95);
             -ms-transform: translateX(-50%) translateY(15px) scale(0.95);
             -o-transform: translateX(-50%) translateY(15px) scale(0.95);
-            background: rgba(10, 10, 20, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
-            padding: 1rem;
-            min-width: 300px;
-            max-width: 350px;
+            background: rgba(5, 5, 10, 0.9);
+            border: 1px solid rgba(255, 223, 0, 0.18);
+            border-radius: 10px;
+            padding: 0.75rem;
+            min-width: 280px;
+            max-width: 340px;
             opacity: 0;
             visibility: hidden;
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-            -webkit-transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-            -moz-transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-            -o-transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+            -webkit-transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+            -moz-transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+            -o-transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
             z-index: 1000;
             pointer-events: none;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-            /* Prevenir desplazamientos no deseados */
+            backdrop-filter: blur(16px) saturate(120%);
+            -webkit-backdrop-filter: blur(16px) saturate(120%);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255, 223, 0, 0.06);
             transform-origin: top center;
             -webkit-transform-origin: top center;
             -moz-transform-origin: top center;
             -ms-transform-origin: top center;
             -o-transform-origin: top center;
         }
+
+        .submenu::before {
+            content: "";
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            -webkit-transform: translateX(-50%);
+            width: 10px;
+            height: 10px;
+            background: rgba(5, 5, 10, 0.9);
+            border-left: 1px solid rgba(255, 223, 0, 0.18);
+            border-top: 1px solid rgba(255, 223, 0, 0.18);
+            transform: translateX(-50%) rotate(45deg);
+            -webkit-transform: translateX(-50%) rotate(45deg);
+            border-radius: 2px 0 0 0;
+        }
         
         .submenu-content {
             display: flex;
             flex-direction: column;
-            gap: 0.8rem;
-            align-items: flex-start;
+            gap: 0.6rem;
+            align-items: stretch;
             width: 100%;
         }
         
         .submenu-link {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            padding: 0.75rem 1rem;
-            color: var(--text-color);
+            gap: 0.75rem;
+            padding: 0.6rem 0.9rem;
+            color: var(--nav-color-foreground);
             text-decoration: none;
-            font-family: var(--font-primary);
-            font-size: 13px;
+            font-family: var(--nav-font-primary);
+            font-size: 12px;
             font-weight: 500;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            -webkit-transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            -moz-transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            -o-transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            letter-spacing: 0.08em;
+            transition: all 0.28s cubic-bezier(0.25, 0.8, 0.25, 1);
+            -webkit-transition: all 0.28s cubic-bezier(0.25, 0.8, 0.25, 1);
+            -moz-transition: all 0.28s cubic-bezier(0.25, 0.8, 0.25, 1);
+            -o-transition: all 0.28s cubic-bezier(0.25, 0.8, 0.25, 1);
             position: relative;
             overflow: hidden;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 6px;
             white-space: nowrap;
             width: 100%;
             transform: translateX(0) translateY(0) rotate(0deg);
@@ -1903,8 +2034,8 @@
             -moz-transform: translateX(0) translateY(0) rotate(0deg);
             -ms-transform: translateX(0) translateY(0) rotate(0deg);
             -o-transform: translateX(0) translateY(0) rotate(0deg);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
         }
         
         .submenu-link::before {
@@ -1920,21 +2051,39 @@
             -moz-transition: left 0.8s ease;
             -o-transition: left 0.8s ease;
         }
+
+        .submenu-link::after {
+            content: "";
+            position: absolute;
+            bottom: -2px;
+            left: 10px;
+            right: 10px;
+            height: 2px;
+            background: var(--nav-color-accent);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.28s ease;
+        }
         
         .submenu-link:hover::before {
             left: 100%;
         }
         
         .submenu-link:hover {
-            color: rgba(245, 245, 245, 1);
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.2);
-            transform: translateX(4px) translateY(-1px);
-            -webkit-transform: translateX(4px) translateY(-1px);
-            -moz-transform: translateX(4px) translateY(-1px);
-            -ms-transform: translateX(4px) translateY(-1px);
-            -o-transform: translateX(4px) translateY(-1px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            color: var(--nav-color-foreground);
+            background: rgba(255, 223, 0, 0.08);
+            border-color: rgba(255, 223, 0, 0.25);
+            transform: translateX(3px) translateY(-1px);
+            -webkit-transform: translateX(3px) translateY(-1px);
+            -moz-transform: translateX(3px) translateY(-1px);
+            -ms-transform: translateX(3px) translateY(-1px);
+            -o-transform: translateX(3px) translateY(-1px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+        }
+
+        .submenu-link:hover::after,
+        .submenu-link:focus-visible::after {
+            transform: scaleX(1);
         }
         
         .submenu-icon {
@@ -2011,6 +2160,13 @@
             -moz-transform: translateX(-50%) translateY(15px) scale(0.95);
             -ms-transform: translateX(-50%) translateY(15px) scale(0.95);
             -o-transform: translateX(-50%) translateY(15px) scale(0.95);
+        }
+
+        /* Asegura centrado exacto respecto al botón */
+        .nav-item > .filter-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .nav-item:hover .submenu {
