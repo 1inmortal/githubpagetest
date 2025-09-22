@@ -1,6 +1,7 @@
 const express = require('express');
 const { Pool } = require('pg');
 const bodyParser = require('express').json;
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -20,6 +21,33 @@ app.use((req, res, next) => {
 
 // Middleware para parsear JSON
 app.use(bodyParser());
+
+// Rate limiting general
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: {
+    error: 'Demasiadas solicitudes desde esta IP, intenta de nuevo en 15 minutos.',
+    retryAfter: '15 minutos'
+  },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+// Rate limiting estricto para formularios
+const formLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 5,
+  message: {
+    error: 'Límite de envíos alcanzado, espera 5 minutos antes de enviar otro mensaje.',
+    retryAfter: '5 minutos'
+  }
+});
+
+// Aplicar middleware de rate limiting
+app.use(generalLimiter);
+app.use('/contacto', formLimiter);
+app.use('/usuarios', formLimiter);
 
 // Configuración de la conexión a PostgreSQL usando variables de entorno
 const pool = new Pool({
