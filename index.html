@@ -82,14 +82,75 @@
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌙</text></svg>">
     
-    <!-- GSAP Libraries (con SRI) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"
-            integrity="sha384-16esztaSRplJROstbIIdwX3N97V1+pZvV33ABoG1H2OyTttBxEGkTsoIVsiP1iaTtM8b3+hu2kB6pQ4Clr5yug=="
-            crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"
-            integrity="sha384-+HP5JdS2k2Ox7ZIz+wgBAvOgSqaaJJM1+qxJh7JwGFlBtfkFpJl/zXY/0ghL7c8g"
-            crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
+    <!-- GSAP Libraries con carga robusta -->
+    <script>
+        // Cargar GSAP con fallbacks
+        function loadGSAP() {
+            return new Promise((resolve, reject) => {
+                const scripts = [
+                    {
+                        src: 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js',
+                        crossorigin: 'anonymous'
+                    },
+                    {
+                        src: 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js',
+                        crossorigin: 'anonymous'
+                    },
+                    {
+                        src: 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js',
+                        crossorigin: 'anonymous'
+                    }
+                ];
+                
+                let loadedCount = 0;
+                const totalScripts = scripts.length;
+                
+                scripts.forEach((scriptData, index) => {
+                    const script = document.createElement('script');
+                    script.src = scriptData.src;
+                    if (scriptData.crossorigin) script.crossOrigin = scriptData.crossorigin;
+                    
+                    script.onload = () => {
+                        loadedCount++;
+                        console.log(`[INMORTAL_OS] GSAP script ${index + 1}/${totalScripts} cargado`);
+                        if (loadedCount === totalScripts) {
+                            resolve();
+                        }
+                    };
+                    
+                    script.onerror = () => {
+                        console.warn(`[INMORTAL_OS] Fallo al cargar GSAP script ${index + 1}, intentando fallback...`);
+                        // Intentar CDN alternativo
+                        const fallbackScript = document.createElement('script');
+                        fallbackScript.src = scriptData.src.replace('cdnjs.cloudflare.com', 'unpkg.com');
+                        fallbackScript.onload = () => {
+                            loadedCount++;
+                            console.log(`[INMORTAL_OS] GSAP script ${index + 1} cargado desde fallback`);
+                            if (loadedCount === totalScripts) {
+                                resolve();
+                            }
+                        };
+                        fallbackScript.onerror = () => {
+                            console.error(`[INMORTAL_OS] No se pudo cargar GSAP script ${index + 1}`);
+                            loadedCount++;
+                            if (loadedCount === totalScripts) {
+                                reject(new Error('No se pudieron cargar las librerías GSAP'));
+                            }
+                        };
+                        document.head.appendChild(fallbackScript);
+                    };
+                    
+                    document.head.appendChild(script);
+                });
+            });
+        }
+        
+        // Cargar GSAP inmediatamente
+        loadGSAP().catch(error => {
+            console.error('[INMORTAL_OS] Error cargando GSAP:', error);
+            // Continuar sin GSAP - los fallbacks CSS se activarán
+        });
+    </script>
     
     <!-- Lenis para scroll suave -->
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1/bundled/lenis.min.js"></script>
@@ -13930,6 +13991,36 @@
             console.log('Viewport Capabilities:', viewportCapabilities);
         })();
 
+        // Sistema de logging mejorado
+        const ErrorLogger = {
+            log: (message, error = null, level = 'error') => {
+                const timestamp = new Date().toISOString();
+                const logMessage = `[INMORTAL_OS] [${timestamp}] ${message}`;
+                
+                switch(level) {
+                    case 'error':
+                        console.error(logMessage, error);
+                        break;
+                    case 'warn':
+                        console.warn(logMessage, error);
+                        break;
+                    case 'info':
+                        console.info(logMessage, error);
+                        break;
+                    default:
+                        console.log(logMessage, error);
+                }
+                
+                // Enviar a servicio de monitoreo si está disponible
+                if (window.gtag) {
+                    gtag('event', 'error', {
+                        'error_message': message,
+                        'error_details': error?.message || 'N/A'
+                    });
+                }
+            }
+        };
+        
         // Variables globales
         let startClickSound,
             preloaderSound,
@@ -14131,9 +14222,165 @@
             });
         }
 
-        // Inicio de animaciones
-        function startAnimations() {
-            gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+        // Sistema de verificación de dependencias mejorado
+        function checkDependencies() {
+            const dependencies = {
+                gsap: typeof gsap !== 'undefined',
+                ScrollTrigger: typeof ScrollTrigger !== 'undefined',
+                ScrollToPlugin: typeof ScrollToPlugin !== 'undefined'
+            };
+            
+            const missing = Object.entries(dependencies)
+                .filter(([name, loaded]) => !loaded)
+                .map(([name]) => name);
+                
+            if (missing.length > 0) {
+                console.warn(`[INMORTAL_OS] Dependencias faltantes: ${missing.join(', ')} - Usando fallbacks CSS`);
+                return false;
+            }
+            
+            console.log('[INMORTAL_OS] Todas las dependencias GSAP cargadas correctamente');
+            return true;
+        }
+        
+        // Función para esperar a que GSAP se cargue
+        function waitForGSAP(maxWaitTime = 5000) {
+            return new Promise((resolve) => {
+                const startTime = Date.now();
+                
+                const checkInterval = setInterval(() => {
+                    if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+                        clearInterval(checkInterval);
+                        resolve(true);
+                    } else if (Date.now() - startTime > maxWaitTime) {
+                        clearInterval(checkInterval);
+                        console.warn('[INMORTAL_OS] Timeout esperando GSAP - continuando con fallbacks');
+                        resolve(false);
+                    }
+                }, 100);
+            });
+        }
+        
+        // Función de animación segura
+        function safeGsapTo(selector, animation) {
+            if (!checkDependencies()) {
+                console.warn('[INMORTAL_OS] GSAP no disponible, usando CSS fallback');
+                // Fallback con CSS transitions
+                let elements;
+                if (typeof selector === 'string') {
+                    elements = document.querySelectorAll(selector);
+                } else if (selector && selector.nodeType) {
+                    elements = [selector];
+                } else {
+                    return;
+                }
+                
+                elements.forEach(el => {
+                    if (animation.opacity !== undefined) el.style.opacity = animation.opacity;
+                    if (animation.scale !== undefined) el.style.transform = `scale(${animation.scale})`;
+                    if (animation.y !== undefined) el.style.transform += ` translateY(${animation.y}px)`;
+                });
+                return;
+            }
+            
+            let elements;
+            if (typeof selector === 'string') {
+                elements = document.querySelectorAll(selector);
+            } else if (selector && selector.nodeType) {
+                elements = [selector];
+            } else {
+                return;
+            }
+            
+            if (elements.length > 0) {
+                gsap.to(elements, animation);
+            }
+        }
+        
+        // Animaciones CSS de fallback cuando GSAP no está disponible
+        function startCSSFallbackAnimations() {
+            console.log('[INMORTAL_OS] Iniciando animaciones CSS de fallback');
+            
+            // Agregar clases CSS para animaciones
+            const style = document.createElement('style');
+            style.textContent = `
+                /* Animaciones CSS de fallback */
+                .nav-hover-square {
+                    transition: transform 0.3s ease;
+                }
+                
+                .submenu {
+                    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+                }
+                
+                .submenu-link {
+                    transition: transform 0.2s ease, opacity 0.2s ease;
+                }
+                
+                .submenu-link:hover {
+                    transform: scale(1.05);
+                }
+                
+                .preloader {
+                    transition: opacity 1s ease, transform 1s ease;
+                }
+                
+                .gradient-reveal {
+                    transition: transform 2s ease;
+                }
+                
+                .section {
+                    transition: background-position 0.1s ease;
+                }
+                
+                /* Animaciones de entrada */
+                .reveal-up {
+                    animation: slideInUp 0.6s ease forwards;
+                }
+                
+                @keyframes slideInUp {
+                    from {
+                        opacity: 0;
+                        transform: translateY(30px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Aplicar animaciones de entrada
+            const revealElements = document.querySelectorAll('.reveal-up');
+            revealElements.forEach((el, index) => {
+                el.style.animationDelay = `${index * 0.1}s`;
+            });
+            
+            console.log('[INMORTAL_OS] Animaciones CSS de fallback activadas');
+        }
+        
+        // Inicio de animaciones con espera de GSAP
+        async function startAnimations() {
+            console.log('[INMORTAL_OS] Iniciando sistema de animaciones...');
+            
+            // Esperar a que GSAP se cargue
+            const gsapLoaded = await waitForGSAP();
+            
+            if (!gsapLoaded) {
+                console.warn('[INMORTAL_OS] GSAP no disponible - activando modo fallback CSS');
+                startCSSFallbackAnimations();
+                return;
+            }
+            
+            try {
+                gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+                console.log('[INMORTAL_OS] GSAP registrado correctamente');
+            } catch (error) {
+                console.error('[INMORTAL_OS] Error registrando GSAP:', error);
+                startCSSFallbackAnimations();
+                return;
+            }
 
                     // Navegación con efectos hover y submenús
         document.querySelectorAll(".main-nav .nav-item").forEach((navItem) => {
@@ -14143,11 +14390,13 @@
             
                 navItem.addEventListener("mouseenter", () => {
                 // Efecto del cuadrado
-                    gsap.to(square, { scaleX: 1, duration: 0.3, ease: "power2.out" });
+                    if (square) {
+                        safeGsapTo(square, { scaleX: 1, duration: 0.3, ease: "power2.out" });
+                    }
                 
                 // Mostrar submenú con animación flotante
                 if (submenu) {
-                    gsap.to(submenu, {
+                    safeGsapTo(submenu, {
                         opacity: 1,
                         visibility: "visible",
                         y: 0,
@@ -14157,27 +14406,41 @@
                     
                     // Animar enlaces del submenú con efecto de desorden mejorado
                     const submenuLinks = submenu.querySelectorAll(".submenu-link");
-                    submenuLinks.forEach((link, index) => {
-                        gsap.fromTo(link, 
-                            { 
-                                opacity: 0, 
-                                x: -40, 
-                                y: 15, 
-                                rotation: -3,
-                                scale: 0.8
-                            },
-                            { 
-                                opacity: 1, 
-                                x: 0, 
-                                y: 0, 
-                                rotation: 0,
-                                scale: 1,
-                                duration: 0.5, 
-                                delay: index * 0.15,
-                                ease: "back.out(1.7)"
-                            }
-                        );
-                    });
+                    if (typeof gsap !== 'undefined') {
+                        submenuLinks.forEach((link, index) => {
+                            gsap.fromTo(link, 
+                                { 
+                                    opacity: 0, 
+                                    x: -40, 
+                                    y: 15, 
+                                    rotation: -3,
+                                    scale: 0.8
+                                },
+                                { 
+                                    opacity: 1, 
+                                    x: 0, 
+                                    y: 0, 
+                                    rotation: 0,
+                                    scale: 1,
+                                    duration: 0.5, 
+                                    delay: index * 0.15,
+                                    ease: "back.out(1.7)"
+                                }
+                            );
+                        });
+                    } else {
+                        // Fallback CSS para enlaces del submenú
+                        submenuLinks.forEach((link, index) => {
+                            link.style.opacity = '0';
+                            link.style.transform = 'translateX(-40px) translateY(15px) rotate(-3deg) scale(0.8)';
+                            link.style.transition = 'all 0.5s ease';
+                            
+                            setTimeout(() => {
+                                link.style.opacity = '1';
+                                link.style.transform = 'translateX(0) translateY(0) rotate(0deg) scale(1)';
+                            }, index * 150);
+                        });
+                    }
                 }
                 
                 // Sonido de hover
@@ -14190,12 +14453,14 @@
             
                 navItem.addEventListener("mouseleave", () => {
                 // Ocultar cuadrado
-                    gsap.to(square, { scaleX: 0, duration: 0.2, ease: "power2.in" });
+                    if (square) {
+                        safeGsapTo(square, { scaleX: 0, duration: 0.2, ease: "power2.in" });
+                    }
                 
                 // Ocultar submenú con delay para mejor UX
                     if (submenu) {
                         setTimeout(() => {
-                            gsap.to(submenu, {
+                            safeGsapTo(submenu, {
                                 opacity: 0,
                                 visibility: "hidden",
                                 y: 15,
@@ -14214,10 +14479,12 @@
                     
                     // Si el mouse sale completamente del área del nav-item
                     if (mouseX < rect.left || mouseX > rect.right || mouseY < rect.top || mouseY > rect.bottom) {
-                        gsap.to(square, { scaleX: 0, duration: 0.2, ease: "power2.in" });
+                        if (square) {
+                            safeGsapTo(square, { scaleX: 0, duration: 0.2, ease: "power2.in" });
+                        }
                         
                         if (submenu) {
-                            gsap.to(submenu, {
+                            safeGsapTo(submenu, {
                                 opacity: 0,
                                 visibility: "hidden",
                                 y: 15,
@@ -14233,7 +14500,7 @@
         document.querySelectorAll(".submenu-link").forEach((link) => {
             link.addEventListener("mouseenter", () => {
                 // Efecto de brillo
-                gsap.to(link, {
+                safeGsapTo(link, {
                     scale: 1.05,
                     duration: 0.2,
                     ease: "power2.out"
@@ -14249,7 +14516,7 @@
             });
             
             link.addEventListener("mouseleave", () => {
-                gsap.to(link, {
+                safeGsapTo(link, {
                     scale: 1,
                     duration: 0.2,
                     ease: "power2.out"
@@ -14270,14 +14537,18 @@
                 infinite: false
             });
 
-            lenis.on("scroll", ScrollTrigger.update);
-            gsap.ticker.add((time) => {
-                lenis.raf(time * 1000);
-            });
-            gsap.ticker.lagSmoothing(0);
+            if (typeof ScrollTrigger !== 'undefined') {
+                lenis.on("scroll", ScrollTrigger.update);
+            }
+            if (typeof gsap !== 'undefined') {
+                gsap.ticker.add((time) => {
+                    lenis.raf(time * 1000);
+                });
+                gsap.ticker.lagSmoothing(0);
+            }
 
             // Animación del gradiente de revelación
-            gsap.to(".gradient-reveal", {
+            safeGsapTo(".gradient-reveal", {
                 y: "-500vh",
                 duration: 2,
                 ease: "power2.inOut",
@@ -14285,30 +14556,36 @@
             });
             
             // Animación del preloader
-            gsap.to(".preloader", {
+            safeGsapTo(".preloader", {
                 y: -50,
                 opacity: 0,
                 duration: 0.8,
                 ease: "power2.inOut",
                 delay: 1.0,
                 onComplete: () => {
-                    document.getElementById("preloader").style.display = "none";
+                    const preloader = document.getElementById("preloader");
+                    if (preloader) {
+                        preloader.style.display = "none";
+                    }
                 }
             });
 
-            // Animaciones de las secciones
-            gsap.utils.toArray(".section").forEach((section) => {
-                gsap.to(section, {
-                    backgroundPositionY: "50%",
-                    ease: "none",
-                    scrollTrigger: {
-                        trigger: section,
-                        start: "top bottom",
-                        end: "bottom top",
-                        scrub: 1
-                    }
+            // Animaciones de las secciones (con verificación)
+            const sections = document.querySelectorAll(".section");
+            if (sections.length > 0) {
+                sections.forEach((section) => {
+                    safeGsapTo(section, {
+                        backgroundPositionY: "50%",
+                        ease: "none",
+                        scrollTrigger: {
+                            trigger: section,
+                            start: "top bottom",
+                            end: "bottom top",
+                            scrub: 1
+                        }
+                    });
                 });
-            });
+            }
 
             // Animaciones de debug
             const debugLine1 = document.getElementById("debugLine1");
@@ -14413,10 +14690,17 @@
                 if (debugLine4) debugLine4.textContent = presenceState;
             }
 
-            window.addEventListener("scroll", () => {
-                if (animationFrame) cancelAnimationFrame(animationFrame);
-                animationFrame = requestAnimationFrame(updateAnimations);
-            });
+            // Debounced scroll handler para mejor performance
+            let scrollTimeout;
+            const debouncedScrollHandler = () => {
+                if (scrollTimeout) clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    if (animationFrame) cancelAnimationFrame(animationFrame);
+                    animationFrame = requestAnimationFrame(updateAnimations);
+                }, 16); // ~60fps
+            };
+            
+            window.addEventListener("scroll", debouncedScrollHandler, { passive: true });
             updateAnimations();
             
             // ===== ANIMACIONES PARA EL CONTENIDO INTEGRADO =====
@@ -14753,7 +15037,11 @@
                 oscillator.start(audioContext.currentTime);
                 oscillator.stop(audioContext.currentTime + 0.3);
             } catch (error) {
-                console.log('Audio no disponible');
+                console.warn('[INMORTAL_OS] Audio no disponible:', error.message);
+                // Fallback: usar vibración si está disponible
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
             }
         }
         
@@ -14791,13 +15079,29 @@
         
         // ===== FUNCIONALIDAD DE CERTIFICACIONES DINÁMICAS =====
         
+        // Sistema de carga de recursos con retry
+        async function loadResourceWithRetry(url, maxRetries = 3, delay = 1000) {
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response;
+                } catch (error) {
+                    console.warn(`[INMORTAL_OS] Intento ${attempt}/${maxRetries} falló para ${url}:`, error.message);
+                    if (attempt === maxRetries) {
+                        throw error;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, delay * attempt));
+                }
+            }
+        }
+        
         // Función para cargar certificaciones desde JSON
         async function loadCertifications() {
             try {
-                const response = await fetch('./src/data/certificaciones.json');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                const response = await loadResourceWithRetry('./src/data/certificaciones.json');
                 const data = await response.json();
                 
                 // Ocultar loading
@@ -15597,18 +15901,23 @@
                         link.classList.add('active');
                         
                         // Scroll suave con efecto de distorsión
-                        gsap.to(window, {
-                            duration: 2,
-                            scrollTo: { y: targetSection, offsetY: -80 },
-                            ease: "power2.inOut",
-                            onUpdate: () => {
-                                // Efecto de distorsión durante el scroll
-                                document.body.style.filter = 'hue-rotate(180deg)';
-                            },
-                            onComplete: () => {
-                                document.body.style.filter = 'none';
-                            }
-                        });
+                        if (typeof gsap !== 'undefined') {
+                            gsap.to(window, {
+                                duration: 2,
+                                scrollTo: { y: targetSection, offsetY: -80 },
+                                ease: "power2.inOut",
+                                onUpdate: () => {
+                                    // Efecto de distorsión durante el scroll
+                                    document.body.style.filter = 'hue-rotate(180deg)';
+                                },
+                                onComplete: () => {
+                                    document.body.style.filter = 'none';
+                                }
+                            });
+                        } else {
+                            // Fallback: scroll nativo
+                            targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
                     }
                 });
             });
@@ -15649,7 +15958,7 @@
                     if (DEBUG_NAV) console.log(`🖱️ Clic en: ${linkText} (${href})`);
                     
                     // Efecto visual de clic
-                    gsap.to(link, {
+                    safeGsapTo(link, {
                         scale: 0.95,
                         duration: 0.1,
                         ease: "power2.in",
@@ -15674,11 +15983,16 @@
                         e.preventDefault();
                         const targetSection = document.getElementById(href.substring(1));
                         if (targetSection) {
-                            gsap.to(window, {
-                                duration: 1.5,
-                                scrollTo: { y: targetSection, offsetY: -80 },
-                                ease: "power2.inOut"
-                            });
+                            if (typeof gsap !== 'undefined') {
+                                gsap.to(window, {
+                                    duration: 1.5,
+                                    scrollTo: { y: targetSection, offsetY: -80 },
+                                    ease: "power2.inOut"
+                                });
+                            } else {
+                                // Fallback: scroll nativo
+                                targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }
                         } else {
                             console.warn(`⚠️ Sección no encontrada: ${href}`);
                         }
@@ -15688,7 +16002,7 @@
                         e.preventDefault();
                         
                         // Efecto de transición antes de abrir
-                        gsap.to(link, {
+                        safeGsapTo(link, {
                             scale: 1.1,
                             duration: 0.2,
                             ease: "power2.out",
@@ -15734,7 +16048,7 @@
                         document.body.appendChild(overlay);
                         
                         // Animación de entrada
-                        gsap.to(overlay, {
+                        safeGsapTo(overlay, {
                             opacity: 1,
                             duration: 0.3,
                             ease: "power2.in",
@@ -15956,14 +16270,14 @@
             console.log(`Proyecto expandido: ${projectTitle}`);
             
             // Efecto de expansión
-            gsap.to(card, {
+            safeGsapTo(card, {
                 scale: 1.05,
                 duration: 0.3,
                 ease: "power2.out"
             });
             
             setTimeout(() => {
-                gsap.to(card, {
+                safeGsapTo(card, {
                     scale: 1,
                     duration: 0.3,
                     ease: "power2.out"
@@ -16410,7 +16724,7 @@
                 document.body.appendChild(particle);
                 
                 // Animar partícula
-                gsap.to(particle, {
+                safeGsapTo(particle, {
                     x: vx * 50,
                     y: vy * 50,
                     opacity: 0,
