@@ -614,7 +614,7 @@
             <span class="project-data label hover-text">PARLOPHONE</span>
             <span class="project-data year hover-text">2023</span>
           </li>
-          <li class="project-item" data-image="img/universo.png" data-sound="mp3/hover.mp3" data-link="webs/web-2.html" data-category="webs">
+          <li class="project-item" data-image="img/universo.png" data-sound="mp3/hover.mp3" data-link="webs/web-4.html" data-category="webs">
             <span class="project-data artist hover-text">PROYECTO WEB 4</span>
             <span class="project-data album hover-text">SITIO CORPORATIVO</span>
             <span class="project-data category hover-text">WEBSITE</span>
@@ -720,12 +720,10 @@
         <time class="corner-item bottom-right" id="current-time"></time>
       </aside>
 
-  <!-- GSAP y plugins necesarios (con SRI) -->
+  <!-- GSAP y plugins necesarios -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"
-          integrity="sha384-16esztaSRplJROstbIIdwX3N97V1+pZvV33ABoG1H2OyTttBxEGkTsoIVsiP1iaTtM8b3+hu2kB6pQ4Clr5yug=="
           crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/TextPlugin.min.js"
-          integrity="sha384-11PKsVxz9yShh+sn4lMX9saMDRbYwKNJoBMJT5Rd84FBuDUNUfcJVAmgCvW3tLCj"
           crossorigin="anonymous"></script>
 
     <!-- Script específico para la página de proyectos -->
@@ -873,29 +871,44 @@ class FilterManager {
     item.classList.remove('hidden', 'fade-out');
     item.classList.add('fade-in');
     
-    // Aplicar delay escalonado para animación
-    gsap.set(item, { opacity: 0, y: -20 });
-    gsap.to(item, {
-      opacity: 1,
-      y: 0,
-      duration: 0.4,
-      delay: index * 0.05,
-      ease: "power2.out"
-    });
+    // Aplicar delay escalonado para animación solo si GSAP está disponible
+    if (checkGSAPAvailability()) {
+      gsap.set(item, { opacity: 0, y: -20 });
+      gsap.to(item, {
+        opacity: 1,
+        y: 0,
+        duration: 0.4,
+        delay: index * 0.05,
+        ease: "power2.out"
+      });
+    } else {
+      // Fallback sin GSAP
+      item.style.opacity = '1';
+      item.style.transform = 'translateY(0)';
+    }
   }
   
   hideProjectItem(item, index) {
     item.classList.add('fade-out');
     
-    gsap.to(item, {
-      opacity: 0,
-      y: -20,
-      duration: 0.3,
-      ease: "power2.in",
-      onComplete: () => {
+    if (checkGSAPAvailability()) {
+      gsap.to(item, {
+        opacity: 0,
+        y: -20,
+        duration: 0.3,
+        ease: "power2.in",
+        onComplete: () => {
+          item.classList.add('hidden');
+        }
+      });
+    } else {
+      // Fallback sin GSAP
+      item.style.opacity = '0';
+      item.style.transform = 'translateY(-20px)';
+      setTimeout(() => {
         item.classList.add('hidden');
-      }
-    });
+      }, 300);
+    }
   }
   
   updateCounts() {
@@ -1206,6 +1219,12 @@ class AnimationManager {
   startIdleAnimation() {
     if (this.idleAnimation) return;
     
+    // Verificar si GSAP está disponible
+    if (!checkGSAPAvailability()) {
+      console.log('GSAP no disponible, saltando animación idle');
+      return;
+    }
+    
     // Obtener solo los proyectos visibles
     const visibleProjects = window.filterManager ? 
       window.filterManager.getVisibleProjects() : 
@@ -1301,9 +1320,16 @@ class AnimationManager {
       this.idleAnimation.kill();
       this.idleAnimation = null;
       
-      gsap.set([...document.querySelectorAll(".project-data")], {
-        opacity: 1
-      });
+      if (checkGSAPAvailability()) {
+        gsap.set([...document.querySelectorAll(".project-data")], {
+          opacity: 1
+        });
+      } else {
+        // Fallback sin GSAP
+        document.querySelectorAll(".project-data").forEach(el => {
+          el.style.opacity = '1';
+        });
+      }
       
       this.projectItems.forEach((item) => {
         item.classList.remove("counter-hidden");
@@ -1350,7 +1376,13 @@ class TimeDisplay {
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+// Función para verificar si GSAP está disponible
+function checkGSAPAvailability() {
+  return typeof gsap !== 'undefined';
+}
+
+// Función para inicializar la aplicación cuando GSAP esté disponible
+function initializeApp() {
   // Inicializar el gestor de filtros primero
   const filterManager = new FilterManager();
   window.filterManager = filterManager;
@@ -1381,6 +1413,54 @@ document.addEventListener("DOMContentLoaded", () => {
   
   // Aplicar filtro inicial
   filterManager.filterProjects('all');
+}
+
+// Función para mostrar mensaje de error si GSAP no se carga
+function showGSAPError() {
+  console.error('GSAP no se pudo cargar. Algunas animaciones pueden no funcionar correctamente.');
+  
+  // Crear un mensaje de error visible para el usuario
+  const errorDiv = document.createElement('div');
+  errorDiv.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #ff4444;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-family: monospace;
+    font-size: 12px;
+    z-index: 10000;
+    max-width: 300px;
+  `;
+  errorDiv.textContent = 'Error: No se pudo cargar GSAP. Las animaciones pueden no funcionar.';
+  document.body.appendChild(errorDiv);
+  
+  // Remover el mensaje después de 5 segundos
+  setTimeout(() => {
+    if (errorDiv.parentNode) {
+      errorDiv.parentNode.removeChild(errorDiv);
+    }
+  }, 5000);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Verificar si GSAP está disponible
+  if (checkGSAPAvailability()) {
+    initializeApp();
+  } else {
+    // Esperar un poco más por si GSAP aún se está cargando
+    setTimeout(() => {
+      if (checkGSAPAvailability()) {
+        initializeApp();
+      } else {
+        showGSAPError();
+        // Inicializar sin GSAP (funcionalidad básica)
+        initializeApp();
+      }
+    }, 1000);
+  }
 });
     </script>
 </body>
