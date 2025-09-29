@@ -1133,7 +1133,17 @@ class AnimationManager {
         // Resolver ruta destino de forma robusta (soporta subpaths en GitHub Pages)
         let targetHref;
         try {
-          targetHref = new URL(projectLink, window.location.href).href;
+          const isAbsolute = /^(https?:)?\/\//.test(projectLink) || projectLink.startsWith('/');
+          const isRelativePrefixed = projectLink.startsWith('./') || projectLink.startsWith('../');
+          if (!isAbsolute && !isRelativePrefixed) {
+            // Construir prefijo del repo (ej. /githubpagetest) si aplica
+            const segments = window.location.pathname.split('/').filter(Boolean);
+            const repoBase = segments.length > 0 ? `/${segments[0]}` : '';
+            const publicPrefix = `${repoBase}/public/`;
+            targetHref = `${publicPrefix}${projectLink}`.replace(/\/+/g, '/');
+          } else {
+            targetHref = new URL(projectLink, window.location.href).href;
+          }
         } catch (e) {
           targetHref = projectLink;
         }
