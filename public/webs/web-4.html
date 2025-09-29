@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="description" content="NutriVida - Nutrición personalizada que transforma resultados y estilo de vida. Planes prácticos basados en evidencia."/>
+<meta name="robots" content="index, follow"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com; font-src 'self' data: https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; img-src 'self' data: https: blob:; connect-src 'self';"/>
+<title>NutriVida - Nutrición Personalizada</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🥗%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<!-- 
+  Tailwind CSS CDN - Para desarrollo únicamente
+  Para producción, instalar como PostCSS plugin:
+  npm install -D tailwindcss postcss autoprefixer
+  npx tailwindcss init -p
+-->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+      // Esperar a que Tailwind esté cargado
+      document.addEventListener('DOMContentLoaded', function() {
+        if (typeof tailwind !== 'undefined') {
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#1E9A8A",
+              "background-light": "#FFFFFF",
+                  "background-dark": "#1a1a1a",
+              "accent": "#FF7A59",
+              "text-light": "#4A4A4A",
+              "text-dark": "#FFFFFF"
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"],
+              "body": ["Roboto", "sans-serif"]
+            },
+            borderRadius: {
+              "DEFAULT": "0.75rem",
+              "lg": "1rem",
+              "full": "9999px"
+            },
+          },
+        },
+      }
+        }
+      });
+    </script>
+<script>
+      // Funcionalidad del menú móvil
+      document.addEventListener('DOMContentLoaded', function() {
+        const menuToggle = document.getElementById('menu-toggle');
+        const menuClose = document.getElementById('menu-close');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+        
+        // Abrir menú
+        menuToggle.addEventListener('click', function() {
+          mobileMenuOverlay.classList.remove('hidden');
+          mobileMenu.classList.remove('translate-x-full');
+          document.body.style.overflow = 'hidden'; // Prevenir scroll del body
+        });
+        
+        // Cerrar menú
+        function closeMenu() {
+          mobileMenuOverlay.classList.add('hidden');
+          mobileMenu.classList.add('translate-x-full');
+          document.body.style.overflow = 'auto'; // Restaurar scroll del body
+        }
+        
+        menuClose.addEventListener('click', closeMenu);
+        mobileMenuOverlay.addEventListener('click', closeMenu);
+        
+        // Cerrar menú al hacer clic en enlaces
+        const menuLinks = mobileMenu.querySelectorAll('a');
+        menuLinks.forEach(link => {
+          link.addEventListener('click', closeMenu);
+        });
+        
+        // Cerrar menú con tecla Escape
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape' && !mobileMenuOverlay.classList.contains('hidden')) {
+            closeMenu();
+          }
+        });
+        
+        // Funcionalidad del modo oscuro
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeToggleMobile = document.getElementById('theme-toggle-mobile');
+        const themeIcon = document.getElementById('theme-icon');
+        const themeIconMobile = document.getElementById('theme-icon-mobile');
+        
+        // Verificar tema guardado (por defecto modo claro)
+        const savedTheme = localStorage.getItem('theme');
+        const isDark = savedTheme === 'dark';
+        
+        // Aplicar tema inicial (forzar modo claro por defecto)
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+          themeIcon.textContent = 'light_mode';
+          themeIconMobile.textContent = 'light_mode';
+          // Forzar fondo oscuro en el menú móvil
+          if (mobileMenu) {
+            mobileMenu.style.backgroundColor = '#1f2937';
+          }
+        } else {
+          // Asegurar que esté en modo claro
+          document.documentElement.classList.remove('dark');
+          themeIcon.textContent = 'dark_mode';
+          themeIconMobile.textContent = 'dark_mode';
+          // Forzar fondo blanco en el menú móvil
+          if (mobileMenu) {
+            mobileMenu.style.backgroundColor = 'white';
+          }
+          // Guardar modo claro como predeterminado
+          if (!savedTheme) {
+            localStorage.setItem('theme', 'light');
+          }
+        }
+        
+        // Función para alternar tema
+        function toggleTheme() {
+          const isDarkMode = document.documentElement.classList.contains('dark');
+          const mobileMenu = document.getElementById('mobile-menu');
+          
+          if (isDarkMode) {
+            document.documentElement.classList.remove('dark');
+            themeIcon.textContent = 'dark_mode';
+            themeIconMobile.textContent = 'dark_mode';
+            localStorage.setItem('theme', 'light');
+            // Forzar fondo blanco en el menú móvil
+            if (mobileMenu) {
+              mobileMenu.style.backgroundColor = 'white';
+            }
+          } else {
+            document.documentElement.classList.add('dark');
+            themeIcon.textContent = 'light_mode';
+            themeIconMobile.textContent = 'light_mode';
+            localStorage.setItem('theme', 'dark');
+            // Forzar fondo oscuro en el menú móvil
+            if (mobileMenu) {
+              mobileMenu.style.backgroundColor = '#1f2937';
+            }
+          }
+        }
+        
+        // Event listeners para los botones de tema
+        themeToggle.addEventListener('click', toggleTheme);
+        themeToggleMobile.addEventListener('click', toggleTheme);
+      });
+    </script>
+<style>
+      .fade-in-up {
+        animation: fade-in-up 0.8s ease-out forwards;
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      @keyframes fade-in-up {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      /* Animaciones del menú móvil */
+      #mobile-menu {
+        transition: transform 0.3s ease-in-out;
+        background-color: white !important;
+        opacity: 1 !important;
+      }
+      
+      /* Fondo opaco para modo oscuro */
+      .dark #mobile-menu {
+        background-color: #1f2937 !important;
+      }
+      
+      /* Asegurar que el fondo sea completamente opaco */
+      #mobile-menu::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: white;
+        z-index: -1;
+        opacity: 1;
+      }
+      
+      .dark #mobile-menu::before {
+        background-color: #1f2937;
+        opacity: 1;
+      }
+      
+      #mobile-menu-overlay {
+        transition: opacity 0.3s ease-in-out;
+      }
+      
+      /* Animación de entrada para los enlaces del menú */
+      .mobile-menu-link {
+        animation: slideInRight 0.3s ease-out forwards;
+        opacity: 0;
+        transform: translateX(20px);
+      }
+      
+      .mobile-menu-link:nth-child(1) { animation-delay: 0.1s; }
+      .mobile-menu-link:nth-child(2) { animation-delay: 0.2s; }
+      .mobile-menu-link:nth-child(3) { animation-delay: 0.3s; }
+      .mobile-menu-link:nth-child(4) { animation-delay: 0.4s; }
+      .mobile-menu-link:nth-child(5) { animation-delay: 0.5s; }
+      
+      @keyframes slideInRight {
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-body text-text-light dark:text-text-dark antialiased">
+<header class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm shadow-sm">
+<nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+<a class="font-display font-bold text-2xl text-primary" href="#"> NutriVida </a>
+<div class="hidden md:flex items-center space-x-8">
+<a class="hover:text-primary transition-colors" href="#">Inicio</a>
+<a class="hover:text-primary transition-colors" href="#servicios">Servicios</a>
+<a class="hover:text-primary transition-colors" href="#proceso">Proceso</a>
+<a class="hover:text-primary transition-colors" href="#testimonios">Testimonios</a>
+</div>
+<div class="flex items-center gap-4">
+  <button class="material-symbols-outlined text-2xl hover:text-primary transition-colors" id="theme-toggle" title="Cambiar tema">
+    <span id="theme-icon">dark_mode</span>
+  </button>
+<a class="hidden md:block bg-accent text-white px-6 py-2 rounded-full font-bold hover:bg-opacity-90 transition-all" href="#contacto"> Agendar cita </a>
+  <button class="md:hidden material-symbols-outlined" id="menu-toggle">menu</button>
+</div>
+</nav>
+<!-- Menú móvil -->
+<div class="md:hidden fixed top-0 left-0 w-full h-full bg-black/50 z-50 hidden" id="mobile-menu-overlay"></div>
+<div class="md:hidden fixed top-0 right-0 w-80 h-full shadow-xl transform translate-x-full transition-transform duration-300 z-50" id="mobile-menu" style="background-color: white; backdrop-filter: none;">
+  <div class="p-6">
+    <div class="flex justify-between items-center mb-8">
+      <span class="font-display font-bold text-2xl text-primary">NutriVida</span>
+      <div class="flex items-center gap-2">
+        <button class="material-symbols-outlined text-2xl hover:text-primary transition-colors" id="theme-toggle-mobile" title="Cambiar tema">
+          <span id="theme-icon-mobile">dark_mode</span>
+        </button>
+        <button class="material-symbols-outlined text-2xl" id="menu-close">close</button>
+      </div>
+    </div>
+    <nav class="space-y-4">
+      <a class="mobile-menu-link block py-3 px-4 text-gray-700 dark:text-gray-200 hover:bg-primary/10 rounded-lg transition-colors" href="#">Inicio</a>
+      <a class="mobile-menu-link block py-3 px-4 text-gray-700 dark:text-gray-200 hover:bg-primary/10 rounded-lg transition-colors" href="#servicios">Servicios</a>
+      <a class="mobile-menu-link block py-3 px-4 text-gray-700 dark:text-gray-200 hover:bg-primary/10 rounded-lg transition-colors" href="#proceso">Proceso</a>
+      <a class="mobile-menu-link block py-3 px-4 text-gray-700 dark:text-gray-200 hover:bg-primary/10 rounded-lg transition-colors" href="#testimonios">Testimonios</a>
+      <a class="mobile-menu-link block bg-accent text-white px-6 py-3 rounded-full font-bold hover:bg-opacity-90 transition-all text-center mt-6" href="#contacto">Agendar cita</a>
+    </nav>
+  </div>
+</div>
+</header>
+<main>
+<section class="relative h-[80vh] min-h-[400px] sm:min-h-[500px] text-white">
+<div class="absolute inset-0">
+<div class="absolute inset-0 bg-black/50 z-10"></div>
+<div class="w-full h-full flex">
+<div class="w-1/3 h-full bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAN4S2Le0DOhPMqt2OHdoe1mrYYqwUrCugU6O2p4DGILzFq2yPvTC5Rc62O1hoXhC2Y06yX4tRvYVDT-AsM8fEWRpbDWxPQmajwYAK1ERg3bkkBZIBPQFc54pH7pOtlndbO7fZlEfrAKKnR_1RKGGwrJn57XPtAVyTLirxzNZbfa-e9ttACj3bb4yIrNsl1mHZP08gRa7ipLBqRs3rxPqXBn_xz1rJRHUC_s9VUanOlwGA1UkS3WDcSFIcgMaScnqirpAc__UEdN5GN');"></div>
+<div class="w-1/3 h-full bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDvkmxVH2FI-ceOe7g8so30tUqqJYk9ptI4R0sA5Gnd9O97SCcG50RXDD_mJWB9vJv-zLULRWDBSXupwHFamqKiR5fR2cKtrhhIo5F_lrBjpylIu83YjcXCMI8oTnDavCs8835oMXCc5aVeqreDXrh2om3rNInO994H2gPSocD6c_vEBs2aV0ugr26hK9pUr6Pz0q9blj9UYaQx705uFEIeiwJEQjXehu5QDwVoQsU73sqGhlRnkVhzKtSBwnYza7ZEzNpNd-mB1VNt');"></div>
+<div class="w-1/3 h-full bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDOLucoMJkLqgg-9AnNlvJNNfE1GG4HRJW_JgCkaMNVjty2Wsj_a5N6V1eEOIGW1TNpIZe6uVoWgrPe-9r9Ep14avb07PEp6ejLH97oZxQ3aAF-Q6w3Fg52lN5cA93K6YvvSUcOQ8AjEV_f-cZef4ggNmHuKvxGUXCKqOiud_c5jxLlqzFb2fVP2kWHYLEstZ7vOVzirNu5Njbi8PVE8Mzu2NbRpJtFBBEIUOBmBRM4sOE-BF_bOCLlAkV0sRoF3rdBJGiQKOURoWUg');"></div>
+</div>
+</div>
+<div class="relative z-20 container mx-auto px-6 h-full flex flex-col justify-center items-start fade-in-up">
+<h1 class="font-display font-black text-3xl sm:text-4xl md:text-6xl max-w-2xl leading-tight"> Nutrición personalizada que transforma resultados y estilo de vida </h1>
+<p class="font-body text-base sm:text-lg md:text-xl max-w-xl mt-4"> Planes prácticos, basados en evidencia y diseñados para tu día a día. </p>
+<a class="bg-accent text-white px-6 py-3 sm:px-8 sm:py-4 rounded-full font-bold mt-8 hover:bg-opacity-90 transition-all transform hover:scale-105 text-sm sm:text-base" href="#contacto"> Agendar cita </a>
+</div>
+</section>
+<section class="py-20 bg-background-light dark:bg-background-dark">
+<div class="container mx-auto px-6 text-center">
+<h2 class="font-display font-bold text-3xl text-primary">Una Inversión en Tu Bienestar</h2>
+<p class="max-w-3xl mx-auto mt-4 text-lg">Más que una dieta, te ofrezco las herramientas y el conocimiento para construir hábitos saludables y duraderos, adaptados a tu ritmo de vida.</p>
+</div>
+</section>
+<section class="py-20" id="proceso">
+<div class="container mx-auto px-6">
+<div class="text-center mb-12 fade-in-up">
+<h2 class="font-display font-bold text-3xl md:text-4xl text-primary">Nuestro Proceso en 3 Pasos Simples</h2>
+<p class="mt-4 text-lg max-w-2xl mx-auto">Te guiamos en cada etapa para asegurar que alcances tus metas de forma efectiva y sostenible.</p>
+</div>
+<div class="grid md:grid-cols-3 gap-12">
+<div class="text-center p-8 border border-primary/20 rounded-lg shadow-lg fade-in-up" style="animation-delay: 0.2s;">
+<div class="bg-primary text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+<span class="material-symbols-outlined text-4xl">assignment</span>
+</div>
+<h3 class="font-display font-bold text-2xl mb-2">1. Evaluación</h3>
+<p>Analizamos a fondo tu estado de salud, estilo de vida, objetivos y preferencias para diseñar un punto de partida a tu medida.</p>
+</div>
+<div class="text-center p-8 border border-primary/20 rounded-lg shadow-lg fade-in-up" style="animation-delay: 0.4s;">
+<div class="bg-primary text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+<span class="material-symbols-outlined text-4xl">edit_document</span>
+</div>
+<h3 class="font-display font-bold text-2xl mb-2">2. Plan Personalizado</h3>
+<p>Creamos un plan de nutrición práctico y delicioso, con recetas sencillas y listas de compras que se adaptan a tu rutina diaria.</p>
+</div>
+<div class="text-center p-8 border border-primary/20 rounded-lg shadow-lg fade-in-up" style="animation-delay: 0.6s;">
+<div class="bg-primary text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+<span class="material-symbols-outlined text-4xl">trending_up</span>
+</div>
+<h3 class="font-display font-bold text-2xl mb-2">3. Seguimiento</h3>
+<p>Te acompañamos de cerca, ajustando el plan según tu progreso y resolviendo todas tus dudas para mantenerte motivado.</p>
+</div>
+</div>
+</div>
+</section>
+<section class="py-20 bg-primary/5 dark:bg-background-dark" id="servicios">
+<div class="container mx-auto px-6">
+<div class="text-center mb-12 fade-in-up">
+<h2 class="font-display font-bold text-3xl md:text-4xl text-primary">Servicios Destacados</h2>
+<p class="mt-4 text-lg max-w-2xl mx-auto">Soluciones nutricionales para cada una de tus metas.</p>
+</div>
+<div class="grid md:grid-cols-3 gap-8">
+<div class="bg-background-light dark:bg-background-dark/50 rounded-lg overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300 fade-in-up" style="animation-delay: 0.2s;">
+<img alt="Nutrición Deportiva" class="w-full h-56 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvkmxVH2FI-ceOe7g8so30tUqqJYk9ptI4R0sA5Gnd9O97SCcG50RXDD_mJWB9vJv-zLULRWDBSXupwHFamqKiR5fR2cKtrhhIo5F_lrBjpylIu83YjcXCMI8oTnDavCs8835oMXCc5aVeqreDXrh2om3rNInO994H2gPSocD6c_vEBs2aV0ugr26hK9pUr6Pz0q9blj9UYaQx705uFEIeiwJEQjXehu5QDwVoQsU73sqGhlRnkVhzKtSBwnYza7ZEzNpNd-mB1VNt"/>
+<div class="p-6">
+<h3 class="font-display font-bold text-xl mb-2">Nutrición Deportiva</h3>
+<p>Optimiza tu rendimiento, acelera tu recuperación y alcanza tu máximo potencial con un plan diseñado para atletas.</p>
+</div>
+</div>
+<div class="bg-background-light dark:bg-background-dark/50 rounded-lg overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300 fade-in-up" style="animation-delay: 0.4s;">
+<img alt="Pérdida de Peso" class="w-full h-56 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOLucoMJkLqgg-9AnNlvJNNfE1GG4HRJW_JgCkaMNVjty2Wsj_a5N6V1eEOIGW1TNpIZe6uVoWgrPe-9r9Ep14avb07PEp6ejLH97oZxQ3aAF-Q6w3Fg52lN5cA93K6YvvSUcOQ8AjEV_f-cZef4ggNmHuKvxGUXCKqOiud_c5jxLlqzFb2fVP2kWHYLEstZ7vOVzirNu5Njbi8PVE8Mzu2NbRpJtFBBEIUOBmBRM4sOE-BF_bOCLlAkV0sRoF3rdBJGiQKOURoWUg"/>
+<div class="p-6">
+<h3 class="font-display font-bold text-xl mb-2">Pérdida de Peso</h3>
+<p>Alcanza tu peso ideal de forma saludable, sostenible y sin pasar hambre, mejorando tu salud y autoestima.</p>
+</div>
+</div>
+<div class="bg-background-light dark:bg-background-dark/50 rounded-lg overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300 fade-in-up" style="animation-delay: 0.6s;">
+<img alt="Alimentación Saludable" class="w-full h-56 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJtOBcQh54JkhyRog4LJRnBbZlRLitZ-FJlSwCpCVKUiyDraaquw7cN_fuhdUBX9og9UYsDKrNygFDza6MFi-3qoZNb97ETZ_r-hylv_hgO6aUKci7jJId1dY-HpcGEV627HQKzrYbeI41hYZnZvHZxxHYHxZkuSpBrxL7ZxoyC5oXTpqDivnhHxhVfs7Wpy9K-gUIkWTCt_ESDjm0CmwDLmXrXRsr8FBvXGUIfzVZ_853-yRF2hppduyMjmSquz2NWx7ITpWmWwy8"/>
+<div class="p-6">
+<h3 class="font-display font-bold text-xl mb-2">Alimentación Saludable</h3>
+<p>Aprende a comer equilibrado, mejora tu energía y previene enfermedades construyendo una relación sana con la comida.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="py-20" id="testimonios">
+<div class="container mx-auto px-6">
+<div class="text-center mb-12 fade-in-up">
+<h2 class="font-display font-bold text-3xl md:text-4xl text-primary">Historias que Inspiran</h2>
+<p class="mt-4 text-lg max-w-2xl mx-auto">Descubre cómo hemos ayudado a otros a transformar su vida a través de la nutrición.</p>
+</div>
+<div class="grid md:grid-cols-3 gap-8">
+<div class="bg-background-light dark:bg-background-dark/50 rounded-lg p-6 shadow-lg fade-in-up" style="animation-delay: 0.2s;">
+<p class="italic mb-4">"Transformó mi relación con la comida. Aprendí a comer de forma saludable y a disfrutar sin restricciones."</p>
+<div class="flex items-center">
+<img alt="Cliente 1" class="w-12 h-12 rounded-full mr-4 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDErzmRntoF7zWw5SJeZw804fKjEAKxNFTZUdcjl2Uu8K6HUhC_LPABDJ3y4pyHOcDFlNZRDBxuC2lhLM1OIEIYDPE1npafy3oCn2e0-bE5C2ANkTDmPFsugvLJVlBqUX0Kwgxeb2tMWa2BEyjbAJ8wYSNEyZN7Yc-wuYdwz6U3RU4SVhI3PC2Ko6G346x04xr9L-f09tVnT3xvJVuJxUzBBprGAWe5RlKlco1z0_3NX70BKsrusywnhQGrM1iH4w8HmPy3phinpbei"/>
+<div>
+<p class="font-bold">Ana Pérez</p>
+<p class="text-sm text-primary">Paciente de Pérdida de Peso</p>
+</div>
+</div>
+</div>
+<div class="bg-background-light dark:bg-background-dark/50 rounded-lg p-6 shadow-lg fade-in-up" style="animation-delay: 0.4s;">
+<p class="italic mb-4">"El plan de nutrición me ayudó a mejorar mi rendimiento y a alcanzar mis objetivos en el gimnasio. ¡Increíble!"</p>
+<div class="flex items-center">
+<img alt="Cliente 2" class="w-12 h-12 rounded-full mr-4 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIGA4uZgG4g7TlDpJjrerNnEHoZJYSbsyy3fNN7Bpzc008O9BHeAbQz30PHEJgn6wCjBActhar4gHl63ud3ZZypKI6XfOXvuM-xs_G2LXG3e4ITrsZfQVYvQgOFO68MMdYE8bP7Gjks4fHaH8x5Eb4i7Z5xNXGh4VjjbKjOWfsgTOUX270zLlES8HWeNJOd1Qb2mi0FiiJ8KZLfskV8OjuKMbore5AGKdGraAYfjDS05ooBy9IWcU5jV6DbxgHu_V3coXQPysS60Vu"/>
+<div>
+<p class="font-bold">Carlos Gómez</p>
+<p class="text-sm text-primary">Paciente de Nutrición Deportiva</p>
+</div>
+</div>
+</div>
+<div class="bg-background-light dark:bg-background-dark/50 rounded-lg p-6 shadow-lg fade-in-up" style="animation-delay: 0.6s;">
+<p class="italic mb-4">"Me siento con más energía que nunca. La nutrición personalizada me ha dado la vitalidad que necesitaba."</p>
+<div class="flex items-center">
+<img alt="Cliente 3" class="w-12 h-12 rounded-full mr-4 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuByoDp284bUJG5mY46r4ULHWTEX24AugzWPQS2E6fPb1QZa759CX0CwawCqz2fDVn7COknxJhbhc4uLft_nkHt9Hyka1YpHFHSZodnTtlMAXWtet9qj-iYlcmgZD1DQXbmbuVwG_NJ9qLiKGPhpQ3hfTH1nUzq7tgyngBL3Rkj1kAtVxL9StZBE7yqlYOL1FNibKQWv4vlzw_5RLqhCxUc5E_9-nR2AY5-og3NIvlep4zKlg6RNaAEoHLdsSuhQB_eDRiF1dZFubpZe"/>
+<div>
+<p class="font-bold">Sofía Rodríguez</p>
+<p class="text-sm text-primary">Paciente de Alimentación Saludable</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="py-20 bg-primary/10 dark:bg-background-dark/50" id="contacto">
+<div class="container mx-auto px-6 text-center fade-in-up">
+<h2 class="font-display font-bold text-3xl md:text-4xl text-primary">Da el Primer Paso Hoy</h2>
+<p class="mt-4 text-lg max-w-2xl mx-auto">Recibe consejos y recetas saludables en tu correo. ¡Es gratis!</p>
+<form class="mt-8 max-w-lg mx-auto flex flex-col sm:flex-row gap-4">
+<input class="flex-grow px-4 py-3 rounded-lg border-2 border-primary/20 focus:ring-primary focus:border-primary transition bg-background-light dark:bg-background-dark/50" placeholder="Tu correo electrónico" type="email"/>
+<button class="bg-accent text-white px-8 py-3 rounded-lg font-bold hover:bg-opacity-90 transition-all" type="submit"> Suscribirme </button>
+</form>
+</div>
+</section>
+</main>
+<footer class="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white py-12">
+<div class="container mx-auto px-6">
+  <!-- Logo y descripción -->
+  <div class="text-center mb-8">
+    <h3 class="font-display font-bold text-2xl text-primary mb-2">NutriVida</h3>
+    <p class="text-gray-300 text-sm max-w-md mx-auto">Nutrición personalizada que transforma tu vida y bienestar</p>
+  </div>
+  
+  <!-- Redes sociales profesionales -->
+  <div class="flex justify-center gap-6 mb-8">
+    <a href="https://www.facebook.com/profile.php?id=61580681552666&locale=es_LA" target="_blank" rel="noopener noreferrer" 
+       class="group bg-white/10 hover:bg-blue-600 backdrop-blur-sm rounded-full p-3 transition-all duration-300 transform hover:scale-110 hover:shadow-lg">
+      <svg class="w-6 h-6 text-white group-hover:text-white" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+      </svg>
+    </a>
+    
+    <a href="https://instagram.com/nutrivida" target="_blank" rel="noopener noreferrer" 
+       class="group bg-white/10 hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-500 backdrop-blur-sm rounded-full p-3 transition-all duration-300 transform hover:scale-110 hover:shadow-lg">
+      <svg class="w-6 h-6 text-white group-hover:text-white" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.62 5.367 11.987 11.988 11.987s11.987-5.367 11.987-11.987C24.014 5.367 18.647.001 12.017.001zM8.449 16.988c-1.297 0-2.448-.49-3.323-1.297C4.198 14.895 3.708 13.744 3.708 12.447s.49-2.448 1.297-3.323c.875-.807 2.026-1.297 3.323-1.297s2.448.49 3.323 1.297c.807.875 1.297 2.026 1.297 3.323s-.49 2.448-1.297 3.323c-.875.807-2.026 1.297-3.323 1.297zm7.718-1.297c-.875.807-2.026 1.297-3.323 1.297s-2.448-.49-3.323-1.297c-.807-.875-1.297-2.026-1.297-3.323s.49-2.448 1.297-3.323c.875-.807 2.026-1.297 3.323-1.297s2.448.49 3.323 1.297c.807.875 1.297 2.026 1.297 3.323s-.49 2.448-1.297 3.323z"/>
+      </svg>
+    </a>
+    
+    <a href="https://twitter.com/nutrivida" target="_blank" rel="noopener noreferrer" 
+       class="group bg-white/10 hover:bg-blue-400 backdrop-blur-sm rounded-full p-3 transition-all duration-300 transform hover:scale-110 hover:shadow-lg">
+      <svg class="w-6 h-6 text-white group-hover:text-white" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+      </svg>
+    </a>
+    
+    <a href="https://youtube.com/nutrivida" target="_blank" rel="noopener noreferrer" 
+       class="group bg-white/10 hover:bg-red-600 backdrop-blur-sm rounded-full p-3 transition-all duration-300 transform hover:scale-110 hover:shadow-lg">
+      <svg class="w-6 h-6 text-white group-hover:text-white" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+      </svg>
+    </a>
+    
+    <a href="https://wa.me/5218992293240?text=Hola%20NutriVida,%20me%20interesa%20agendar%20una%20consulta" target="_blank" rel="noopener noreferrer" 
+       class="group bg-white/10 hover:bg-green-500 backdrop-blur-sm rounded-full p-3 transition-all duration-300 transform hover:scale-110 hover:shadow-lg">
+      <svg class="w-6 h-6 text-white group-hover:text-white" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+      </svg>
+    </a>
+  </div>
+  
+  <!-- Información de contacto profesional -->
+  <div class="flex flex-wrap justify-center gap-8 mb-8 text-sm">
+    <div class="flex items-center gap-2 text-gray-300 hover:text-white transition-colors">
+      <span class="material-symbols-outlined text-accent">phone</span>
+      <a href="tel:+5218992293240">+52 1 899 229 3240</a>
+    </div>
+    <div class="flex items-center gap-2 text-gray-300 hover:text-white transition-colors">
+      <span class="material-symbols-outlined text-accent">email</span>
+      <a href="mailto:info@nutrivida.com">info@nutrivida.com</a>
+    </div>
+    <div class="flex items-center gap-2 text-gray-300">
+      <span class="material-symbols-outlined text-accent">location_on</span>
+      <span>Ciudad, País</span>
+    </div>
+  </div>
+  
+  <!-- Línea divisoria elegante -->
+  <div class="border-t border-gray-700 pt-6">
+    <div class="text-center">
+      <p class="text-sm text-gray-400 mb-2">© 2026 NutriVida. Todos los derechos reservados.</p>
+      <p class="text-xs text-gray-500">Diseñado con <span class="text-accent">♥</span> para tu bienestar</p>
+    </div>
+  </div>
+</div>
+</footer>
+<a class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 bg-green-600 hover:bg-green-700 text-white px-3 py-2 sm:px-5 sm:py-3 rounded-full font-bold shadow-lg flex items-center gap-1 sm:gap-2 transition-all transform hover:scale-105 z-40 text-xs sm:text-sm" href="https://wa.me/5218992293240?text=Hola%20NutriVida,%20me%20interesa%20agendar%20una%20consulta" target="_blank" rel="noopener noreferrer">
+<span class="material-symbols-outlined text-sm sm:text-base">chat</span> <span class="hidden sm:inline">WhatsApp</span><span class="sm:hidden">WA</span>
+    </a>
+
+</body></html>
