@@ -1125,14 +1125,12 @@ class AnimationManager {
           this.playHoverSound(soundUrl);
         }
 
-        // Resolver ruta destino para GitHub Pages (asegurar prefijo /public/ si hace falta)
-        let targetHref = projectLink;
-        const isAbsolute = /^(https?:)?\/\//.test(projectLink);
-        const startsWithSlashOrDot = /^(\/|\.\/|\.\.\/)?.*/.test(projectLink);
-        const needsPublicPrefix = !projectLink.startsWith('/') && !projectLink.startsWith('./') && !projectLink.startsWith('../') && !isAbsolute;
-        if (needsPublicPrefix) {
-          // Si la URL no es absoluta ni tiene prefijo relativo, forzar /public/
-          targetHref = `/public/${projectLink}`.replace(/\/+/, '/');
+        // Resolver ruta destino de forma robusta (soporta subpaths en GitHub Pages)
+        let targetHref;
+        try {
+          targetHref = new URL(projectLink, window.location.href).href;
+        } catch (e) {
+          targetHref = projectLink;
         }
 
         // Pequeña pausa para el sonido antes de redirigir
