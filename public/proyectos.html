@@ -654,12 +654,12 @@
           </li>
 
           <!-- GSAP -->
-          <li class="project-item" data-image="https://assets.codepen.io/7558/portrait-fashion-004.jpg" data-sound="mp3/hover.mp3" data-link="../src/components/evidencias/presentacion/proyecto-4/index.html" data-category="gsap">
-            <span class="project-data artist hover-text">NEIL FRANCES</span>
+          <li class="project-item" data-image="https://assets.codepen.io/7558/portrait-fashion-004.jpg" data-sound="mp3/hover.mp3" data-link="gsap/T-1.html" data-category="gsap">
+            <span class="project-data artist hover-text">DJI</span>
             <span class="project-data album hover-text">LINES</span>
             <span class="project-data category hover-text">ALBUM</span>
             <span class="project-data label hover-text">ISKA DHAMD</span>
-            <span class="project-data year hover-text">2021</span>
+            <span class="project-data year hover-text">2025</span>
           </li>
           <li class="project-item" data-image="https://assets.codepen.io/7558/portrait-fashion-006.jpg" data-sound="mp3/hover.mp3" data-link="../src/components/evidencias/presentacion/proyecto-6/index.html" data-category="gsap">
             <span class="project-data artist hover-text">BEYHUDE</span>
@@ -1130,18 +1130,16 @@ class AnimationManager {
           this.playHoverSound(soundUrl);
         }
 
-        // Resolver ruta destino de forma robusta (soporta subpaths en GitHub Pages)
+        // Resolver ruta destino de forma robusta usando URL nativa
+        // - Evita duplicar "/public" en entornos donde la página ya está bajo /public/
+        // - Funciona en GitHub Pages (subcarpeta del repo) y en entornos locales
         let targetHref;
         try {
-          const isAbsolute = /^(https?:)?\/\//.test(projectLink) || projectLink.startsWith('/');
-          const isRelativePrefixed = projectLink.startsWith('./') || projectLink.startsWith('../');
-          if (!isAbsolute && !isRelativePrefixed) {
-            // Construir prefijo del repo (ej. /githubpagetest) si aplica
-            const segments = window.location.pathname.split('/').filter(Boolean);
-            const repoBase = segments.length > 0 ? `/${segments[0]}` : '';
-            const publicPrefix = `${repoBase}/public/`;
-            targetHref = `${publicPrefix}${projectLink}`.replace(/\/+/g, '/');
+          const isAbsolute = /^(https?:)?\/\//.test(projectLink);
+          if (isAbsolute) {
+            targetHref = projectLink;
           } else {
+            // Resuelve siempre relativo a la ubicación actual
             targetHref = new URL(projectLink, window.location.href).href;
           }
         } catch (e) {
