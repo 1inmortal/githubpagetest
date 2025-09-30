@@ -223,15 +223,21 @@ jobs:
 
     - name: Build para Pages
       run: |
-        # Crear directorio de build
-        mkdir -p dist
-        # Copiar archivos estáticos
-        cp -r src/ dist/
-        cp index.html dist/
-        cp -r config/ dist/
-        cp -r docs/ dist/
-        cp README.md dist/
-        cp LICENSE dist/
+        # Usar script de optimización personalizado
+        node scripts/optimize-for-pages.js
+        
+        # Verificar que el directorio dist existe
+        if [ ! -d "dist" ]; then
+          echo "❌ Error: El directorio dist no se creó correctamente"
+          exit 1
+        fi
+        
+        # Mostrar estadísticas del build
+        echo "📊 Estadísticas del build:"
+        echo "Archivos en dist: $(find dist -type f | wc -l)"
+        echo "Tamaño total: $(du -sh dist | cut -f1)"
+        
+        echo "✅ Preparación de archivos completada"
 
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3.0.0
