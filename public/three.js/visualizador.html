@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Visualizador de Audio 3D</title>
+  <meta name="description" content="Visualizador 3D reactivo con Web Audio API, Three.js, GSAP y Anime.js" />
+  <style>
+    :root {
+      --bg1: #0b1020;
+      --bg2: #101b3a;
+      --accent: #6cf9ff;
+      --text: #e7f0ff;
+      --muted: #8aa0c2;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(120% 120% at 80% 10%, var(--bg2), var(--bg1) 60%);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      overflow: hidden;
+    }
+
+    /* Fondo degradado animado */
+    .bg-anim {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background: radial-gradient(100% 100% at 20% 20%, rgba(108,249,255,0.15), transparent 60%),
+                  radial-gradient(80% 80% at 80% 70%, rgba(185,148,255,0.12), transparent 60%),
+                  linear-gradient(160deg, #0a0f1f, #0b1124 40%, #0d142a 70%, #0a0f1f);
+      animation: shift 18s ease-in-out infinite alternate;
+      filter: saturate(1.1) brightness(1.05);
+    }
+
+    @keyframes shift {
+      0% { transform: translate3d(0,0,0) scale(1); }
+      100% { transform: translate3d(0,-2%,0) scale(1.03); }
+    }
+
+    /* Controles UI */
+    .ui {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: grid;
+      grid-template-columns: auto auto auto 1fr;
+      grid-auto-rows: auto;
+      align-items: center;
+      gap: 10px 14px;
+      background: rgba(10, 15, 32, 0.6);
+      border: 1px solid rgba(108, 249, 255, 0.18);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35), inset 0 0 24px rgba(108,249,255,0.05);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 10px 14px;
+      border-radius: 12px;
+      z-index: 10;
+    }
+
+    .title {
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      color: var(--muted);
+      font-size: 14px;
+      margin-right: 4px;
+    }
+
+    .file-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(108,249,255,0.18), rgba(108,249,255,0.08));
+      border: 1px solid rgba(108,249,255,0.3);
+      color: var(--text);
+      font-weight: 600;
+      transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .file-label:hover { transform: translateY(-1px); border-color: rgba(108,249,255,0.6); box-shadow: 0 8px 24px rgba(108,249,255,0.08); }
+    .file-label:active { transform: translateY(0); }
+
+    input[type="file"] { display: none; }
+
+    .row { display: contents; }
+
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      opacity: 0.9;
+    }
+
+    /* Contenedor del canvas */
+    #app {
+      position: fixed;
+      inset: 0;
+    }
+
+    /* Indicador de estado */
+    .status {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: var(--muted);
+      padding: 6px 10px;
+      background: rgba(0, 0, 0, 0.28);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      pointer-events: none;
+    }
+
+    /* Panel inferior para progreso (espacio para futuras mejoras) */
+    .bottom-bar {
+      position: fixed;
+      left: 50%;
+      bottom: 16px;
+      transform: translateX(-50%);
+      width: min(720px, 92vw);
+      background: rgba(8, 12, 24, 0.55);
+      border: 1px solid rgba(108, 249, 255, 0.18);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 12px;
+      padding: 8px 12px;
+      color: var(--text);
+      display: grid;
+      grid-template-columns: auto 1fr auto auto auto;
+      gap: 10px;
+      z-index: 9;
+    }
+
+    .btn {
+      cursor: pointer;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(108,249,255,0.12);
+      border: 1px solid rgba(108,249,255,0.28);
+      color: var(--text);
+      font-weight: 600;
+      font-size: 12px;
+      transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .btn:hover { transform: translateY(-1px); border-color: rgba(108,249,255,0.6); box-shadow: 0 8px 24px rgba(108,249,255,0.08); }
+
+    .select, .range { accent-color: var(--accent); }
+
+    .vignette-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      background: radial-gradient(80% 80% at 50% 50%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.22) 90%);
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-anim"></div>
+
+  <div class="ui" role="group" aria-label="Controles del visualizador">
+    <div class="row">
+      <span class="title">Visualizador 3D</span>
+      <label class="file-label" for="fileInput" id="uploadLabel" aria-label="Subir archivo mp3">⬆ Subir .mp3</label>
+      <input id="fileInput" type="file" accept="audio/mpeg,audio/mp3" />
+      <span class="hint">Selecciona un archivo o usa Demo/Mic</span>
+    </div>
+
+    <div class="row">
+      <label class="hint" for="mode">Modo</label>
+      <select id="mode" class="select" aria-label="Modo de visualización">
+        <option value="ring">Anillo</option>
+        <option value="sphere">Esfera</option>
+        <option value="spiral">Espiral</option>
+        <option value="columns">Columnas</option>
+      </select>
+
+      <label class="hint" for="sensitivity">Sensibilidad</label>
+      <input id="sensitivity" type="range" min="0.5" max="3" step="0.1" value="1.4" class="range" />
+
+      <label class="hint" for="smoothing">Smoothing</label>
+      <input id="smoothing" type="range" min="0" max="0.95" step="0.05" value="0.85" class="range" />
+
+      <label class="hint" for="fft">FFT</label>
+      <select id="fft" class="select">
+        <option value="512">512</option>
+        <option value="1024" selected>1024</option>
+        <option value="2048">2048</option>
+      </select>
+    </div>
+
+    <div class="row">
+      <button id="btnDemo" class="btn" aria-label="Cargar pista de demostración">Demo</button>
+      <button id="btnMic" class="btn" aria-pressed="false" aria-label="Alternar micrófono">Mic</button>
+      <button id="btnRecord" class="btn" aria-pressed="false" aria-label="Grabar WebM">Grabar</button>
+      <button id="btnSnap" class="btn" aria-label="Capturar imagen">Snapshot</button>
+    </div>
+  </div>
+
+  <div id="app"></div>
+  <div class="vignette-overlay"></div>
+  <div class="status" id="status">Listo</div>
+
+  <!-- GSAP (sin SRI para evitar bloqueo por hash incorrecto) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- Anime.js (sin SRI para evitar bloqueo por hash incorrecto) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <!-- Import Map para resolver 'three' en módulos ES -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+      }
+    }
+  </script>
+
+  <!-- App en módulo ES: importa Three.js, OrbitControls y postprocesado -->
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+    import { EffectComposer } from 'https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/EffectComposer.js';
+    import { RenderPass } from 'https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/RenderPass.js';
+    import { UnrealBloomPass } from 'https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/UnrealBloomPass.js';
+
+    (function() {
+      const container = document.getElementById('app');
+      const statusEl = document.getElementById('status');
+      const fileInput = document.getElementById('fileInput');
+      const uploadLabel = document.getElementById('uploadLabel');
+
+      // Escena básica
+      const scene = new THREE.Scene();
+      scene.fog = new THREE.Fog(0x070b16, 30, 120);
+
+      const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.set(0, 10, 26);
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      container.appendChild(renderer.domElement);
+
+      // Luces
+      const ambient = new THREE.AmbientLight(0x88aaff, 0.35);
+      scene.add(ambient);
+      const dir = new THREE.DirectionalLight(0x9fd5ff, 1.2);
+      dir.position.set(10, 18, 8);
+      scene.add(dir);
+
+      // Suelo sutil
+      const groundGeo = new THREE.CircleGeometry(40, 64);
+      const groundMat = new THREE.MeshStandardMaterial({ color: 0x0a1124, metalness: 0.2, roughness: 0.9 });
+      const ground = new THREE.Mesh(groundGeo, groundMat);
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = 0;
+      ground.receiveShadow = true;
+      scene.add(ground);
+
+      // Controles (desactivados por defecto; útiles para inspección)
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.enabled = false;
+
+      // Postprocesado
+      const composer = new EffectComposer(renderer);
+      const renderPass = new RenderPass(scene, camera);
+      composer.addPass(renderPass);
+      const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.6, 0.9, 0.4);
+      composer.addPass(bloomPass);
+
+      // InstancedMesh de barras
+      const NUM_BARS = 192;
+      const BAR_BASE_H = 0.6;
+      const BAR_W = 0.32;
+      const BAR_D = 0.32;
+      const geom = new THREE.BoxGeometry(BAR_W, BAR_BASE_H, BAR_D);
+      const material = new THREE.MeshStandardMaterial({
+        color: 0x6cf9ff,
+        emissive: new THREE.Color(0x08243a),
+        emissiveIntensity: 0.55,
+        metalness: 0.55,
+        roughness: 0.35
+      });
+      const instanced = new THREE.InstancedMesh(geom, material, NUM_BARS);
+      instanced.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      scene.add(instanced);
+
+      const instanceColors = [];
+      const tmpColor = new THREE.Color();
+      for (let i = 0; i < NUM_BARS; i++) {
+        const hue = (0.58 + 0.4 * (i / NUM_BARS)) % 1;
+        tmpColor.setHSL(hue, 0.75, 0.55);
+        instanceColors.push(tmpColor.r, tmpColor.g, tmpColor.b);
+      }
+      instanced.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(instanceColors), 3);
+
+      const matrices = new Array(NUM_BARS).fill(0).map(() => new THREE.Matrix4());
+      const positions = new Array(NUM_BARS).fill(0).map(() => new THREE.Vector3());
+      const rotations = new Array(NUM_BARS).fill(0).map(() => new THREE.Quaternion());
+      const scales = new Array(NUM_BARS).fill(0).map(() => new THREE.Vector3(1, 1, 1));
+
+      let mode = 'ring';
+      const RADIUS = 10.5;
+      function layout(modeName) {
+        mode = modeName;
+        const up = new THREE.Vector3(0, 1, 0);
+        for (let i = 0; i < NUM_BARS; i++) {
+          const t = i / NUM_BARS;
+          let pos = positions[i];
+          let quat = rotations[i];
+          if (mode === 'ring') {
+            const a = t * Math.PI * 2;
+            pos.set(Math.cos(a) * RADIUS, BAR_BASE_H / 2, Math.sin(a) * RADIUS);
+            const look = new THREE.Vector3(0, BAR_BASE_H / 2, 0).sub(pos).normalize();
+            quat.setFromUnitVectors(new THREE.Vector3(0, 0, 1), look);
+          } else if (mode === 'sphere') {
+            const phi = Math.acos(1 - 2 * t);
+            const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+            const r = 8.5;
+            pos.set(
+              r * Math.cos(theta) * Math.sin(phi),
+              r * Math.cos(phi) + 2.5,
+              r * Math.sin(theta) * Math.sin(phi)
+            );
+            const look = pos.clone().normalize().multiplyScalar(-1);
+            quat.setFromUnitVectors(new THREE.Vector3(0, 1, 0), look.clone().add(up).normalize());
+          } else if (mode === 'spiral') {
+            const turns = 3.5;
+            const a = t * Math.PI * 2 * turns;
+            const r = 4 + t * 7;
+            pos.set(Math.cos(a) * r, 1 + t * 10, Math.sin(a) * r);
+            const look = new THREE.Vector3(Math.cos(a), 0, Math.sin(a));
+            quat.setFromUnitVectors(new THREE.Vector3(0, 1, 0), look.clone().add(up).normalize());
+          } else if (mode === 'columns') {
+            const grid = Math.round(Math.sqrt(NUM_BARS));
+            const x = (i % grid) - grid / 2;
+            const z = Math.floor(i / grid) - grid / 2;
+            pos.set(x * 1.4, BAR_BASE_H / 2, z * 1.4);
+            quat.identity();
+          }
+        }
+      }
+      layout('ring');
+      function updateInstance(i) { matrices[i].compose(positions[i], rotations[i], scales[i]); instanced.setMatrixAt(i, matrices[i]); }
+      for (let i = 0; i < NUM_BARS; i++) updateInstance(i);
+      instanced.instanceMatrix.needsUpdate = true;
+
+      // Animaciones de cámara con GSAP
+      function setupCameraAnimations() {
+        // Rotación lenta del conjunto completo
+        const rotObj = { y: 0 };
+        gsap.to(rotObj, { y: Math.PI * 2, duration: 60, ease: "none", repeat: -1, onUpdate: () => { scene.rotation.y = rotObj.y; }});
+
+        // Zoom respirante
+        gsap.to(camera.position, { z: 22, duration: 6, yoyo: true, repeat: -1, ease: "sine.inOut" });
+
+        // Orbitación suave de la cámara alrededor del centro
+        const orbit = { t: 0 };
+        gsap.to(orbit, {
+          t: Math.PI * 2,
+          duration: 40,
+          repeat: -1,
+          ease: "none",
+          onUpdate: () => {
+            const r = 26;
+            camera.position.x = Math.cos(orbit.t) * r;
+            camera.position.z = Math.sin(orbit.t) * r;
+            camera.lookAt(0, 6, 0);
+          }
+        });
+      }
+      setupCameraAnimations();
+
+      // Web Audio API
+      let audioCtx = null;
+      let analyser = null;
+      let freqArray = null;
+      let timeArray = null;
+      let sourceNode = null;
+      // micStream y sensitivityPow se definen una sola vez en este módulo
+      let micStream = null;
+      const audioEl = new Audio();
+      audioEl.crossOrigin = "anonymous";
+      audioEl.preload = "auto";
+      audioEl.controls = false;
+
+      function setupAudio() {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          analyser = audioCtx.createAnalyser();
+          analyser.fftSize = 1024;
+          analyser.smoothingTimeConstant = 0.85;
+          freqArray = new Uint8Array(analyser.frequencyBinCount);
+          timeArray = new Uint8Array(analyser.fftSize);
+        }
+        if (sourceNode) {
+          sourceNode.disconnect();
+          sourceNode = null;
+        }
+        sourceNode = audioCtx.createMediaElementSource(audioEl);
+        sourceNode.connect(analyser);
+        analyser.connect(audioCtx.destination);
+      }
+
+      // Estado y ayuda
+      function setStatus(text) {
+        statusEl.textContent = text;
+      }
+
+      // Waveform y render
+      const waveformPts = new THREE.BufferGeometry();
+      const waveformCount = 256;
+      const waveformPositions = new Float32Array(waveformCount * 3);
+      waveformPts.setAttribute('position', new THREE.BufferAttribute(waveformPositions, 3));
+      const waveformLine = new THREE.LineLoop(waveformPts, new THREE.LineBasicMaterial({ color: 0x66c6ff, transparent: true, opacity: 0.5 }));
+      waveformLine.position.y = 0.2;
+      scene.add(waveformLine);
+
+      const particlesGeo = new THREE.BufferGeometry();
+      const particleCount = 200;
+      const particlePositions = new Float32Array(particleCount * 3);
+      for (let i = 0; i < particleCount; i++) {
+        particlePositions[i * 3 + 0] = (Math.random() - 0.5) * 20;
+        particlePositions[i * 3 + 1] = Math.random() * 10 + 1;
+        particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+      }
+      particlesGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+      const particlesMat = new THREE.PointsMaterial({ color: 0x9fd5ff, size: 0.08, transparent: true, opacity: 0.65 });
+      const particles = new THREE.Points(particlesGeo, particlesMat);
+      scene.add(particles);
+
+      let sensitivityPow = 1.4;
+      function renderInstanced() {
+        if (!analyser) return;
+        analyser.getByteFrequencyData(freqArray);
+        analyser.getByteTimeDomainData(timeArray);
+
+        const binsPerBar = Math.max(1, Math.floor(freqArray.length / NUM_BARS));
+        let bassEnergy = 0;
+        const bassBarsCount = Math.floor(NUM_BARS * 0.2);
+
+        for (let i = 0; i < NUM_BARS; i++) {
+          let sum = 0;
+          const start = i * binsPerBar;
+          for (let j = 0; j < binsPerBar; j++) sum += freqArray[start + j] || 0;
+          const avg = sum / binsPerBar;
+          const normalized = avg / 255;
+          const eased = Math.pow(normalized, sensitivityPow);
+          const scaleY = Math.max(0.1, 1 + eased * 16);
+          scales[i].set(1, scaleY, 1);
+          positions[i].y = (scaleY * BAR_BASE_H) / 2;
+          updateInstance(i);
+          if (i < bassBarsCount) bassEnergy += normalized;
+        }
+        instanced.instanceMatrix.needsUpdate = true;
+
+        const avgLevel = bassEnergy / bassBarsCount;
+        material.emissiveIntensity = 0.45 + avgLevel * 0.9;
+        bloomPass.strength = 0.5 + avgLevel * 0.6;
+
+        const posArr = waveformPts.attributes.position.array;
+        for (let i = 0; i < waveformCount; i++) {
+          const t = i / waveformCount;
+          const a = t * Math.PI * 2;
+          const v = (timeArray[Math.floor(t * timeArray.length)] - 128) / 128;
+          const r = 7.8 + v * 1.6;
+          posArr[i * 3 + 0] = Math.cos(a) * r;
+          posArr[i * 3 + 1] = 0.2 + v * 0.3;
+          posArr[i * 3 + 2] = Math.sin(a) * r;
+        }
+        waveformPts.attributes.position.needsUpdate = true;
+
+        handleBassPulse(avgLevel);
+      }
+
+      // Pulso con Anime.js cuando los graves superan umbral
+      let bassCooldown = false;
+      function handleBassPulse(bassLevel) {
+        const threshold = 0.45; // sensible
+        if (bassCooldown || bassLevel < threshold) return;
+        bassCooldown = true;
+
+        const amp = 1 + Math.min(0.35, bassLevel * 0.6);
+        anime({ targets: scene.scale, x: amp, y: amp, z: amp, duration: 120, direction: 'alternate', easing: 'easeOutQuad' });
+        anime({ targets: material, emissiveIntensity: Math.min(1.6, material.emissiveIntensity + 0.5), duration: 140, direction: 'alternate', easing: 'easeOutSine' });
+
+        // Enfriamiento corto para evitar espameo
+        setTimeout(() => { bassCooldown = false; }, 160);
+      }
+
+      // Loop
+      const clock = new THREE.Clock();
+      function animate() {
+        requestAnimationFrame(animate);
+        const dt = clock.getDelta();
+        controls.update();
+        renderInstanced();
+        composer.render();
+      }
+      animate();
+
+      // Subida de archivo
+      fileInput.addEventListener('change', async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('audio/')) {
+          setStatus('Archivo no válido. Selecciona un .mp3');
+          return;
+        }
+        try {
+          setupAudio();
+          const url = URL.createObjectURL(file);
+          audioEl.src = url;
+          await audioEl.play(); // gesto del usuario presente
+          if (audioCtx.state === 'suspended') await audioCtx.resume();
+          setStatus('Reproduciendo: ' + (file.name || 'audio'));
+          uploadLabel.textContent = 'Cambiar archivo';
+        } catch (err) {
+          console.error(err);
+          setStatus('No se pudo reproducir el audio');
+        }
+      });
+
+      // Drag & Drop
+      window.addEventListener('dragover', (e) => { e.preventDefault(); });
+      window.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer?.files?.[0];
+        if (!file) return;
+        fileInput.files = e.dataTransfer.files;
+        fileInput.dispatchEvent(new Event('change'));
+      });
+
+      // Demo track
+      const btnDemo = document.getElementById('btnDemo');
+      btnDemo?.addEventListener('click', async () => {
+        try {
+          setupAudio();
+          const demoUrl = '/public/mp3/hover.mp3';
+          audioEl.src = demoUrl;
+          await audioEl.play();
+          if (audioCtx.state === 'suspended') await audioCtx.resume();
+          setStatus('Reproduciendo demo');
+        } catch (e) { console.error(e); setStatus('No se pudo reproducir la demo'); }
+      });
+
+      // Micrófono
+      const btnMic = document.getElementById('btnMic');
+      async function startMic() {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 1024;
+        analyser.smoothingTimeConstant = 0.85;
+        freqArray = new Uint8Array(analyser.frequencyBinCount);
+        timeArray = new Uint8Array(analyser.fftSize);
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const micSource = audioCtx.createMediaStreamSource(micStream);
+        micSource.connect(analyser);
+        setStatus('Micrófono activo');
+      }
+      function stopMic() {
+        if (micStream) { micStream.getTracks().forEach(t => t.stop()); micStream = null; setStatus('Micrófono detenido'); }
+      }
+      btnMic?.addEventListener('click', async () => {
+        const pressed = btnMic.getAttribute('aria-pressed') === 'true';
+        if (pressed) { stopMic(); btnMic.setAttribute('aria-pressed', 'false'); btnMic.textContent = 'Mic'; }
+        else { await startMic(); btnMic.setAttribute('aria-pressed', 'true'); btnMic.textContent = 'Mic ON'; }
+      });
+
+      // Controles UI
+      const modeSelect = document.getElementById('mode');
+      const sensitivityInput = document.getElementById('sensitivity');
+      const smoothingInput = document.getElementById('smoothing');
+      const fftSelect = document.getElementById('fft');
+      function updateSensitivity() { sensitivityPow = parseFloat(sensitivityInput.value); savePrefs(); }
+      modeSelect?.addEventListener('change', (e) => { layout(e.target.value); for (let i=0;i<NUM_BARS;i++) updateInstance(i); instanced.instanceMatrix.needsUpdate = true; savePrefs(); });
+      sensitivityInput?.addEventListener('input', updateSensitivity);
+      smoothingInput?.addEventListener('input', () => { if (analyser) analyser.smoothingTimeConstant = parseFloat(smoothingInput.value); savePrefs(); });
+      fftSelect?.addEventListener('change', () => {
+        if (analyser) {
+          analyser.fftSize = parseInt(fftSelect.value, 10);
+          freqArray = new Uint8Array(analyser.frequencyBinCount);
+          timeArray = new Uint8Array(analyser.fftSize);
+        }
+        savePrefs();
+      });
+
+      // Grabación WebM
+      const btnRecord = document.getElementById('btnRecord');
+      let mediaRecorder = null; let recordedChunks = [];
+      btnRecord?.addEventListener('click', () => {
+        const pressed = btnRecord.getAttribute('aria-pressed') === 'true';
+        if (!pressed) {
+          const stream = renderer.domElement.captureStream(60);
+          mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+          recordedChunks = [];
+          mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
+          mediaRecorder.onstop = () => {
+            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'visualizador.webm'; a.click();
+            URL.revokeObjectURL(url);
+          };
+          mediaRecorder.start();
+          btnRecord.setAttribute('aria-pressed', 'true'); btnRecord.textContent = 'Grabando...'; setStatus('Grabando WebM');
+        } else {
+          mediaRecorder?.stop();
+          btnRecord.setAttribute('aria-pressed', 'false'); btnRecord.textContent = 'Grabar'; setStatus('Grabación finalizada');
+        }
+      });
+
+      // Snapshot PNG
+      const btnSnap = document.getElementById('btnSnap');
+      btnSnap?.addEventListener('click', () => {
+        const url = renderer.domElement.toDataURL('image/png');
+        const a = document.createElement('a'); a.href = url; a.download = 'visualizador.png'; a.click();
+      });
+
+      // Persistencia preferencias
+      function savePrefs() {
+        const prefs = {
+          mode: modeSelect?.value || 'ring',
+          sensitivity: sensitivityInput?.value || '1.4',
+          smoothing: smoothingInput?.value || '0.85',
+          fft: fftSelect?.value || '1024'
+        };
+        try { localStorage.setItem('viz3d-prefs', JSON.stringify(prefs)); } catch (_) {}
+      }
+      function loadPrefs() {
+        try {
+          const raw = localStorage.getItem('viz3d-prefs');
+          if (!raw) return;
+          const p = JSON.parse(raw);
+          if (p.mode && modeSelect) { modeSelect.value = p.mode; layout(p.mode); for (let i=0;i<NUM_BARS;i++) updateInstance(i); instanced.instanceMatrix.needsUpdate = true; }
+          if (p.sensitivity && sensitivityInput) { sensitivityInput.value = p.sensitivity; sensitivityPow = parseFloat(p.sensitivity); }
+          if (p.smoothing && smoothingInput && analyser) { smoothingInput.value = p.smoothing; analyser.smoothingTimeConstant = parseFloat(p.smoothing); }
+          if (p.fft && fftSelect && analyser) { fftSelect.value = p.fft; analyser.fftSize = parseInt(p.fft, 10); }
+        } catch (_) {}
+      }
+      loadPrefs();
+      // Reanudar contexto en interacción (iOS/Safari)
+      window.addEventListener('click', () => { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); }, { passive: true });
+
+      // Resize
+      function onResize() {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h);
+      }
+      window.addEventListener('resize', onResize);
+      onResize();
+
+      // Limpieza al salir (opcional)
+      window.addEventListener('pagehide', () => {
+        try { audioEl.pause(); } catch (_) {}
+      });
+    })();
+  </script>
+</body>
+</html>
+
+
