@@ -1389,6 +1389,36 @@
             z-index: 1000;
         }
 
+        /* Aura animada para el botón scroll-to-top */
+        .scroll-to-top::before,
+        .scroll-to-top::after {
+            content: '';
+            position: absolute;
+            inset: -6px;
+            border-radius: 50%;
+            background: radial-gradient(60% 60% at 50% 50%, rgba(0,255,136,0.35), rgba(0,212,255,0.15) 60%, rgba(0,0,0,0) 70%);
+            filter: blur(6px);
+            opacity: 0;
+            transform: scale(0.9);
+            pointer-events: none;
+        }
+
+        .scroll-to-top.visible::before,
+        .scroll-to-top.visible::after {
+            animation: aura-pulse 2.2s ease-in-out infinite;
+            opacity: 1;
+        }
+
+        .scroll-to-top.visible::after {
+            animation-delay: 1.1s; /* desfasar el segundo halo */
+        }
+
+        @keyframes aura-pulse {
+            0% { opacity: 0.25; transform: scale(0.9); box-shadow: 0 0 10px rgba(0,255,136,0.25), 0 0 20px rgba(0,212,255,0.15); }
+            50% { opacity: 0.6; transform: scale(1.05); box-shadow: 0 0 18px rgba(0,255,136,0.45), 0 0 36px rgba(0,212,255,0.25); }
+            100% { opacity: 0.25; transform: scale(0.9); box-shadow: 0 0 10px rgba(0,255,136,0.25), 0 0 20px rgba(0,212,255,0.15); }
+        }
+
         /* Scroll to top responsivo */
         @media (max-width: 768px) {
             .scroll-to-top {
@@ -2368,7 +2398,7 @@
                 <p class="hero-subtitle" style="font-size: 1.2rem; margin-bottom: 30px; color: var(--tertiary-glow);">
                     <span class="tech-word">Python</span> + <span class="tech-word">YOLO</span> + <span class="tech-word">DJI Mini 2</span> - <span class="highlight-text">Detección en Tiempo Real</span>
                 </p>
-                <button class="cta-button">Ver Demo en Vivo</button>
+                <button class="cta-button">BETA</button>
             </div>
         </section>
 
@@ -3273,7 +3303,6 @@
                 this.overlay.innerHTML = `
                     <div class="demo-container">
                         <div class="demo-header">
-                            <h2>Sistema T-1 - Demo en Vivo</h2>
                             <button class="close-demo">✕</button>
                         </div>
                         
@@ -4219,6 +4248,17 @@
                 });
             });
 
+            // Microinteracción tipo aura/hover para coherencia con CTA
+            if (scrollToTopBtn) {
+                scrollToTopBtn.addEventListener('mouseenter', () => {
+                    try {
+                        if (window.animationManager && typeof window.animationManager.createMicroInteraction === 'function') {
+                            window.animationManager.createMicroInteraction(scrollToTopBtn, 'hover')();
+                        }
+                    } catch (_) {}
+                }, { passive: true });
+            }
+
             /* ============================================= */
             /*                HERO ANIMATIONS                */
             /* ============================================= */
@@ -4278,20 +4318,62 @@
             // Microinteracciones para el botón CTA
             const ctaButton = document.querySelector('.cta-button');
             if (ctaButton) {
-                // Hover effect
+                // Hover effect (tolerante si AnimationManager no está listo)
                 ctaButton.addEventListener('mouseenter', () => {
-                    window.animationManager.createMicroInteraction(ctaButton, 'hover')();
-                });
-                
-                // Click effect
-                ctaButton.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    window.animationManager.createMicroInteraction(ctaButton, 'click')();
-                    
-                    // Abrir demo fullscreen después de la animación
-                    setTimeout(() => {
+                    try {
+                        if (window.animationManager && typeof window.animationManager.createMicroInteraction === 'function') {
+                            window.animationManager.createMicroInteraction(ctaButton, 'hover')();
+                        }
+                    } catch (_) {}
+                }, { passive: true });
+
+                // Función robusta para abrir el overlay siempre
+                const openOverlaySafely = () => {
+                    try {
+                        if (!window.fullscreenDemo || typeof window.fullscreenDemo.open !== 'function') {
+                            // Instanciar en caso de que no exista
+                            window.fullscreenDemo = new FullscreenDemoManager();
+                        }
                         window.fullscreenDemo.open();
-                    }, 200);
+                    } catch (_) {
+                        // Último recurso: intentar instanciar y abrir de nuevo
+                        try {
+                            window.fullscreenDemo = new FullscreenDemoManager();
+                            window.fullscreenDemo.open();
+                        } catch (e) {
+                            console.error('No se pudo abrir el overlay:', e);
+                        }
+                    }
+                };
+
+                // Click/Tap principal
+                const handleActivate = (e) => {
+                    if (e) e.preventDefault();
+                    try {
+                        if (window.animationManager && typeof window.animationManager.createMicroInteraction === 'function') {
+                            window.animationManager.createMicroInteraction(ctaButton, 'click')();
+                            // Abrir tras una breve animación; si falla, abrir de inmediato
+                            setTimeout(openOverlaySafely, 200);
+                            return;
+                        }
+                    } catch (_) {}
+                    // Fallback inmediato
+                    openOverlaySafely();
+                };
+
+                ctaButton.addEventListener('click', handleActivate, { passive: false });
+                // Soporte táctil/puntero
+                ctaButton.addEventListener('pointerup', (e) => {
+                    // Evitar dobles disparos en navegadores que separan click/pointer
+                    if (e.pointerType === 'touch') {
+                        handleActivate(e);
+                    }
+                }, { passive: false });
+                // Teclado accesible (Enter/Espacio)
+                ctaButton.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        handleActivate(e);
+                    }
                 });
             }
 

@@ -60,3 +60,4 @@ ffmpeg -i vigilancia.mp4 -c:v libx264 -crf 30 -preset fast -c:a aac -b:a 96k vig
 - [GitHub File Size Limits](https://docs.github.com/en/repositories/working-with-files/managing-large-files)
 - [Git LFS Documentation](https://git-lfs.github.com/)
 - [FFmpeg Documentation](https://ffmpeg.org/documentation.html)
+
