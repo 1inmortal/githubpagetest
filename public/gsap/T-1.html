@@ -3026,11 +3026,15 @@
     <!-- CDN de anime.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     
-    <!-- CDN de Three.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
     <script>
+        /* ============================================= */
+        /*              GLOBAL DETECTION VARIABLES       */
+        /* ============================================= */
+        
+        // Detectar dispositivo táctil globalmente
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        
         /* ============================================= */
         /*              CORE ANIMATION MANAGER           */
         /* ============================================= */
@@ -3147,137 +3151,6 @@
             }
         }
 
-        /* ============================================= */
-        /*             3D DRONE MODEL MANAGER             */
-        /* ============================================= */
-        /**
-         * 3D Drone Model Manager
-         * Maneja la visualización 3D del drone usando Three.js
-         */
-        class DroneModelManager {
-            constructor(container) {
-                this.container = container;
-                this.scene = null;
-                this.camera = null;
-                this.renderer = null;
-                this.drone = null;
-                this.controls = null;
-                this.animationId = null;
-                
-                this.init();
-            }
-            
-            init() {
-                this.createScene();
-                this.createDrone();
-                this.setupControls();
-                this.animate();
-            }
-            
-            createScene() {
-                // Escena
-                this.scene = new THREE.Scene();
-                this.scene.background = new THREE.Color(0x0a0a14);
-                
-                // Cámara
-                this.camera = new THREE.PerspectiveCamera(75, this.container.offsetWidth / this.container.offsetHeight, 0.1, 1000);
-                this.camera.position.set(0, 2, 5);
-                
-                // Renderer
-                this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-                this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
-                this.renderer.shadowMap.enabled = true;
-                this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-                
-                this.container.appendChild(this.renderer.domElement);
-                
-                // Luces
-                const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
-                this.scene.add(ambientLight);
-                
-                const directionalLight = new THREE.DirectionalLight(0x00ff88, 1);
-                directionalLight.position.set(5, 5, 5);
-                directionalLight.castShadow = true;
-                this.scene.add(directionalLight);
-            }
-            
-            createDrone() {
-                // Crear modelo básico del DJI Mini 2
-                const droneGroup = new THREE.Group();
-                
-                // Cuerpo principal
-                const bodyGeometry = new THREE.BoxGeometry(0.8, 0.3, 1.2);
-                const bodyMaterial = new THREE.MeshPhongMaterial({ color: 0x333333 });
-                const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-                body.position.y = 0.1;
-                droneGroup.add(body);
-                
-                // Brazos del dron
-                const armGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.6);
-                const armMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff88 });
-                
-                const arms = [];
-                for (let i = 0; i < 4; i++) {
-                    const arm = new THREE.Mesh(armGeometry, armMaterial);
-                    const angle = (i * Math.PI) / 2;
-                    arm.position.x = Math.cos(angle) * 0.8;
-                    arm.position.z = Math.sin(angle) * 0.8;
-                    arm.rotation.z = angle;
-                    droneGroup.add(arm);
-                    arms.push(arm);
-                }
-                
-                // Hélices
-                const propGeometry = new THREE.CylinderGeometry(0.02, 0.02, 0.1);
-                const propMaterial = new THREE.MeshPhongMaterial({ color: 0x666666 });
-                
-                arms.forEach((arm, index) => {
-                    const prop = new THREE.Mesh(propGeometry, propMaterial);
-                    prop.position.copy(arm.position);
-                    prop.position.y += 0.35;
-                    droneGroup.add(prop);
-                });
-                
-                // Cámara
-                const cameraGeometry = new THREE.SphereGeometry(0.1);
-                const cameraMaterial = new THREE.MeshPhongMaterial({ color: 0x000000 });
-                const camera = new THREE.Mesh(cameraGeometry, cameraMaterial);
-                camera.position.set(0, 0.1, -0.6);
-                droneGroup.add(camera);
-                
-                this.drone = droneGroup;
-                this.scene.add(this.drone);
-            }
-            
-            setupControls() {
-                this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
-                this.controls.enableDamping = true;
-                this.controls.dampingFactor = 0.05;
-                this.controls.enableZoom = true;
-                this.controls.enablePan = false;
-            }
-            
-            animate() {
-                this.animationId = requestAnimationFrame(() => this.animate());
-                
-                // Rotación suave del dron
-                if (this.drone) {
-                    this.drone.rotation.y += 0.005;
-                }
-                
-                this.controls.update();
-                this.renderer.render(this.scene, this.camera);
-            }
-            
-            destroy() {
-                if (this.animationId) {
-                    cancelAnimationFrame(this.animationId);
-                }
-                if (this.renderer) {
-                    this.renderer.dispose();
-                }
-            }
-        }
 
         /* ============================================= */
         /*             FULLSCREEN DEMO MANAGER            */
@@ -3290,8 +3163,6 @@
             constructor() {
                 this.isOpen = false;
                 this.overlay = null;
-                this.hudElements = [];
-                this.detectionBoxes = [];
                 
                 this.createOverlay();
                 this.setupEventListeners();
@@ -3301,22 +3172,27 @@
                 this.overlay = document.createElement('div');
                 this.overlay.className = 'fullscreen-demo-overlay';
                 this.overlay.innerHTML = `
-                    <div class="demo-container">
+                    <div class="demo-container" role="dialog" aria-labelledby="demo-title" aria-describedby="demo-description" aria-modal="true">
                         <div class="demo-header">
-                            <button class="close-demo">✕</button>
+                            <h2 id="demo-title" class="demo-title">T-1 Drone System - Demo Interactivo</h2>
+                            <button class="close-demo" aria-label="Cerrar demo" title="Cerrar demo (ESC)">
+                                <span class="close-icon" aria-hidden="true">✕</span>
+                            </button>
                         </div>
                         
                         <!-- Advertencia Beta -->
-                        <div class="beta-warning">
-                            <div class="warning-icon">⚠️</div>
+                        <div class="beta-warning" role="alert" aria-live="polite">
+                            <div class="warning-icon" aria-hidden="true">⚠️</div>
                             <div class="warning-content">
-                                <h3>ADVERTENCIA - FASE BETA</h3>
+                                <h3 id="demo-description">ADVERTENCIA - FASE BETA</h3>
                                 <p>Este proyecto se encuentra en una fase de desarrollo muy temprana (BETA) y contiene múltiples errores conocidos. El sistema puede experimentar fallos, comportamientos inesperados y limitaciones significativas.</p>
                                 <div class="warning-details">
-                                    <div class="warning-item">• Detección de objetos inestable</div>
-                                    <div class="warning-item">• Latencia variable en el procesamiento</div>
-                                    <div class="warning-item">• Interfaz de usuario en desarrollo</div>
-                                    <div class="warning-item">• Funcionalidades limitadas</div>
+                                    <ul class="warning-list" role="list">
+                                        <li class="warning-item" role="listitem">Detección de objetos inestable</li>
+                                        <li class="warning-item" role="listitem">Latencia variable en el procesamiento</li>
+                                        <li class="warning-item" role="listitem">Interfaz de usuario en desarrollo</li>
+                                        <li class="warning-item" role="listitem">Funcionalidades limitadas</li>
+                                    </ul>
                                 </div>
                                 <div class="warning-footer">
                                     <strong>No utilizar en entornos de producción</strong>
@@ -3324,9 +3200,6 @@
                             </div>
                         </div>
                         
-                        <div class="demo-content">
-                            <div class="video-container" id="three-demo-container"></div>
-                        </div>
                     </div>
                 `;
                 
@@ -3338,21 +3211,46 @@
                 const style = document.createElement('style');
                 style.textContent = `
                     .fullscreen-demo-overlay {
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: 100vw;
-                        height: 100vh;
-                        background: rgba(0, 0, 0, 0.95);
-                        z-index: 10000;
+                        position: fixed !important;
+                        top: 0 !important;
+                        left: 0 !important;
+                        width: 100vw !important;
+                        height: 100vh !important;
+                        background: 
+                            radial-gradient(circle at 20% 20%, rgba(0, 255, 136, 0.1), transparent 50%),
+                            radial-gradient(circle at 80% 80%, rgba(0, 212, 255, 0.1), transparent 50%),
+                            rgba(0, 0, 0, 0.95) !important;
+                        z-index: 99999 !important;
                         display: none;
-                        backdrop-filter: blur(10px);
+                        visibility: hidden;
+                        opacity: 0;
+                        backdrop-filter: blur(15px) saturate(1.2);
+                        -webkit-backdrop-filter: blur(15px) saturate(1.2);
+                        overflow: hidden;
+                        /* Asegurar que esté por encima de todo */
+                        transform: translateZ(0);
+                        -webkit-transform: translateZ(0);
+                        /* Efectos de profundidad */
+                        box-shadow: 
+                            inset 0 0 100px rgba(0, 255, 136, 0.1),
+                            0 0 200px rgba(0, 0, 0, 0.8);
                     }
                     
                     .demo-container {
                         width: 100%;
                         height: 100%;
                         position: relative;
+                        display: flex;
+                        flex-direction: column;
+                        /* Efectos de profundidad */
+                        background: 
+                            radial-gradient(circle at 50% 50%, rgba(0, 255, 136, 0.05), transparent 70%);
+                        border-radius: 0;
+                        overflow: hidden;
+                        /* Asegurar que esté centrado y no se salga */
+                        box-sizing: border-box;
+                        max-width: 100vw;
+                        max-height: 100vh;
                     }
                     
                     .demo-header {
@@ -3389,10 +3287,44 @@
                         transform: scale(1.1);
                     }
                     
-                    .video-container {
-                        width: 100%;
-                        height: 100%;
-                        position: relative;
+                    .close-demo:active {
+                        transform: scale(0.95);
+                        background: var(--secondary-glow);
+                    }
+                    
+                    /* Mejoras para pantallas táctiles */
+                    @media (hover: none) and (pointer: coarse) {
+                        .close-demo {
+                            min-width: 44px;
+                            min-height: 44px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        }
+                        
+                        .close-demo:active {
+                            transform: scale(0.9);
+                            background: var(--primary-glow);
+                        }
+                    }
+                    
+                    
+                    
+                    /* Título del demo */
+                    .demo-title {
+                        color: var(--primary-glow);
+                        font-family: var(--font-mono);
+                        margin: 0;
+                        font-size: 1.1rem;
+                        font-weight: 600;
+                        text-shadow: 0 0 10px var(--primary-glow);
+                    }
+                    
+                    /* Ícono de cerrar mejorado */
+                    .close-icon {
+                        display: block;
+                        font-size: 18px;
+                        line-height: 1;
                     }
                     
 
@@ -3405,6 +3337,10 @@
                         backdrop-filter: blur(10px);
                         box-shadow: 0 0 30px rgba(255, 0, 51, 0.3);
                         animation: warning-pulse 3s ease-in-out infinite;
+                        /* Asegurar que no se salga del viewport */
+                        box-sizing: border-box;
+                        max-width: calc(100vw - 40px);
+                        width: calc(100% - 40px);
                     }
 
                     .warning-icon {
@@ -3440,11 +3376,28 @@
                         margin-bottom: 15px;
                     }
 
+                    .warning-list {
+                        list-style: none;
+                        padding: 0;
+                        margin: 0;
+                    }
+
                     .warning-item {
                         color: rgba(255, 255, 255, 0.8);
                         margin-bottom: 8px;
                         font-size: 0.9rem;
                         font-family: var(--font-mono);
+                        position: relative;
+                        padding-left: 20px;
+                    }
+
+                    .warning-item::before {
+                        content: "•";
+                        color: var(--secondary-glow);
+                        font-weight: bold;
+                        position: absolute;
+                        left: 0;
+                        top: 0;
                     }
 
                     .warning-item:last-child {
@@ -3479,6 +3432,389 @@
                         0%, 100% { transform: translateY(0); }
                         50% { transform: translateY(-5px); }
                     }
+
+                    /* ============================================= */
+                    /*                MOBILE RESPONSIVE              */
+                    /* ============================================= */
+                    
+                    /* Tablet y móvil grande */
+                    @media (max-width: 1024px) {
+                        .demo-header {
+                            top: 15px;
+                            left: 15px;
+                            right: 15px;
+                        }
+                        
+                        .demo-header h2 {
+                            font-size: 1.1rem;
+                        }
+                        
+                        .close-demo {
+                            width: 35px;
+                            height: 35px;
+                            font-size: 16px;
+                        }
+                        
+                        .beta-warning {
+                            margin: 15px;
+                            padding: 15px;
+                        }
+                        
+                        .warning-content h3 {
+                            font-size: 1.1rem;
+                        }
+                        
+                        .warning-content p {
+                            font-size: 0.9rem;
+                        }
+                    }
+                    
+                    /* Móvil */
+                    @media (max-width: 768px) {
+                        .demo-header {
+                            top: 10px;
+                            left: 10px;
+                            right: 10px;
+                        }
+                        
+                        .demo-header h2 {
+                            font-size: 1rem;
+                        }
+                        
+                        .close-demo {
+                            width: 32px;
+                            height: 32px;
+                            font-size: 14px;
+                        }
+                        
+                        .beta-warning {
+                            margin: 10px !important;
+                            padding: 12px !important;
+                            border-radius: 8px !important;
+                            max-width: calc(100vw - 20px) !important;
+                            width: calc(100% - 20px) !important;
+                            box-sizing: border-box !important;
+                        }
+                        
+                        .warning-icon {
+                            font-size: 1.5rem;
+                            margin-bottom: 10px;
+                        }
+                        
+                        .warning-content h3 {
+                            font-size: 1rem;
+                            margin-bottom: 10px;
+                            letter-spacing: 1px;
+                        }
+                        
+                        .warning-content p {
+                            font-size: 0.85rem;
+                            margin-bottom: 10px;
+                        }
+                        
+                        .warning-details {
+                            padding: 10px;
+                            margin-bottom: 10px;
+                        }
+                        
+                        .warning-item {
+                            font-size: 0.8rem;
+                            margin-bottom: 6px;
+                        }
+                        
+                        .warning-footer {
+                            font-size: 0.8rem;
+                            padding: 8px;
+                        }
+                        
+                        
+                        .demo-title {
+                            font-size: 1rem;
+                        }
+                        
+                    }
+                    
+                    /* Móvil pequeño */
+                    @media (max-width: 480px) {
+                        .demo-header {
+                            top: 8px;
+                            left: 8px;
+                            right: 8px;
+                        }
+                        
+                        .demo-header h2 {
+                            font-size: 0.9rem;
+                        }
+                        
+                        .close-demo {
+                            width: 30px;
+                            height: 30px;
+                            font-size: 12px;
+                        }
+                        
+                        .beta-warning {
+                            margin: 8px !important;
+                            padding: 10px !important;
+                            border-radius: 6px !important;
+                            max-width: calc(100vw - 16px) !important;
+                            width: calc(100% - 16px) !important;
+                            box-sizing: border-box !important;
+                        }
+                        
+                        .warning-icon {
+                            font-size: 1.2rem;
+                            margin-bottom: 8px;
+                        }
+                        
+                        .warning-content h3 {
+                            font-size: 0.9rem;
+                            margin-bottom: 8px;
+                            letter-spacing: 0.5px;
+                        }
+                        
+                        .warning-content p {
+                            font-size: 0.8rem;
+                            margin-bottom: 8px;
+                            line-height: 1.4;
+                        }
+                        
+                        .warning-details {
+                            padding: 8px;
+                            margin-bottom: 8px;
+                        }
+                        
+                        .warning-item {
+                            font-size: 0.75rem;
+                            margin-bottom: 4px;
+                        }
+                        
+                        .warning-footer {
+                            font-size: 0.75rem;
+                            padding: 6px;
+                        }
+                        
+                        
+                        .demo-title {
+                            font-size: 0.9rem;
+                        }
+                        
+                        /* Mejoras de scroll táctil para móviles pequeños */
+                        .beta-warning {
+                            padding: 15px 12px !important;
+                            margin: 12px !important;
+                            min-height: calc(100vh - 100px) !important;
+                            max-width: calc(100vw - 24px) !important;
+                            width: calc(100% - 24px) !important;
+                        }
+                        
+                        .warning-details {
+                            max-height: 50vh !important;
+                        }
+                        
+                        .warning-item {
+                            padding: 10px 6px !important;
+                            margin-bottom: 4px !important;
+                        }
+                        
+                    }
+                    
+                    /* Pantallas muy pequeñas (menos de 360px) */
+                    @media (max-width: 360px) {
+                        .demo-header h2 {
+                            font-size: 0.8rem;
+                        }
+                        
+                        .close-demo {
+                            width: 28px;
+                            height: 28px;
+                            font-size: 11px;
+                        }
+                        
+                        .beta-warning {
+                            margin: 6px !important;
+                            padding: 8px !important;
+                            max-width: calc(100vw - 12px) !important;
+                            width: calc(100% - 12px) !important;
+                            box-sizing: border-box !important;
+                        }
+                        
+                        .warning-content h3 {
+                            font-size: 0.85rem;
+                        }
+                        
+                        .warning-content p {
+                            font-size: 0.75rem;
+                        }
+                        
+                        .warning-item {
+                            font-size: 0.7rem;
+                        }
+                        
+                        .warning-footer {
+                            font-size: 0.7rem;
+                        }
+                        
+                        
+                        .demo-title {
+                            font-size: 0.8rem;
+                        }
+                        
+                        /* Mejoras de scroll táctil para pantallas muy pequeñas */
+                        .beta-warning {
+                            padding: 12px 10px !important;
+                            margin: 10px !important;
+                            min-height: calc(100vh - 80px) !important;
+                            max-width: calc(100vw - 20px) !important;
+                            width: calc(100% - 20px) !important;
+                        }
+                        
+                        .warning-details {
+                            max-height: 45vh !important;
+                        }
+                        
+                        .warning-item {
+                            padding: 8px 5px !important;
+                            margin-bottom: 3px !important;
+                        }
+                        
+                    }
+                    
+                    /* ============================================= */
+                    /*                OVERLAY FIXES                  */
+                    /* ============================================= */
+                    
+                    /* Asegurar que el overlay esté siempre visible en móviles */
+                    @media (max-width: 768px) {
+                        .fullscreen-demo-overlay {
+                            position: fixed !important;
+                            top: 0 !important;
+                            left: 0 !important;
+                            width: 100vw !important;
+                            height: 100vh !important;
+                            z-index: 99999 !important;
+                            transform: translateZ(0) !important;
+                            -webkit-transform: translateZ(0) !important;
+                            /* Prevenir scroll del body cuando el overlay está abierto */
+                            overflow: hidden !important;
+                        }
+                        
+                        /* Asegurar que el contenido del overlay sea visible */
+                        .demo-container {
+                            position: relative !important;
+                            width: 100% !important;
+                            height: 100% !important;
+                            overflow-y: auto !important;
+                            -webkit-overflow-scrolling: touch !important;
+                            /* Mejoras de scroll táctil */
+                            overscroll-behavior: contain !important;
+                            scroll-behavior: smooth !important;
+                            /* Scroll snap para mejor navegación */
+                            scroll-snap-type: y mandatory !important;
+                        }
+                        
+                        /* Asegurar que el header sea visible */
+                        .demo-header {
+                            position: absolute !important;
+                            top: 0 !important;
+                            left: 0 !important;
+                            right: 0 !important;
+                            z-index: 100000 !important;
+                            background: rgba(0, 0, 0, 0.8) !important;
+                            backdrop-filter: blur(10px) !important;
+                            -webkit-backdrop-filter: blur(10px) !important;
+                        }
+                        
+                        /* Mejoras de scroll para la advertencia beta */
+                        .beta-warning {
+                            scroll-snap-align: start !important;
+                            scroll-snap-stop: normal !important;
+                            /* Mejor padding para scroll táctil */
+                            padding: 20px 15px !important;
+                            margin: 15px !important;
+                            /* Mejor espaciado interno */
+                            min-height: calc(100vh - 120px) !important;
+                            /* Asegurar que no se salga del viewport */
+                            max-width: calc(100vw - 30px) !important;
+                            width: calc(100% - 30px) !important;
+                            box-sizing: border-box !important;
+                        }
+                        
+                        /* Mejoras de scroll para elementos internos */
+                        .warning-content {
+                            /* Permitir scroll interno si es necesario */
+                            max-height: none !important;
+                            overflow: visible !important;
+                        }
+                        
+                        .warning-details {
+                            /* Mejor scroll para listas largas */
+                            max-height: 60vh !important;
+                            overflow-y: auto !important;
+                            -webkit-overflow-scrolling: touch !important;
+                            scroll-snap-type: y proximity !important;
+                        }
+                        
+                        .warning-list {
+                            /* Mejor espaciado entre elementos para scroll táctil */
+                            gap: 8px !important;
+                        }
+                        
+                        .warning-item {
+                            /* Mejor área de toque para elementos de lista */
+                            padding: 12px 8px !important;
+                            margin-bottom: 6px !important;
+                            border-radius: 8px !important;
+                            /* Feedback visual al tocar */
+                            transition: all 0.2s ease !important;
+                        }
+                        
+                        .warning-item:active {
+                            background-color: rgba(255, 0, 51, 0.1) !important;
+                            transform: scale(0.98) !important;
+                        }
+                        
+                        /* Indicador de scroll sutil para móviles */
+                        .demo-container::after {
+                            content: '';
+                            position: fixed;
+                            bottom: 20px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            width: 30px;
+                            height: 4px;
+                            background: linear-gradient(90deg, transparent, var(--primary-glow), transparent);
+                            border-radius: 2px;
+                            opacity: 0.6;
+                            animation: scroll-hint 3s ease-in-out infinite;
+                            z-index: 100001;
+                        }
+                        
+                        @keyframes scroll-hint {
+                            0%, 100% { 
+                                opacity: 0.3;
+                                transform: translateX(-50%) scaleX(0.8);
+                            }
+                            50% { 
+                                opacity: 0.8;
+                                transform: translateX(-50%) scaleX(1.2);
+                            }
+                        }
+                        
+                        /* Ocultar indicador cuando se hace scroll */
+                        .demo-container.scrolled::after {
+                            opacity: 0;
+                            animation: none;
+                        }
+                    }
+                    
+                    /* Fix específico para iOS Safari */
+                    @supports (-webkit-touch-callout: none) {
+                        .fullscreen-demo-overlay {
+                            position: fixed !important;
+                            -webkit-transform: translate3d(0, 0, 0) !important;
+                            transform: translate3d(0, 0, 0) !important;
+                        }
+                    }
                 `;
                 document.head.appendChild(style);
             }
@@ -3488,25 +3824,178 @@
                     this.close();
                 });
                 
+                // Cerrar tocando fuera del contenido en móviles
+                this.overlay.addEventListener('click', (e) => {
+                    if (e.target === this.overlay) {
+                        this.close();
+                    }
+                });
+                
+                // Prevenir cierre accidental al tocar el contenido
+                const demoContainer = this.overlay.querySelector('.demo-container');
+                if (demoContainer) {
+                    demoContainer.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                    });
+                }
+                
                 // Cerrar con ESC
                 document.addEventListener('keydown', (e) => {
                     if (e.key === 'Escape' && this.isOpen) {
                         this.close();
                     }
                 });
+                
+                // Soporte para gestos táctiles (swipe para cerrar)
+                this.setupTouchGestures();
+            }
+            
+            setupTouchGestures() {
+                let startY = 0;
+                let startX = 0;
+                let isDragging = false;
+                let scrollStartY = 0;
+                let isScrolling = false;
+                
+                this.overlay.addEventListener('touchstart', (e) => {
+                    const touch = e.touches[0];
+                    startY = touch.clientY;
+                    startX = touch.clientX;
+                    isDragging = false;
+                    isScrolling = false;
+                    
+                    // Obtener la posición actual del scroll
+                    const container = this.overlay.querySelector('.demo-container');
+                    if (container) {
+                        scrollStartY = container.scrollTop;
+                    }
+                }, { passive: true });
+                
+                this.overlay.addEventListener('touchmove', (e) => {
+                    const touch = e.touches[0];
+                    const deltaY = touch.clientY - startY;
+                    const deltaX = touch.clientX - startX;
+                    const absDeltaY = Math.abs(deltaY);
+                    const absDeltaX = Math.abs(deltaX);
+                    
+                    // Detectar si es un gesto de scroll o de cierre
+                    if (!isDragging && !isScrolling) {
+                        if (absDeltaY > 20 && absDeltaY > absDeltaX) {
+                            // Es un gesto vertical
+                            const container = this.overlay.querySelector('.demo-container');
+                            if (container) {
+                                const isAtTop = container.scrollTop === 0;
+                                const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 10;
+                                
+                                // Si está en el top y hace swipe hacia abajo, cerrar
+                                if (isAtTop && deltaY > 0) {
+                                    isDragging = true;
+                                    e.preventDefault();
+                                }
+                                // Si está en el bottom y hace swipe hacia arriba, cerrar
+                                else if (isAtBottom && deltaY < 0) {
+                                    isDragging = true;
+                                    e.preventDefault();
+                                }
+                                // Si no, es scroll normal
+                                else {
+                                    isScrolling = true;
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Si es un gesto de cierre, prevenir el scroll
+                    if (isDragging) {
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+                
+                this.overlay.addEventListener('touchend', (e) => {
+                    if (isDragging) {
+                        const touch = e.changedTouches[0];
+                        const deltaY = touch.clientY - startY;
+                        
+                        // Si el swipe es suficiente, cerrar el overlay
+                        if (Math.abs(deltaY) > 80) {
+                            this.close();
+                        }
+                    }
+                    
+                    // Reset de estados
+                    isDragging = false;
+                    isScrolling = false;
+                }, { passive: true });
+                
+                // Mejorar el scroll con momentum en iOS
+                this.overlay.addEventListener('touchstart', (e) => {
+                    const container = this.overlay.querySelector('.demo-container');
+                    if (container) {
+                        container.style.webkitOverflowScrolling = 'touch';
+                    }
+                }, { passive: true });
+                
+                // Controlar el indicador de scroll
+                const container = this.overlay.querySelector('.demo-container');
+                if (container) {
+                    let scrollTimeout;
+                    
+                    container.addEventListener('scroll', () => {
+                        // Mostrar que se está haciendo scroll
+                        container.classList.add('scrolled');
+                        
+                        // Ocultar el indicador después de un tiempo sin scroll
+                        clearTimeout(scrollTimeout);
+                        scrollTimeout = setTimeout(() => {
+                            container.classList.remove('scrolled');
+                        }, 2000);
+                    }, { passive: true });
+                }
             }
             
             open() {
+                console.log('Abriendo overlay...', this.overlay);
                 this.isOpen = true;
-                this.overlay.style.display = 'block';
                 
-                // Animación de entrada
-                gsap.from(this.overlay, {
-                    opacity: 0,
-                    scale: 0.9,
-                    duration: 0.5,
-                    ease: 'power3.out'
-                });
+                // Prevenir scroll del body
+                document.body.style.overflow = 'hidden';
+                document.documentElement.style.overflow = 'hidden';
+                
+                // Asegurar que el overlay esté visible antes de animar
+                this.overlay.style.display = 'block';
+                this.overlay.style.visibility = 'visible';
+                this.overlay.style.opacity = '0';
+                
+                // Forzar reflow para asegurar que el overlay esté renderizado
+                this.overlay.offsetHeight;
+                
+                // Verificar si el overlay está realmente visible
+                const rect = this.overlay.getBoundingClientRect();
+                console.log('Overlay rect:', rect);
+                console.log('Overlay computed style:', window.getComputedStyle(this.overlay));
+                
+                // Pequeño delay para asegurar que el DOM esté listo
+                setTimeout(() => {
+                    // Animación de entrada
+                    gsap.fromTo(this.overlay, 
+                        {
+                            opacity: 0,
+                            scale: 0.9
+                        },
+                        {
+                            opacity: 1,
+                            scale: 1,
+                            duration: 0.5,
+                            ease: 'power3.out',
+                            onStart: () => {
+                                console.log('Animación de entrada iniciada');
+                            },
+                            onComplete: () => {
+                                console.log('Animación de entrada completada');
+                            }
+                        }
+                    );
+                }, 50);
                 
                 // Animar la advertencia beta
                 const betaWarning = this.overlay.querySelector('.beta-warning');
@@ -3521,15 +4010,15 @@
                     });
                 }
                 
-                // Inicializar Three.js
-                const container = this.overlay.querySelector('#three-demo-container');
-                this.droneModel = new DroneModelManager(container);
-                
-                // Demo simplificado - solo modelo 3D
             }
             
             close() {
+                console.log('Cerrando overlay...');
                 this.isOpen = false;
+                
+                // Restaurar scroll del body
+                document.body.style.overflow = '';
+                document.documentElement.style.overflow = '';
                 
                 // Animación de salida
                 gsap.to(this.overlay, {
@@ -3539,9 +4028,8 @@
                     ease: 'power3.in',
                     onComplete: () => {
                         this.overlay.style.display = 'none';
-                        if (this.droneModel) {
-                            this.droneModel.destroy();
-                        }
+                        this.overlay.style.visibility = 'hidden';
+                        console.log('Overlay cerrado completamente');
                     }
                 });
             }
@@ -3749,7 +4237,7 @@
             // Detectar navegador y dispositivo para optimizaciones específicas
             const isMobile = window.innerWidth <= 768;
             const isLowEnd = navigator.hardwareConcurrency < 4;
-            const isTouchDevice = 'ontouchstart' in window;
+            // isTouchDevice se define globalmente más abajo
             
             // Detección de navegador específico
             const userAgent = navigator.userAgent.toLowerCase();

@@ -1,0 +1,363 @@
+/**
+ * 🎨 ESTILOS PARA WEBGL SHADERS
+ * Integración visual avanzada para efectos WebGL
+ */
+
+/* Variables CSS para efectos de shaders */
+:root {
+    --shader-glow-primary: #00ff88;
+    --shader-glow-secondary: #ff0033;
+    --shader-glow-tertiary: #00d4ff;
+    --shader-bg-overlay: rgba(10, 10, 20, 0.8);
+    --shader-border-glow: rgba(0, 255, 136, 0.3);
+    --shader-text-glow: rgba(0, 255, 136, 0.6);
+}
+
+/* Canvas de shaders */
+#shader-canvas {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: -1 !important;
+    pointer-events: none !important;
+    opacity: 0.8;
+    transition: opacity 0.5s ease;
+}
+
+/* Efectos de hover para elementos interactivos */
+.project-card:hover ~ #shader-canvas,
+.skill-item:hover ~ #shader-canvas,
+.testimonial-card:hover ~ #shader-canvas {
+    opacity: 1;
+}
+
+/* Efectos de glow para elementos del portafolio */
+.hero-title,
+.section-title,
+.project-title {
+    text-shadow: 
+        0 0 10px var(--shader-glow-primary),
+        0 0 20px var(--shader-glow-primary),
+        0 0 30px var(--shader-glow-primary);
+    transition: text-shadow 0.3s ease;
+}
+
+.hero-title:hover,
+.section-title:hover,
+.project-title:hover {
+    text-shadow: 
+        0 0 15px var(--shader-glow-primary),
+        0 0 30px var(--shader-glow-primary),
+        0 0 45px var(--shader-glow-primary);
+}
+
+/* Efectos de borde para tarjetas */
+.project-card,
+.skill-item,
+.testimonial-card {
+    border: 1px solid var(--shader-border-glow);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.project-card::before,
+.skill-item::before,
+.testimonial-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        var(--shader-glow-primary),
+        transparent
+    );
+    transition: left 0.5s ease;
+    z-index: 1;
+}
+
+.project-card:hover::before,
+.skill-item:hover::before,
+.testimonial-card:hover::before {
+    left: 100%;
+}
+
+.project-card:hover,
+.skill-item:hover,
+.testimonial-card:hover {
+    border-color: var(--shader-glow-primary);
+    box-shadow: 
+        0 0 20px var(--shader-border-glow),
+        inset 0 0 20px var(--shader-border-glow);
+}
+
+/* Efectos de partículas para el fondo */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(2px 2px at 20px 30px, var(--shader-glow-primary), transparent),
+        radial-gradient(2px 2px at 40px 70px, var(--shader-glow-secondary), transparent),
+        radial-gradient(1px 1px at 90px 40px, var(--shader-glow-tertiary), transparent),
+        radial-gradient(1px 1px at 130px 80px, var(--shader-glow-primary), transparent);
+    background-repeat: repeat;
+    background-size: 200px 200px;
+    animation: particle-float 20s linear infinite;
+    z-index: -2;
+    opacity: 0.3;
+}
+
+@keyframes particle-float {
+    0% { transform: translateY(0px) translateX(0px); }
+    33% { transform: translateY(-100px) translateX(100px); }
+    66% { transform: translateY(-200px) translateX(-50px); }
+    100% { transform: translateY(0px) translateX(0px); }
+}
+
+/* Efectos de scan lines */
+.scan-lines {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 255, 136, 0.03) 2px,
+        rgba(0, 255, 136, 0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 1;
+    animation: scan-move 0.1s linear infinite;
+}
+
+@keyframes scan-move {
+    0% { transform: translateY(0px); }
+    100% { transform: translateY(4px); }
+}
+
+/* Efectos de glitch para texto */
+.glitch-text {
+    position: relative;
+    display: inline-block;
+}
+
+.glitch-text::before,
+.glitch-text::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.glitch-text::before {
+    animation: glitch-1 0.5s infinite;
+    color: var(--shader-glow-secondary);
+    z-index: -1;
+}
+
+.glitch-text::after {
+    animation: glitch-2 0.5s infinite;
+    color: var(--shader-glow-tertiary);
+    z-index: -2;
+}
+
+@keyframes glitch-1 {
+    0%, 14%, 15%, 49%, 50%, 99%, 100% {
+        transform: translate(0);
+    }
+    15%, 49% {
+        transform: translate(-2px, 2px);
+    }
+}
+
+@keyframes glitch-2 {
+    0%, 20%, 21%, 62%, 63%, 99%, 100% {
+        transform: translate(0);
+    }
+    21%, 62% {
+        transform: translate(2px, -2px);
+    }
+}
+
+/* Efectos de holograma para imágenes */
+.hologram-image {
+    position: relative;
+    overflow: hidden;
+}
+
+.hologram-image::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(0, 255, 136, 0.1) 50%,
+        transparent 70%
+    );
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+    z-index: 1;
+}
+
+.hologram-image:hover::before {
+    transform: translateX(100%);
+}
+
+/* Efectos de carga para elementos dinámicos */
+.loading-shader {
+    position: relative;
+    overflow: hidden;
+}
+
+.loading-shader::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(0, 255, 136, 0.2),
+        transparent
+    );
+    animation: loading-sweep 2s infinite;
+}
+
+@keyframes loading-sweep {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* Efectos de pulso para elementos activos */
+.pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+    0%, 100% {
+        box-shadow: 0 0 5px var(--shader-glow-primary);
+    }
+    50% {
+        box-shadow: 0 0 20px var(--shader-glow-primary), 0 0 30px var(--shader-glow-primary);
+    }
+}
+
+/* Efectos de distorsión para hover */
+.distort-hover {
+    transition: transform 0.3s ease;
+}
+
+.distort-hover:hover {
+    transform: perspective(1000px) rotateX(5deg) rotateY(5deg) scale(1.05);
+}
+
+/* Efectos de partículas flotantes */
+.floating-particles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.floating-particles::before,
+.floating-particles::after {
+    content: '';
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--shader-glow-primary);
+    border-radius: 50%;
+    animation: float-particle 6s ease-in-out infinite;
+}
+
+.floating-particles::before {
+    top: 20%;
+    left: 10%;
+    animation-delay: 0s;
+}
+
+.floating-particles::after {
+    top: 60%;
+    right: 15%;
+    animation-delay: 3s;
+}
+
+@keyframes float-particle {
+    0%, 100% {
+        transform: translateY(0px) scale(1);
+        opacity: 0.7;
+    }
+    50% {
+        transform: translateY(-20px) scale(1.2);
+        opacity: 1;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .hero-title,
+    .section-title {
+        text-shadow: 
+            0 0 5px var(--shader-glow-primary),
+            0 0 10px var(--shader-glow-primary);
+    }
+    
+    .project-card,
+    .skill-item,
+    .testimonial-card {
+        border-width: 1px;
+    }
+}
+
+/* Modo de alto contraste para accesibilidad */
+@media (prefers-contrast: high) {
+    :root {
+        --shader-glow-primary: #00ff00;
+        --shader-glow-secondary: #ff0000;
+        --shader-glow-tertiary: #0080ff;
+    }
+    
+    .project-card,
+    .skill-item,
+    .testimonial-card {
+        border-width: 2px;
+    }
+}
+
+/* Modo de movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+    .scan-lines,
+    .floating-particles::before,
+    .floating-particles::after,
+    .loading-shader::after {
+        animation: none;
+    }
+    
+    .glitch-text::before,
+    .glitch-text::after {
+        animation: none;
+    }
+}
+
