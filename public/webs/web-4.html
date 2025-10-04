@@ -4,20 +4,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="description" content="NutriVida - Nutrición personalizada que transforma resultados y estilo de vida. Planes prácticos basados en evidencia."/>
 <meta name="robots" content="index, follow"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com; font-src 'self' data: https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; img-src 'self' data: https: blob:; connect-src 'self';"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com; font-src 'self' data: https://fonts.gstatic.com https://r2cdn.perplexity.ai; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; img-src 'self' data: https: blob:; connect-src 'self';"/>
 <title>NutriVida - Nutrición Personalizada</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🥗%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/png" href="img/logo_sin_titulo.png">
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
 <!-- 
   Tailwind CSS CDN - Para desarrollo únicamente
   Para producción, instalar como PostCSS plugin:
   npm install -D tailwindcss postcss autoprefixer
   npx tailwindcss init -p
+  
+  NOTA: Este CDN no debe usarse en producción por razones de rendimiento y seguridad.
+  Se recomienda instalar Tailwind CSS localmente para proyectos en producción.
 -->
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 <script>
       // Esperar a que Tailwind esté cargado
       document.addEventListener('DOMContentLoaded', function() {
@@ -27,16 +32,22 @@
         theme: {
           extend: {
             colors: {
-              "primary": "#1E9A8A",
+              "primary": "#2D7D32", // Verde saludable
+              "primary-light": "#4CAF50", // Verde claro
+              "primary-dark": "#1B5E20", // Verde oscuro
+              "secondary": "#1976D2", // Azul confianza
+              "secondary-light": "#42A5F5", // Azul claro
               "background-light": "#FFFFFF",
-                  "background-dark": "#1a1a1a",
-              "accent": "#FF7A59",
-              "text-light": "#4A4A4A",
-              "text-dark": "#FFFFFF"
+              "background-dark": "#121212",
+              "accent": "#FF6F00", // Naranja cálido
+              "accent-light": "#FFB74D", // Naranja claro
+              "text-light": "#2E2E2E",
+              "text-dark": "#FFFFFF",
+              "text-muted": "#757575"
             },
             fontFamily: {
-              "display": ["Inter", "sans-serif"],
-              "body": ["Roboto", "sans-serif"]
+              "display": ["Montserrat", "Inter", "sans-serif"],
+              "body": ["Open Sans", "Roboto", "sans-serif"]
             },
             borderRadius: {
               "DEFAULT": "0.75rem",
@@ -150,6 +161,280 @@
         // Event listeners para los botones de tema
         themeToggle.addEventListener('click', toggleTheme);
         themeToggleMobile.addEventListener('click', toggleTheme);
+        
+        // Inicializar GSAP y animaciones (con fallback)
+        if (typeof gsap !== 'undefined') {
+          gsap.registerPlugin(ScrollTrigger);
+          
+          // Animación de entrada para elementos
+          gsap.from('.fade-in-up', {
+            duration: 0.8,
+            y: 50,
+            opacity: 0,
+            stagger: 0.2,
+            ease: 'power2.out'
+          });
+        } else {
+          // Fallback CSS para animaciones si GSAP no está disponible
+          console.warn('GSAP no está disponible, usando animaciones CSS');
+          document.querySelectorAll('.fade-in-up').forEach((el, index) => {
+            el.style.animationDelay = `${index * 0.2}s`;
+          });
+        }
+        
+        // Animación para tarjetas de servicios
+        if (typeof gsap !== 'undefined') {
+          gsap.from('.service-card', {
+            scrollTrigger: {
+              trigger: '.service-card',
+              start: 'top 80%',
+              end: 'bottom 20%',
+              toggleActions: 'play none none reverse'
+            },
+            duration: 0.6,
+            y: 30,
+            opacity: 0,
+            stagger: 0.2,
+            ease: 'power2.out'
+          });
+          
+          // Animación pulsante para botón CTA
+          gsap.to('.cta-button', {
+            scale: 1.05,
+            duration: 2,
+            repeat: -1,
+            yoyo: true,
+            ease: 'power2.inOut'
+          });
+          
+          // Animaciones para tarjetas de transformación
+          gsap.from('.transform-card', {
+            scrollTrigger: {
+              trigger: '.transform-card',
+              start: 'top 85%',
+              end: 'bottom 15%',
+              toggleActions: 'play none none reverse'
+            },
+            duration: 0.8,
+            y: 50,
+            opacity: 0,
+            stagger: 0.3,
+            ease: 'power2.out'
+          });
+          
+          // Animación para estadísticas
+          gsap.from('.stat-item', {
+            scrollTrigger: {
+              trigger: '.stat-item',
+              start: 'top 90%',
+              end: 'bottom 10%',
+              toggleActions: 'play none none reverse'
+            },
+            duration: 0.6,
+            y: 30,
+            opacity: 0,
+            stagger: 0.1,
+            ease: 'power2.out'
+          });
+        }
+        
+        // Hover effects para tarjetas (funciona con o sin GSAP)
+        document.querySelectorAll('.service-card').forEach(card => {
+          card.addEventListener('mouseenter', () => {
+            if (typeof gsap !== 'undefined') {
+              gsap.to(card, { scale: 1.05, duration: 0.3, ease: 'power2.out' });
+            } else {
+              card.style.transform = 'scale(1.05)';
+            }
+          });
+          card.addEventListener('mouseleave', () => {
+            if (typeof gsap !== 'undefined') {
+              gsap.to(card, { scale: 1, duration: 0.3, ease: 'power2.out' });
+            } else {
+              card.style.transform = 'scale(1)';
+            }
+          });
+        });
+        
+        // Efectos hover para tarjetas de transformación
+        document.querySelectorAll('.transform-card').forEach(card => {
+          card.addEventListener('mouseenter', () => {
+            if (typeof gsap !== 'undefined') {
+              gsap.to(card, { y: -8, duration: 0.4, ease: 'power2.out' });
+            } else {
+              card.style.transform = 'translateY(-8px)';
+            }
+          });
+          card.addEventListener('mouseleave', () => {
+            if (typeof gsap !== 'undefined') {
+              gsap.to(card, { y: 0, duration: 0.4, ease: 'power2.out' });
+            } else {
+              card.style.transform = 'translateY(0)';
+            }
+          });
+        });
+        
+        // Función para animar contadores
+        function animateCounters() {
+          const counters = document.querySelectorAll('[data-target]');
+          
+          counters.forEach(counter => {
+            const target = parseInt(counter.getAttribute('data-target'));
+            const duration = 2000; // 2 segundos
+            const increment = target / (duration / 16); // 60fps
+            let current = 0;
+            
+            const updateCounter = () => {
+              if (current < target) {
+                current += increment;
+                if (current > target) current = target;
+                
+                // Formatear el número según el tipo
+                if (counter.textContent.includes('%')) {
+                  counter.textContent = Math.floor(current) + '%';
+                } else if (counter.textContent.includes('+')) {
+                  counter.textContent = '+' + Math.floor(current);
+                } else if (counter.textContent.includes('/')) {
+                  counter.textContent = Math.floor(current) + '/7';
+                } else {
+                  counter.textContent = Math.floor(current);
+                }
+                
+                requestAnimationFrame(updateCounter);
+              }
+            };
+            
+            updateCounter();
+          });
+        }
+        
+        // Observador de intersección para activar animación cuando las estadísticas sean visibles
+        const statsObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              setTimeout(animateCounters, 500); // Delay para que se vea mejor
+              statsObserver.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.5 });
+        
+        // Observar el contenedor de estadísticas
+        const statsContainer = document.querySelector('.grid.md\\:grid-cols-4');
+        if (statsContainer) {
+          statsObserver.observe(statsContainer);
+        }
+        
+        // Carrusel de testimonios
+        let currentTestimonial = 0;
+        const testimonialCarousel = document.getElementById('testimonialCarousel');
+        const testimonialSlides = document.querySelectorAll('.testimonial-slide');
+        const totalSlides = testimonialSlides.length;
+        const prevBtn = document.getElementById('prevTestimonial');
+        const nextBtn = document.getElementById('nextTestimonial');
+        const indicatorsContainer = document.getElementById('testimonialIndicators');
+        
+        // Crear indicadores
+        function createIndicators() {
+          indicatorsContainer.innerHTML = '';
+          for (let i = 0; i < totalSlides; i++) {
+            const indicator = document.createElement('button');
+            indicator.className = `w-3 h-3 rounded-full transition-all duration-300 ${i === 0 ? 'bg-primary scale-125' : 'bg-gray-300 dark:bg-gray-600'}`;
+            indicator.addEventListener('click', () => goToSlide(i));
+            indicatorsContainer.appendChild(indicator);
+          }
+        }
+        
+        // Ir a slide específico
+        function goToSlide(slideIndex) {
+          currentTestimonial = slideIndex;
+          updateCarousel();
+          updateIndicators();
+        }
+        
+        // Actualizar carrusel
+        function updateCarousel() {
+          const translateX = -currentTestimonial * 100;
+          testimonialCarousel.style.transform = `translateX(${translateX}%)`;
+        }
+        
+        // Actualizar indicadores
+        function updateIndicators() {
+          const indicators = indicatorsContainer.querySelectorAll('button');
+          indicators.forEach((indicator, index) => {
+            if (index === currentTestimonial) {
+              indicator.className = 'w-3 h-3 rounded-full transition-all duration-300 bg-primary scale-125';
+            } else {
+              indicator.className = 'w-3 h-3 rounded-full transition-all duration-300 bg-gray-300 dark:bg-gray-600';
+            }
+          });
+        }
+        
+        // Siguiente slide
+        function nextSlide() {
+          currentTestimonial = (currentTestimonial + 1) % totalSlides;
+          updateCarousel();
+          updateIndicators();
+        }
+        
+        // Slide anterior
+        function prevSlide() {
+          currentTestimonial = (currentTestimonial - 1 + totalSlides) % totalSlides;
+          updateCarousel();
+          updateIndicators();
+        }
+        
+        // Event listeners
+        if (nextBtn) nextBtn.addEventListener('click', nextSlide);
+        if (prevBtn) prevBtn.addEventListener('click', prevSlide);
+        
+        // Auto-play del carrusel
+        let carouselInterval;
+        function startCarousel() {
+          carouselInterval = setInterval(nextSlide, 5000); // Cambia cada 5 segundos
+        }
+        
+        function stopCarousel() {
+          clearInterval(carouselInterval);
+        }
+        
+        // Pausar carrusel al hacer hover
+        const carouselContainer = document.querySelector('.relative.overflow-hidden');
+        if (carouselContainer) {
+          carouselContainer.addEventListener('mouseenter', stopCarousel);
+          carouselContainer.addEventListener('mouseleave', startCarousel);
+        }
+        
+        // Inicializar carrusel
+        createIndicators();
+        startCarousel();
+        
+        // Touch/swipe support para móviles
+        let startX = 0;
+        let endX = 0;
+        
+        if (testimonialCarousel) {
+          testimonialCarousel.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+          });
+          
+          testimonialCarousel.addEventListener('touchend', (e) => {
+            endX = e.changedTouches[0].clientX;
+            handleSwipe();
+          });
+        }
+        
+        function handleSwipe() {
+          const swipeThreshold = 50;
+          const diff = startX - endX;
+          
+          if (Math.abs(diff) > swipeThreshold) {
+            if (diff > 0) {
+              nextSlide(); // Swipe izquierda - siguiente
+            } else {
+              prevSlide(); // Swipe derecha - anterior
+            }
+          }
+        }
       });
     </script>
 <style>
@@ -218,6 +503,590 @@
           transform: translateX(0);
         }
       }
+      
+      /* Transiciones suaves para modo oscuro */
+      * {
+        transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+      }
+      
+      /* Efectos de hover mejorados */
+      .service-card:hover {
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      }
+      
+      .dark .service-card:hover {
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      }
+      
+      /* Animación de pulso para CTA */
+      @keyframes pulse-glow {
+        0%, 100% {
+          box-shadow: 0 0 20px rgba(255, 111, 0, 0.3);
+        }
+        50% {
+          box-shadow: 0 0 30px rgba(255, 111, 0, 0.6);
+        }
+      }
+      
+      .cta-button {
+        animation: pulse-glow 3s ease-in-out infinite;
+      }
+      
+      /* Mejoras en el formulario */
+      input:focus {
+        transform: translateY(-2px);
+      }
+      
+      /* Efectos de entrada para testimonios */
+      .testimonial-card {
+        transition: all 0.3s ease;
+      }
+      
+      .testimonial-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+      }
+      
+      /* Estilos para tarjetas de transformación */
+      .transform-card {
+        transition: all 0.4s ease;
+        border-radius: 1rem;
+        overflow: hidden;
+      }
+      
+      .transform-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+      }
+      
+      .transform-card img {
+        transition: transform 0.7s ease;
+      }
+      
+      .transform-card:hover img {
+        transform: scale(1.05);
+      }
+      
+      /* Animaciones para estadísticas */
+      .stat-item {
+        transition: all 0.3s ease;
+      }
+      
+      .stat-item:hover {
+        transform: translateY(-5px) scale(1.05);
+      }
+      
+      /* Efectos de gradiente mejorados */
+      .transform-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(45, 125, 50, 0.1), rgba(25, 118, 210, 0.1));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 5;
+      }
+      
+      .transform-card:hover::before {
+        opacity: 1;
+      }
+      
+      /* Mejoras adicionales para visibilidad del texto */
+      .transform-card h3 {
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        font-weight: 800;
+      }
+      
+      .transform-card p {
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+        font-weight: 500;
+      }
+      
+      /* Overlay adicional para mejor contraste */
+      .transform-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 60%;
+        background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.3));
+        z-index: 15;
+      }
+      
+      .transform-card .absolute.bottom-0 {
+        z-index: 25;
+      }
+      
+      /* Estilos para botones de zoom */
+      .transform-card button {
+        backdrop-filter: blur(8px);
+        transition: all 0.3s ease;
+        min-width: 80px;
+        text-align: center;
+      }
+      
+      .transform-card button:hover {
+        background-color: rgba(255, 255, 255, 0.4) !important;
+        transform: scale(1.1);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      }
+      
+      .transform-card button:active {
+        transform: scale(0.95);
+      }
+      
+      /* Asegurar que el botón sea visible */
+      .transform-card button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+      
+      /* Fallback CSS para animaciones sin GSAP */
+      .service-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      
+      .transform-card {
+        transition: transform 0.4s ease, box-shadow 0.4s ease;
+      }
+      
+      .stat-item {
+        transition: transform 0.3s ease;
+      }
+      
+      /* Animación de pulso para CTA sin GSAP */
+      @keyframes pulse-scale {
+        0%, 100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
+      
+      .cta-button {
+        animation: pulse-scale 2s ease-in-out infinite;
+      }
+      
+      /* Estilos para la animación de contadores */
+      [data-target] {
+        transition: all 0.3s ease;
+        font-variant-numeric: tabular-nums;
+      }
+      
+      [data-target]:hover {
+        transform: scale(1.1);
+        text-shadow: 0 0 20px rgba(45, 125, 50, 0.5);
+      }
+      
+      /* Animación de pulso para los números */
+      @keyframes numberPulse {
+        0%, 100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
+      
+      .stat-item:hover [data-target] {
+        animation: numberPulse 0.6s ease-in-out;
+      }
+      
+      /* Estilos para el carrusel de testimonios */
+      .testimonial-carousel {
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      
+      .testimonial-slide {
+        opacity: 0.7;
+        transform: scale(0.95);
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      
+      .testimonial-slide:first-child {
+        opacity: 1;
+        transform: scale(1);
+      }
+      
+      /* Efecto de desvanecido en los bordes */
+      .relative.overflow-hidden::before,
+      .relative.overflow-hidden::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 60px;
+        z-index: 5;
+        pointer-events: none;
+      }
+      
+      .relative.overflow-hidden::before {
+        left: 0;
+        background: linear-gradient(to right, rgba(255,255,255,0.9), transparent);
+      }
+      
+      .relative.overflow-hidden::after {
+        right: 0;
+        background: linear-gradient(to left, rgba(255,255,255,0.9), transparent);
+      }
+      
+      .dark .relative.overflow-hidden::before {
+        background: linear-gradient(to right, rgba(18,18,18,0.9), transparent);
+      }
+      
+      .dark .relative.overflow-hidden::after {
+        background: linear-gradient(to left, rgba(18,18,18,0.9), transparent);
+      }
+      
+      /* Botones de navegación mejorados */
+      #prevTestimonial,
+      #nextTestimonial {
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(45, 125, 50, 0.2);
+      }
+      
+      #prevTestimonial:hover,
+      #nextTestimonial:hover {
+        transform: translateY(-50%) scale(1.1);
+        box-shadow: 0 10px 25px rgba(45, 125, 50, 0.3);
+      }
+      
+      /* Indicadores del carrusel */
+      #testimonialIndicators button {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      
+      #testimonialIndicators button:hover {
+        transform: scale(1.2);
+        background-color: rgba(45, 125, 50, 0.7);
+      }
+      
+      /* Animación de entrada para testimonios */
+      .testimonial-card {
+        animation: testimonialFadeIn 0.8s ease-out forwards;
+      }
+      
+      @keyframes testimonialFadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      /* Efecto de hover para las tarjetas de testimonio */
+      .testimonial-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        border-color: rgba(45, 125, 50, 0.3);
+      }
+      
+      .dark .testimonial-card:hover {
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        border-color: rgba(45, 125, 50, 0.4);
+      }
+      
+      /* Marcos y márgenes mejorados para testimonios */
+      .testimonial-card {
+        position: relative;
+        margin: 20px 0;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(229, 231, 235, 0.6);
+        transition: all 0.3s ease;
+      }
+      
+      .dark .testimonial-card {
+        background: rgba(31, 41, 55, 0.95);
+        border: 1px solid rgba(75, 85, 99, 0.6);
+      }
+      
+      /* Efecto sutil de transparencia */
+      .testimonial-card:hover {
+        background: rgba(255, 255, 255, 1);
+        border-color: rgba(45, 125, 50, 0.3);
+      }
+      
+      .dark .testimonial-card:hover {
+        background: rgba(31, 41, 55, 1);
+        border-color: rgba(45, 125, 50, 0.4);
+      }
+      
+      /* Efecto de borde sutil */
+      .testimonial-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: inherit;
+        background: linear-gradient(135deg, rgba(45, 125, 50, 0.05), rgba(25, 118, 210, 0.05));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+      }
+      
+      .testimonial-card:hover::before {
+        opacity: 1;
+      }
+      
+      /* Espaciado mejorado entre slides */
+      .testimonial-slide {
+        margin: 0 10px;
+      }
+      
+      /* Sombra interna sutil */
+      .testimonial-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: inherit;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        pointer-events: none;
+      }
+      
+      .dark .testimonial-card::after {
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+      }
+      
+      /* Responsive para móviles */
+      @media (max-width: 768px) {
+        .relative.overflow-hidden::before,
+        .relative.overflow-hidden::after {
+          width: 30px;
+        }
+        
+        #prevTestimonial,
+        #nextTestimonial {
+          padding: 8px;
+        }
+        
+        .testimonial-slide {
+          margin: 0 5px;
+          padding: 0 8px;
+        }
+        
+        .testimonial-card {
+          margin: 15px 0;
+          padding: 20px;
+        }
+        
+        .testimonial-card::before {
+          padding: 1px;
+        }
+      }
+      
+      /* Efecto de profundidad sutil */
+      .testimonial-card {
+        box-shadow: 
+          0 2px 4px -1px rgba(0, 0, 0, 0.06),
+          0 1px 2px -1px rgba(0, 0, 0, 0.04),
+          0 0 0 1px rgba(0, 0, 0, 0.05);
+      }
+      
+      .dark .testimonial-card {
+        box-shadow: 
+          0 2px 4px -1px rgba(0, 0, 0, 0.2),
+          0 1px 2px -1px rgba(0, 0, 0, 0.1),
+          0 0 0 1px rgba(255, 255, 255, 0.05);
+      }
+      
+      .testimonial-card:hover {
+        box-shadow: 
+          0 4px 8px -2px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06),
+          0 0 0 1px rgba(45, 125, 50, 0.1);
+      }
+      
+      .dark .testimonial-card:hover {
+        box-shadow: 
+          0 4px 8px -2px rgba(0, 0, 0, 0.3),
+          0 2px 4px -1px rgba(0, 0, 0, 0.2),
+          0 0 0 1px rgba(45, 125, 50, 0.2);
+      }
+      
+      /* Mejoras visuales para las imágenes del hero */
+      .hero-image-left,
+      .hero-image-center,
+      .hero-image-right {
+        transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        filter: brightness(0.9) contrast(1.1) saturate(1.1);
+        position: relative;
+      }
+      
+      .hero-image-left:hover,
+      .hero-image-center:hover,
+      .hero-image-right:hover {
+        transform: scale(1.02);
+        filter: brightness(1) contrast(1.2) saturate(1.2);
+        z-index: 5;
+      }
+      
+      /* Efectos de zoom suave en las imágenes */
+      .hero-image-left::before,
+      .hero-image-center::before,
+      .hero-image-right::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-size: cover;
+        background-position: center;
+        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: -1;
+      }
+      
+      .hero-image-left::before {
+        background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAN4S2Le0DOhPMqt2OHdoe1mrYYqwUrCugU6O2p4DGILzFq2yPvTC5Rc62O1hoXhC2Y06yX4tRvYVDT-AsM8fEWRpbDWxPQmajwYAK1ERg3bkkBZIBPQFc54pH7pOtlndbO7fZlEfrAKKnR_1RKGGwrJn57XPtAVyTLirxzNZbfa-e9ttACj3bb4yIrNsl1mHZP08gRa7ipLBqRs3rxPqXBn_xz1rJRHUC_s9VUanOlwGA1UkS3WDcSFIcgMaScnqirpAc__UEdN5GN');
+      }
+      
+      .hero-image-center::before {
+        background-image: url('https://scontent.frex1-1.fna.fbcdn.net/v/t39.30808-6/547478054_2499918033710605_1000676832211932327_n.jpg?stp=dst-jpg_p526x296_tt6&_nc_cat=107&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=YQ4GILNRIhYQ7kNvwFmxeJ9&_nc_oc=Adnaat0kYNMfmrUA4Gw2KfI-2yyvLPqW0LkILlDtdqhRZU-9LrNufcrBzNM2i4VZHIw0kODhYdJB845PFOwW68_G&_nc_zt=23&_nc_ht=scontent.frex1-1.fna&_nc_gid=fqgjUa6BQG7u98BkOSPmWw&oh=00_AffuF8EBIXfIyw-gktE6vvSfzqFkm0m2Gh5MRs5MmxLj8A&oe=68E64690');
+      }
+      
+      .hero-image-right::before {
+        background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDOLucoMJkLqgg-9AnNlvJNNfE1GG4HRJW_JgCkaMNVjty2Wsj_a5N6V1eEOIGW1TNpIZe6uVoWgrPe-9r9Ep14avb07PEp6ejLH97oZxQ3aAF-Q6w3Fg52lN5cA93K6YvvSUcOQ8AjEV_f-cZef4ggNmHuKvxGUXCKqOiud_c5jxLlqzFb2fVP2kWHYLEstZ7vOVzirNu5Njbi8PVE8Mzu2NbRpJtFBBEIUOBmBRM4sOE-BF_bOCLlAkV0sRoF3rdBJGiQKOURoWUg');
+      }
+      
+      .hero-image-left:hover::before,
+      .hero-image-center:hover::before,
+      .hero-image-right:hover::before {
+        transform: scale(1.05);
+      }
+      
+      /* Efectos de borde sutil */
+      .hero-image-left {
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      
+      .hero-image-center {
+        border-left: 1px solid rgba(255, 255, 255, 0.1);
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      
+      .hero-image-right {
+        border-left: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      
+      /* Efectos de sombra dinámicos */
+      .hero-image-left:hover {
+        box-shadow: 
+          inset 0 0 50px rgba(45, 125, 50, 0.2),
+          0 0 30px rgba(45, 125, 50, 0.3);
+      }
+      
+      .hero-image-center:hover {
+        box-shadow: 
+          inset 0 0 50px rgba(255, 111, 0, 0.2),
+          0 0 30px rgba(255, 111, 0, 0.3);
+      }
+      
+      .hero-image-right:hover {
+        box-shadow: 
+          inset 0 0 50px rgba(25, 118, 210, 0.2),
+          0 0 30px rgba(25, 118, 210, 0.3);
+      }
+      
+      /* Animación de entrada para las imágenes */
+      .hero-image-left {
+        animation: slideInLeft 1s ease-out 0.2s both;
+      }
+      
+      .hero-image-center {
+        animation: slideInUp 1s ease-out 0.4s both;
+      }
+      
+      .hero-image-right {
+        animation: slideInRight 1s ease-out 0.6s both;
+      }
+      
+      @keyframes slideInLeft {
+        from {
+          transform: translateX(-100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      
+      @keyframes slideInUp {
+        from {
+          transform: translateY(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+      
+      @keyframes slideInRight {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      
+      /* Efectos de partículas flotantes en las imágenes */
+      .hero-image-left::after,
+      .hero-image-center::after,
+      .hero-image-right::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+        opacity: 0;
+        transition: opacity 0.6s ease;
+        pointer-events: none;
+      }
+      
+      .hero-image-left:hover::after,
+      .hero-image-center:hover::after,
+      .hero-image-right:hover::after {
+        opacity: 1;
+      }
+      
+      /* Responsive para las imágenes */
+      @media (max-width: 768px) {
+        .hero-image-left,
+        .hero-image-center,
+        .hero-image-right {
+          filter: brightness(0.8) contrast(1.1);
+        }
+        
+        .hero-image-left:hover,
+        .hero-image-center:hover,
+        .hero-image-right:hover {
+          transform: scale(1.01);
+        }
+      }
     </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark font-body text-text-light dark:text-text-dark antialiased">
@@ -234,7 +1103,7 @@
   <button class="material-symbols-outlined text-2xl hover:text-primary transition-colors" id="theme-toggle" title="Cambiar tema">
     <span id="theme-icon">dark_mode</span>
   </button>
-<a class="hidden md:block bg-accent text-white px-6 py-2 rounded-full font-bold hover:bg-opacity-90 transition-all" href="#contacto"> Agendar cita </a>
+<a class="hidden md:block bg-gradient-to-r from-accent to-accent-light text-white px-6 py-3 rounded-full font-bold hover:shadow-lg transition-all duration-300 transform hover:scale-105 shadow-md" href="#contacto"> Agendar cita </a>
   <button class="md:hidden material-symbols-outlined" id="menu-toggle">menu</button>
 </div>
 </nav>
@@ -266,15 +1135,35 @@
 <div class="absolute inset-0">
 <div class="absolute inset-0 bg-black/50 z-10"></div>
 <div class="w-full h-full flex">
-<div class="w-1/3 h-full bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAN4S2Le0DOhPMqt2OHdoe1mrYYqwUrCugU6O2p4DGILzFq2yPvTC5Rc62O1hoXhC2Y06yX4tRvYVDT-AsM8fEWRpbDWxPQmajwYAK1ERg3bkkBZIBPQFc54pH7pOtlndbO7fZlEfrAKKnR_1RKGGwrJn57XPtAVyTLirxzNZbfa-e9ttACj3bb4yIrNsl1mHZP08gRa7ipLBqRs3rxPqXBn_xz1rJRHUC_s9VUanOlwGA1UkS3WDcSFIcgMaScnqirpAc__UEdN5GN');"></div>
-<div class="w-1/3 h-full bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDvkmxVH2FI-ceOe7g8so30tUqqJYk9ptI4R0sA5Gnd9O97SCcG50RXDD_mJWB9vJv-zLULRWDBSXupwHFamqKiR5fR2cKtrhhIo5F_lrBjpylIu83YjcXCMI8oTnDavCs8835oMXCc5aVeqreDXrh2om3rNInO994H2gPSocD6c_vEBs2aV0ugr26hK9pUr6Pz0q9blj9UYaQx705uFEIeiwJEQjXehu5QDwVoQsU73sqGhlRnkVhzKtSBwnYza7ZEzNpNd-mB1VNt');"></div>
-<div class="w-1/3 h-full bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDOLucoMJkLqgg-9AnNlvJNNfE1GG4HRJW_JgCkaMNVjty2Wsj_a5N6V1eEOIGW1TNpIZe6uVoWgrPe-9r9Ep14avb07PEp6ejLH97oZxQ3aAF-Q6w3Fg52lN5cA93K6YvvSUcOQ8AjEV_f-cZef4ggNmHuKvxGUXCKqOiud_c5jxLlqzFb2fVP2kWHYLEstZ7vOVzirNu5Njbi8PVE8Mzu2NbRpJtFBBEIUOBmBRM4sOE-BF_bOCLlAkV0sRoF3rdBJGiQKOURoWUg');"></div>
+  <!-- Imagen izquierda con efectos mejorados -->
+  <div class="hero-image-left w-1/3 h-full bg-cover bg-center relative overflow-hidden group" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAN4S2Le0DOhPMqt2OHdoe1mrYYqwUrCugU6O2p4DGILzFq2yPvTC5Rc62O1hoXhC2Y06yX4tRvYVDT-AsM8fEWRpbDWxPQmajwYAK1ERg3bkkBZIBPQFc54pH7pOtlndbO7fZlEfrAKKnR_1RKGGwrJn57XPtAVyTLirxzNZbfa-e9ttACj3bb4yIrNsl1mHZP08gRa7ipLBqRs3rxPqXBn_xz1rJRHUC_s9VUanOlwGA1UkS3WDcSFIcgMaScnqirpAc__UEdN5GN');">
+    <div class="absolute inset-0 bg-gradient-to-r from-primary/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/30"></div>
+  </div>
+  
+  <!-- Imagen central con efectos mejorados -->
+  <div class="hero-image-center w-1/3 h-full bg-cover bg-center relative overflow-hidden group" style="background-image: url('https://scontent.frex1-1.fna.fbcdn.net/v/t39.30808-6/547478054_2499918033710605_1000676832211932327_n.jpg?stp=dst-jpg_p526x296_tt6&_nc_cat=107&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=YQ4GILNRIhYQ7kNvwFmxeJ9&_nc_oc=Adnaat0kYNMfmrUA4Gw2KfI-2yyvLPqW0LkILlDtdqhRZU-9LrNufcrBzNM2i4VZHIw0kODhYdJB845PFOwW68_G&_nc_zt=23&_nc_ht=scontent.frex1-1.fna&_nc_gid=fqgjUa6BQG7u98BkOSPmWw&oh=00_AffuF8EBIXfIyw-gktE6vvSfzqFkm0m2Gh5MRs5MmxLj8A&oe=68E64690');">
+    <div class="absolute inset-0 bg-gradient-to-t from-accent/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/30"></div>
+    <div class="absolute top-4 right-4 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 text-white text-sm font-semibold opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0">
+      ✨ Destacado
+    </div>
+  </div>
+  
+  <!-- Imagen derecha con efectos mejorados -->
+  <div class="hero-image-right w-1/3 h-full bg-cover bg-center relative overflow-hidden group" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDOLucoMJkLqgg-9AnNlvJNNfE1GG4HRJW_JgCkaMNVjty2Wsj_a5N6V1eEOIGW1TNpIZe6uVoWgrPe-9r9Ep14avb07PEp6ejLH97oZxQ3aAF-Q6w3Fg52lN5cA93K6YvvSUcOQ8AjEV_f-cZef4ggNmHuKvxGUXCKqOiud_c5jxLlqzFb2fVP2kWHYLEstZ7vOVzirNu5Njbi8PVE8Mzu2NbRpJtFBBEIUOBmBRM4sOE-BF_bOCLlAkV0sRoF3rdBJGiQKOURoWUg');">
+    <div class="absolute inset-0 bg-gradient-to-l from-secondary/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/30"></div>
+  </div>
 </div>
 </div>
 <div class="relative z-20 container mx-auto px-6 h-full flex flex-col justify-center items-start fade-in-up">
 <h1 class="font-display font-black text-3xl sm:text-4xl md:text-6xl max-w-2xl leading-tight"> Nutrición personalizada que transforma resultados y estilo de vida </h1>
 <p class="font-body text-base sm:text-lg md:text-xl max-w-xl mt-4"> Planes prácticos, basados en evidencia y diseñados para tu día a día. </p>
-<a class="bg-accent text-white px-6 py-3 sm:px-8 sm:py-4 rounded-full font-bold mt-8 hover:bg-opacity-90 transition-all transform hover:scale-105 text-sm sm:text-base" href="#contacto"> Agendar cita </a>
+<a class="cta-button bg-gradient-to-r from-accent to-accent-light text-white px-8 py-4 rounded-full font-bold mt-8 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 text-sm sm:text-base relative overflow-hidden group" href="#contacto">
+  <span class="relative z-10">Agendar cita</span>
+  <div class="absolute inset-0 bg-gradient-to-r from-accent-light to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+</a>
 </div>
 </section>
 <section class="py-20 bg-background-light dark:bg-background-dark">
@@ -321,21 +1210,21 @@
 <p class="mt-4 text-lg max-w-2xl mx-auto">Soluciones nutricionales para cada una de tus metas.</p>
 </div>
 <div class="grid md:grid-cols-3 gap-8">
-<div class="bg-background-light dark:bg-background-dark/50 rounded-lg overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300 fade-in-up" style="animation-delay: 0.2s;">
+<div class="service-card bg-background-light dark:bg-background-dark/50 rounded-lg overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300 fade-in-up" style="animation-delay: 0.2s;">
 <img alt="Nutrición Deportiva" class="w-full h-56 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvkmxVH2FI-ceOe7g8so30tUqqJYk9ptI4R0sA5Gnd9O97SCcG50RXDD_mJWB9vJv-zLULRWDBSXupwHFamqKiR5fR2cKtrhhIo5F_lrBjpylIu83YjcXCMI8oTnDavCs8835oMXCc5aVeqreDXrh2om3rNInO994H2gPSocD6c_vEBs2aV0ugr26hK9pUr6Pz0q9blj9UYaQx705uFEIeiwJEQjXehu5QDwVoQsU73sqGhlRnkVhzKtSBwnYza7ZEzNpNd-mB1VNt"/>
 <div class="p-6">
 <h3 class="font-display font-bold text-xl mb-2">Nutrición Deportiva</h3>
 <p>Optimiza tu rendimiento, acelera tu recuperación y alcanza tu máximo potencial con un plan diseñado para atletas.</p>
 </div>
 </div>
-<div class="bg-background-light dark:bg-background-dark/50 rounded-lg overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300 fade-in-up" style="animation-delay: 0.4s;">
+<div class="service-card bg-background-light dark:bg-background-dark/50 rounded-lg overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300 fade-in-up" style="animation-delay: 0.4s;">
 <img alt="Pérdida de Peso" class="w-full h-56 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOLucoMJkLqgg-9AnNlvJNNfE1GG4HRJW_JgCkaMNVjty2Wsj_a5N6V1eEOIGW1TNpIZe6uVoWgrPe-9r9Ep14avb07PEp6ejLH97oZxQ3aAF-Q6w3Fg52lN5cA93K6YvvSUcOQ8AjEV_f-cZef4ggNmHuKvxGUXCKqOiud_c5jxLlqzFb2fVP2kWHYLEstZ7vOVzirNu5Njbi8PVE8Mzu2NbRpJtFBBEIUOBmBRM4sOE-BF_bOCLlAkV0sRoF3rdBJGiQKOURoWUg"/>
 <div class="p-6">
 <h3 class="font-display font-bold text-xl mb-2">Pérdida de Peso</h3>
 <p>Alcanza tu peso ideal de forma saludable, sostenible y sin pasar hambre, mejorando tu salud y autoestima.</p>
 </div>
 </div>
-<div class="bg-background-light dark:bg-background-dark/50 rounded-lg overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300 fade-in-up" style="animation-delay: 0.6s;">
+<div class="service-card bg-background-light dark:bg-background-dark/50 rounded-lg overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300 fade-in-up" style="animation-delay: 0.6s;">
 <img alt="Alimentación Saludable" class="w-full h-56 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJtOBcQh54JkhyRog4LJRnBbZlRLitZ-FJlSwCpCVKUiyDraaquw7cN_fuhdUBX9og9UYsDKrNygFDza6MFi-3qoZNb97ETZ_r-hylv_hgO6aUKci7jJId1dY-HpcGEV627HQKzrYbeI41hYZnZvHZxxHYHxZkuSpBrxL7ZxoyC5oXTpqDivnhHxhVfs7Wpy9K-gUIkWTCt_ESDjm0CmwDLmXrXRsr8FBvXGUIfzVZ_853-yRF2hppduyMjmSquz2NWx7ITpWmWwy8"/>
 <div class="p-6">
 <h3 class="font-display font-bold text-xl mb-2">Alimentación Saludable</h3>
@@ -345,43 +1234,211 @@
 </div>
 </div>
 </section>
+
+<!-- Sección de Transformación Visual -->
+<section class="py-20 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 dark:from-background-dark/50">
+  <div class="container mx-auto px-6">
+    <div class="text-center mb-16 fade-in-up">
+      <h2 class="font-display font-bold text-3xl md:text-4xl text-primary mb-4">Tu Transformación en Imágenes</h2>
+      <p class="text-lg max-w-3xl mx-auto text-text-muted">Descubre el poder de la nutrición personalizada a través de historias reales de cambio y bienestar</p>
+    </div>
+    
+    <div class="grid lg:grid-cols-2 gap-12 items-center">
+      <!-- Imagen de Transformación -->
+      <div class="transform-card group relative overflow-hidden rounded-2xl shadow-2xl">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent z-10"></div>
+        <img src="./img/cambio.jpg" alt="Transformación nutricional" class="w-full h-96 object-cover group-hover:scale-105 transition-transform duration-700">
+        <div class="absolute bottom-0 left-0 right-0 p-8 z-20 text-white">
+          <h3 class="font-display font-bold text-2xl mb-2 text-white drop-shadow-lg">Antes y Después</h3>
+          <p class="text-white mb-4 drop-shadow-md">Historias reales de personas que han transformado su vida a través de la nutrición personalizada</p>
+          <div class="flex items-center gap-4">
+            <div class="bg-white/20 backdrop-blur-md rounded-full px-4 py-2 border border-white/30">
+              <span class="text-sm font-semibold text-white">+50 Clientes</span>
+            </div>
+            <div class="bg-white/20 backdrop-blur-md rounded-full px-4 py-2 border border-white/30">
+              <span class="text-sm font-semibold text-white">100% Natural</span>
+            </div>
+          </div>
+        </div>
+        <button class="absolute top-4 right-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full transition-all duration-300 transform hover:scale-110 z-30 shadow-lg text-sm font-semibold" onclick="openImageModal('./img/cambio.jpg', 'Antes y Después', 'Historias reales de personas que han transformado su vida a través de la nutrición personalizada. Nuestro enfoque personalizado ha ayudado a más de 50 clientes a alcanzar sus objetivos de salud de manera natural y sostenible.')">
+          Ver más
+        </button>
+      </div>
+      
+      <!-- Imagen de Planes -->
+      <div class="transform-card group relative overflow-hidden rounded-2xl shadow-2xl">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent z-10"></div>
+        <img src="./img/planes.jpg" alt="Planes nutricionales personalizados" class="w-full h-96 object-cover group-hover:scale-105 transition-transform duration-700">
+        <div class="absolute bottom-0 left-0 right-0 p-8 z-20 text-white">
+          <h3 class="font-display font-bold text-2xl mb-2 text-white drop-shadow-lg">Planes Personalizados</h3>
+          <p class="text-white mb-4 drop-shadow-md">Estrategias nutricionales diseñadas específicamente para tus objetivos y estilo de vida</p>
+          <div class="flex items-center gap-4">
+            <div class="bg-white/20 backdrop-blur-md rounded-full px-4 py-2 border border-white/30">
+              <span class="text-sm font-semibold text-white">Adaptable</span>
+            </div>
+            <div class="bg-white/20 backdrop-blur-md rounded-full px-4 py-2 border border-white/30">
+              <span class="text-sm font-semibold text-white">Sostenible</span>
+            </div>
+          </div>
+        </div>
+        <button class="absolute top-4 right-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full transition-all duration-300 transform hover:scale-110 z-30 shadow-lg text-sm font-semibold" onclick="openImageModal('./img/planes.jpg', 'Planes Personalizados', 'Estrategias nutricionales diseñadas específicamente para tus objetivos y estilo de vida. Cada plan es adaptable a tus necesidades, preferencias alimentarias y horarios, garantizando una experiencia sostenible y efectiva a largo plazo.')">
+          Ver más
+        </button>
+      </div>
+    </div>
+    
+    <!-- Estadísticas destacadas -->
+    <div class="mt-16 grid md:grid-cols-4 gap-8 text-center">
+      <div class="stat-item fade-in-up" style="animation-delay: 0.1s;">
+        <div class="text-4xl font-bold text-primary mb-2" data-target="95">0%</div>
+        <div class="text-text-muted">Satisfacción</div>
+      </div>
+      <div class="stat-item fade-in-up" style="animation-delay: 0.2s;">
+        <div class="text-4xl font-bold text-primary mb-2" data-target="200">0</div>
+        <div class="text-text-muted">Clientes Atendidos</div>
+      </div>
+      <div class="stat-item fade-in-up" style="animation-delay: 0.3s;">
+        <div class="text-4xl font-bold text-primary mb-2" data-target="5">0</div>
+        <div class="text-text-muted">Años de Experiencia</div>
+      </div>
+      <div class="stat-item fade-in-up" style="animation-delay: 0.4s;">
+        <div class="text-4xl font-bold text-primary mb-2" data-target="24">0</div>
+        <div class="text-text-muted">Soporte</div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="py-20" id="testimonios">
 <div class="container mx-auto px-6">
 <div class="text-center mb-12 fade-in-up">
 <h2 class="font-display font-bold text-3xl md:text-4xl text-primary">Historias que Inspiran</h2>
 <p class="mt-4 text-lg max-w-2xl mx-auto">Descubre cómo hemos ayudado a otros a transformar su vida a través de la nutrición.</p>
 </div>
-<div class="grid md:grid-cols-3 gap-8">
-<div class="bg-background-light dark:bg-background-dark/50 rounded-lg p-6 shadow-lg fade-in-up" style="animation-delay: 0.2s;">
-<p class="italic mb-4">"Transformó mi relación con la comida. Aprendí a comer de forma saludable y a disfrutar sin restricciones."</p>
-<div class="flex items-center">
-<img alt="Cliente 1" class="w-12 h-12 rounded-full mr-4 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDErzmRntoF7zWw5SJeZw804fKjEAKxNFTZUdcjl2Uu8K6HUhC_LPABDJ3y4pyHOcDFlNZRDBxuC2lhLM1OIEIYDPE1npafy3oCn2e0-bE5C2ANkTDmPFsugvLJVlBqUX0Kwgxeb2tMWa2BEyjbAJ8wYSNEyZN7Yc-wuYdwz6U3RU4SVhI3PC2Ko6G346x04xr9L-f09tVnT3xvJVuJxUzBBprGAWe5RlKlco1z0_3NX70BKsrusywnhQGrM1iH4w8HmPy3phinpbei"/>
-<div>
-<p class="font-bold">Ana Pérez</p>
-<p class="text-sm text-primary">Paciente de Pérdida de Peso</p>
-</div>
-</div>
-</div>
-<div class="bg-background-light dark:bg-background-dark/50 rounded-lg p-6 shadow-lg fade-in-up" style="animation-delay: 0.4s;">
-<p class="italic mb-4">"El plan de nutrición me ayudó a mejorar mi rendimiento y a alcanzar mis objetivos en el gimnasio. ¡Increíble!"</p>
-<div class="flex items-center">
-<img alt="Cliente 2" class="w-12 h-12 rounded-full mr-4 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIGA4uZgG4g7TlDpJjrerNnEHoZJYSbsyy3fNN7Bpzc008O9BHeAbQz30PHEJgn6wCjBActhar4gHl63ud3ZZypKI6XfOXvuM-xs_G2LXG3e4ITrsZfQVYvQgOFO68MMdYE8bP7Gjks4fHaH8x5Eb4i7Z5xNXGh4VjjbKjOWfsgTOUX270zLlES8HWeNJOd1Qb2mi0FiiJ8KZLfskV8OjuKMbore5AGKdGraAYfjDS05ooBy9IWcU5jV6DbxgHu_V3coXQPysS60Vu"/>
-<div>
-<p class="font-bold">Carlos Gómez</p>
-<p class="text-sm text-primary">Paciente de Nutrición Deportiva</p>
-</div>
-</div>
-</div>
-<div class="bg-background-light dark:bg-background-dark/50 rounded-lg p-6 shadow-lg fade-in-up" style="animation-delay: 0.6s;">
-<p class="italic mb-4">"Me siento con más energía que nunca. La nutrición personalizada me ha dado la vitalidad que necesitaba."</p>
-<div class="flex items-center">
-<img alt="Cliente 3" class="w-12 h-12 rounded-full mr-4 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuByoDp284bUJG5mY46r4ULHWTEX24AugzWPQS2E6fPb1QZa759CX0CwawCqz2fDVn7COknxJhbhc4uLft_nkHt9Hyka1YpHFHSZodnTtlMAXWtet9qj-iYlcmgZD1DQXbmbuVwG_NJ9qLiKGPhpQ3hfTH1nUzq7tgyngBL3Rkj1kAtVxL9StZBE7yqlYOL1FNibKQWv4vlzw_5RLqhCxUc5E_9-nR2AY5-og3NIvlep4zKlg6RNaAEoHLdsSuhQB_eDRiF1dZFubpZe"/>
-<div>
-<p class="font-bold">Sofía Rodríguez</p>
-<p class="text-sm text-primary">Paciente de Alimentación Saludable</p>
-</div>
-</div>
-</div>
+
+<!-- Carrusel de testimonios -->
+<div class="relative overflow-hidden">
+  <!-- Contenedor del carrusel -->
+  <div class="testimonial-carousel flex transition-transform duration-500 ease-in-out" id="testimonialCarousel">
+    <!-- Testimonio 1 -->
+    <div class="testimonial-slide w-full flex-shrink-0 px-6">
+      <div class="testimonial-card bg-white/80 dark:bg-gray-800/80 rounded-xl p-8 shadow-xl max-w-2xl mx-auto border border-gray-200/50 dark:border-gray-600/50">
+        <div class="text-center">
+          <div class="w-20 h-20 mx-auto mb-6 rounded-full overflow-hidden">
+            <img alt="Ana Pérez" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDErzmRntoF7zWw5SJeZw804fKjEAKxNFTZUdcjl2Uu8K6HUhC_LPABDJ3y4pyHOcDFlNZRDBxuC2lhLM1OIEIYDPE1npafy3oCn2e0-bE5C2ANkTDmPFsugvLJVlBqUX0Kwgxeb2tMWa2BEyjbAJ8wYSNEyZN7Yc-wuYdwz6U3RU4SVhI3PC2Ko6G346x04xr9L-f09tVnT3xvJVuJxUzBBprGAWe5RlKlco1z0_3NX70BKsrusywnhQGrM1iH4w8HmPy3phinpbei"/>
+          </div>
+          <blockquote class="text-lg italic mb-6 text-gray-700 dark:text-gray-300">
+            "Transformó mi relación con la comida. Aprendí a comer de forma saludable y a disfrutar sin restricciones. El proceso fue increíblemente natural y sostenible."
+          </blockquote>
+          <div class="text-center">
+            <p class="font-bold text-xl text-primary">Ana Pérez</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Paciente de Pérdida de Peso</p>
+            <div class="flex justify-center mt-2">
+              <span class="text-yellow-400">★★★★★</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Testimonio 2 -->
+    <div class="testimonial-slide w-full flex-shrink-0 px-6">
+      <div class="testimonial-card bg-white/80 dark:bg-gray-800/80 rounded-xl p-8 shadow-xl max-w-2xl mx-auto border border-gray-200/50 dark:border-gray-600/50">
+        <div class="text-center">
+          <div class="w-20 h-20 mx-auto mb-6 rounded-full overflow-hidden">
+            <img alt="Carlos Gómez" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIGA4uZgG4g7TlDpJjrerNnEHoZJYSbsyy3fNN7Bpzc008O9BHeAbQz30PHEJgn6wCjBActhar4gHl63ud3ZZypKI6XfOXvuM-xs_G2LXG3e4ITrsZfQVYvQgOFO68MMdYE8bP7Gjks4fHaH8x5Eb4i7Z5xNXGh4VjjbKjOWfsgTOUX270zLlES8HWeNJOd1Qb2mi0FiiJ8KZLfskV8OjuKMbore5AGKdGraAYfjDS05ooBy9IWcU5jV6DbxgHu_V3coXQPysS60Vu"/>
+          </div>
+          <blockquote class="text-lg italic mb-6 text-gray-700 dark:text-gray-300">
+            "El plan de nutrición me ayudó a mejorar mi rendimiento y a alcanzar mis objetivos en el gimnasio. ¡Increíble! Ahora tengo más energía y me recupero más rápido."
+          </blockquote>
+          <div class="text-center">
+            <p class="font-bold text-xl text-primary">Carlos Gómez</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Paciente de Nutrición Deportiva</p>
+            <div class="flex justify-center mt-2">
+              <span class="text-yellow-400">★★★★★</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Testimonio 3 -->
+    <div class="testimonial-slide w-full flex-shrink-0 px-6">
+      <div class="testimonial-card bg-white/80 dark:bg-gray-800/80 rounded-xl p-8 shadow-xl max-w-2xl mx-auto border border-gray-200/50 dark:border-gray-600/50">
+        <div class="text-center">
+          <div class="w-20 h-20 mx-auto mb-6 rounded-full overflow-hidden">
+            <img alt="Sofía Rodríguez" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuByoDp284bUJG5mY46r4ULHWTEX24AugzWPQS2E6fPb1QZa759CX0CwawCqz2fDVn7COknxJhbhc4uLft_nkHt9Hyka1YpHFHSZodnTtlMAXWtet9qj-iYlcmgZD1DQXbmbuVwG_NJ9qLiKGPhpQ3hfTH1nUzq7tgyngBL3Rkj1kAtVxL9StZBE7yqlYOL1FNibKQWv4vlzw_5RLqhCxUc5E_9-nR2AY5-og3NIvlep4zKlg6RNaAEoHLdsSuhQB_eDRiF1dZFubpZe"/>
+          </div>
+          <blockquote class="text-lg italic mb-6 text-gray-700 dark:text-gray-300">
+            "Me siento con más energía que nunca. La nutrición personalizada me ha dado la vitalidad que necesitaba. Mi salud ha mejorado significativamente."
+          </blockquote>
+          <div class="text-center">
+            <p class="font-bold text-xl text-primary">Sofía Rodríguez</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Paciente de Alimentación Saludable</p>
+            <div class="flex justify-center mt-2">
+              <span class="text-yellow-400">★★★★★</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Testimonio 4 (adicional para el carrusel) -->
+    <div class="testimonial-slide w-full flex-shrink-0 px-6">
+      <div class="testimonial-card bg-white/80 dark:bg-gray-800/80 rounded-xl p-8 shadow-xl max-w-2xl mx-auto border border-gray-200/50 dark:border-gray-600/50">
+        <div class="text-center">
+          <div class="w-20 h-20 mx-auto mb-6 rounded-full overflow-hidden bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+            <span class="text-white text-2xl font-bold">MR</span>
+          </div>
+          <blockquote class="text-lg italic mb-6 text-gray-700 dark:text-gray-300">
+            "El seguimiento personalizado y las recetas adaptadas a mi estilo de vida han sido clave. Perdí 15kg de forma saludable y sostenible."
+          </blockquote>
+          <div class="text-center">
+            <p class="font-bold text-xl text-primary">María Ruiz</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Paciente de Transformación</p>
+            <div class="flex justify-center mt-2">
+              <span class="text-yellow-400">★★★★★</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Testimonio 5 (adicional para el carrusel) -->
+    <div class="testimonial-slide w-full flex-shrink-0 px-6">
+      <div class="testimonial-card bg-white/80 dark:bg-gray-800/80 rounded-xl p-8 shadow-xl max-w-2xl mx-auto border border-gray-200/50 dark:border-gray-600/50">
+        <div class="text-center">
+          <div class="w-20 h-20 mx-auto mb-6 rounded-full overflow-hidden bg-gradient-to-br from-accent to-accent-light flex items-center justify-center">
+            <span class="text-white text-2xl font-bold">JL</span>
+          </div>
+          <blockquote class="text-lg italic mb-6 text-gray-700 dark:text-gray-300">
+            "Como atleta profesional, necesitaba optimizar mi nutrición. Los resultados han superado mis expectativas. Mi rendimiento mejoró un 30%."
+          </blockquote>
+          <div class="text-center">
+            <p class="font-bold text-xl text-primary">Javier López</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Atleta Profesional</p>
+            <div class="flex justify-center mt-2">
+              <span class="text-yellow-400">★★★★★</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Botones de navegación -->
+  <button class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 text-primary p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110 z-10" id="prevTestimonial">
+    <span class="material-symbols-outlined text-xl">chevron_left</span>
+  </button>
+  
+  <button class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 text-primary p-3 rounded-full shadow-lg transition-all duration-300 hover:scale-110 z-10" id="nextTestimonial">
+    <span class="material-symbols-outlined text-xl">chevron_right</span>
+  </button>
+  
+  <!-- Indicadores -->
+  <div class="flex justify-center mt-8 space-x-2" id="testimonialIndicators">
+    <!-- Se generarán dinámicamente -->
+  </div>
 </div>
 </div>
 </section>
@@ -390,8 +1447,8 @@
 <h2 class="font-display font-bold text-3xl md:text-4xl text-primary">Da el Primer Paso Hoy</h2>
 <p class="mt-4 text-lg max-w-2xl mx-auto">Recibe consejos y recetas saludables en tu correo. ¡Es gratis!</p>
 <form class="mt-8 max-w-lg mx-auto flex flex-col sm:flex-row gap-4">
-<input class="flex-grow px-4 py-3 rounded-lg border-2 border-primary/20 focus:ring-primary focus:border-primary transition bg-background-light dark:bg-background-dark/50" placeholder="Tu correo electrónico" type="email"/>
-<button class="bg-accent text-white px-8 py-3 rounded-lg font-bold hover:bg-opacity-90 transition-all" type="submit"> Suscribirme </button>
+<input class="flex-grow px-4 py-3 rounded-lg border-2 border-primary/20 focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300 bg-background-light dark:bg-background-dark/50 hover:border-primary/40 focus:shadow-lg" placeholder="Tu correo electrónico" type="email" required/>
+<button class="bg-gradient-to-r from-accent to-accent-light text-white px-8 py-3 rounded-lg font-bold hover:shadow-lg transition-all duration-300 transform hover:scale-105 shadow-md" type="submit"> Suscribirme </button>
 </form>
 </div>
 </section>
@@ -407,35 +1464,35 @@
   <!-- Redes sociales profesionales -->
   <div class="flex justify-center gap-6 mb-8">
     <a href="https://www.facebook.com/profile.php?id=61580681552666&locale=es_LA" target="_blank" rel="noopener noreferrer" 
-       class="group bg-white/10 hover:bg-blue-600 backdrop-blur-sm rounded-full p-3 transition-all duration-300 transform hover:scale-110 hover:shadow-lg">
+       class="group bg-white/10 hover:bg-blue-600 backdrop-blur-sm rounded-full p-3 transition-all duration-300 transform hover:scale-110 hover:shadow-lg hover:rotate-3">
       <svg class="w-6 h-6 text-white group-hover:text-white" fill="currentColor" viewBox="0 0 24 24">
         <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
       </svg>
     </a>
     
     <a href="https://instagram.com/nutrivida" target="_blank" rel="noopener noreferrer" 
-       class="group bg-white/10 hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-500 backdrop-blur-sm rounded-full p-3 transition-all duration-300 transform hover:scale-110 hover:shadow-lg">
+       class="group bg-white/10 hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-500 backdrop-blur-sm rounded-full p-3 transition-all duration-300 transform hover:scale-110 hover:shadow-lg hover:rotate-3">
       <svg class="w-6 h-6 text-white group-hover:text-white" fill="currentColor" viewBox="0 0 24 24">
         <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.62 5.367 11.987 11.988 11.987s11.987-5.367 11.987-11.987C24.014 5.367 18.647.001 12.017.001zM8.449 16.988c-1.297 0-2.448-.49-3.323-1.297C4.198 14.895 3.708 13.744 3.708 12.447s.49-2.448 1.297-3.323c.875-.807 2.026-1.297 3.323-1.297s2.448.49 3.323 1.297c.807.875 1.297 2.026 1.297 3.323s-.49 2.448-1.297 3.323c-.875.807-2.026 1.297-3.323 1.297zm7.718-1.297c-.875.807-2.026 1.297-3.323 1.297s-2.448-.49-3.323-1.297c-.807-.875-1.297-2.026-1.297-3.323s.49-2.448 1.297-3.323c.875-.807 2.026-1.297 3.323-1.297s2.448.49 3.323 1.297c.807.875 1.297 2.026 1.297 3.323s-.49 2.448-1.297 3.323z"/>
       </svg>
     </a>
     
     <a href="https://twitter.com/nutrivida" target="_blank" rel="noopener noreferrer" 
-       class="group bg-white/10 hover:bg-blue-400 backdrop-blur-sm rounded-full p-3 transition-all duration-300 transform hover:scale-110 hover:shadow-lg">
+       class="group bg-white/10 hover:bg-blue-400 backdrop-blur-sm rounded-full p-3 transition-all duration-300 transform hover:scale-110 hover:shadow-lg hover:rotate-3">
       <svg class="w-6 h-6 text-white group-hover:text-white" fill="currentColor" viewBox="0 0 24 24">
         <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
       </svg>
     </a>
     
     <a href="https://youtube.com/nutrivida" target="_blank" rel="noopener noreferrer" 
-       class="group bg-white/10 hover:bg-red-600 backdrop-blur-sm rounded-full p-3 transition-all duration-300 transform hover:scale-110 hover:shadow-lg">
+       class="group bg-white/10 hover:bg-red-600 backdrop-blur-sm rounded-full p-3 transition-all duration-300 transform hover:scale-110 hover:shadow-lg hover:rotate-3">
       <svg class="w-6 h-6 text-white group-hover:text-white" fill="currentColor" viewBox="0 0 24 24">
         <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
       </svg>
     </a>
     
     <a href="https://wa.me/5218992293240?text=Hola%20NutriVida,%20me%20interesa%20agendar%20una%20consulta" target="_blank" rel="noopener noreferrer" 
-       class="group bg-white/10 hover:bg-green-500 backdrop-blur-sm rounded-full p-3 transition-all duration-300 transform hover:scale-110 hover:shadow-lg">
+       class="group bg-white/10 hover:bg-green-500 backdrop-blur-sm rounded-full p-3 transition-all duration-300 transform hover:scale-110 hover:shadow-lg hover:rotate-3">
       <svg class="w-6 h-6 text-white group-hover:text-white" fill="currentColor" viewBox="0 0 24 24">
         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
       </svg>
@@ -450,11 +1507,11 @@
     </div>
     <div class="flex items-center gap-2 text-gray-300 hover:text-white transition-colors">
       <span class="material-symbols-outlined text-accent">email</span>
-      <a href="mailto:info@nutrivida.com">info@nutrivida.com</a>
+      <a href="mailto:nutriologo_alp@hotmail.com">nutriologo_alp@hotmail.com</a>
     </div>
     <div class="flex items-center gap-2 text-gray-300">
       <span class="material-symbols-outlined text-accent">location_on</span>
-      <span>Ciudad, País</span>
+      <span>México</span>
     </div>
   </div>
   
@@ -470,5 +1527,151 @@
 <a class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 bg-green-600 hover:bg-green-700 text-white px-3 py-2 sm:px-5 sm:py-3 rounded-full font-bold shadow-lg flex items-center gap-1 sm:gap-2 transition-all transform hover:scale-105 z-40 text-xs sm:text-sm" href="https://wa.me/5218992293240?text=Hola%20NutriVida,%20me%20interesa%20agendar%20una%20consulta" target="_blank" rel="noopener noreferrer">
 <span class="material-symbols-outlined text-sm sm:text-base">chat</span> <span class="hidden sm:inline">WhatsApp</span><span class="sm:hidden">WA</span>
     </a>
+
+<!-- Modal para imágenes ampliadas -->
+<div id="imageModal" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+  <div class="relative max-w-4xl max-h-[90vh] w-full">
+    <!-- Botón de cerrar -->
+    <button id="modalCloseButton" class="absolute top-4 right-4 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full transition-all duration-300 transform hover:scale-110 z-10 cursor-pointer">
+      <span class="material-symbols-outlined text-xl">close</span>
+    </button>
+    
+    <!-- Contenido del modal -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-2xl">
+      <!-- Imagen -->
+      <div class="relative">
+        <img id="modalImage" src="" alt="" class="w-full h-96 md:h-[500px] object-cover">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+      </div>
+      
+      <!-- Contenido de texto -->
+      <div class="p-8">
+        <h3 id="modalTitle" class="font-display font-bold text-3xl text-primary mb-4"></h3>
+        <p id="modalDescription" class="text-text-light dark:text-text-dark text-lg leading-relaxed"></p>
+        
+        <!-- Botón de acción -->
+        <div class="mt-8 flex justify-center">
+          <a href="#contacto" onclick="closeImageModal()" class="bg-gradient-to-r from-accent to-accent-light text-white px-8 py-3 rounded-full font-bold hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+            Agendar Consulta
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Función para abrir el modal de imagen
+function openImageModal(imageSrc, title, description) {
+  console.log('Abriendo modal con:', { imageSrc, title, description });
+  
+  const modal = document.getElementById('imageModal');
+  const modalImage = document.getElementById('modalImage');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalDescription = document.getElementById('modalDescription');
+  
+  // Verificar que los elementos existen
+  if (!modal || !modalImage || !modalTitle || !modalDescription) {
+    console.error('Elementos del modal no encontrados');
+    return;
+  }
+  
+  // Establecer contenido
+  modalImage.src = imageSrc;
+  modalImage.alt = title;
+  modalTitle.textContent = title;
+  modalDescription.textContent = description;
+  
+  // Manejar error de carga de imagen
+  modalImage.onerror = function() {
+    console.error('Error al cargar la imagen:', imageSrc);
+    modalImage.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiBubyBlbmNvbnRyYWRhPC90ZXh0Pjwvc3ZnPg==';
+  };
+  
+  // Mostrar modal con animación
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+  document.body.style.overflow = 'hidden';
+  
+  // Animación de entrada
+  if (typeof gsap !== 'undefined') {
+    gsap.fromTo(modal, 
+      { opacity: 0, scale: 0.8 },
+      { opacity: 1, scale: 1, duration: 0.4, ease: 'power2.out' }
+    );
+  } else {
+    // Fallback CSS para animación del modal
+    modal.style.opacity = '0';
+    modal.style.transform = 'scale(0.8)';
+    modal.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+    
+    requestAnimationFrame(() => {
+      modal.style.opacity = '1';
+      modal.style.transform = 'scale(1)';
+    });
+  }
+}
+
+// Función para cerrar el modal
+function closeImageModal() {
+  const modal = document.getElementById('imageModal');
+  
+  // Animación de salida
+  if (typeof gsap !== 'undefined') {
+    gsap.to(modal, {
+      opacity: 0,
+      scale: 0.8,
+      duration: 0.3,
+      ease: 'power2.in',
+      onComplete: () => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.body.style.overflow = 'auto';
+      }
+    });
+  } else {
+    // Fallback CSS para animación de cierre
+    modal.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+    modal.style.opacity = '0';
+    modal.style.transform = 'scale(0.8)';
+    
+    setTimeout(() => {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      document.body.style.overflow = 'auto';
+      // Resetear estilos para la próxima apertura
+      modal.style.opacity = '';
+      modal.style.transform = '';
+      modal.style.transition = '';
+    }, 300);
+  }
+}
+
+// Cerrar modal al hacer clic fuera del contenido
+document.getElementById('imageModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeImageModal();
+  }
+});
+
+// Cerrar modal con tecla Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && !document.getElementById('imageModal').classList.contains('hidden')) {
+    closeImageModal();
+  }
+});
+
+// Asegurar que el botón de cerrar funcione correctamente
+document.addEventListener('DOMContentLoaded', function() {
+  const closeButton = document.getElementById('modalCloseButton');
+  if (closeButton) {
+    closeButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      closeImageModal();
+    });
+  }
+});
+</script>
 
 </body></html>
