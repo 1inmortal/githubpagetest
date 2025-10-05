@@ -270,6 +270,205 @@
         }
         
         // Testimonios simples - no necesitan JavaScript
+        
+        // Contadores dinámicos con animación mejorada
+        function animateCounter(elementId, targetValue, duration = 2000) {
+          const element = document.getElementById(elementId);
+          if (!element) return;
+          
+          let startValue = 0;
+          const increment = targetValue / (duration / 16); // 60fps
+          
+          const updateCounter = () => {
+            startValue += increment;
+            if (startValue < targetValue) {
+              element.textContent = Math.floor(startValue);
+              requestAnimationFrame(updateCounter);
+            } else {
+              element.textContent = targetValue;
+            }
+          };
+          
+          updateCounter();
+        }
+        
+        // Valores base para los contadores (simulados)
+        const baseValues = {
+          visitors: 247,
+          likes: 189,
+          referrals: 23
+        };
+        
+        // Función para generar números aleatorios realistas
+        function getRandomIncrement() {
+          return Math.floor(Math.random() * 5) + 1; // 1-5 incrementos
+        }
+        
+        // Actualizar contadores cuando la sección sea visible
+        const countersObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              // Animar contadores con valores realistas
+              setTimeout(() => {
+                animateCounter('visitorCount', baseValues.visitors + getRandomIncrement());
+                animateCounter('likeCount', baseValues.likes + getRandomIncrement());
+                animateCounter('referralCount', baseValues.referrals + getRandomIncrement());
+              }, 500);
+              
+              countersObserver.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.5 });
+        
+        // Observar la sección de contadores de estadísticas
+        const statsCountersSection = document.querySelector('.grid.md\\:grid-cols-3');
+        if (statsCountersSection) {
+          countersObserver.observe(statsCountersSection);
+        }
+        
+        // Función específica para animar contadores de la sección de referidos
+        function animateReferidosCounters() {
+          // Animar contadores de visitantes, likes y referidos
+          setTimeout(() => {
+            animateCounter('visitorCount', baseValues.visitors + getRandomIncrement());
+            animateCounter('likeCount', baseValues.likes + getRandomIncrement());
+            animateCounter('referralCount', baseValues.referrals + getRandomIncrement());
+          }, 300);
+        }
+        
+        // Observador específico para la sección de referidos
+        const referidosObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              animateReferidosCounters();
+              referidosObserver.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.3 });
+        
+        // Observar la sección de referidos usando múltiples selectores
+        const referidosSection1 = document.querySelector('.bg-gradient-to-r.from-primary\\/10');
+        const referidosSection2 = document.querySelector('.bg-gradient-to-br.from-primary\\/5.via-secondary\\/5.to-accent\\/5');
+        const referidosSection3 = document.querySelector('.py-20.bg-gradient-to-br.from-primary\\/5');
+        
+        if (referidosSection1) {
+          referidosObserver.observe(referidosSection1);
+        } else if (referidosSection2) {
+          referidosObserver.observe(referidosSection2);
+        } else if (referidosSection3) {
+          referidosObserver.observe(referidosSection3);
+        }
+        
+        // Función de respaldo para asegurar que las animaciones se ejecuten
+        function ensureCountersAnimation() {
+          // Verificar si los elementos existen y no han sido animados
+          const visitorCount = document.getElementById('visitorCount');
+          const likeCount = document.getElementById('likeCount');
+          const referralCount = document.getElementById('referralCount');
+          
+          if (visitorCount && likeCount && referralCount) {
+            // Si los contadores están en 0, animarlos
+            if (visitorCount.textContent === '0' || likeCount.textContent === '0' || referralCount.textContent === '0') {
+              setTimeout(() => {
+                animateReferidosCounters();
+              }, 1000);
+            }
+          }
+        }
+        
+        // Ejecutar función de respaldo después de un tiempo
+        setTimeout(ensureCountersAnimation, 2000);
+        
+        // Función para activar animaciones al hacer scroll
+        function handleScrollAnimation() {
+          const visitorCount = document.getElementById('visitorCount');
+          const likeCount = document.getElementById('likeCount');
+          const referralCount = document.getElementById('referralCount');
+          
+          if (visitorCount && likeCount && referralCount) {
+            // Verificar si los elementos están visibles en el viewport
+            const rect = visitorCount.getBoundingClientRect();
+            const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+            
+            if (isVisible && (visitorCount.textContent === '0' || likeCount.textContent === '0' || referralCount.textContent === '0')) {
+              animateReferidosCounters();
+            }
+          }
+        }
+        
+        // Añadir listener de scroll con throttling
+        let scrollTimeout;
+        window.addEventListener('scroll', function() {
+          if (scrollTimeout) {
+            clearTimeout(scrollTimeout);
+          }
+          scrollTimeout = setTimeout(handleScrollAnimation, 100);
+        });
+        
+        // Efectos de hover mejorados para las tarjetas de contadores
+        document.querySelectorAll('.grid.md\\:grid-cols-3 > div').forEach(card => {
+          card.addEventListener('mouseenter', () => {
+            if (typeof gsap !== 'undefined') {
+              gsap.to(card, { 
+                y: -8, 
+                scale: 1.02, 
+                duration: 0.3, 
+                ease: 'power2.out' 
+              });
+            }
+          });
+          
+          card.addEventListener('mouseleave', () => {
+            if (typeof gsap !== 'undefined') {
+              gsap.to(card, { 
+                y: 0, 
+                scale: 1, 
+                duration: 0.3, 
+                ease: 'power2.out' 
+              });
+            }
+          });
+        });
+        
+        // Efectos especiales para las tarjetas de referidos
+        document.querySelectorAll('.bg-white.dark\\:bg-gray-800.rounded-2xl.p-6.shadow-lg').forEach(card => {
+          card.addEventListener('mouseenter', () => {
+            if (typeof gsap !== 'undefined') {
+              gsap.to(card, { 
+                y: -12, 
+                scale: 1.03, 
+                duration: 0.4, 
+                ease: 'power2.out' 
+              });
+            }
+          });
+          
+          card.addEventListener('mouseleave', () => {
+            if (typeof gsap !== 'undefined') {
+              gsap.to(card, { 
+                y: 0, 
+                scale: 1, 
+                duration: 0.4, 
+                ease: 'power2.out' 
+              });
+            }
+          });
+        });
+        
+        // Animación de entrada para la sección de referidos
+        if (typeof gsap !== 'undefined') {
+          gsap.from('.bg-gradient-to-r.from-primary\\/10', {
+            scrollTrigger: {
+              trigger: '.bg-gradient-to-r.from-primary\\/10',
+              start: 'top 80%',
+              toggleActions: 'play none none reverse'
+            },
+            duration: 1,
+            y: 50,
+            opacity: 0,
+            ease: 'power2.out'
+          });
+        }
       });
     </script>
 <style>
@@ -1021,6 +1220,79 @@
         box-sizing: border-box;
       }
       
+      /* Asegurar que los elementos decorativos de fondo sean completamente estáticos */
+      .absolute.inset-0.pointer-events-none {
+        pointer-events: none !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        z-index: 1 !important;
+      }
+      
+      /* Optimizaciones específicas para testimonios en móviles */
+      @media (max-width: 640px) {
+        .testimonial-card {
+          margin-bottom: 1rem;
+          max-width: 100%;
+        }
+        
+        .testimonial-card .text-sm {
+          font-size: 0.875rem;
+          line-height: 1.4;
+        }
+        
+        .testimonial-card .text-xs {
+          font-size: 0.75rem;
+        }
+        
+        .testimonial-card .text-lg {
+          font-size: 1rem;
+        }
+        
+        .testimonial-card .text-xl {
+          font-size: 1.125rem;
+        }
+        
+        .testimonial-card .text-2xl {
+          font-size: 1.25rem;
+        }
+        
+        /* Reducir padding en móviles */
+        .testimonial-card {
+          padding: 0.75rem;
+        }
+        
+        /* Ajustar espaciado entre elementos */
+        .testimonial-card .mb-3 {
+          margin-bottom: 0.5rem;
+        }
+        
+        .testimonio-card .mb-4 {
+          margin-bottom: 0.75rem;
+        }
+        
+        .testimonio-card .mb-6 {
+          margin-bottom: 1rem;
+        }
+      }
+      
+      .absolute.inset-0.pointer-events-none > div {
+        pointer-events: none !important;
+        position: absolute !important;
+        transform: none !important;
+        transition: none !important;
+        animation: none !important;
+      }
+      
+      /* Prevenir cualquier movimiento en elementos de fondo */
+      .absolute.inset-0.pointer-events-none > div:hover {
+        transform: none !important;
+        transition: none !important;
+        animation: none !important;
+      }
+      
       /* Prevenir scroll horizontal en móviles */
       @media (max-width: 640px) {
         body.modal-open {
@@ -1157,11 +1429,44 @@
 </a>
 </div>
 </section>
-<section class="py-20 bg-background-light dark:bg-background-dark">
-<div class="container mx-auto px-6 text-center">
-<h2 class="font-display font-bold text-3xl text-primary">Una Inversión en Tu Bienestar</h2>
-<p class="max-w-3xl mx-auto mt-4 text-lg">Más que una dieta, te ofrezco las herramientas y el conocimiento para construir hábitos saludables y duraderos, adaptados a tu ritmo de vida.</p>
-</div>
+<section class="py-24 bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/5 dark:bg-gray-900 relative overflow-hidden">
+  <!-- Elementos decorativos de fondo estáticos -->
+  <div class="absolute inset-0 pointer-events-none">
+    <div class="absolute top-0 left-0 w-72 h-72 bg-primary/20 rounded-full blur-3xl -translate-x-36 -translate-y-36"></div>
+    <div class="absolute bottom-0 right-0 w-96 h-96 bg-accent/15 rounded-full blur-3xl translate-x-48 translate-y-48"></div>
+  </div>
+  
+  <div class="container mx-auto px-6 text-center relative z-10">
+    <div class="max-w-4xl mx-auto">
+      <div class="inline-flex items-center gap-2 bg-primary/20 text-primary-700 px-4 py-2 rounded-full text-sm font-semibold mb-6">
+        <span class="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+        Nutrición Personalizada
+      </div>
+      <h2 class="font-display font-bold text-4xl md:text-5xl text-primary dark:text-primary-light mb-6 leading-tight">
+        Una Inversión en Tu 
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Bienestar</span>
+      </h2>
+      <p class="max-w-3xl mx-auto text-lg text-text-light dark:text-gray-200 leading-relaxed">
+        Más que una dieta, te ofrezco las herramientas y el conocimiento para construir hábitos saludables y duraderos, adaptados a tu ritmo de vida.
+      </p>
+      
+      <!-- Estadísticas rápidas -->
+      <div class="grid grid-cols-3 gap-8 mt-12 max-w-2xl mx-auto">
+        <div class="text-center">
+          <div class="text-3xl font-bold text-primary mb-1">5+</div>
+          <div class="text-sm text-text-muted">Años de Experiencia</div>
+        </div>
+        <div class="text-center">
+          <div class="text-3xl font-bold text-primary mb-1">200+</div>
+          <div class="text-sm text-text-muted">Clientes Atendidos</div>
+        </div>
+        <div class="text-center">
+          <div class="text-3xl font-bold text-primary mb-1">95%</div>
+          <div class="text-sm text-text-muted">Satisfacción</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 <section class="py-20" id="proceso">
 <div class="container mx-auto px-6">
@@ -1194,36 +1499,103 @@
 </div>
 </div>
 </section>
-<section class="py-20 bg-primary/5 dark:bg-background-dark" id="servicios">
-<div class="container mx-auto px-6">
-<div class="text-center mb-12 fade-in-up">
-<h2 class="font-display font-bold text-3xl md:text-4xl text-primary">Servicios Destacados</h2>
-<p class="mt-4 text-lg max-w-2xl mx-auto">Soluciones nutricionales para cada una de tus metas.</p>
-</div>
-<div class="grid md:grid-cols-3 gap-8">
-<div class="service-card bg-background-light dark:bg-background-dark/50 rounded-lg overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300 fade-in-up" style="animation-delay: 0.2s;">
-<img alt="Nutrición Deportiva" class="w-full h-56 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvkmxVH2FI-ceOe7g8so30tUqqJYk9ptI4R0sA5Gnd9O97SCcG50RXDD_mJWB9vJv-zLULRWDBSXupwHFamqKiR5fR2cKtrhhIo5F_lrBjpylIu83YjcXCMI8oTnDavCs8835oMXCc5aVeqreDXrh2om3rNInO994H2gPSocD6c_vEBs2aV0ugr26hK9pUr6Pz0q9blj9UYaQx705uFEIeiwJEQjXehu5QDwVoQsU73sqGhlRnkVhzKtSBwnYza7ZEzNpNd-mB1VNt"/>
-<div class="p-6">
-<h3 class="font-display font-bold text-xl mb-2">Nutrición Deportiva</h3>
-<p>Optimiza tu rendimiento, acelera tu recuperación y alcanza tu máximo potencial con un plan diseñado para atletas.</p>
-</div>
-</div>
-<div class="service-card bg-background-light dark:bg-background-dark/50 rounded-lg overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300 fade-in-up" style="animation-delay: 0.4s;">
-<img alt="Pérdida de Peso" class="w-full h-56 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOLucoMJkLqgg-9AnNlvJNNfE1GG4HRJW_JgCkaMNVjty2Wsj_a5N6V1eEOIGW1TNpIZe6uVoWgrPe-9r9Ep14avb07PEp6ejLH97oZxQ3aAF-Q6w3Fg52lN5cA93K6YvvSUcOQ8AjEV_f-cZef4ggNmHuKvxGUXCKqOiud_c5jxLlqzFb2fVP2kWHYLEstZ7vOVzirNu5Njbi8PVE8Mzu2NbRpJtFBBEIUOBmBRM4sOE-BF_bOCLlAkV0sRoF3rdBJGiQKOURoWUg"/>
-<div class="p-6">
-<h3 class="font-display font-bold text-xl mb-2">Pérdida de Peso</h3>
-<p>Alcanza tu peso ideal de forma saludable, sostenible y sin pasar hambre, mejorando tu salud y autoestima.</p>
-</div>
-</div>
-<div class="service-card bg-background-light dark:bg-background-dark/50 rounded-lg overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300 fade-in-up" style="animation-delay: 0.6s;">
-<img alt="Alimentación Saludable" class="w-full h-56 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJtOBcQh54JkhyRog4LJRnBbZlRLitZ-FJlSwCpCVKUiyDraaquw7cN_fuhdUBX9og9UYsDKrNygFDza6MFi-3qoZNb97ETZ_r-hylv_hgO6aUKci7jJId1dY-HpcGEV627HQKzrYbeI41hYZnZvHZxxHYHxZkuSpBrxL7ZxoyC5oXTpqDivnhHxhVfs7Wpy9K-gUIkWTCt_ESDjm0CmwDLmXrXRsr8FBvXGUIfzVZ_853-yRF2hppduyMjmSquz2NWx7ITpWmWwy8"/>
-<div class="p-6">
-<h3 class="font-display font-bold text-xl mb-2">Alimentación Saludable</h3>
-<p>Aprende a comer equilibrado, mejora tu energía y previene enfermedades construyendo una relación sana con la comida.</p>
-</div>
-</div>
-</div>
-</div>
+<section class="py-24 bg-gradient-to-br from-accent/10 via-primary/10 to-secondary/10 dark:bg-gray-900 relative overflow-hidden" id="servicios">
+  <!-- Elementos decorativos de fondo estáticos -->
+  <div class="absolute inset-0 pointer-events-none">
+    <div class="absolute top-0 right-0 w-96 h-96 bg-accent/20 rounded-full blur-3xl translate-x-48 -translate-y-48"></div>
+    <div class="absolute bottom-0 left-0 w-80 h-80 bg-primary/20 rounded-full blur-3xl -translate-x-40 translate-y-40"></div>
+    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-secondary/15 rounded-full blur-3xl"></div>
+  </div>
+  
+  <div class="container mx-auto px-6 relative z-10">
+    <div class="text-center mb-16 fade-in-up">
+      <div class="inline-flex items-center gap-2 bg-accent/20 text-accent-700 px-4 py-2 rounded-full text-sm font-semibold mb-6">
+        <span class="w-2 h-2 bg-accent rounded-full animate-pulse"></span>
+        Nuestros Servicios
+      </div>
+      <h2 class="font-display font-bold text-4xl md:text-5xl text-primary dark:text-primary-light mb-6">
+        Soluciones 
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Nutricionales</span>
+      </h2>
+      <p class="text-lg max-w-3xl mx-auto text-text-light dark:text-gray-200 leading-relaxed">
+        Soluciones nutricionales personalizadas para cada una de tus metas y objetivos de salud.
+      </p>
+    </div>
+    
+    <div class="grid md:grid-cols-3 gap-8">
+      <!-- Servicio 1: Nutrición Deportiva -->
+      <div class="service-card bg-gradient-to-br from-white via-primary/5 to-primary/10 dark:bg-gray-700 rounded-2xl overflow-hidden shadow-xl transform hover:-translate-y-3 transition-all duration-500 fade-in-up group hover:shadow-2xl" style="animation-delay: 0.2s;">
+        <div class="relative overflow-hidden">
+          <img alt="Nutrición Deportiva" class="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvkmxVH2FI-ceOe7g8so30tUqqJYk9ptI4R0sA5Gnd9O97SCcG50RXDD_mJWB9vJv-zLULRWDBSXupwHFamqKiR5fR2cKtrhhIo5F_lrBjpylIu83YjcXCMI8oTnDavCs8835oMXCc5aVeqreDXrh2om3rNInO994H2gPSocD6c_vEBs2aV0ugr26hK9pUr6Pz0q9blj9UYaQx705uFEIeiwJEQjXehu5QDwVoQsU73sqGhlRnkVhzKtSBwnYza7ZEzNpNd-mB1VNt"/>
+          <div class="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div class="absolute top-4 right-4 bg-primary text-white px-3 py-1 rounded-full text-sm font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+            Deportiva
+          </div>
+        </div>
+        <div class="p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center">
+              <span class="material-symbols-outlined text-white text-2xl">fitness_center</span>
+            </div>
+            <h3 class="font-display font-bold text-xl text-text-light dark:text-white">Nutrición Deportiva</h3>
+          </div>
+          <p class="text-text-light dark:text-gray-200 leading-relaxed mb-4">Optimiza tu rendimiento, acelera tu recuperación y alcanza tu máximo potencial con un plan diseñado para atletas.</p>
+          <div class="flex items-center gap-2 text-sm text-primary font-semibold">
+            <span class="w-2 h-2 bg-primary rounded-full"></span>
+            Ideal para atletas
+          </div>
+        </div>
+      </div>
+      
+      <!-- Servicio 2: Pérdida de Peso -->
+      <div class="service-card bg-gradient-to-br from-white via-secondary/5 to-secondary/10 dark:bg-gray-700 rounded-2xl overflow-hidden shadow-xl transform hover:-translate-y-3 transition-all duration-500 fade-in-up group hover:shadow-2xl" style="animation-delay: 0.4s;">
+        <div class="relative overflow-hidden">
+          <img alt="Pérdida de Peso" class="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOLucoMJkLqgg-9AnNlvJNNfE1GG4HRJW_JgCkaMNVjty2Wsj_a5N6V1eEOIGW1TNpIZe6uVoWgrPe-9r9Ep14avb07PEp6ejLH97oZxQ3aAF-Q6w3Fg52lN5cA93K6YvvSUcOQ8AjEV_f-cZef4ggNmHuKvxGUXCKqOiud_c5jxLlqzFb2fVP2kWHYLEstZ7vOVzirNu5Njbi8PVE8Mzu2NbRpJtFBBEIUOBmBRM4sOE-BF_bOCLlAkV0sRoF3rdBJGiQKOURoWUg"/>
+          <div class="absolute inset-0 bg-gradient-to-t from-secondary/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div class="absolute top-4 right-4 bg-secondary text-white px-3 py-1 rounded-full text-sm font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+            Saludable
+          </div>
+        </div>
+        <div class="p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-secondary to-secondary-dark rounded-xl flex items-center justify-center">
+              <span class="material-symbols-outlined text-white text-2xl">monitor_weight</span>
+            </div>
+            <h3 class="font-display font-bold text-xl text-text-light dark:text-white">Pérdida de Peso</h3>
+          </div>
+          <p class="text-text-light dark:text-gray-200 leading-relaxed mb-4">Alcanza tu peso ideal de forma saludable, sostenible y sin pasar hambre, mejorando tu salud y autoestima.</p>
+          <div class="flex items-center gap-2 text-sm text-secondary font-semibold">
+            <span class="w-2 h-2 bg-secondary rounded-full"></span>
+            Resultados duraderos
+          </div>
+        </div>
+      </div>
+      
+      <!-- Servicio 3: Alimentación Saludable -->
+      <div class="service-card bg-gradient-to-br from-white via-accent/5 to-accent/10 dark:bg-gray-700 rounded-2xl overflow-hidden shadow-xl transform hover:-translate-y-3 transition-all duration-500 fade-in-up group hover:shadow-2xl" style="animation-delay: 0.6s;">
+        <div class="relative overflow-hidden">
+          <img alt="Alimentación Saludable" class="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJtOBcQh54JkhyRog4LJRnBbZlRLitZ-FJlSwCpCVKUiyDraaquw7cN_fuhdUBX9og9UYsDKrNygFDza6MFi-3qoZNb97ETZ_r-hylv_hgO6aUKci7jJId1dY-HpcGEV627HQKzrYbeI41hYZnZvHZxxHYHxZkuSpBrxL7ZxoyC5oXTpqDivnhHxhVfs7Wpy9K-gUIkWTCt_ESDjm0CmwDLmXrXRsr8FBvXGUIfzVZ_853-yRF2hppduyMjmSquz2NWx7ITpWmWwy8"/>
+          <div class="absolute inset-0 bg-gradient-to-t from-accent/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div class="absolute top-4 right-4 bg-accent text-white px-3 py-1 rounded-full text-sm font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+            Balanceada
+          </div>
+        </div>
+        <div class="p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 bg-gradient-to-br from-accent to-accent-dark rounded-xl flex items-center justify-center">
+              <span class="material-symbols-outlined text-white text-2xl">restaurant</span>
+            </div>
+            <h3 class="font-display font-bold text-xl text-text-light dark:text-white">Alimentación Saludable</h3>
+          </div>
+          <p class="text-text-light dark:text-gray-200 leading-relaxed mb-4">Aprende a comer equilibrado, mejora tu energía y previene enfermedades construyendo una relación sana con la comida.</p>
+          <div class="flex items-center gap-2 text-sm text-accent font-semibold">
+            <span class="w-2 h-2 bg-accent rounded-full"></span>
+            Estilo de vida
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 
 <!-- Sección de Transformación Visual -->
@@ -1300,141 +1672,322 @@
   </div>
 </section>
 
-<section class="py-20" id="testimonios">
-<div class="container mx-auto px-6">
-<div class="text-center mb-12 fade-in-up">
-<h2 class="font-display font-bold text-3xl md:text-4xl text-primary">Historias que Inspiran</h2>
-<p class="mt-4 text-lg max-w-2xl mx-auto">Descubre cómo hemos ayudado a otros a transformar su vida a través de la nutrición.</p>
-</div>
+<section class="py-24 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 dark:bg-gray-800 relative overflow-hidden" id="testimonios">
+  <!-- Elementos decorativos de fondo estáticos -->
+  <div class="absolute inset-0 pointer-events-none">
+    <div class="absolute top-0 left-0 w-80 h-80 bg-primary/15 rounded-full blur-3xl -translate-x-40 -translate-y-40"></div>
+    <div class="absolute bottom-0 right-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl translate-x-48 translate-y-48"></div>
+    <div class="absolute top-1/2 right-1/4 w-64 h-64 bg-secondary/12 rounded-full blur-2xl translate-x-32 -translate-y-32"></div>
+    <div class="absolute bottom-1/3 left-1/3 w-48 h-48 bg-primary/8 rounded-full blur-2xl -translate-x-24 translate-y-24"></div>
+  </div>
+  
+  <div class="container mx-auto px-6 relative z-10">
+    <div class="text-center mb-16 fade-in-up">
+      <div class="inline-flex items-center gap-2 bg-primary/20 text-primary-700 dark:text-primary-light px-4 py-2 rounded-full text-sm font-semibold mb-6">
+        <span class="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+        Testimonios Reales
+      </div>
+      <h2 class="font-display font-bold text-4xl md:text-5xl text-primary dark:text-primary-light mb-6">
+        Historias que 
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Inspiran</span>
+      </h2>
+      <p class="text-lg max-w-3xl mx-auto text-text-light dark:text-gray-200 leading-relaxed">
+        Descubre cómo hemos ayudado a otros a transformar su vida a través de la nutrición personalizada.
+      </p>
+    </div>
 
 <!-- Testimonios Simples -->
-<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
   <!-- Testimonio 1 -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+  <div class="bg-gradient-to-br from-white via-primary/5 to-primary/10 dark:from-gray-800 dark:via-primary/10 dark:to-primary/15 rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 shadow-lg md:shadow-xl border border-primary/20 dark:border-primary/30 transform hover:scale-105 transition-all duration-300 group">
     <div class="text-center">
-      <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-        <span class="text-white text-xl font-bold">AP</span>
+      <div class="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 mx-auto mb-3 md:mb-4 lg:mb-6 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-md md:shadow-lg">
+        <span class="text-white text-lg md:text-xl lg:text-2xl font-bold">AP</span>
       </div>
-      <blockquote class="text-base italic mb-4 text-gray-700 dark:text-gray-300">
+      <blockquote class="text-sm md:text-base lg:text-lg italic mb-3 md:mb-4 lg:mb-6 text-text-light dark:text-gray-200 leading-relaxed">
         "Perdí 20kg de forma saludable. El plan personalizado fue perfecto para mi estilo de vida."
       </blockquote>
       <div class="text-center">
-        <p class="font-bold text-lg text-primary">Ana Pérez</p>
-        <p class="text-sm text-gray-600 dark:text-gray-400">Pérdida de Peso</p>
-        <div class="flex justify-center mt-2">
-          <span class="text-yellow-400">★★★★★</span>
+        <p class="font-bold text-base md:text-lg lg:text-xl text-primary dark:text-primary-light mb-1 md:mb-2">Ana Pérez</p>
+        <p class="text-xs md:text-sm text-text-muted dark:text-gray-400 mb-2 md:mb-3">Pérdida de Peso</p>
+        <div class="flex justify-center">
+          <span class="text-yellow-400 text-sm md:text-base lg:text-lg">★★★★★</span>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Testimonio 2 -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+  <div class="bg-gradient-to-br from-white via-accent/5 to-accent/10 dark:from-gray-800 dark:via-accent/10 dark:to-accent/15 rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 shadow-lg md:shadow-xl border border-accent/20 dark:border-accent/30 transform hover:scale-105 transition-all duration-300 group">
     <div class="text-center">
-      <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-accent to-accent-light flex items-center justify-center">
-        <span class="text-white text-xl font-bold">CG</span>
+      <div class="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 mx-auto mb-3 md:mb-4 lg:mb-6 rounded-full bg-gradient-to-br from-accent to-accent-light flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-md md:shadow-lg">
+        <span class="text-white text-lg md:text-xl lg:text-2xl font-bold">CG</span>
       </div>
-      <blockquote class="text-base italic mb-4 text-gray-700 dark:text-gray-300">
+      <blockquote class="text-sm md:text-base lg:text-lg italic mb-3 md:mb-4 lg:mb-6 text-text-light dark:text-gray-200 leading-relaxed">
         "Mi rendimiento deportivo mejoró un 40%. La nutrición fue clave para mis objetivos."
       </blockquote>
       <div class="text-center">
-        <p class="font-bold text-lg text-primary">Carlos Gómez</p>
-        <p class="text-sm text-gray-600 dark:text-gray-400">Nutrición Deportiva</p>
-        <div class="flex justify-center mt-2">
-          <span class="text-yellow-400">★★★★★</span>
+        <p class="font-bold text-base md:text-lg lg:text-xl text-primary dark:text-primary-light mb-1 md:mb-2">Carlos Gómez</p>
+        <p class="text-xs md:text-sm text-text-muted dark:text-gray-400 mb-2 md:mb-3">Nutrición Deportiva</p>
+        <div class="flex justify-center">
+          <span class="text-yellow-400 text-sm md:text-base lg:text-lg">★★★★★</span>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Testimonio 3 -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+  <div class="bg-gradient-to-br from-white via-secondary/5 to-secondary/10 dark:from-gray-800 dark:via-secondary/10 dark:to-secondary/15 rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 shadow-lg md:shadow-xl border border-secondary/20 dark:border-secondary/30 transform hover:scale-105 transition-all duration-300 group">
     <div class="text-center">
-      <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-secondary to-primary flex items-center justify-center">
-        <span class="text-white text-xl font-bold">SR</span>
+      <div class="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 mx-auto mb-3 md:mb-4 lg:mb-6 rounded-full bg-gradient-to-br from-secondary to-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-md md:shadow-lg">
+        <span class="text-white text-lg md:text-xl lg:text-2xl font-bold">SR</span>
       </div>
-      <blockquote class="text-base italic mb-4 text-gray-700 dark:text-gray-300">
+      <blockquote class="text-sm md:text-base lg:text-lg italic mb-3 md:mb-4 lg:mb-6 text-text-light dark:text-gray-200 leading-relaxed">
         "Aprendí a comer balanceado. Ahora tengo más energía y me siento mejor que nunca."
       </blockquote>
       <div class="text-center">
-        <p class="font-bold text-lg text-primary">Sofía Rodríguez</p>
-        <p class="text-sm text-gray-600 dark:text-gray-400">Alimentación Saludable</p>
-        <div class="flex justify-center mt-2">
-          <span class="text-yellow-400">★★★★★</span>
+        <p class="font-bold text-base md:text-lg lg:text-xl text-primary dark:text-primary-light mb-1 md:mb-2">Sofía Rodríguez</p>
+        <p class="text-xs md:text-sm text-text-muted dark:text-gray-400 mb-2 md:mb-3">Alimentación Saludable</p>
+        <div class="flex justify-center">
+          <span class="text-yellow-400 text-sm md:text-base lg:text-lg">★★★★★</span>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Testimonio 4 -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+  <div class="bg-gradient-to-br from-white via-primary/5 to-accent/10 dark:from-gray-800 dark:via-primary/10 dark:to-accent/15 rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 shadow-lg md:shadow-xl border border-primary/20 dark:border-primary/30 transform hover:scale-105 transition-all duration-300 group">
     <div class="text-center">
-      <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-        <span class="text-white text-xl font-bold">MR</span>
+      <div class="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 mx-auto mb-3 md:mb-4 lg:mb-6 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-md md:shadow-lg">
+        <span class="text-white text-lg md:text-xl lg:text-2xl font-bold">MR</span>
       </div>
-      <blockquote class="text-base italic mb-4 text-gray-700 dark:text-gray-300">
+      <blockquote class="text-sm md:text-base lg:text-lg italic mb-3 md:mb-4 lg:mb-6 text-text-light dark:text-gray-200 leading-relaxed">
         "El seguimiento personalizado fue increíble. Logré mis metas de forma sostenible."
       </blockquote>
       <div class="text-center">
-        <p class="font-bold text-lg text-primary">María Ruiz</p>
-        <p class="text-sm text-gray-600 dark:text-gray-400">Transformación</p>
-        <div class="flex justify-center mt-2">
-          <span class="text-yellow-400">★★★★★</span>
+        <p class="font-bold text-base md:text-lg lg:text-xl text-primary dark:text-primary-light mb-1 md:mb-2">María Ruiz</p>
+        <p class="text-xs md:text-sm text-text-muted dark:text-gray-400 mb-2 md:mb-3">Transformación</p>
+        <div class="flex justify-center">
+          <span class="text-yellow-400 text-sm md:text-base lg:text-lg">★★★★★</span>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Testimonio 5 -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+  <div class="bg-gradient-to-br from-white via-accent/5 to-secondary/10 dark:from-gray-800 dark:via-accent/10 dark:to-secondary/15 rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 shadow-lg md:shadow-xl border border-accent/20 dark:border-accent/30 transform hover:scale-105 transition-all duration-300 group">
     <div class="text-center">
-      <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-accent to-secondary flex items-center justify-center">
-        <span class="text-white text-xl font-bold">JL</span>
+      <div class="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 mx-auto mb-3 md:mb-4 lg:mb-6 rounded-full bg-gradient-to-br from-accent to-secondary flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-md md:shadow-lg">
+        <span class="text-white text-lg md:text-xl lg:text-2xl font-bold">JL</span>
       </div>
-      <blockquote class="text-base italic mb-4 text-gray-700 dark:text-gray-300">
+      <blockquote class="text-sm md:text-base lg:text-lg italic mb-3 md:mb-4 lg:mb-6 text-text-light dark:text-gray-200 leading-relaxed">
         "Como atleta, necesitaba optimizar mi nutrición. Los resultados superaron mis expectativas."
       </blockquote>
       <div class="text-center">
-        <p class="font-bold text-lg text-primary">Javier López</p>
-        <p class="text-sm text-gray-600 dark:text-gray-400">Atleta Profesional</p>
-        <div class="flex justify-center mt-2">
-          <span class="text-yellow-400">★★★★★</span>
+        <p class="font-bold text-base md:text-lg lg:text-xl text-primary dark:text-primary-light mb-1 md:mb-2">Javier López</p>
+        <p class="text-xs md:text-sm text-text-muted dark:text-gray-400 mb-2 md:mb-3">Atleta Profesional</p>
+        <div class="flex justify-center">
+          <span class="text-yellow-400 text-sm md:text-base lg:text-lg">★★★★★</span>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Testimonio 6 -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+  <div class="bg-gradient-to-br from-white via-secondary/5 to-accent/10 dark:from-gray-800 dark:via-secondary/10 dark:to-accent/15 rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 shadow-lg md:shadow-xl border border-secondary/20 dark:border-secondary/30 transform hover:scale-105 transition-all duration-300 group">
     <div class="text-center">
-      <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-secondary to-accent flex items-center justify-center">
-        <span class="text-white text-xl font-bold">LM</span>
+      <div class="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 mx-auto mb-3 md:mb-4 lg:mb-6 rounded-full bg-gradient-to-br from-secondary to-accent flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-md md:shadow-lg">
+        <span class="text-white text-lg md:text-xl lg:text-2xl font-bold">LM</span>
       </div>
-      <blockquote class="text-base italic mb-4 text-gray-700 dark:text-gray-300">
+      <blockquote class="text-sm md:text-base lg:text-lg italic mb-3 md:mb-4 lg:mb-6 text-text-light dark:text-gray-200 leading-relaxed">
         "La consulta fue muy profesional. Me ayudó a entender mejor mi alimentación."
       </blockquote>
       <div class="text-center">
-        <p class="font-bold text-lg text-primary">Laura Martínez</p>
-        <p class="text-sm text-gray-600 dark:text-gray-400">Consulta Nutricional</p>
-        <div class="flex justify-center mt-2">
-          <span class="text-yellow-400">★★★★★</span>
+        <p class="font-bold text-base md:text-lg lg:text-xl text-primary dark:text-primary-light mb-1 md:mb-2">Laura Martínez</p>
+        <p class="text-xs md:text-sm text-text-muted dark:text-gray-400 mb-2 md:mb-3">Consulta Nutricional</p>
+        <div class="flex justify-center">
+          <span class="text-yellow-400 text-sm md:text-base lg:text-lg">★★★★★</span>
         </div>
       </div>
     </div>
   </div>
-</div>
-</div>
-</section>
-<section class="py-20 bg-primary/10 dark:bg-background-dark/50" id="contacto">
-<div class="container mx-auto px-6 text-center fade-in-up">
-<h2 class="font-display font-bold text-3xl md:text-4xl text-primary">Da el Primer Paso Hoy</h2>
-<p class="mt-4 text-lg max-w-2xl mx-auto">Recibe consejos y recetas saludables en tu correo. ¡Es gratis!</p>
-<form class="mt-8 max-w-lg mx-auto flex flex-col sm:flex-row gap-4">
-<input class="flex-grow px-4 py-3 rounded-lg border-2 border-primary/20 focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300 bg-background-light dark:bg-background-dark/50 hover:border-primary/40 focus:shadow-lg" placeholder="Tu correo electrónico" type="email" required/>
-<button class="bg-gradient-to-r from-accent to-accent-light text-white px-8 py-3 rounded-lg font-bold hover:shadow-lg transition-all duration-300 transform hover:scale-105 shadow-md" type="submit"> Suscribirme </button>
-</form>
+  </div>
 </div>
 </section>
+
+<!-- Sección de Estadísticas y Referidos -->
+<section class="py-16 md:py-20 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 dark:from-background-dark/90 relative overflow-hidden">
+  <!-- Elementos decorativos de fondo estáticos -->
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute -top-20 -right-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-20 -left-20 w-32 h-32 bg-accent/10 rounded-full blur-2xl"></div>
+    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-secondary/5 rounded-full blur-3xl"></div>
+  </div>
+  
+  <div class="container mx-auto px-4 md:px-6 relative z-10">
+    <!-- Contador de visitantes y likes -->
+    <div class="text-center mb-12 md:mb-16 fade-in-up">
+      <h2 class="font-display font-bold text-2xl md:text-3xl lg:text-4xl text-primary mb-3 md:mb-4">¡Únete a Nuestra Comunidad!</h2>
+      <p class="text-base md:text-lg max-w-2xl mx-auto text-text-muted">Más de 200 personas ya han transformado su vida con nosotros</p>
+    </div>
+    
+    <!-- Contadores dinámicos -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 lg:gap-8 mb-12 md:mb-16">
+      <div class="text-center bg-white/90 dark:bg-gray-800 rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 shadow-lg md:shadow-xl border border-primary/20 transform hover:scale-105 transition-all duration-300 backdrop-blur-sm">
+        <div class="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 mx-auto mb-3 md:mb-4 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center">
+          <span class="material-symbols-outlined text-white text-lg md:text-xl lg:text-2xl">visibility</span>
+        </div>
+        <div class="text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-1 md:mb-2" id="visitorCount">0</div>
+        <div class="text-sm md:text-base text-text-muted font-semibold">Visitantes Hoy</div>
+        <div class="text-xs md:text-sm text-accent mt-1 md:mt-2">+12 desde ayer</div>
+      </div>
+      
+      <div class="text-center bg-gray-50 dark:bg-gray-800 rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 shadow-lg md:shadow-xl border border-secondary/20 transform hover:scale-105 transition-all duration-300">
+        <div class="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 mx-auto mb-3 md:mb-4 bg-gradient-to-br from-secondary to-accent rounded-full flex items-center justify-center">
+          <span class="material-symbols-outlined text-white text-lg md:text-xl lg:text-2xl">favorite</span>
+        </div>
+        <div class="text-2xl md:text-3xl lg:text-4xl font-bold text-secondary mb-1 md:mb-2" id="likeCount">0</div>
+        <div class="text-sm md:text-base text-text-muted font-semibold">Me Gusta</div>
+        <div class="text-xs md:text-sm text-accent mt-1 md:mt-2">+8 esta semana</div>
+      </div>
+      
+      <div class="text-center bg-gray-50 dark:bg-gray-800 rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 shadow-lg md:shadow-xl border border-accent/20 transform hover:scale-105 transition-all duration-300">
+        <div class="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 mx-auto mb-3 md:mb-4 bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center">
+          <span class="material-symbols-outlined text-white text-lg md:text-xl lg:text-2xl">groups</span>
+        </div>
+        <div class="text-2xl md:text-3xl lg:text-4xl font-bold text-accent mb-1 md:mb-2" id="referralCount">0</div>
+        <div class="text-sm md:text-base text-text-muted font-semibold">Referidos Exitosos</div>
+        <div class="text-xs md:text-sm text-accent mt-1 md:mt-2">+3 este mes</div>
+      </div>
+    </div>
+    
+    <!-- Sistema de Referidos con Descuentos -->
+    <div class="bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 rounded-2xl md:rounded-3xl p-4 md:p-6 lg:p-8 xl:p-12 border-2 border-primary/20 shadow-xl md:shadow-2xl">
+      <div class="text-center mb-8 md:mb-12">
+        <h3 class="font-display font-bold text-xl md:text-2xl lg:text-3xl text-primary mb-3 md:mb-4">🎉 ¡Programa de Referidos Exclusivo!</h3>
+        <p class="text-sm md:text-base lg:text-lg text-text-muted max-w-3xl mx-auto">Ayúdanos a crecer y obtén descuentos increíbles por cada persona que refieras</p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 lg:gap-8">
+        <!-- Referir 5 personas -->
+        <div class="bg-white/90 dark:bg-gray-800 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg border-2 border-primary/30 transform hover:scale-105 transition-all duration-300 group backdrop-blur-sm">
+          <div class="text-center">
+            <div class="w-16 h-16 md:w-18 md:h-18 lg:w-20 lg:h-20 mx-auto mb-3 md:mb-4 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <span class="material-symbols-outlined text-white text-2xl md:text-3xl">share</span>
+            </div>
+            <h4 class="font-display font-bold text-lg md:text-xl text-primary mb-2 md:mb-3">Referir 5 Personas</h4>
+            <div class="bg-gradient-to-r from-primary to-secondary text-white px-3 py-1 md:px-4 md:py-2 rounded-full text-lg md:text-xl lg:text-2xl font-bold mb-3 md:mb-4 inline-block">
+              25% DESCUENTO
+            </div>
+            <p class="text-xs md:text-sm text-text-muted mb-3 md:mb-4">Por cada 5 personas que refieras y que agenden una consulta, obtienes un 25% de descuento en tu próxima consulta</p>
+            <div class="flex items-center justify-center gap-2 text-xs md:text-sm text-accent font-semibold">
+              <span class="material-symbols-outlined text-sm md:text-base lg:text-lg">verified</span>
+              ¡Sin límite de referidos!
+            </div>
+          </div>
+        </div>
+        
+        <!-- Foto antes y después -->
+        <div class="bg-white/90 dark:bg-gray-800 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg border-2 border-accent/30 transform hover:scale-105 transition-all duration-300 group backdrop-blur-sm">
+          <div class="text-center">
+            <div class="w-16 h-16 md:w-18 md:h-18 lg:w-20 lg:h-20 mx-auto mb-3 md:mb-4 bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <span class="material-symbols-outlined text-white text-2xl md:text-3xl">photo_camera</span>
+            </div>
+            <h4 class="font-display font-bold text-lg md:text-xl text-primary mb-2 md:mb-3">Foto Antes y Después</h4>
+            <div class="bg-gradient-to-r from-accent to-primary text-white px-3 py-1 md:px-4 md:py-2 rounded-full text-lg md:text-xl lg:text-2xl font-bold mb-3 md:mb-4 inline-block">
+              15% DESCUENTO
+            </div>
+            <p class="text-xs md:text-sm text-text-muted mb-3 md:mb-4">Comparte tu transformación con una foto antes y después de completar tu plan nutricional</p>
+            <div class="flex items-center justify-center gap-2 text-xs md:text-sm text-accent font-semibold">
+              <span class="material-symbols-outlined text-sm md:text-base lg:text-lg">camera_alt</span>
+              ¡Inspira a otros!
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Información adicional -->
+      <div class="text-center mt-6 md:mt-8">
+        <p class="text-xs md:text-sm text-text-muted">
+          <span class="material-symbols-outlined text-accent text-sm md:text-base align-middle">info</span>
+          Los descuentos se aplican automáticamente en tu próxima consulta
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Sección de Formulario de Consulta -->
+<section class="py-16 md:py-20 bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 dark:from-background-dark/80 relative overflow-hidden">
+  <!-- Elementos decorativos de fondo estáticos -->
+  <div class="absolute inset-0 pointer-events-none">
+    <div class="absolute top-0 left-0 w-64 h-64 bg-primary/15 rounded-full blur-3xl -translate-x-32 -translate-y-32"></div>
+    <div class="absolute bottom-0 right-0 w-80 h-80 bg-accent/10 rounded-full blur-3xl translate-x-40 translate-y-40"></div>
+  </div>
+  
+  <div class="container mx-auto px-4 md:px-6 text-center relative z-10">
+    <div class="max-w-4xl mx-auto fade-in-up">
+      <h2 class="font-display font-bold text-2xl md:text-3xl lg:text-4xl text-primary mb-3 md:mb-4">Solicita tu Consulta Personalizada</h2>
+      <p class="text-base md:text-lg max-w-2xl mx-auto mb-6 md:mb-8 text-text-muted">
+        Completa nuestro formulario detallado para recibir una evaluación nutricional personalizada y un plan adaptado a tus necesidades específicas.
+      </p>
+      
+      <!-- Botón del formulario con diseño atractivo -->
+      <div class="bg-white/90 dark:bg-gray-800 rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8 shadow-xl md:shadow-2xl border border-primary/20 backdrop-blur-sm">
+        <div class="mb-4 md:mb-6">
+          <div class="w-16 h-16 md:w-18 md:h-18 lg:w-20 lg:h-20 mx-auto mb-3 md:mb-4 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center">
+            <span class="material-symbols-outlined text-white text-2xl md:text-3xl">assignment</span>
+          </div>
+          <h3 class="font-display font-bold text-xl md:text-2xl text-primary mb-1 md:mb-2">Formulario de Evaluación</h3>
+          <p class="text-sm md:text-base text-text-muted">Toma 5 minutos completar</p>
+        </div>
+        
+        <a href="https://forms.office.com/r/wdXR02F2NJ" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           class="inline-flex items-center gap-2 md:gap-3 bg-gradient-to-r from-accent to-accent-light text-white px-6 py-3 md:px-8 md:py-4 rounded-full font-bold text-base md:text-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 shadow-lg group">
+          <span class="material-symbols-outlined text-lg md:text-xl">edit_document</span>
+          <span class="hidden sm:inline">Completar Formulario</span>
+          <span class="sm:hidden">Completar</span>
+          <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform text-lg md:text-xl">arrow_forward</span>
+        </a>
+        
+        <p class="text-xs md:text-sm text-text-muted mt-3 md:mt-4">
+          <span class="material-symbols-outlined text-accent text-sm md:text-base align-middle">security</span>
+          Tus datos están protegidos y solo serán utilizados para tu consulta nutricional
+        </p>
+      </div>
+      
+      <!-- Información adicional -->
+      <div class="mt-6 md:mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 text-center">
+        <div class="flex flex-col items-center">
+          <div class="w-10 h-10 md:w-12 md:h-12 bg-primary/10 rounded-full flex items-center justify-center mb-2">
+            <span class="material-symbols-outlined text-primary text-lg md:text-xl">schedule</span>
+          </div>
+          <h4 class="font-semibold text-primary text-sm md:text-base">Respuesta Rápida</h4>
+          <p class="text-xs md:text-sm text-text-muted">Te contactamos en 24-48 horas</p>
+        </div>
+        
+        <div class="flex flex-col items-center">
+          <div class="w-10 h-10 md:w-12 md:h-12 bg-secondary/10 rounded-full flex items-center justify-center mb-2">
+            <span class="material-symbols-outlined text-secondary text-lg md:text-xl">person</span>
+          </div>
+          <h4 class="font-semibold text-primary text-sm md:text-base">Consulta Personalizada</h4>
+          <p class="text-xs md:text-sm text-text-muted">Evaluación individual detallada</p>
+        </div>
+        
+        <div class="flex flex-col items-center">
+          <div class="w-10 h-10 md:w-12 md:h-12 bg-accent/10 rounded-full flex items-center justify-center mb-2">
+            <span class="material-symbols-outlined text-accent text-lg md:text-xl">verified</span>
+          </div>
+          <h4 class="font-semibold text-primary text-sm md:text-base">Sin Compromiso</h4>
+          <p class="text-xs md:text-sm text-text-muted">Primera consulta informativa gratuita</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 </main>
 <footer class="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white py-12">
 <div class="container mx-auto px-6">
