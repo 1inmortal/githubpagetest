@@ -84,8 +84,98 @@
     
     <!-- WebGL Shaders System -->
     <link rel="stylesheet" href="src/assets/css/webgl-shaders.css">
-    <script src="src/assets/js/webgl-shaders.js"></script>
-    <script src="src/assets/js/shader-controller.js"></script>
+    <script>
+        // WebGL Compatibility Check - Run before shader scripts load
+        function checkWebGLCompatibility() {
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                
+                if (!gl) {
+                    console.warn('[INMORTAL_OS] WebGL not supported, disabling shader effects');
+                    return false;
+                }
+                
+                // Check for fwidth support
+                const testShader = gl.createShader(gl.FRAGMENT_SHADER);
+                gl.shaderSource(testShader, `
+                    precision mediump float;
+                    varying vec2 vUv;
+                    void main() {
+                        float test = fwidth(vUv.x);
+                        gl_FragColor = vec4(1.0);
+                    }
+                `);
+                gl.compileShader(testShader);
+                
+                const isCompatible = gl.getShaderParameter(testShader, gl.COMPILE_STATUS);
+                gl.deleteShader(testShader);
+                
+                if (!isCompatible) {
+                    console.warn('[INMORTAL_OS] fwidth function not supported, using fallback rendering');
+                    return false;
+                }
+                
+                return true;
+                
+            } catch (error) {
+                console.warn('[INMORTAL_OS] WebGL compatibility check failed:', error);
+                return false;
+            }
+        }
+        
+        // Set global flag for shader compatibility
+        window.WEBGL_SHADERS_ENABLED = checkWebGLCompatibility();
+        
+        // Override shader functions if not compatible
+        if (!window.WEBGL_SHADERS_ENABLED) {
+            // Override shader compilation to prevent errors
+            window.addEventListener('DOMContentLoaded', function() {
+                // Disable any shader elements
+                const shaderElements = document.querySelectorAll('[data-shader], .shader-container, .webgl-canvas');
+                shaderElements.forEach(el => {
+                    el.style.display = 'none';
+                });
+                
+                // Override shader controller if it exists
+                if (window.shaderController) {
+                    window.shaderController.disable = function() {
+                        console.log('[INMORTAL_OS] Shader controller disabled due to compatibility issues');
+                    };
+                    window.shaderController.init = function() {
+                        console.log('[INMORTAL_OS] Shader initialization skipped due to compatibility issues');
+                    };
+                }
+            });
+        }
+        
+        // Error handler for any remaining shader errors
+        window.addEventListener('error', function(e) {
+            if (e.message && (e.message.includes('fwidth') || e.message.includes('shader'))) {
+                console.warn('[INMORTAL_OS] Shader error intercepted:', e.message);
+                e.preventDefault();
+                return true;
+            }
+        });
+    </script>
+    <script>
+        // Override WebGL context creation to prevent shader errors
+        if (!window.WEBGL_SHADERS_ENABLED) {
+            const originalCreateShader = WebGLRenderingContext.prototype.createShader;
+            WebGLRenderingContext.prototype.createShader = function(type) {
+                const shader = originalCreateShader.call(this, type);
+                const originalCompileShader = this.compileShader;
+                this.compileShader = function(shader) {
+                    // Skip compilation if shaders are disabled
+                    console.log('[INMORTAL_OS] Shader compilation skipped due to compatibility issues');
+                    return;
+                };
+                return shader;
+            };
+        }
+    </script>
+    <script src="src/assets/js/webgl-shaders.js" onerror="console.warn('[INMORTAL_OS] WebGL shaders failed to load, continuing without shader effects')"></script>
+    <script src="src/assets/js/shader-controller.js" onerror="console.warn('[INMORTAL_OS] Shader controller failed to load, continuing without shader effects')"></script>
     
     <!-- GSAP Libraries con carga robusta -->
     <script>
@@ -530,13 +620,6 @@
     <div class="geometric-background">
         <svg class="geometric-svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid meet">
             <g id="grid-lines"></g>
-            <g id="circles-outline"></g>
-            <g id="circles-filled">
-                <clipPath id="right-half">
-                    <rect x="960" y="0" width="960" height="1080" />
-                </clipPath>
-                <g clip-path="url(#right-half)"></g>
-            </g>
             
             <!-- Textos principales - Responsive -->
             <text class="geometric-text geometric-text-main" x="100" y="100">EL PROCESO</text>
@@ -594,9 +677,9 @@
             <div class="hero-container">
                 <div class="hero-content reveal-up">
                     <h1 id="futuristic-title">
-                        INGENIERO FULL-STACK | DESARROLLADOR DE SOLUCIONES DIGITALES
+                        INGENIERO FULL-STACK
                     </h1>
-                    <p class="hero-description">Especialista en Web 3.0, Inteligencia Artificial y Experiencias Inmersivas. +5 años transformando ideas en productos digitales que superan expectativas y definen el futuro de la tecnología.</p>
+                    <p class="hero-description">Web 3.0 • IA • Experiencias Inmersivas</p>
                     <div class="hero-stats">
                         <div class="stat-item">
                             <span class="stat-number">20+</span>
@@ -612,9 +695,9 @@
                         </div>
                     </div>
                     <div class="hero-cta-container">
-                        <a href="#projects" class="cta-button primary">Ver Portfolio</a>
-                        <a href="src/pdf/CV-ESPINOSA.pdf" class="cta-button secondary" download>Descargar CV</a>
-                        <a href="#contact" class="cta-button tertiary">Oportunidades</a>
+                        <a href="#projects" class="cta-button primary">Portfolio</a>
+                        <a href="#about" class="cta-button secondary">Conóceme</a>
+                        <a href="#contact" class="cta-button tertiary">Contacto</a>
                     </div>
                 </div>
             </div>
@@ -627,7 +710,6 @@
     <!-- Section Indicators -->
     <div class="section-indicators" id="sectionIndicators">
         <div class="section-indicator" data-section="Inicio" data-target="home"></div>
-        <div class="section-indicator" data-section="Quiénes somos" data-target="quienes-somos"></div>
         <div class="section-indicator" data-section="Acerca de" data-target="about"></div>
         <div class="section-indicator" data-section="Misión" data-target="mission"></div>
         <div class="section-indicator" data-section="Habilidades" data-target="skills"></div>
@@ -640,114 +722,80 @@
         ↑
     </button>
 
-    <!-- Quiénes Somos Section -->
-    <section id="quienes-somos" class="section section-about grid-pattern geometric-bg reveal">
-        <div class="section-content">
-            <div class="about-container reveal-up">
-                <div class="section-header">
-                    <h2 class="section-title">Quiénes somos</h2>
-                    <p class="section-subtitle">Pasión por crear soluciones digitales con impacto real</p>
-                </div>
-                <div class="about-content">
-                    <div class="about-summary card-minimal glow-subtle">
-                        <p>
-                            Somos un equipo enfocado en el desarrollo full‑stack, experiencias web inmersivas y
-                            soluciones impulsadas por IA. Unimos diseño, ingeniería y estrategia para transformar
-                            ideas en productos digitales de alto rendimiento, accesibles y seguros.
-                        </p>
-                        <div class="about-highlights">
-                            <span class="achievement btn-pill">Orientados a resultados</span>
-                            <span class="achievement btn-pill">Calidad y rendimiento</span>
-                            <span class="achievement btn-pill">Transparencia y colaboración</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <section id="about" class="section section-2 grid-pattern geometric-bg reveal">
         <div class="section-content">
             <!-- About Section -->
             <div class="about-container reveal-up">
                 <div class="section-header">
-                    <h2 class="section-title">Mi Historia Profesional</h2>
-                    <p class="section-subtitle">Cronología de experiencia y especialización técnica</p>
+                    <h2 class="section-title">Acerca de Mí</h2>
+                    <p class="section-subtitle">Mi historia profesional y especialización técnica</p>
+                </div>
+                
+                <!-- Resumen compacto -->
+                <div class="about-summary-compact">
+                    <div class="summary-card">
+                        <div class="summary-icon">🚀</div>
+                        <h3>Desarrollo Full-Stack</h3>
+                        <p>Experiencias web inmersivas y soluciones impulsadas por IA</p>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-icon">⚡</div>
+                        <h3>Alto Rendimiento</h3>
+                        <p>Productos digitales accesibles, seguros y escalables</p>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-icon">🎯</div>
+                        <h3>Orientados a Resultados</h3>
+                        <p>Calidad, transparencia y colaboración estratégica</p>
+                    </div>
                 </div>
                 
                                  <div class="about-content">
-                    <div class="timeline-wrapper">
-                        <button class="timeline-arrow prev" aria-label="Anterior" type="button">‹</button>
-                        <div class="about-timeline">
-                            <div class="timeline-item card-minimal glow-subtle" data-timeline-modal="senior-engineer">
-                                <div class="timeline-year">2019 - 2024</div>
-                                <div class="timeline-content">
-                                    <h3 class="timeline-title accent-line">Ingeniero Full-Stack Senior</h3>
-                                    <p class="timeline-company">Freelance & Proyectos Independientes</p>
-                                    <p class="timeline-description">Desarrollo de aplicaciones web complejas, integración de APIs, implementación de soluciones de IA y experiencias inmersivas 3D.</p>
-                                    <div class="timeline-achievements">
-                                        <span class="achievement btn-pill">+50 Proyectos Completados</span>
-                                        <span class="achievement btn-pill">+15 Tecnologías Dominadas</span>
-                                        <span class="achievement btn-pill">100% Satisfacción Cliente</span>
-                                    </div>
-                                    <div class="divider-elegant"></div>
-                                    <button class="timeline-details-btn">Ver Detalles</button>
-                                </div>
-                            </div>
-                            <div class="timeline-item card-minimal glow-subtle" data-timeline-modal="frontend-dev">
-                                <div class="timeline-year">2017 - 2019</div>
-                                <div class="timeline-content">
-                                    <h3 class="timeline-title accent-line">Desarrollador Frontend</h3>
-                                    <p class="timeline-company">Proyectos de Inicio de Carrera</p>
-                                    <p class="timeline-description">Especialización en React, Vue.js y desarrollo de interfaces de usuario modernas y responsivas.</p>
-                                    <div class="timeline-achievements">
-                                        <span class="achievement btn-pill">Certificaciones Técnicas</span>
-                                        <span class="achievement btn-pill">Portfolio Diversificado</span>
-                                    </div>
-                                    <div class="divider-elegant"></div>
-                                    <button class="timeline-details-btn">Ver Detalles</button>
-                                </div>
-                            </div>
-                            <div class="timeline-item card-minimal glow-subtle" data-timeline-modal="student">
-                                <div class="timeline-year">2015 - 2017</div>
-                                <div class="timeline-content">
-                                    <h3 class="timeline-title accent-line">Estudiante de Ingeniería de Sistemas</h3>
-                                    <p class="timeline-company">Formación Académica</p>
-                                    <p class="timeline-description">Fundamentos sólidos en programación, bases de datos, arquitectura de software y metodologías de desarrollo.</p>
-                                    <div class="timeline-achievements">
-                                        <span class="achievement btn-pill">Título Profesional</span>
-                                        <span class="achievement btn-pill">Proyectos Académicos</span>
-                                    </div>
-                                    <div class="divider-elegant"></div>
-                                    <button class="timeline-details-btn">Ver Detalles</button>
-                                </div>
+                    <!-- Timeline compacto -->
+                    <div class="timeline-compact">
+                        <div class="timeline-item-compact">
+                            <div class="timeline-year-compact">2019 - 2024</div>
+                            <div class="timeline-content-compact">
+                                <h3>Ingeniero Full-Stack Senior</h3>
+                                <p>+50 Proyectos • +15 Tecnologías • 100% Satisfacción</p>
                             </div>
                         </div>
-                        <button class="timeline-arrow next" aria-label="Siguiente" type="button">›</button>
+                        <div class="timeline-item-compact">
+                            <div class="timeline-year-compact">2017 - 2019</div>
+                            <div class="timeline-content-compact">
+                                <h3>Desarrollador Frontend</h3>
+                                <p>React • Vue.js • Interfaces Modernas</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item-compact">
+                            <div class="timeline-year-compact">2015 - 2017</div>
+                            <div class="timeline-content-compact">
+                                <h3>Ingeniería de Sistemas</h3>
+                                <p>Fundamentos • Arquitectura • Metodologías</p>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="about-specialties">
-                        <h3 class="specialties-title">Especialidades Técnicas</h3>
-                        <div class="specialties-grid">
-                            <div class="specialty-item card-minimal glow-subtle gradient-overlay">
-                                <div class="specialty-icon">🌐</div>
-                                <h4 class="accent-line">Web 3.0 & Blockchain</h4>
-                                <p>Desarrollo de aplicaciones descentralizadas y experiencias web inmersivas</p>
+                    <!-- Especialidades compactas -->
+                    <div class="specialties-compact">
+                        <h3 class="specialties-title">Especialidades</h3>
+                        <div class="specialties-grid-compact">
+                            <div class="specialty-compact">
+                                <span class="specialty-icon">🌐</span>
+                                <span class="specialty-text">Web 3.0 & Blockchain</span>
                             </div>
-                            <div class="specialty-item card-minimal glow-subtle gradient-overlay">
-                                <div class="specialty-icon">🤖</div>
-                                <h4 class="accent-line">Inteligencia Artificial</h4>
-                                <p>Integración de IA en aplicaciones web y automatización inteligente</p>
+                            <div class="specialty-compact">
+                                <span class="specialty-icon">🤖</span>
+                                <span class="specialty-text">Inteligencia Artificial</span>
                             </div>
-                            <div class="specialty-item card-minimal glow-subtle gradient-overlay">
-                                <div class="specialty-icon">🎮</div>
-                                <h4 class="accent-line">Experiencias 3D</h4>
-                                <p>Desarrollo de interfaces 3D inmersivas y realidad aumentada</p>
+                            <div class="specialty-compact">
+                                <span class="specialty-icon">🎮</span>
+                                <span class="specialty-text">Experiencias 3D</span>
                             </div>
-                            <div class="specialty-item card-minimal glow-subtle gradient-overlay">
-                                <div class="specialty-icon">⚡</div>
-                                <h4 class="accent-line">Performance & Optimización</h4>
-                                <p>Optimización de rendimiento y escalabilidad de aplicaciones</p>
+                            <div class="specialty-compact">
+                                <span class="specialty-icon">⚡</span>
+                                <span class="specialty-text">Performance & Optimización</span>
                             </div>
                         </div>
                     </div>
@@ -1140,118 +1188,28 @@
     <!-- Portfolio de Proyectos Section -->
     <section id="projects" class="section section-6">
         <div class="section-content">
-            <div class="projects-showcase reveal-up">
+            <div class="projects-redirect-container reveal-up">
                 <div class="section-header">
                     <h2 class="section-title">Portfolio de Proyectos</h2>
-                    <p class="section-subtitle">Innovación digital que transforma ideas en realidad</p>
+                    <p class="section-subtitle">Descubre mis trabajos y evidencias técnicas</p>
                 </div>
-                <div class="projects-grid">
-                    <div class="project-card">
-                        <div class="project-image">
-                            <div class="project-icon">🚀</div>
-                            <div class="project-overlay">
-                                <a href="#" class="project-link">Ver Proyecto</a>
-                            </div>
+                
+                <div class="projects-redirect-content">
+                    <div class="redirect-card">
+                        <div class="redirect-icon"></div>
+                        <h3>Explora mi Portfolio</h3>
+                        <p>Accede a mi colección completa de proyectos, evidencias técnicas y demostraciones interactivas</p>
+                        <div class="redirect-features">
+                            <span class="feature-tag">Proyectos Web</span>
+                            <span class="feature-tag">Evidencias Técnicas</span>
+                            <span class="feature-tag">Laboratorio</span>
+                            <span class="feature-tag">Proyecto X</span>
                         </div>
-                        <div class="project-content">
-                            <h3 class="project-title">EcoVerse Platform</h3>
-                            <p class="project-description">Plataforma Web 3.0 para gestión sostenible de recursos naturales con blockchain</p>
-                            <div class="project-tech">
-                                <span class="tech-tag">React</span>
-                                <span class="tech-tag">Solidity</span>
-                                <span class="tech-tag">IPFS</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="project-card">
-                        <div class="project-image">
-                            <div class="project-icon">🤖</div>
-                            <div class="project-overlay">
-                                <a href="#" class="project-link">Ver Proyecto</a>
-                            </div>
-                        </div>
-                        <div class="project-content">
-                            <h3 class="project-title">AI Creative Studio</h3>
-                            <p class="project-description">Estudio creativo impulsado por IA para generación de contenido multimedia</p>
-                            <div class="project-tech">
-                                <span class="tech-tag">Vue.js</span>
-                                <span class="tech-tag">OpenAI</span>
-                                <span class="tech-tag">Three.js</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="project-card">
-                        <div class="project-image">
-                            <div class="project-icon">🎮</div>
-                            <div class="project-overlay">
-                                <a href="#" class="project-link">Ver Proyecto</a>
-                            </div>
-                        </div>
-                        <div class="project-content">
-                            <h3 class="project-title">Metaverse Gateway</h3>
-                            <p class="project-description">Portal inmersivo 3D para experiencias de realidad virtual en navegador</p>
-                            <div class="project-tech">
-                                <span class="tech-tag">WebGL</span>
-                                <span class="tech-tag">WebXR</span>
-                                <span class="tech-tag">Node.js</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="project-card">
-                        <div class="project-image">
-                            <div class="project-icon">🔐</div>
-                            <div class="project-overlay">
-                                <a href="#" class="project-link">Ver Proyecto</a>
-                            </div>
-                        </div>
-                        <div class="project-content">
-                            <h3 class="project-title">DeFi Dashboard</h3>
-                            <p class="project-description">Panel de control avanzado para finanzas descentralizadas y trading</p>
-                            <div class="project-tech">
-                                <span class="tech-tag">React</span>
-                                <span class="tech-tag">Ethereum</span>
-                                <span class="tech-tag">Web3.js</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="project-card">
-                        <div class="project-image">
-                            <div class="project-icon">⚡</div>
-                            <div class="project-overlay">
-                                <a href="#" class="project-link">Ver Proyecto</a>
-                            </div>
-                        </div>
-                        <div class="project-content">
-                            <h3 class="project-title">Performance Optimizer</h3>
-                            <p class="project-description">Herramienta de optimización automática para aplicaciones web de alto rendimiento</p>
-                            <div class="project-tech">
-                                <span class="tech-tag">JavaScript</span>
-                                <span class="tech-tag">Web Vitals</span>
-                                <span class="tech-tag">Lighthouse</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="project-card">
-                        <div class="project-image">
-                            <div class="project-icon">🌐</div>
-                            <div class="project-overlay">
-                                <a href="#" class="project-link">Ver Proyecto</a>
-                            </div>
-                        </div>
-                        <div class="project-content">
-                            <h3 class="project-title">Smart City Hub</h3>
-                            <p class="project-description">Plataforma IoT para gestión inteligente de ciudades con análisis en tiempo real</p>
-                            <div class="project-tech">
-                                <span class="tech-tag">Next.js</span>
-                                <span class="tech-tag">IoT</span>
-                                <span class="tech-tag">MongoDB</span>
-                            </div>
-                        </div>
+                        <a href="public/proyectos.html" class="redirect-button">
+                            <span class="button-text">Ver Portfolio</span>
+                            <span class="button-icon">→</span>
+                            <div class="button-glow"></div>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -1266,70 +1224,91 @@
                     <h2 class="section-title">Iniciar Conexión</h2>
                     <p class="section-subtitle">Establecer comunicación cuántica</p>
                 </div>
-                <div class="contact-form-hologram">
-                    <div class="contact-grid">
-                        <div class="contact-info">
-                            <div class="contact-method">
-                                <div class="method-icon">📧</div>
-                                <div class="method-details">
-                                    <h4>Comunicación Digital</h4>
-                                    <p>inmortal.os@quantum.dev</p>
-                                </div>
+                <div class="contact-cards-container">
+                    <div class="contact-cards-grid">
+                        <!-- Email Card -->
+                        <div class="contact-card" data-copy="inmortal.os@quantum.dev">
+                            <div class="card-icon">📧</div>
+                            <div class="card-content">
+                                <h3>Email Directo</h3>
+                                <p class="contact-data">inmortal.os@quantum.dev</p>
+                                <p class="card-description">Comunicación profesional y consultas técnicas</p>
                             </div>
-                            <div class="contact-method">
-                                <div class="method-icon">🌐</div>
-                                <div class="method-details">
-                                    <h4>Red Social Principal</h4>
-                                    <p>@filipz en X (Twitter)</p>
-                                </div>
-                            </div>
-                            <div class="contact-method">
-                                <div class="method-icon">💼</div>
-                                <div class="method-details">
-                                    <h4>Plataforma Profesional</h4>
-                                    <p>LinkedIn / GitHub</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <form class="contact-form" id="contactForm">
-                            <div class="form-group">
-                                <label for="name">Identidad</label>
-                                <input type="text" id="name" name="name" required>
-                                <div class="input-glow"></div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="email">Frecuencia de Contacto</label>
-                                <input type="email" id="email" name="email" required>
-                                <div class="input-glow"></div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="project">Tipo de Proyecto</label>
-                                <select id="project" name="project" required>
-                                    <option value="">Seleccionar categoría</option>
-                                    <option value="web3">Web 3.0 & Blockchain</option>
-                                    <option value="ai">Inteligencia Artificial</option>
-                                    <option value="3d">Experiencias 3D</option>
-                                    <option value="fullstack">Desarrollo Full-Stack</option>
-                                    <option value="other">Otro</option>
-                                </select>
-                                <div class="input-glow"></div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="message">Mensaje Cuántico</label>
-                                <textarea id="message" name="message" rows="5" required placeholder="Describe tu visión del proyecto..."></textarea>
-                                <div class="input-glow"></div>
-                            </div>
-                            
-                            <button type="submit" class="submit-btn">
-                                <span class="btn-text">Transmitir Mensaje</span>
-                                <span class="btn-icon">⚡</span>
-                                <div class="btn-particles"></div>
+                            <button class="contact-action-btn copy-btn" data-copy="inmortal.os@quantum.dev">
+                                <span class="btn-icon">📋</span>
+                                <span class="btn-text">Copiar Email</span>
                             </button>
-                        </form>
+                        </div>
+
+                        <!-- Twitter Card -->
+                        <div class="contact-card" data-link="https://twitter.com/filipz">
+                            <div class="card-icon">🐦</div>
+                            <div class="card-content">
+                                <h3>Redes Sociales</h3>
+                                <p class="contact-data">@filipz en X (Twitter)</p>
+                                <p class="card-description">Actualizaciones y networking profesional</p>
+                            </div>
+                            <button class="contact-action-btn visit-btn" data-link="https://twitter.com/filipz">
+                                <span class="btn-icon">🔗</span>
+                                <span class="btn-text">Visitar Perfil</span>
+                            </button>
+                        </div>
+
+                        <!-- LinkedIn Card -->
+                        <div class="contact-card" data-link="https://linkedin.com/in/filipz">
+                            <div class="card-icon">💼</div>
+                            <div class="card-content">
+                                <h3>LinkedIn</h3>
+                                <p class="contact-data">Perfil Profesional</p>
+                                <p class="card-description">Experiencia, proyectos y colaboraciones</p>
+                            </div>
+                            <button class="contact-action-btn visit-btn" data-link="https://linkedin.com/in/filipz">
+                                <span class="btn-icon">🔗</span>
+                                <span class="btn-text">Ver Perfil</span>
+                            </button>
+                        </div>
+
+                        <!-- GitHub Card -->
+                        <div class="contact-card" data-link="https://github.com/filipz">
+                            <div class="card-icon">💻</div>
+                            <div class="card-content">
+                                <h3>GitHub</h3>
+                                <p class="contact-data">Repositorios de Código</p>
+                                <p class="card-description">Proyectos open source y código</p>
+                            </div>
+                            <button class="contact-action-btn visit-btn" data-link="https://github.com/filipz">
+                                <span class="btn-icon">🔗</span>
+                                <span class="btn-text">Ver Código</span>
+                            </button>
+                        </div>
+
+                        <!-- WhatsApp Card -->
+                        <div class="contact-card" data-link="https://wa.me/1234567890">
+                            <div class="card-icon">📱</div>
+                            <div class="card-content">
+                                <h3>WhatsApp</h3>
+                                <p class="contact-data">Comunicación Rápida</p>
+                                <p class="card-description">Mensajes directos y consultas urgentes</p>
+                            </div>
+                            <button class="contact-action-btn visit-btn" data-link="https://wa.me/1234567890">
+                                <span class="btn-icon">💬</span>
+                                <span class="btn-text">Enviar Mensaje</span>
+                            </button>
+                        </div>
+
+                        <!-- Calendly Card -->
+                        <div class="contact-card" data-link="https://calendly.com/inmortal">
+                            <div class="card-icon">📅</div>
+                            <div class="card-content">
+                                <h3>Agendar Reunión</h3>
+                                <p class="contact-data">Calendly</p>
+                                <p class="card-description">Reserva una videollamada de consulta</p>
+                            </div>
+                            <button class="contact-action-btn visit-btn" data-link="https://calendly.com/inmortal">
+                                <span class="btn-icon">⏰</span>
+                                <span class="btn-text">Agendar</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2639,19 +2618,6 @@
             shape-rendering: crispEdges;
         }
         
-        .circle-outline {
-            stroke: rgba(245, 245, 245, 0.3);
-            stroke-width: 1;
-            fill: none;
-            vector-effect: non-scaling-stroke;
-        }
-        
-        .circle-filled {
-            stroke: rgba(245, 245, 245, 0.3);
-            stroke-width: 1;
-            fill: rgba(245, 245, 245, 0.05);
-            vector-effect: non-scaling-stroke;
-        }
         
         .geometric-text {
             font-family: var(--font-primary);
@@ -3966,6 +3932,53 @@
                 padding: 2rem 0.5rem;
             }
             
+            /* Resumen compacto - Tablet */
+            .about-summary-compact {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 1.2rem;
+                margin-bottom: 2.5rem;
+            }
+            
+            .summary-card {
+                padding: 1.2rem;
+            }
+            
+            .summary-icon {
+                font-size: 2rem;
+            }
+            
+            .summary-card h3 {
+                font-size: 1.1rem;
+            }
+            
+            .summary-card p {
+                font-size: 0.9rem;
+            }
+            
+            /* Timeline compacto - Tablet */
+            .timeline-item-compact {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            
+            .timeline-year-compact {
+                min-width: auto;
+                width: fit-content;
+                margin: 0 auto;
+            }
+            
+            /* Especialidades compactas - Tablet */
+            .specialties-grid-compact {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 0.8rem;
+            }
+            
+            .specialty-compact {
+                padding: 0.8rem;
+            }
+            
             .section-title {
                 font-size: clamp(1.8rem, 6vw, 2.5rem);
                 margin-bottom: 1.5rem;
@@ -4246,6 +4259,238 @@
             .projects-showcase,
             .contact-hologram {
                 padding: clamp(1rem, 3vw, 1.5rem) clamp(0.3rem, 1.5vw, 0.5rem);
+            }
+            
+            /* Resumen compacto - Móvil */
+            .about-summary-compact {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                margin-bottom: 2rem;
+            }
+            
+            .summary-card {
+                padding: 1rem;
+            }
+            
+            .summary-icon {
+                font-size: 1.8rem;
+            }
+            
+            .summary-card h3 {
+                font-size: 1rem;
+            }
+            
+            .summary-card p {
+                font-size: 0.85rem;
+            }
+            
+            /* Timeline compacto - Móvil */
+            .timeline-compact {
+                gap: 0.8rem;
+                margin-bottom: 2rem;
+            }
+            
+            .timeline-item-compact {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.8rem;
+                padding: 0.8rem;
+            }
+            
+            .timeline-year-compact {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.8rem;
+                min-width: auto;
+            }
+            
+            .timeline-content-compact h3 {
+                font-size: 1rem;
+            }
+            
+            .timeline-content-compact p {
+                font-size: 0.8rem;
+            }
+            
+            /* Especialidades compactas - Móvil */
+            .specialties-grid-compact {
+                grid-template-columns: 1fr;
+                gap: 0.6rem;
+            }
+            
+            .specialty-compact {
+                padding: 0.6rem;
+            }
+            
+            .specialty-compact .specialty-icon {
+                font-size: 1.2rem;
+            }
+            
+            .specialty-compact .specialty-text {
+                font-size: 0.8rem;
+            }
+            
+            /* Portfolio Redirect - Móvil */
+            .projects-redirect-container {
+                padding: 2rem 1rem;
+            }
+            
+            .redirect-card {
+                padding: 2rem 1rem;
+            }
+            
+            .redirect-icon {
+                font-size: 2.5rem;
+            }
+            
+            .redirect-card h3 {
+                font-size: 1.4rem;
+            }
+            
+            .redirect-card p {
+                font-size: 0.9rem;
+            }
+            
+            .redirect-features {
+                gap: 0.5rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            .feature-tag {
+                font-size: 0.75rem;
+                padding: 0.3rem 0.6rem;
+            }
+            
+            .redirect-button {
+                padding: 0.8rem 1.2rem;
+                font-size: 0.85rem;
+                gap: 0.5rem;
+                flex-wrap: wrap;
+                justify-content: center;
+                text-align: center;
+            }
+            
+            .redirect-button .button-text {
+                white-space: nowrap;
+            }
+            
+            /* Para pantallas muy pequeñas */
+            @media (max-width: 360px) {
+                .redirect-button {
+                    padding: 0.7rem 1rem;
+                    font-size: 0.8rem;
+                    gap: 0.3rem;
+                }
+                
+                .redirect-button .button-text {
+                    font-size: 0.8rem;
+                }
+                
+            .redirect-button .button-icon {
+                font-size: 1rem;
+            }
+            
+            /* Contact Cards - Móvil */
+            .contact-cards-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .contact-card {
+                padding: 1.2rem;
+            }
+            
+            .card-icon {
+                font-size: 2rem;
+            }
+            
+            .card-content h3 {
+                font-size: 1.1rem;
+            }
+            
+            .contact-data {
+                font-size: 0.9rem;
+            }
+            
+            .card-description {
+                font-size: 0.8rem;
+            }
+            
+            .contact-action-btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.8rem;
+                gap: 0.3rem;
+            }
+            
+            .contact-action-btn .btn-text {
+                font-size: 0.8rem;
+            }
+            }
+            
+            /* Portfolio Redirect - Tablet */
+            .projects-redirect-container {
+                padding: 3rem 1.5rem;
+            }
+            
+            .redirect-card {
+                padding: 2.5rem 1.5rem;
+            }
+            
+            .redirect-icon {
+                font-size: 3rem;
+            }
+            
+            .redirect-card h3 {
+                font-size: 1.6rem;
+            }
+            
+            .redirect-card p {
+                font-size: 1rem;
+            }
+            
+            .redirect-features {
+                gap: 0.6rem;
+                margin-bottom: 2rem;
+            }
+            
+            .feature-tag {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.8rem;
+            }
+            
+            .redirect-button {
+                padding: 1rem 2rem;
+                font-size: 1rem;
+            }
+            
+            /* Contact Cards - Tablet */
+            .contact-cards-grid {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 1.2rem;
+            }
+            
+            .contact-card {
+                padding: 1.5rem;
+            }
+            
+            .card-icon {
+                font-size: 2.5rem;
+            }
+            
+            .card-content h3 {
+                font-size: 1.2rem;
+            }
+            
+            .contact-data {
+                font-size: 1rem;
+            }
+            
+            .card-description {
+                font-size: 0.85rem;
+            }
+            
+            .contact-action-btn {
+                padding: 0.7rem 1.2rem;
+                font-size: 0.85rem;
             }
             
             .about-section {
@@ -4681,13 +4926,446 @@
         
         /* About Section */
         .about-container {
-            padding: 6rem 2rem;
+            padding: 4rem 2rem;
             max-width: 1200px;
             margin: 0 auto;
             position: relative;
             z-index: 10;
             /* Prevenir superposición */
             overflow: visible;
+        }
+        
+        /* Resumen compacto */
+        .about-summary-compact {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .summary-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .summary-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .summary-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        
+        .summary-card h3 {
+            font-size: 1.2rem;
+            color: var(--accent-color);
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .summary-card p {
+            color: var(--text-color);
+            opacity: 0.9;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin: 0;
+        }
+        
+        /* Timeline compacto */
+        .timeline-compact {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+        
+        .timeline-item-compact {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 1.2rem;
+            backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
+        }
+        
+        .timeline-item-compact:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateX(5px);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .timeline-year-compact {
+            background: var(--accent-color);
+            color: #000;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            min-width: 120px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        
+        .timeline-content-compact h3 {
+            color: var(--text-color);
+            font-size: 1.1rem;
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+        }
+        
+        .timeline-content-compact p {
+            color: var(--text-color);
+            opacity: 0.8;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+        
+        /* Especialidades compactas */
+        .specialties-compact {
+            margin-bottom: 3rem;
+        }
+        
+        .specialties-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        .specialties-grid-compact {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .specialty-compact {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
+        }
+        
+        .specialty-compact:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .specialty-compact .specialty-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        
+        .specialty-compact .specialty-text {
+            color: var(--text-color);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        /* Portfolio Redirect Section */
+        .projects-redirect-container {
+            padding: 4rem 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .projects-redirect-content {
+            margin-top: 3rem;
+        }
+        
+        .redirect-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            backdrop-filter: blur(15px);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .redirect-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.6s ease;
+        }
+        
+        .redirect-card:hover::before {
+            left: 100%;
+        }
+        
+        .redirect-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .redirect-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            display: block;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .redirect-card h3 {
+            font-size: 2rem;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        
+        .redirect-card p {
+            color: var(--text-color);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .redirect-features {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.8rem;
+            margin-bottom: 2.5rem;
+        }
+        
+        .feature-tag {
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--accent-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .feature-tag:hover {
+            background: rgba(0, 255, 136, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .redirect-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            background: linear-gradient(135deg, var(--accent-color), #00cc88);
+            color: #ffffff;
+            padding: 1.2rem 2.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .redirect-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(0, 255, 136, 0.4);
+        }
+        
+        .redirect-button:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .button-text {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .button-icon {
+            position: relative;
+            z-index: 2;
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .redirect-button:hover .button-icon {
+            transform: translateX(5px);
+        }
+        
+        .button-glow {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s ease;
+        }
+        
+        .redirect-button:hover .button-glow {
+            left: 100%;
+        }
+        
+        /* Contact Cards Section */
+        .contact-cards-container {
+            padding: 2rem 0;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .contact-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .contact-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+        
+        .contact-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.6s ease;
+        }
+        
+        .contact-card:hover::before {
+            left: 100%;
+        }
+        
+        .contact-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .card-content h3 {
+            font-size: 1.3rem;
+            color: var(--accent-color);
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .contact-data {
+            font-size: 1.1rem;
+            color: var(--text-color);
+            font-weight: 500;
+            margin-bottom: 0.8rem;
+            word-break: break-all;
+        }
+        
+        .card-description {
+            font-size: 0.9rem;
+            color: var(--text-color);
+            opacity: 0.8;
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+        
+        .contact-action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, var(--accent-color), #00cc88);
+            color: #000;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .contact-action-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(0, 255, 136, 0.4);
+        }
+        
+        .contact-action-btn:active {
+            transform: translateY(0) scale(1.02);
+        }
+        
+        .contact-action-btn .btn-icon {
+            font-size: 1rem;
+        }
+        
+        .contact-action-btn .btn-text {
+            font-weight: 600;
+        }
+        
+        /* Copy button specific styles */
+        .copy-btn {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+        }
+        
+        .copy-btn:hover {
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        /* Visit button specific styles */
+        .visit-btn {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+        }
+        
+        .visit-btn:hover {
+            box-shadow: 0 8px 20px rgba(33, 150, 243, 0.4);
         }
         
         .section-header {
@@ -14000,14 +14678,11 @@
         let isBackgroundPlaying = true;
         let currentSection = 1;
         let isScrolling = false;
-        let circleTransitions = [];
 
         // Configuración del fondo geométrico
         function setupGeometricBackground() {
             const gridLinesGroup = document.getElementById("grid-lines");
-            const circlesOutlineGroup = document.getElementById("circles-outline");
-            const circlesFilledGroup = document.querySelector("#circles-filled > g");
-            if (!gridLinesGroup || !circlesOutlineGroup || !circlesFilledGroup) return;
+            if (!gridLinesGroup) return;
 
             const gridSpacing = 48;
             for (let i = 0; i <= 40; i++) {
@@ -14030,82 +14705,6 @@
                 }
             }
 
-            const d = 80;
-            const centerX = 960;
-            const centerY = 540;
-            circleTransitions = [
-                {
-                    initial: { cx: centerX - 3 * d, cy: centerY, r: d * 0.8 },
-                    final: { cx: centerX, cy: centerY, r: 4 * d }
-                },
-                {
-                    initial: { cx: centerX + 3 * d, cy: centerY, r: d * 0.8 },
-                    final: { cx: centerX, cy: centerY, r: 4 * d }
-                },
-                {
-                    initial: { cx: centerX, cy: centerY - 3 * d, r: d * 0.8 },
-                    final: { cx: centerX, cy: centerY, r: 4 * d }
-                },
-                {
-                    initial: { cx: centerX, cy: centerY + 3 * d, r: d * 0.8 },
-                    final: { cx: centerX, cy: centerY, r: 4 * d }
-                },
-                {
-                    initial: { cx: centerX - 2 * d, cy: centerY - 2 * d, r: d * 0.6 },
-                    final: { cx: centerX, cy: centerY, r: 4 * d }
-                },
-                {
-                    initial: { cx: centerX + 2 * d, cy: centerY - 2 * d, r: d * 0.6 },
-                    final: { cx: centerX, cy: centerY, r: 4 * d }
-                },
-                {
-                    initial: { cx: centerX - 2 * d, cy: centerY + 2 * d, r: d * 0.6 },
-                    final: { cx: centerX, cy: centerY, r: 4 * d }
-                },
-                {
-                    initial: { cx: centerX + 2 * d, cy: centerY + 2 * d, r: d * 0.6 },
-                    final: { cx: centerX, cy: centerY, r: 4 * d }
-                },
-                {
-                    initial: { cx: centerX - 4 * d, cy: centerY, r: d * 0.4 },
-                    final: { cx: centerX, cy: centerY, r: 4 * d }
-                },
-                {
-                    initial: { cx: centerX + 4 * d, cy: centerY, r: d * 0.4 },
-                    final: { cx: centerX, cy: centerY, r: 4 * d }
-                },
-                {
-                    initial: { cx: centerX, cy: centerY - 4 * d, r: d * 0.4 },
-                    final: { cx: centerX, cy: centerY, r: 4 * d }
-                },
-                {
-                    initial: { cx: centerX, cy: centerY + 4 * d, r: d * 0.4 },
-                    final: { cx: centerX, cy: centerY, r: 4 * d }
-                },
-                {
-                    initial: { cx: centerX, cy: centerY, r: d * 0.3 },
-                    final: { cx: centerX, cy: centerY, r: 4 * d }
-                }
-            ];
-
-            circleTransitions.forEach((transition, index) => {
-                const circleOutline = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                circleOutline.setAttribute("class", "circle-outline");
-                circleOutline.setAttribute("cx", transition.initial.cx);
-                circleOutline.setAttribute("cy", transition.initial.cy);
-                circleOutline.setAttribute("r", transition.initial.r);
-                circlesOutlineGroup.appendChild(circleOutline);
-
-                const circleFilled = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                circleFilled.setAttribute("class", "circle-filled");
-                circleFilled.setAttribute("cx", transition.initial.cx);
-                circleFilled.setAttribute("cy", transition.initial.cy);
-                circleFilled.setAttribute("r", transition.initial.r);
-                circlesFilledGroup.appendChild(circleFilled);
-
-                transition.outlineCircle = circleOutline;
-                transition.filledCircle = circleFilled;
-            });
         }
 
         // Evento del botón de habilitación
@@ -14628,29 +15227,6 @@
                     line.setAttribute("stroke-opacity", gridOpacity);
                 });
 
-                // Transiciones de círculos
-                circleTransitions.forEach((transition, index) => {
-                    const currentCx = transition.initial.cx + (transition.final.cx - transition.initial.cx) * progress;
-                    const currentCy = transition.initial.cy + (transition.final.cy - transition.initial.cy) * progress;
-                    const currentR = transition.initial.r + (transition.final.r - transition.initial.r) * progress;
-                    const rotation = progress * 360 * (index % 2 === 0 ? 1 : -1);
-                    const opacity = Math.max(0.1, 1 - progress * 0.7);
-
-                    if (transition.outlineCircle) {
-                        transition.outlineCircle.setAttribute("cx", currentCx);
-                        transition.outlineCircle.setAttribute("cy", currentCy);
-                        transition.outlineCircle.setAttribute("r", currentR);
-                        transition.outlineCircle.setAttribute("transform", `rotate(${rotation} ${currentCx} ${currentCy})`);
-                        transition.outlineCircle.setAttribute("stroke-opacity", opacity);
-                    }
-                    if (transition.filledCircle) {
-                        transition.filledCircle.setAttribute("cx", currentCx);
-                        transition.filledCircle.setAttribute("cy", currentCy);
-                        transition.filledCircle.setAttribute("r", currentR);
-                        transition.filledCircle.setAttribute("transform", `rotate(${rotation} ${currentCx} ${currentCy})`);
-                        transition.filledCircle.setAttribute("fill-opacity", opacity * 0.05);
-                    }
-                });
 
                 // Actualización de líneas de debug
                 if (debugLine1) debugLine1.textContent = awarenessState;
@@ -16580,6 +17156,77 @@
             
             console.log('🚀 TODAS LAS FUNCIONALIDADES INMORTAL_OS HAN SIDO ACTIVADAS');
         }
+        
+        // Contact Cards Functionality
+        function setupContactCards() {
+            // Copy email functionality
+            const copyButtons = document.querySelectorAll('.copy-btn');
+            copyButtons.forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    const email = button.getAttribute('data-copy');
+                    
+                    try {
+                        await navigator.clipboard.writeText(email);
+                        
+                        // Visual feedback
+                        const originalText = button.querySelector('.btn-text').textContent;
+                        button.querySelector('.btn-text').textContent = '¡Copiado!';
+                        button.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+                        
+                        setTimeout(() => {
+                            button.querySelector('.btn-text').textContent = originalText;
+                            button.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+                        }, 2000);
+                        
+                    } catch (err) {
+                        console.error('Error al copiar:', err);
+                        // Fallback para navegadores que no soportan clipboard API
+                        const textArea = document.createElement('textarea');
+                        textArea.value = email;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        
+                        // Visual feedback
+                        const originalText = button.querySelector('.btn-text').textContent;
+                        button.querySelector('.btn-text').textContent = '¡Copiado!';
+                        setTimeout(() => {
+                            button.querySelector('.btn-text').textContent = originalText;
+                        }, 2000);
+                    }
+                });
+            });
+            
+            // Visit links functionality
+            const visitButtons = document.querySelectorAll('.visit-btn');
+            visitButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const url = button.getAttribute('data-link');
+                    
+                    if (url) {
+                        window.open(url, '_blank', 'noopener,noreferrer');
+                        
+                        // Visual feedback
+                        const originalText = button.querySelector('.btn-text').textContent;
+                        button.querySelector('.btn-text').textContent = 'Abriendo...';
+                        
+                        setTimeout(() => {
+                            button.querySelector('.btn-text').textContent = originalText;
+                        }, 1500);
+                    }
+                });
+            });
+        }
+        
+        // Initialize contact cards when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            setupContactCards();
+        });
+        
+        // WebGL compatibility check is now handled in the head section
         
         // Ejecutar cuando el DOM esté listo
         document.addEventListener('DOMContentLoaded', () => {
