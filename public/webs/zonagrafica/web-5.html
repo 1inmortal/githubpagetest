@@ -1,0 +1,1916 @@
+<!doctype html>
+<!--
+================================================================================
+  ZONA GRÁFICA - LANDING PAGE
+================================================================================
+  DESCRIPCIÓN: Sitio web completo para empresa de servicios gráficos
+  FUNCIONALIDADES:
+    - Servicios dinámicos desde PocketBase
+    - Productos específicos por categoría
+    - Artículos dinámicos con fallback
+    - Testimonios de clientes
+    - Formulario de contacto
+    - Diseño responsive completo
+    - Integración con WhatsApp
+  
+  BACKEND CONNECTION:
+    - PocketBase URL: https://zonagraficapd.ezhostingit.com
+    - Colecciones: categorias, productos, articulos, promociones
+    - Líneas de conexión: 708, 720-770, 766-831, 906-950, 1371-1400, 1513-1545
+  
+  ESTRUCTURA:
+    1. Header con navegación
+    2. Banner carousel
+    3. Servicios (dinámicos desde PocketBase)
+    4. Trust badges
+    5. Testimonios
+    6. Artículos populares (dinámicos desde PocketBase)
+    7. Ubicación
+    8. Formulario de contacto
+    9. Footer
+  
+  TECNOLOGÍAS:
+    - React 18 (CDN)
+    - PocketBase (API REST)
+    - Swiper.js (carousel)
+    - CSS3 con animaciones
+    - Responsive design
+================================================================================
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zona Gráfica — Landing</title>
+  <meta name="description" content="Hacemos posible tus ideas. Gran formato, imprenta, estampados, grabados y letreros.">
+
+  <!-- Security headers para evitar CORB -->
+  <meta http-equiv="Cross-Origin-Embedder-Policy" content="unsafe-none">
+  <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
+  <meta http-equiv="Cross-Origin-Resource-Policy" content="cross-origin">
+
+  <!-- Swiper CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/swiper@9/swiper-bundle.min.css" />
+  <!-- Inter UI Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ===== VARIABLES Y RESET ===== */
+    :root{
+      --bg:#ffffff; --card:#ffffff; --muted:#4b5563; --text:#0b0b10; --cyan:#00bcd4; --magenta:#e11d48; --brand:#25D366; --blue:#1E40AF;
+      --gradient: linear-gradient(90deg, cyan, magenta, yellow, black);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;scroll-behavior:smooth}
+    body{padding-top:90px}
+    h1,h2,h3,h4,h5,h6{font-family:Poppins,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;font-weight:800}
+    .subtitle{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;font-weight:500}
+    a{color:inherit;text-decoration:none}
+    .container{max-width:1100px;margin:0 auto;padding:0 16px}
+    .topbar,.bottombar{height:6px;background:linear-gradient(90deg, cyan, magenta, yellow, black)}
+    
+    /* ===== BARRA DE INFORMACIÓN ===== */
+    .infobar{background:#0a0a0f;color:#e5e7eb;border-bottom:1px solid #111}
+    .infobar-inner{display:flex;align-items:center;gap:14px;justify-content:space-between;height:36px;font-size:13px}
+    .infobar .left,.infobar .right{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+    .infobar .item{display:inline-flex;align-items:center;gap:8px;opacity:.95}
+    .infobar .i{width:14px;height:14px;opacity:.85;filter:invert(1)}
+    .i.phone{background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/phone.svg') center/contain no-repeat}
+    .i.mail{background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/mail.svg') center/contain no-repeat}
+    .i.lock{background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/lock.svg') center/contain no-repeat}
+    .i.clock{background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/clock.svg') center/contain no-repeat}
+    
+    /* ===== HEADER Y NAVEGACIÓN ===== */
+    .header{position:fixed;top:0;left:0;right:0;z-index:100;background:#000;color:#fff;border-bottom:1px solid rgba(255,255,255,0.1);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1), box-shadow 0.3s ease;transform:translateY(0)}
+    .header.hidden{transform:translateY(-100%)}
+    .header.scrolled{box-shadow:0 4px 20px rgba(0,0,0,0.5)}
+    .header-inner{display:flex;align-items:center;justify-content:space-between;height:90px;max-width:1400px;margin:0 auto;padding:0 20px;position:relative}
+    
+    /* Logo */
+    .logo{display:flex;gap:15px;align-items:center;font-weight:800;letter-spacing:0.5px;transition:all 0.3s ease}
+    .logo:hover{transform:scale(1.02)}
+    .logo-img{height:70px;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.4));transition:all 0.3s ease}
+    
+    /* Navegación principal */
+    .nav{display:flex;gap:30px;align-items:center}
+    .nav a{color:#fff;opacity:0.9;font-weight:600;font-size:1rem;padding:8px 16px;border-radius:8px;transition:all 0.3s ease;position:relative;text-decoration:none}
+    .nav a::before{content:'';position:absolute;bottom:0;left:50%;width:0;height:2px;background:linear-gradient(90deg, #3b82f6, #8b5cf6);transition:all 0.3s ease;transform:translateX(-50%)}
+    .nav a:hover{opacity:1;background:rgba(59,130,246,0.1);transform:translateY(-2px)}
+    .nav a:hover::before{width:80%}
+    
+    /* Menú móvil */
+    .menu-btn{display:none;align-items:center;justify-content:center;width:45px;height:45px;border:1px solid rgba(255,255,255,0.2);border-radius:12px;background:rgba(255,255,255,0.1);color:#fff;transition:all 0.3s ease;backdrop-filter:blur(10px)}
+    .menu-btn:hover{background:rgba(255,255,255,0.2);transform:scale(1.05)}
+    .mobile-panel{display:none;position:absolute;left:0;right:0;top:90px;background:#000;border-bottom:1px solid rgba(255,255,255,0.1);box-shadow:0 8px 32px rgba(0,0,0,0.5)}
+    .mobile-panel.open{display:block;animation:slideDown 0.3s ease}
+    .mobile-panel a{display:block;padding:18px 24px;border-top:1px solid rgba(255,255,255,0.1);color:#fff;font-weight:600;transition:all 0.3s ease;text-decoration:none}
+    .mobile-panel a:hover{background:rgba(59,130,246,0.1);padding-left:32px}
+    
+    /* Botones de acción */
+    .wa-btn{display:inline-flex;align-items:center;gap:12px;background:linear-gradient(135deg, #25D366, #128C7E);color:#fff;border:none;padding:12px 20px;border-radius:50px;font-weight:700;font-size:0.9rem;transition:all 0.3s ease;text-decoration:none;box-shadow:0 4px 15px rgba(37,211,102,0.3)}
+    .wa-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(37,211,102,0.4);background:linear-gradient(135deg, #128C7E, #25D366)}
+    .wa-btn small{opacity:0.9;font-weight:600;font-size:0.8rem}
+    .wa-float{position:fixed;right:20px;bottom:20px;z-index:60;box-shadow:0 10px 30px rgba(37,211,102,0.4);animation:float 3s ease-in-out infinite}
+    .header-cta{display:flex;align-items:center;gap:15px}
+    .phone-link{display:flex;align-items:center;gap:8px;color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:8px;transition:all 0.3s ease;background:rgba(255,255,255,0.1)}
+    .phone-link:hover{background:rgba(255,255,255,0.2);transform:translateY(-1px)}
+    .phone-icon{width:16px;height:16px;background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/phone.svg') center/contain no-repeat;filter:brightness(0) invert(1)}
+    
+    /* ===== ANIMACIONES ===== */
+    @keyframes slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes float{0%,100%{transform:translateY(0px)}50%{transform:translateY(-10px)}}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes slideUp{from{opacity:0;transform:translateY(50px) scale(0.9)}to{opacity:1;transform:translateY(0) scale(1)}}
+    @keyframes rainbow-float{0%,100%{transform:translateY(0px) rotate(0deg);opacity:0.6}25%{transform:translateY(-10px) rotate(1deg);opacity:0.8}50%{transform:translateY(-5px) rotate(-1deg);opacity:0.7}75%{transform:translateY(-15px) rotate(0.5deg);opacity:0.9}}
+    
+    /* ===== RESPONSIVE HEADER ===== */
+    @media (max-width:768px){
+      .header-inner{height:80px;padding:0 16px}
+      .logo-img{height:60px}
+      .nav{display:none}
+      .menu-btn{display:inline-flex}
+      .wa-btn{padding:10px 16px;font-size:0.8rem}
+      .wa-btn small{display:none}
+      .header-cta{gap:10px}
+      .phone-link{padding:6px 10px;font-size:0.9rem}
+      body{padding-top:80px}
+    }
+    @media (max-width:640px){
+      .header-inner{height:70px}
+      .logo-img{height:50px}
+      .wa-btn{padding:8px 12px}
+      .phone-link{display:none}
+      body{padding-top:70px}
+    }
+
+    /* ===== CAROUSEL HERO ===== */
+    .hero{padding:24px 0 8px}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden}
+    .swiper{--swiper-navigation-size:20px}
+    .swiper .swiper-pagination-bullet{background:#9ca3af;opacity:.5}
+    .swiper .swiper-pagination-bullet-active{background:#111;opacity:1}
+    .swiper-slide img{display:block;width:100%;height:400px;object-fit:cover}
+    .hero-cta{position:absolute;inset:auto 16px 16px 16px;display:flex;justify-content:center}
+    .hero-cta .cta-inner{background:rgba(0,0,0,.55);color:#fff;border:1px solid rgba(255,255,255,.2);backdrop-filter:blur(6px);padding:12px 16px;border-radius:12px;display:flex;gap:12px;align-items:center}
+    .hero-wrap{position:relative}
+
+    /* ===== SECCIONES GENERALES ===== */
+    .section{padding:40px 0}
+    .section h2{margin:0 0 18px;font-size:28px}
+    .title-wrap{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;margin:6px 0 20px}
+    .title-wrap .line{height:2px;background:#2b2b3a}
+    .subtitle{color:var(--muted);margin-bottom:20px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:14px;max-width:1200px;margin:0 auto}
+    @media (max-width:960px){.grid{grid-template-columns:repeat(3,1fr)}.swiper-slide img{height:320px}}
+    @media (max-width:768px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:480px){.grid{grid-template-columns:1fr}}
+
+    /* ===== SECCIÓN SERVICIOS ===== */
+    .service{cursor:pointer;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px;text-align:center;transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:120px;gap:12px}
+    .service:hover{transform:translateY(-4px);border-color:var(--blue);box-shadow:0 10px 24px rgba(17,24,39,.18)}
+    .service img{width:60px;height:60px;object-fit:contain;filter:grayscale(100%) brightness(0.8);transition:all .3s ease}
+    .service b{display:block;font-size:0.9rem;font-weight:600;color:#374151;margin-top:8px;transition:all .3s ease}
+    .service .desc{display:none}
+    .service .cta{display:none}
+    .service:hover img{filter:grayscale(0) brightness(1);transform:scale(1.1)}
+    .service:hover b{color:#1e40af;transform:scale(1.05)}
+    .service.active{background:#fff;border-color:#e5e7eb}
+    .service.active img{filter:grayscale(0) brightness(1);transform:scale(1.1)}
+    .service.active b{display:block;color:#1e40af;font-weight:700}
+    .loading-services{font-size:1.1rem;font-weight:500;animation:pulse 2s ease-in-out infinite}
+    .loading-articles{font-size:1.1rem;font-weight:500;animation:pulse 2s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:0.6}50%{opacity:1}}
+
+    /* Carrusel móvil de servicios: oculta grid en móvil y muestra swiper con ~2 items */
+    .servicios-carousel{display:none}
+    .servicios-carousel .swiper{padding:4px 2px}
+    .servicios-carousel .swiper-slide{height:auto}
+    .servicios-carousel .service{min-height:110px}
+    .servicios-carousel .swiper-pagination-bullet{background:#9ca3af;opacity:.5}
+    .servicios-carousel .swiper-pagination-bullet-active{background:#111;opacity:1}
+
+    @media (max-width:768px){
+      .servicios-grid-desktop{display:none}
+      .servicios-carousel{display:block}
+      .servicios-carousel .service{padding:12px;gap:8px;border-radius:10px}
+      .servicios-carousel .service img{width:44px;height:44px}
+      .servicios-carousel .service b{font-size:0.8rem}
+    }
+
+    /* Indicador de deslizamiento para móvil: flechas guía mostrando que se puede deslizar */
+    .swipe-hint{display:none;align-items:center;justify-content:center;gap:10px;color:#64748b;margin:4px 0 10px;font-weight:600}
+    .swipe-hint .arrow{opacity:.9;font-size:18px}
+    @media (max-width:768px){.swipe-hint{display:flex}}
+
+    /* ===== SECCIÓN TESTIMONIOS ===== */
+    .testimonials{background:#f8fafc;padding:60px 0;position:relative}
+    .testimonials .container{max-width:1200px;margin:0 auto;padding:0 20px}
+    .testimonials h2{text-align:center;font-size:2.5rem;font-weight:800;color:#1e293b;margin:0 0 10px}
+    .testimonials .subtitle{text-align:center;font-size:1.1rem;color:#64748b;margin:0 0 50px;max-width:600px;margin-left:auto;margin-right:auto}
+    /* Carrusel manual de testimonios: track horizontal con flechas prev/next (sin autoplay) */
+    .testimonials-carousel{position:relative;margin-top:40px}
+    .tc-viewport{overflow:hidden}
+    .tc-track{display:flex;gap:25px;transition:transform .4s ease}
+    .tc-item{flex:0 0 33.3333%}
+    .tc-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:5;border:none;border-radius:999px;width:42px;height:42px;background:rgba(15,23,42,0.4);backdrop-filter:blur(6px);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s ease}
+    .tc-arrow:hover{background:rgba(15,23,42,0.65)}
+    .tc-prev{left:-6px}
+    .tc-next{right:-6px}
+    .testimonial-card{background:#fff;border-radius:16px;padding:30px;box-shadow:0 8px 25px rgba(0,0,0,0.1);transition:all 0.3s ease;position:relative;border:1px solid #e2e8f0}
+    .testimonial-card::before{content:'"';position:absolute;top:15px;right:20px;font-size:4rem;color:#e2e8f0;font-family:serif;line-height:1}
+    .testimonial-card:hover{transform:translateY(-5px);box-shadow:0 15px 35px rgba(0,0,0,0.15)}
+    .testimonial-text{font-size:1rem;color:#374151;line-height:1.6;margin-bottom:20px;font-style:italic}
+    .testimonial-author{display:flex;align-items:center;gap:15px;margin-bottom:15px}
+    .author-avatar{width:50px;height:50px;border-radius:50%;object-fit:cover;border:3px solid #e2e8f0}
+    .author-info h4{font-size:1rem;font-weight:600;color:#1e293b;margin:0 0 4px}
+    .author-info p{font-size:0.9rem;color:#64748b;margin:0}
+    .testimonial-rating{display:flex;gap:2px}
+    .star{color:#fbbf24;font-size:1.2rem}
+    
+    /* Responsive testimonios */
+    @media (max-width:768px){
+      .testimonials{padding:40px 0}
+      .testimonials h2{font-size:2rem}
+      .testimonials .subtitle{font-size:1rem;margin:0 0 30px}
+      .testimonials-carousel{margin-top:30px}
+      .tc-track{gap:20px}
+      .tc-item{flex-basis:50%}
+      .testimonial-card{padding:20px}
+      .testimonial-text{font-size:0.9rem;margin-bottom:15px}
+      .testimonial-author{gap:12px;margin-bottom:12px}
+      .author-avatar{width:40px;height:40px}
+      .author-info h4{font-size:0.9rem}
+      .author-info p{font-size:0.8rem}
+    }
+    
+    @media (max-width:480px){
+      .testimonials{padding:30px 0}
+      .testimonials h2{font-size:1.8rem}
+      .testimonials .subtitle{font-size:0.9rem;margin:0 0 25px}
+      .tc-track{gap:15px}
+      .tc-item{flex-basis:100%}
+      .tc-arrow{width:38px;height:38px}
+      .testimonial-card{padding:15px}
+      .testimonial-text{font-size:0.85rem;margin-bottom:12px}
+      .testimonial-author{gap:10px;margin-bottom:10px}
+      .author-avatar{width:35px;height:35px}
+      .author-info h4{font-size:0.85rem}
+      .author-info p{font-size:0.75rem}
+    }
+
+    /* ===== SECCIÓN TRUST BADGES ===== */
+    .trust{background:#0f0f16;border-top:1px solid #1f2030;position:relative;overflow:hidden}
+    .trust.section{padding-bottom:90px}
+    .trust::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at 15% 25%, rgba(255,0,150,0.15) 0%, transparent 45%), radial-gradient(circle at 85% 20%, rgba(0,255,255,0.15) 0%, transparent 45%), radial-gradient(circle at 25% 75%, rgba(255,255,0,0.15) 0%, transparent 45%), radial-gradient(circle at 75% 80%, rgba(255,0,255,0.15) 0%, transparent 45%), radial-gradient(circle at 5% 50%, rgba(0,255,0,0.15) 0%, transparent 45%), radial-gradient(circle at 95% 5%, rgba(255,100,0,0.15) 0%, transparent 45%);z-index:1}
+    .trust::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at 50% 30%, rgba(150,0,255,0.12) 0%, transparent 40%), radial-gradient(circle at 30% 90%, rgba(255,200,0,0.12) 0%, transparent 40%), radial-gradient(circle at 80% 60%, rgba(0,150,255,0.12) 0%, transparent 40%);z-index:1}
+    .trust h2{color:#ffffff;position:relative;z-index:2}
+    .trust .title-wrap .line{background:#3a3a4a}
+    .trust .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;position:relative;z-index:2;justify-content:center;align-items:center}
+    .trust .badge{display:flex;align-items:center;gap:12px;background:rgba(21,21,33,0.8);border:1px solid #2a2a3a;border-radius:12px;padding:16px;backdrop-filter:blur(10px);position:relative;z-index:2;margin:0 auto;max-width:340px;width:100%}
+    .trust .icon{width:20px;height:20px;filter:invert(1);opacity:.9}
+    .icon.shield{background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/shield-check.svg') center/contain no-repeat}
+    .icon.bolt{background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/bolt.svg') center/contain no-repeat}
+    .icon.certificate{background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/certificate.svg') center/contain no-repeat}
+    .icon.truck{background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/truck.svg') center/contain no-repeat}
+    .trust .txt{display:flex;flex-direction:column}
+    .trust .txt b{color:#ffffff}
+    .trust .txt small{color:#cbd5e1;font-weight:600}
+    /* Fade inferior para fundir con la siguiente sección (#f8fafc) */
+    .trust .fade-bottom{position:absolute;left:0;right:0;bottom:-1px;height:70px;background:linear-gradient(to bottom, rgba(15,15,22,0) 0%, #f8fafc 100%);z-index:2;pointer-events:none}
+    
+    /* Responsive para trust badges con arcoíris */
+    @media (max-width:768px){
+      .trust::before{background:radial-gradient(circle at 20% 30%, rgba(255,0,150,0.12) 0%, transparent 40%), radial-gradient(circle at 80% 25%, rgba(0,255,255,0.12) 0%, transparent 40%), radial-gradient(circle at 30% 70%, rgba(255,255,0,0.12) 0%, transparent 40%), radial-gradient(circle at 70% 75%, rgba(255,0,255,0.12) 0%, transparent 40%)}
+      .trust::after{background:radial-gradient(circle at 60% 40%, rgba(150,0,255,0.08) 0%, transparent 35%), radial-gradient(circle at 40% 85%, rgba(255,200,0,0.08) 0%, transparent 35%)}
+    }
+    @media (max-width:640px){
+      .trust .fade-bottom{height:60px}
+    }
+    @media (max-width:480px){
+      .trust .fade-bottom{height:50px}
+      .trust.section{padding-bottom:70px}
+    }
+    
+    @media (max-width:640px){
+      .trust.section{padding-bottom:60px}
+      .trust::before{background:radial-gradient(circle at 30% 35%, rgba(255,0,150,0.1) 0%, transparent 35%), radial-gradient(circle at 70% 30%, rgba(0,255,255,0.1) 0%, transparent 35%), radial-gradient(circle at 50% 65%, rgba(255,255,0,0.1) 0%, transparent 35%)}
+      .trust::after{background:radial-gradient(circle at 50% 50%, rgba(150,0,255,0.06) 0%, transparent 30%), radial-gradient(circle at 50% 80%, rgba(255,200,0,0.06) 0%, transparent 30%)}
+    }
+    
+    @media (max-width:480px){
+      .trust::before{background:radial-gradient(circle at 40% 40%, rgba(255,0,150,0.08) 0%, transparent 30%), radial-gradient(circle at 60% 60%, rgba(0,255,255,0.08) 0%, transparent 30%)}
+      .trust::after{background:radial-gradient(circle at 50% 50%, rgba(150,0,255,0.05) 0%, transparent 25%)}
+    }
+    
+    @media (max-width:360px){
+      .trust::before{background:radial-gradient(circle at 50% 50%, rgba(255,0,150,0.06) 0%, transparent 25%)}
+      .trust::after{background:none}
+    }
+
+    /* ===== SECCIÓN ARTÍCULOS POPULARES ===== */
+    .popular-articles{background:#f8fafc;padding:60px 0;position:relative}
+    .popular-articles .container{max-width:1200px;margin:0 auto;padding:0 20px}
+    .popular-articles h2{text-align:center;font-size:2.5rem;font-weight:800;color:#1e293b;margin:0 0 10px}
+    .popular-articles .subtitle{text-align:center;font-size:1.1rem;color:#64748b;margin:0 0 50px;max-width:600px;margin-left:auto;margin-right:auto}
+    .articles-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:25px;margin-top:40px}
+    .article-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 8px 25px rgba(0,0,0,0.1);transition:all 0.3s ease;position:relative;border:1px solid #e2e8f0;cursor:pointer}
+    .article-card:hover{transform:translateY(-8px);box-shadow:0 15px 35px rgba(0,0,0,0.15)}
+    .article-image{width:100%;height:200px;object-fit:cover;transition:transform 0.3s ease}
+    .article-card:hover .article-image{transform:scale(1.05)}
+    .article-content{padding:20px}
+    .article-category{display:inline-block;background:linear-gradient(135deg, #3b82f6, #1d4ed8);color:#fff;padding:4px 12px;border-radius:20px;font-size:0.8rem;font-weight:600;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px}
+    .article-title{font-size:1.2rem;font-weight:700;color:#1e293b;margin:0 0 8px;line-height:1.3}
+    .article-excerpt{font-size:0.9rem;color:#64748b;margin:0 0 15px;line-height:1.5}
+    .article-meta{display:flex;align-items:center;justify-content:space-between;font-size:0.8rem;color:#94a3b8}
+    .article-views{display:flex;align-items:center;gap:4px}
+    .article-date{display:flex;align-items:center;gap:4px}
+    .view-icon{width:14px;height:14px;background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/eye.svg') center/contain no-repeat;opacity:0.7}
+    .date-icon{width:14px;height:14px;background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/calendar.svg') center/contain no-repeat;opacity:0.7}
+    .trending-badge{position:absolute;top:15px;right:15px;background:linear-gradient(135deg, #ef4444, #dc2626);color:#fff;padding:6px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;box-shadow:0 4px 12px rgba(239,68,68,0.3)}
+    
+    /* Responsive artículos */
+    @media (max-width:768px){
+      .popular-articles{padding:40px 0}
+      .popular-articles h2{font-size:2rem}
+      .popular-articles .subtitle{font-size:1rem;margin:0 0 30px}
+      .articles-grid{grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:20px;margin-top:30px}
+      .article-content{padding:15px}
+      .article-title{font-size:1.1rem}
+      .article-excerpt{font-size:0.85rem}
+      .trending-badge{top:10px;right:10px;padding:4px 8px;font-size:0.7rem}
+    }
+    
+    @media (max-width:640px){
+      .popular-articles{padding:35px 0}
+      .popular-articles h2{font-size:1.8rem;margin:0 0 8px}
+      .popular-articles .subtitle{font-size:0.9rem;margin:0 0 25px}
+      .articles-grid{grid-template-columns:repeat(2,1fr);gap:12px;margin-top:20px}
+      .article-image{height:140px}
+      .article-content{padding:12px}
+      .article-category{font-size:0.7rem;padding:3px 8px;margin-bottom:8px}
+      .article-title{font-size:0.95rem;line-height:1.2;margin:0 0 6px}
+      .article-excerpt{font-size:0.75rem;line-height:1.35;margin:0 0 10px}
+      .article-meta{font-size:0.7rem;flex-direction:column;align-items:flex-start;gap:4px}
+      .article-views, .article-date{gap:3px}
+      .view-icon, .date-icon{width:12px;height:12px}
+      .trending-badge{top:8px;right:8px;padding:3px 6px;font-size:0.6rem}
+    }
+    
+    @media (max-width:480px){
+      .popular-articles{padding:25px 0}
+      .popular-articles h2{font-size:1.6rem;margin:0 0 6px}
+      .popular-articles .subtitle{font-size:0.85rem;margin:0 0 20px}
+      .articles-grid{grid-template-columns:repeat(2,1fr);gap:10px;margin-top:16px}
+      .article-image{height:120px}
+      .article-content{padding:10px}
+      .article-category{font-size:0.65rem;padding:2px 8px;margin-bottom:6px}
+      .article-title{font-size:0.85rem;line-height:1.1;margin:0 0 4px}
+      .article-excerpt{font-size:0.7rem;line-height:1.25;margin:0 0 8px}
+      .article-meta{font-size:0.65rem;gap:3px}
+      .article-views, .article-date{gap:2px}
+      .view-icon, .date-icon{width:10px;height:10px}
+      .trending-badge{top:6px;right:6px;padding:2px 5px;font-size:0.55rem}
+    }
+    
+    @media (max-width:360px){
+      .popular-articles{padding:20px 0}
+      .popular-articles h2{font-size:1.4rem;margin:0 0 5px}
+      .popular-articles .subtitle{font-size:0.8rem;margin:0 0 15px}
+      .articles-grid{grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px}
+      .article-image{height:110px}
+      .article-content{padding:8px}
+      .article-category{font-size:0.6rem;padding:2px 6px;margin-bottom:5px}
+      .article-title{font-size:0.8rem;line-height:1.1;margin:0 0 4px}
+      .article-excerpt{font-size:0.65rem;line-height:1.2;margin:0 0 6px}
+      .article-meta{font-size:0.6rem;gap:3px}
+      .view-icon, .date-icon{width:9px;height:9px}
+      .trending-badge{top:5px;right:5px;padding:1px 4px;font-size:0.5rem}
+    }
+
+    /* ===== SECCIÓN UBICACIÓN ===== */
+    .location-section{background:linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);padding:30px 0;position:relative;overflow:hidden}
+    .location-section::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at 20% 20%, rgba(255,0,150,0.2) 0%, transparent 50%), radial-gradient(circle at 80% 30%, rgba(0,255,255,0.2) 0%, transparent 50%), radial-gradient(circle at 40% 70%, rgba(255,255,0,0.2) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(255,0,255,0.2) 0%, transparent 50%), radial-gradient(circle at 10% 60%, rgba(0,255,0,0.2) 0%, transparent 50%), radial-gradient(circle at 90% 10%, rgba(255,100,0,0.2) 0%, transparent 50%);animation:rainbow-float 8s ease-in-out infinite;z-index:1}
+    .location-section::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at 60% 40%, rgba(150,0,255,0.15) 0%, transparent 40%), radial-gradient(circle at 30% 90%, rgba(255,200,0,0.15) 0%, transparent 40%), radial-gradient(circle at 85% 60%, rgba(0,150,255,0.15) 0%, transparent 40%);animation:rainbow-float 12s ease-in-out infinite reverse;z-index:1}
+    @keyframes rainbow-float{0%,100%{transform:translateY(0px) rotate(0deg);opacity:0.6}25%{transform:translateY(-10px) rotate(1deg);opacity:0.8}50%{transform:translateY(-5px) rotate(-1deg);opacity:0.7}75%{transform:translateY(-15px) rotate(0.5deg);opacity:0.9}}
+    .location-container{max-width:700px;margin:0 auto;padding:0 20px;text-align:center;position:relative;z-index:2}
+    .location-content h2{font-size:1.8rem;font-weight:800;color:#1e293b;margin:0 0 10px;line-height:1.2}
+    .location-content p{font-size:1rem;color:#64748b;margin:0 0 20px;line-height:1.6}
+    .location-info{display:flex;justify-content:center;gap:15px;flex-wrap:nowrap;align-items:stretch}
+    .location-item{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#fff;border-radius:20px;box-shadow:0 3px 10px rgba(0,0,0,0.1);transition:all 0.3s ease;flex:1;min-width:0;max-width:200px;position:relative;z-index:2}
+    .location-item:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.15)}
+    .location-icon{width:30px;height:30px;background:url('img/web%205/ubicacion.jpeg') center/contain no-repeat;flex-shrink:0}
+    .location-text h4{font-size:0.9rem;font-weight:700;color:#1e293b;margin:0 0 2px}
+    .location-text p{font-size:0.8rem;color:#64748b;margin:0;line-height:1.3}
+    
+    /* Responsive para ubicación */
+    @media (max-width:768px){
+      .location-container{padding:0 16px}
+      .location-content h2{font-size:1.5rem}
+      .location-content p{font-size:0.9rem}
+      .location-info{gap:12px}
+      .location-item{padding:10px 12px;max-width:180px}
+      .location-text h4{font-size:0.8rem}
+      .location-text p{font-size:0.75rem}
+      /* Reducir intensidad de colores en tablet */
+      .location-section::before{background:radial-gradient(circle at 20% 20%, rgba(255,0,150,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 30%, rgba(0,255,255,0.15) 0%, transparent 50%), radial-gradient(circle at 40% 70%, rgba(255,255,0,0.15) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(255,0,255,0.15) 0%, transparent 50%), radial-gradient(circle at 10% 60%, rgba(0,255,0,0.15) 0%, transparent 50%), radial-gradient(circle at 90% 10%, rgba(255,100,0,0.15) 0%, transparent 50%)}
+      .location-section::after{background:radial-gradient(circle at 60% 40%, rgba(150,0,255,0.12) 0%, transparent 40%), radial-gradient(circle at 30% 90%, rgba(255,200,0,0.12) 0%, transparent 40%), radial-gradient(circle at 85% 60%, rgba(0,150,255,0.12) 0%, transparent 40%)}
+    }
+    
+    @media (max-width:640px){
+      .location-section{padding:20px 0}
+      .location-container{padding:0 12px}
+      .location-content h2{font-size:1.3rem;margin:0 0 8px}
+      .location-content p{font-size:0.85rem;margin:0 0 15px}
+      .location-info{flex-wrap:wrap;justify-content:center;gap:10px}
+      .location-item{padding:8px 10px;flex:0 1 calc(50% - 5px);max-width:calc(50% - 5px);margin-bottom:8px;min-width:140px}
+      .location-text h4{font-size:0.75rem}
+      .location-text p{font-size:0.7rem;line-height:1.2}
+      .location-icon{width:22px;height:22px}
+      /* Simplificar efectos en móvil */
+      .location-section::before{background:radial-gradient(circle at 30% 30%, rgba(255,0,150,0.1) 0%, transparent 40%), radial-gradient(circle at 70% 70%, rgba(0,255,255,0.1) 0%, transparent 40%), radial-gradient(circle at 50% 50%, rgba(255,255,0,0.1) 0%, transparent 40%)}
+      .location-section::after{background:radial-gradient(circle at 20% 80%, rgba(150,0,255,0.08) 0%, transparent 35%), radial-gradient(circle at 80% 20%, rgba(255,200,0,0.08) 0%, transparent 35%)}
+    }
+    
+    @media (max-width:480px){
+      .location-section{padding:15px 0}
+      .location-container{padding:0 10px}
+      .location-content h2{font-size:1.2rem;margin:0 0 6px}
+      .location-content p{font-size:0.8rem;margin:0 0 12px}
+      .location-info{flex-direction:column;align-items:center;gap:8px}
+      .location-item{padding:6px 10px;flex:1;max-width:100%;width:100%;min-width:auto;margin-bottom:0}
+      .location-text h4{font-size:0.7rem;margin:0 0 1px}
+      .location-text p{font-size:0.65rem;line-height:1.1}
+      .location-icon{width:20px;height:20px}
+      /* Efectos mínimos en pantallas muy pequeñas */
+      .location-section::before{background:radial-gradient(circle at 50% 30%, rgba(255,0,150,0.08) 0%, transparent 30%), radial-gradient(circle at 50% 70%, rgba(0,255,255,0.08) 0%, transparent 30%)}
+      .location-section::after{background:none}
+      /* Reducir animación en móvil */
+      .location-section::before{animation:rainbow-float 12s ease-in-out infinite}
+    }
+    
+    @media (max-width:360px){
+      .location-section{padding:12px 0}
+      .location-container{padding:0 8px}
+      .location-content h2{font-size:1.1rem}
+      .location-content p{font-size:0.75rem}
+      .location-item{padding:5px 8px}
+      .location-text h4{font-size:0.65rem}
+      .location-text p{font-size:0.6rem}
+      .location-icon{width:18px;height:18px}
+      /* Desactivar efectos en pantallas muy pequeñas */
+      .location-section::before{background:none;animation:none}
+      .location-section::after{background:none;animation:none}
+    }
+
+    /* ===== MODALES ===== */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;backdrop-filter:blur(8px);animation:fadeIn 0.3s ease}
+    .modal{width:min(1200px,95vw);max-height:90vh;background:linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);border:1px solid rgba(255,255,255,0.1);border-radius:20px;overflow:hidden;box-shadow:0 25px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);animation:slideUp 0.4s cubic-bezier(0.4,0,0.2,1)}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;padding:24px 30px;border-bottom:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);backdrop-filter:blur(10px)}
+    .modal-header strong{color:#fff;font-size:1.5rem;font-weight:700;text-shadow:0 2px 4px rgba(0,0,0,0.5)}
+    .modal-close{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:12px 20px;border-radius:12px;cursor:pointer;font-weight:600;transition:all 0.3s ease;backdrop-filter:blur(10px)}
+    .modal-close:hover{background:rgba(255,255,255,0.2);transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,0.3)}
+    .modal-body{padding:30px;max-height:calc(90vh - 100px);overflow-y:auto}
+    .gallery{display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:20px;margin-top:20px}
+    .gallery img{width:100%;height:250px;object-fit:cover;border-radius:16px;transition:all 0.4s ease;cursor:pointer;box-shadow:0 8px 25px rgba(0,0,0,0.3);border:2px solid rgba(255,255,255,0.1)}
+    .gallery img:hover{transform:translateY(-8px) scale(1.02);box-shadow:0 15px 40px rgba(0,0,0,0.4);border-color:rgba(59,130,246,0.5)}
+    .service-description{color:#e2e8f0;font-size:1.1rem;line-height:1.6;margin-bottom:20px;text-align:center;padding:20px;background:rgba(255,255,255,0.05);border-radius:12px;border:1px solid rgba(255,255,255,0.1)}
+    .gallery-title{color:#fff;font-size:1.3rem;font-weight:600;margin-bottom:15px;text-align:center;text-shadow:0 2px 4px rgba(0,0,0,0.5)}
+    .productos-lista{margin-bottom:30px}
+    .productos-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;margin-top:15px}
+    .producto-item{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:12px 16px;text-align:center;color:#e2e8f0;font-size:0.9rem;font-weight:500;transition:all 0.3s ease;backdrop-filter:blur(5px)}
+    .producto-item:hover{background:rgba(255,255,255,0.15);border-color:rgba(59,130,246,0.5);transform:translateY(-2px)}
+    
+    /* Animaciones */
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes slideUp{from{opacity:0;transform:translateY(50px) scale(0.9)}to{opacity:1;transform:translateY(0) scale(1)}}
+    
+    /* Responsive mejorado */
+    @media (max-width:768px){
+      .modal{width:95vw;max-height:95vh;border-radius:16px}
+      .modal-header{padding:20px;font-size:1.2rem}
+      .modal-body{padding:20px;max-height:calc(95vh - 80px)}
+      .gallery{grid-template-columns:1fr;gap:12px}
+      .gallery img{height:160px;border-radius:10px}
+      .service-description{font-size:1rem;padding:15px;margin-bottom:15px}
+      .gallery-title{font-size:1.1rem;margin-bottom:12px}
+      .productos-grid{grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));gap:10px}
+      .producto-item{font-size:0.8rem;padding:10px 12px}
+    }
+    
+    @media (max-width:480px){
+      .modal{width:100vw;height:100vh;border-radius:0}
+      .modal-header{padding:16px}
+      .modal-body{padding:16px;max-height:calc(100vh - 60px)}
+      .gallery{grid-template-columns:1fr;gap:10px}
+      .gallery img{height:140px;border-radius:8px}
+      .service-description{font-size:0.9rem;padding:12px;margin-bottom:12px}
+      .gallery-title{font-size:1rem;margin-bottom:10px}
+      .productos-grid{grid-template-columns:1fr;gap:8px}
+      .producto-item{font-size:0.75rem;padding:8px 10px}
+    }
+    
+    @media (max-width:360px){
+      .modal-header{padding:12px}
+      .modal-body{padding:12px;max-height:calc(100vh - 50px)}
+      .gallery{grid-template-columns:1fr;gap:8px}
+      .gallery img{height:120px;border-radius:6px}
+      .service-description{font-size:0.85rem;padding:10px;margin-bottom:10px}
+      .gallery-title{font-size:0.9rem;margin-bottom:8px}
+      .producto-item{font-size:0.7rem;padding:6px 8px}
+    }
+
+    /* ===== SECCIÓN EMAIL/COTIZACIÓN ===== */
+    .email-section{background:linear-gradient(135deg, rgba(30,41,59,0.9) 0%, rgba(51,65,85,0.8) 50%, rgba(71,85,105,0.9) 100%), url('img/web%205/ofertas/fondo-correo.jpeg');background-size:cover;background-position:center;background-attachment:fixed;padding:80px 0;position:relative;overflow:hidden;min-height:100vh;display:flex;align-items:center}
+    .email-section::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:1}
+    .email-container{max-width:min(900px, 95vw);margin:0 auto;padding:40px max(20px, 5vw);position:relative;z-index:3;text-align:center;width:100%;box-sizing:border-box}
+    .email-header{margin-bottom:50px}
+    .email-title{font-size:clamp(2rem, 5vw, 3rem);font-weight:800;color:#fff;margin:0 0 20px;text-shadow:0 4px 12px rgba(0,0,0,0.7), 0 2px 4px rgba(0,0,0,0.5);line-height:1.2;word-wrap:break-word;hyphens:auto}
+    .email-subtitle{font-size:clamp(1rem, 3vw, 1.3rem);color:#fff;margin:0 0 30px;opacity:0.95;line-height:1.5;text-shadow:0 2px 8px rgba(0,0,0,0.6);word-wrap:break-word}
+    .email-description{font-size:clamp(0.9rem, 2.5vw, 1.1rem);color:#e2e8f0;margin:0 0 40px;max-width:min(600px, 90vw);margin-left:auto;margin-right:auto;line-height:1.6;text-shadow:0 2px 6px rgba(0,0,0,0.5);word-wrap:break-word}
+    .email-button{display:inline-flex;align-items:center;gap:15px;background:linear-gradient(135deg, #3b82f6 0%, #1d4ed8 50%, #1e40af 100%);color:#fff;border:none;padding:clamp(16px, 4vw, 20px) clamp(32px, 8vw, 40px);border-radius:50px;font-size:clamp(1rem, 3vw, 1.2rem);font-weight:700;cursor:pointer;transition:all 0.4s ease;text-decoration:none;box-shadow:0 8px 25px rgba(59,130,246,0.4);text-transform:uppercase;letter-spacing:1px;position:relative;overflow:hidden;max-width:100%;white-space:nowrap}
+    .email-button::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);transition:left 0.5s ease}
+    .email-button:hover::before{left:100%}
+    .email-button:hover{transform:translateY(-3px);box-shadow:0 15px 35px rgba(59,130,246,0.6);background:linear-gradient(135deg, #2563eb 0%, #1e40af 50%, #1e3a8a 100%)}
+    .email-button:active{transform:translateY(-1px)}
+    .email-icon{width:clamp(20px, 4vw, 24px);height:clamp(20px, 4vw, 24px);background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/mail.svg') center/contain no-repeat;filter:brightness(0) invert(1);flex-shrink:0}
+    .email-features{display:grid;grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));gap:clamp(20px, 4vw, 30px);margin-top:60px;padding-top:40px;border-top:1px solid rgba(255,255,255,0.1);width:100%}
+    .feature-card{background:rgba(255,255,255,0.1);backdrop-filter:blur(15px);border:1px solid rgba(255,255,255,0.2);border-radius:16px;padding:clamp(20px, 4vw, 30px) clamp(16px, 3vw, 20px);text-align:center;transition:all 0.3s ease;box-shadow:0 8px 25px rgba(0,0,0,0.2);width:100%;box-sizing:border-box}
+    .feature-card:hover{transform:translateY(-5px);background:rgba(255,255,255,0.15);border-color:rgba(59,130,246,0.5);box-shadow:0 12px 35px rgba(0,0,0,0.3)}
+    .feature-icon{width:clamp(40px, 8vw, 50px);height:clamp(40px, 8vw, 50px);margin:0 auto 15px;background:linear-gradient(135deg, #3b82f6, #1d4ed8);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:clamp(1.2rem, 3vw, 1.5rem);box-shadow:0 4px 15px rgba(59,130,246,0.3)}
+    .feature-title{font-weight:700;color:#fff;margin:0 0 10px;font-size:clamp(1rem, 2.5vw, 1.1rem);text-shadow:0 2px 4px rgba(0,0,0,0.5);word-wrap:break-word}
+    .feature-desc{color:#e2e8f0;font-size:clamp(0.8rem, 2vw, 0.9rem);margin:0;line-height:1.5;opacity:0.95;text-shadow:0 1px 3px rgba(0,0,0,0.4);word-wrap:break-word}
+    .email-cta{background:rgba(59,130,246,0.15);border:2px solid rgba(59,130,246,0.4);border-radius:20px;padding:clamp(20px, 4vw, 30px);margin-top:40px;backdrop-filter:blur(15px);box-shadow:0 8px 25px rgba(0,0,0,0.2);width:100%;box-sizing:border-box}
+    .cta-text{color:#fff;font-size:clamp(1rem, 2.5vw, 1.1rem);margin:0 0 15px;font-weight:600;text-shadow:0 2px 4px rgba(0,0,0,0.5);word-wrap:break-word}
+    .cta-email{color:#60a5fa;font-size:clamp(1.1rem, 3vw, 1.3rem);font-weight:700;text-decoration:none;transition:color 0.3s ease;text-shadow:0 2px 4px rgba(0,0,0,0.3);word-wrap:break-word;word-break:break-all}
+    .cta-email:hover{color:#93c5fd;text-decoration:underline}
+    
+    /* Media queries optimizados - Solo para ajustes específicos */
+    @media (max-width:768px){
+      .email-section{min-height:auto;padding:60px 0}
+      .email-features{grid-template-columns:1fr;gap:20px}
+      .feature-card{padding:20px 16px;min-height:auto}
+      .feature-icon{width:35px;height:35px;font-size:1.1rem;margin:0 auto 12px}
+      .feature-title{font-size:0.95rem;margin:0 0 8px}
+      .feature-desc{font-size:0.8rem;line-height:1.4}
+    }
+    
+    @media (max-width:480px){
+      .email-section{padding:40px 0}
+      .email-container{padding:20px 15px}
+      .email-features{gap:15px}
+      .feature-card{padding:15px 12px;min-height:auto}
+      .feature-icon{width:30px;height:30px;font-size:1rem;margin:0 auto 10px}
+      .feature-title{font-size:0.85rem;margin:0 0 6px}
+      .feature-desc{font-size:0.75rem;line-height:1.3}
+      .email-cta{padding:15px;margin-top:30px}
+      .cta-text{font-size:0.9rem;margin:0 0 10px}
+      .cta-email{font-size:1rem}
+    }
+    
+    @media (max-width:360px){
+      .email-container{padding:15px 10px}
+      .email-features{gap:12px}
+      .feature-card{padding:12px 10px;min-height:auto}
+      .feature-icon{width:25px;height:25px;font-size:0.9rem;margin:0 auto 8px}
+      .feature-title{font-size:0.8rem;margin:0 0 5px}
+      .feature-desc{font-size:0.7rem;line-height:1.2}
+      .email-cta{padding:12px;margin-top:25px}
+      .cta-text{font-size:0.85rem;margin:0 0 8px}
+      .cta-email{font-size:0.9rem}
+    }
+
+    /* ===== FOOTER ===== */
+    .footer{border-top:6px solid transparent;border-image:linear-gradient(90deg, cyan, magenta, yellow, black) 1;background:#000;color:#fff;padding:26px 0;margin-top:0}
+    .footer .cols{display:grid;grid-template-columns:1.2fr 1fr;gap:24px;align-items:center}
+    .brand-line{display:flex;align-items:center;gap:10px}
+    .brand-slogan{color:#e5e7eb}
+    .footer-logo{height:60px}
+    .contact{display:grid;gap:10px;justify-items:start}
+    .contact h4{margin:0 0 6px 0;letter-spacing:.5px}
+    .citem{display:flex;align-items:center;gap:10px;color:#fff}
+    .cicon{width:16px;height:16px;opacity:.9;filter:invert(1)}
+    .cicon.whatsapp{background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/brand-whatsapp.svg') center/contain no-repeat}
+    .cicon.mail{background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/mail.svg') center/contain no-repeat}
+    .cicon.facebook{background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/brand-facebook.svg') center/contain no-repeat}
+    .cicon.map{background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/map-pin.svg') center/contain no-repeat}
+    .footer-links{margin-top:18px;padding-top:18px;border-top:1px solid #1a1a24}
+    .footer-links .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    .footer-links h5{margin:0 0 8px 0;font-size:14px;letter-spacing:.4px;color:#e5e7eb}
+    .footer-links a{display:block;color:#cbd5e1;opacity:.9;padding:6px 0}
+    .footer-links a:hover{opacity:1;text-decoration:underline}
+    
+    /* Footer Responsive */
+    @media (max-width:768px){
+      .footer{padding:20px 0}
+      .footer .cols{gap:20px}
+      .footer-logo{height:50px}
+      .contact{gap:8px}
+      .contact h4{font-size:0.9rem;margin:0 0 5px 0}
+      .citem{gap:8px;font-size:0.9rem}
+      .cicon{width:14px;height:14px}
+      .footer-links{margin-top:15px;padding-top:15px}
+      .footer-links .grid{grid-template-columns:repeat(2,1fr);gap:12px}
+      .footer-links h5{font-size:13px;margin:0 0 6px 0}
+      .footer-links a{font-size:12px;padding:4px 0}
+    }
+    
+    @media (max-width:640px){
+      .footer .cols{grid-template-columns:1fr;gap:16px;text-align:center}
+      .brand-line{justify-content:center}
+      .contact{justify-items:center;gap:6px}
+      .contact h4{font-size:0.85rem}
+      .citem{justify-content:center;font-size:0.85rem}
+      .footer-links .grid{grid-template-columns:repeat(2,1fr);gap:10px}
+    }
+    
+    @media (max-width:480px){
+      .footer{padding:15px 0}
+      .footer-logo{height:40px}
+      .contact h4{font-size:0.8rem;margin:0 0 4px 0}
+      .citem{font-size:0.8rem;gap:6px}
+      .cicon{width:12px;height:12px}
+      .footer-links{margin-top:12px;padding-top:12px}
+      .footer-links .grid{grid-template-columns:1fr;gap:8px;text-align:center}
+      .footer-links h5{font-size:12px;margin:0 0 4px 0}
+      .footer-links a{font-size:11px;padding:3px 0}
+    }
+    
+    @media (max-width:360px){
+      .footer{padding:12px 0}
+      .footer-logo{height:35px}
+      .contact h4{font-size:0.75rem}
+      .citem{font-size:0.75rem;gap:5px}
+      .cicon{width:10px;height:10px}
+      .footer-links{margin-top:10px;padding-top:10px}
+      .footer-links h5{font-size:11px}
+      .footer-links a{font-size:10px;padding:2px 0}
+    }
+
+    /* ===== ADAPTACIONES MÓVILES GENERALES ===== */
+    @media (max-width:640px){
+      .infobar-inner{height:auto;gap:8px;padding:8px 0}
+      .section{padding:28px 0}
+      .nav{gap:10px}
+      .nav a{font-size:14px}
+      .swiper-slide img{height:260px}
+      .hero-cta .cta-inner{font-size:14px}
+      .grid{gap:10px}
+      .trust .grid{grid-template-columns:1fr 1fr}
+      .service{padding:16px;min-height:100px;gap:10px}
+      .service img{width:50px;height:50px}
+      .service b{font-size:0.8rem;margin-top:6px}
+      .quick-input{flex-direction:column;align-items:stretch}
+      .quick-input .btn, .quick-input button{width:100%}
+      .footer .cols{gap:16px}
+      .footer-logo{height:48px}
+      .footer-links .grid{grid-template-columns:1fr 1fr}
+    }
+    
+    @media (max-width:480px){
+      .infobar-inner{height:auto;gap:6px;padding:6px 0;font-size:12px}
+      .section{padding:20px 0}
+      .header-inner{height:70px;padding:0 12px}
+      .logo-img{height:50px}
+      .nav{gap:8px}
+      .nav a{font-size:13px;padding:6px 12px}
+      .swiper-slide img{height:220px}
+      .hero-cta .cta-inner{font-size:13px;padding:10px 14px}
+      .grid{gap:8px}
+      .trust .grid{grid-template-columns:1fr;gap:12px}
+      .trust .badge{padding:12px;gap:10px}
+      .trust .icon{width:16px;height:16px}
+      .service{padding:12px;min-height:90px;gap:8px}
+      .service img{width:40px;height:40px}
+      .service b{font-size:0.75rem;margin-top:5px}
+    }
+    
+    @media (max-width:360px){
+      .infobar-inner{height:auto;gap:4px;padding:4px 0;font-size:11px}
+      .section{padding:15px 0}
+      .header-inner{height:60px;padding:0 10px}
+      .logo-img{height:45px}
+      .nav{gap:6px}
+      .nav a{font-size:12px;padding:5px 10px}
+      .swiper-slide img{height:180px}
+      .hero-cta .cta-inner{font-size:12px;padding:8px 12px}
+      .grid{gap:6px}
+      .trust .badge{padding:10px;gap:8px}
+      .trust .icon{width:14px;height:14px}
+      .trust .txt b{font-size:13px}
+      .trust .txt small{font-size:11px}
+      .service{padding:10px;min-height:80px;gap:6px}
+      .service img{width:35px;height:35px}
+      .service b{font-size:0.7rem;margin-top:4px}
+    }
+    
+    /* ===== SCROLL OFFSET PARA HEADER STICKY ===== */
+    #servicios,#ubicacion,#cotiza,#contacto{scroll-margin-top:110px}
+    @media (max-width:640px){#servicios,#ubicacion,#cotiza,#contacto{scroll-margin-top:80px}}
+    @media (max-width:480px){#servicios,#ubicacion,#cotiza,#contacto{scroll-margin-top:70px}}
+    @media (max-width:360px){#servicios,#ubicacion,#cotiza,#contacto{scroll-margin-top:60px}}
+  </style>
+</head>
+<body>
+  <div class="topbar"></div>
+  <div class="infobar">
+    <div class="container infobar-inner">
+      <div class="left">
+        <span class="item"><span class="i mail"></span> zgrafica.mx@gmail.com</span>
+      </div>
+      <div class="right">
+        <span class="item"><span class="i clock"></span> Lun–Vie 9:00–18:00</span>
+        <span class="item"><span class="i lock"></span> Privacidad y pagos seguros</span>
+      </div>
+    </div>
+  </div>
+  <div id="root"></div>
+  <div class="bottombar"></div>
+
+  <!-- React 18 from CDN -->
+  <script crossorigin="anonymous" src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin="anonymous" src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Swiper JS -->
+  <script crossorigin="anonymous" src="https://unpkg.com/swiper@9/swiper-bundle.min.js"></script>
+  <!-- PocketBase SDK -->
+  <script crossorigin="anonymous" src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+  <script>
+    // ================================================================================
+    // CONFIGURACIÓN INICIAL Y DEPENDENCIAS
+    // ================================================================================
+    const { useState, useEffect } = React;
+
+    // Configuración básica
+    const WHATSAPP_PHONE = '529898737313'; // Cambia al número real con código país
+    
+    // ================================================================================
+    // CONFIGURACIÓN DE POCKETBASE BACKEND
+    // ================================================================================
+    // URL del backend PocketBase
+    const POCKETBASE_URL = 'https://zonagraficapd.ezhostingit.com';
+    
+    // Variables globales para almacenar datos dinámicos
+    let serviciosDinamicos = [];
+    let productosDinamicos = [];
+
+    // ================================================================================
+    // FUNCIONES DE CONEXIÓN CON POCKETBASE BACKEND
+    // ================================================================================
+    
+    // LÍNEA 720-728: Función para obtener categorías desde PocketBase
+    // Endpoint: /api/collections/categorias/records
+    async function obtenerCategorias() {
+      try {
+        const response = await fetch(`${POCKETBASE_URL}/api/collections/categorias/records`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        return data.items || [];
+      } catch (error) {
+        console.warn('Error al obtener categorías de PocketBase:', error);
+        return [];
+      }
+    }
+
+    // LÍNEA 734-742: Función para obtener productos desde PocketBase
+    // Endpoint: /api/collections/productos/records
+    async function obtenerProductos() {
+      try {
+        const response = await fetch(`${POCKETBASE_URL}/api/collections/productos/records`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        return data.items || [];
+      } catch (error) {
+        console.warn('Error al obtener productos de PocketBase:', error);
+        return [];
+      }
+    }
+
+    // LÍNEA 748-756: Función para obtener productos por categoría
+    // Endpoint: /api/collections/productos/records?filter=(categoria='CATEGORIA')
+    async function obtenerProductosPorCategoria(categoria) {
+      try {
+        const response = await fetch(`${POCKETBASE_URL}/api/collections/productos/records?filter=(categoria='${categoria}')`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        return data.items || [];
+      } catch (error) {
+        console.warn(`Error al obtener productos de ${categoria}:`, error);
+        return [];
+      }
+    }
+
+    // ================================================================================
+    // FUNCIÓN PRINCIPAL DE CARGA DE DATOS DINÁMICOS
+    // ================================================================================
+    
+    // LÍNEA 766-824: Función principal que carga todos los datos desde PocketBase
+    // Procesa categorías y productos, los organiza y dispara eventos
+    async function cargarDatosDinamicos() {
+      try {
+        const [categorias, productos] = await Promise.all([
+          obtenerCategorias(),
+          obtenerProductos()
+        ]);
+
+        // Procesar categorías
+        serviciosDinamicos = categorias.map(cat => ({
+          id: cat.id,
+          nombre: cat.nombre,
+          desc: cat.descripcion || `Servicios de ${cat.nombre.toLowerCase()}`,
+          icon: 'img/web 5/iconos/gran_formato_.png', // Icono por defecto
+          productos: [],
+          imgs: [
+            'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+            'img/web%205/ofertas/tendecia.webp',
+            'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+            'img/web%205/ofertas/vinil.jpg'
+          ]
+        }));
+
+        // Procesar productos y agrupar por categoría
+        productos.forEach(producto => {
+          const servicio = serviciosDinamicos.find(s => s.nombre === producto.categoria);
+          if (servicio) {
+            servicio.productos.push(producto.nombre);
+          }
+        });
+
+        // Asignar iconos específicos según el nombre de la categoría
+        serviciosDinamicos.forEach(servicio => {
+          switch(servicio.nombre) {
+            case 'GRAN FORMATO':
+              servicio.icon = 'img/web 5/iconos/gran_formato_.png';
+              break;
+            case 'IMPRENTA':
+              servicio.icon = 'img/web 5/iconos/imprenta.png';
+              break;
+            case 'ESTAMPADOS':
+              servicio.icon = 'img/web 5/iconos/estampados.png';
+              break;
+            default:
+              servicio.icon = 'img/web 5/iconos/gran_formato_.png';
+          }
+        });
+
+        productosDinamicos = productos;
+        
+        // Disparar evento para actualizar componentes
+        const event = new CustomEvent('datosCargados', { 
+          detail: { servicios: serviciosDinamicos, productos: productosDinamicos } 
+        });
+        window.dispatchEvent(event);
+
+      } catch (error) {
+        console.warn('Error al cargar datos dinámicos:', error);
+      }
+    }
+
+    // ================================================================================
+    // INICIALIZACIÓN DE DATOS DINÁMICOS
+    // ================================================================================
+    
+    // LÍNEA 831: Cargar datos al inicializar la página
+    cargarDatosDinamicos();
+
+    // LÍNEA 834: Función global para refrescar datos (útil para debugging)
+    window.refrescarDatos = cargarDatosDinamicos;
+
+    // Datos de respaldo para artículos
+    const articulosRespaldo = [
+      {
+        id: 1,
+        titulo: 'Tendencias en Diseño Gráfico 2024',
+        categoria: 'Diseño',
+        imagen: 'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+        resumen: 'Descubre las últimas tendencias en diseño gráfico que están marcando el 2024. Colores, tipografías y estilos que debes conocer.',
+        vistas: 2847,
+        fecha: '15 Ene 2024',
+        trending: true
+      },
+      {
+        id: 2,
+        titulo: 'Guía Completa de Impresión Digital',
+        categoria: 'Impresión',
+        imagen: 'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+        resumen: 'Todo lo que necesitas saber sobre impresión digital: tipos de papel, resoluciones, colores y técnicas profesionales.',
+        vistas: 1923,
+        fecha: '12 Ene 2024',
+        trending: false
+      },
+      {
+        id: 3,
+        titulo: 'Vinil para Exterior: Durabilidad y Calidad',
+        categoria: 'Materiales',
+        imagen: 'img/web%205/ofertas/vinil.jpg',
+        resumen: 'Conoce los mejores tipos de vinil para trabajos exteriores. Resistencia a la intemperie y acabados profesionales.',
+        vistas: 1654,
+        fecha: '10 Ene 2024',
+        trending: false
+      },
+      {
+        id: 4,
+        titulo: 'Estampado en Textiles: Técnicas Modernas',
+        categoria: 'Estampado',
+        imagen: 'img/web%205/ofertas/tendecia.webp',
+        resumen: 'Serigrafía, sublimación y bordado. Las mejores técnicas de estampado para diferentes tipos de textiles.',
+        vistas: 1432,
+        fecha: '8 Ene 2024',
+        trending: true
+      },
+      {
+        id: 5,
+        titulo: 'Letreros Luminosos LED: Guía de Instalación',
+        categoria: 'Letreros',
+        imagen: 'img/web%205/ofertas/vinil.jpg',
+        resumen: 'Instalación profesional de letreros luminosos. Consejos de seguridad, cableado y mantenimiento.',
+        vistas: 1287,
+        fecha: '5 Ene 2024',
+        trending: false
+      },
+      {
+        id: 6,
+        titulo: 'Corte Láser: Materiales y Aplicaciones',
+        categoria: 'Grabados',
+        imagen: 'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+        resumen: 'Explora las posibilidades del corte láser en acrílico, madera, metal y otros materiales. Técnicas y acabados.',
+        vistas: 1156,
+        fecha: '3 Ene 2024',
+        trending: false
+      }
+    ];
+
+    // ================================================================================
+    // FUNCIONES DE CONEXIÓN PARA ARTÍCULOS (POCKETBASE)
+    // ================================================================================
+    
+    // LÍNEA 906-938: Función para obtener artículos desde PocketBase
+    // Flujo robusto:
+    //  - Verifica existencia de colección (GET /api/collections/articulos)
+    //  - Si 404 u otro error: retorna "articulosRespaldo" sin warning ruidoso
+    //  - Si OK: consulta registros con sort/limit y transforma al formato de UI
+    // Endpoint datos: /api/collections/articulos/records?sort=-fecha&perPage=6
+    async function obtenerArticulosPocketBase() {
+      try {
+        // Verificar si la colección existe para evitar 404 ruidosos
+        const meta = await fetch(`${POCKETBASE_URL}/api/collections/articulos`);
+        if (meta.status === 404) {
+          return articulosRespaldo;
+        }
+        if (!meta.ok) {
+          return articulosRespaldo;
+        }
+
+        const response = await fetch(`${POCKETBASE_URL}/api/collections/articulos/records?sort=-fecha&perPage=6`);
+        if (response.status === 404) {
+          return articulosRespaldo;
+        }
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data.items && data.items.length > 0) {
+          // Transformar datos de PocketBase al formato esperado
+          return data.items.map(articulo => ({
+            id: articulo.id,
+            titulo: articulo.titulo || 'Sin título',
+            categoria: articulo.categoria || 'General',
+            imagen: articulo.imagen || 'img/web%205/ofertas/vinil.jpg',
+            resumen: articulo.resumen || 'Descripción no disponible',
+            vistas: articulo.vistas || 0,
+            fecha: articulo.fecha ? new Date(articulo.fecha).toLocaleDateString('es-ES', {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric'
+            }) : 'Fecha no disponible',
+            trending: articulo.trending || false
+          }));
+        }
+        return articulosRespaldo; // Usar datos de respaldo si no hay datos
+      } catch (error) {
+        console.info('Artículos: usando respaldo. Detalle:', error?.message || error);
+        return articulosRespaldo; // Usar datos de respaldo en caso de error
+      }
+    }
+
+    // LÍNEA 943-949: Función para cargar artículos al inicializar
+    async function cargarArticulos() {
+      const articulos = await obtenerArticulosPocketBase();
+      // Forzar re-render del componente si es necesario
+      const event = new CustomEvent('articulosCargados', { detail: articulos });
+      window.dispatchEvent(event);
+    }
+
+    // LÍNEA 951: Cargar artículos al inicializar la página
+    cargarArticulos();
+
+    // Datos de testimonios
+    const testimonios = [
+      {
+        id: 1,
+        nombre: 'María González',
+        empresa: 'Restaurante El Buen Sabor',
+        testimonio: 'Excelente trabajo en nuestros menús y letreros. Muy profesionales y cumplieron con los tiempos de entrega.',
+        rating: 5,
+        avatar: 'img/web%205/ofertas/vinil.jpg'
+      },
+      {
+        id: 2,
+        nombre: 'Carlos Mendoza',
+        empresa: 'Gym Fitness Plus',
+        testimonio: 'Las playeras estampadas quedaron perfectas. Calidad superior y precios justos. Los recomiendo ampliamente.',
+        rating: 5,
+        avatar: 'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg'
+      },
+      {
+        id: 3,
+        nombre: 'Ana Rodríguez',
+        empresa: 'Farmacia San José',
+        testimonio: 'El diseño de nuestro logo y material promocional superó nuestras expectativas. Muy creativos y atentos.',
+        rating: 5,
+        avatar: 'img/web%205/ofertas/digital-printing-trends-Ghana-1.png'
+      },
+      {
+        id: 4,
+        nombre: 'Roberto Silva',
+        empresa: 'Taller Mecánico Rápido',
+        testimonio: 'Los letreros luminosos se ven increíbles. Trabajo de calidad y instalación profesional. Muy satisfecho.',
+        rating: 5,
+        avatar: 'img/web%205/ofertas/tendecia.webp'
+      },
+      {
+        id: 5,
+        nombre: 'Laura Pérez',
+        empresa: 'Boutique Elegance',
+        testimonio: 'El material impreso para nuestra tienda es de excelente calidad. Diseño moderno y acabados perfectos.',
+        rating: 5,
+        avatar: 'img/web%205/ofertas/vinil.jpg'
+      },
+      {
+        id: 6,
+        nombre: 'Miguel Torres',
+        empresa: 'Café del Centro',
+        testimonio: 'Los displays y señalética que nos hicieron son perfectos. Muy recomendables para cualquier negocio.',
+        rating: 5,
+        avatar: 'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg'
+      }
+    ];
+
+    // ================================================================================
+    // DATOS ESTÁTICOS Y CONFIGURACIÓN
+    // ================================================================================
+    
+    // LÍNEA 1008-1014: Banners de publicidad (public/webs/img/web 5/ofertas)
+    const banners = [
+      'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+      'img/web%205/ofertas/tendecia.webp',
+      'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+      'img/web%205/ofertas/vinil.jpg',
+      'img/web%205/portada.jpeg' // Imagen de respaldo
+    ];
+
+    // LÍNEA 1017-1050: Servicios estáticos (fallback si PocketBase falla)
+    const servicios = [
+      { id:'gran-formato', nombre:'Gran Formato', desc:'Lonas impresas, microperforado, vinil mate/brillante, backlite, banderas publicitarias y vinil estático. Trabajos de gran formato para publicidad exterior e interior.', icon:'img/web 5/iconos/gran_formato_.png', thumb:'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+        productos:['LONA IMPRESA', 'MICROPERFORADO', 'VINIL MATE / BRILLANTE', 'BACKLITE', 'BANDERAS PUBLICITARIAS', 'VINIL ESTATICO'],
+        imgs:[
+          'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+          'img/web%205/ofertas/tendecia.webp',
+          'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+          'img/web%205/ofertas/vinil.jpg'
+        ]},
+      { id:'imprenta', nombre:'Imprenta', desc:'Tarjetas de presentación, volantes, dípticos, trípticos, block de notas, tabloides adhesivos y carpetas impresas. Impresión digital y offset de alta calidad.', icon:'img/web 5/iconos/imprenta.png', thumb:'img/web%205/ofertas/vinil.jpg',
+        productos:['TARJETAS DE PRESENTACION', 'VOLANTES / DIPTICOS / TRIPTICOS', 'BLOCK DE NOTAS / FORMATOS', 'TABLOIDE ADHESIVO CON RECORTE', 'TABLOIDE EN PAPEL COUCHE', 'CARPETAS IMPRESAS'],
+        imgs:[
+          'img/web%205/ofertas/vinil.jpg',
+          'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+          'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+          'img/web%205/ofertas/tendecia.webp'
+        ]},
+      { id:'estampados', nombre:'Estampados', desc:'Playeras, gorras, textil personalizado y merchandising corporativo. Técnicas de serigrafía, sublimación y bordado profesional.', icon:'img/web 5/iconos/estampados.png', thumb:'img/web%205/ofertas/tendecia.webp',
+        productos:['SERVICIOS DE ESTAMPADO DISPONIBLES'],
+        imgs:[
+          'img/web%205/ofertas/tendecia.webp',
+          'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+          'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+          'img/web%205/ofertas/vinil.jpg'
+        ]},
+      { id:'rigidos', nombre:'Rígidos', desc:'Letreros rígidos, displays, stands y señalética de materiales sólidos como acrílico, PVC, foam board y metal. Durabilidad y resistencia.', icon:'img/web 5/iconos/gran_formato_.png', thumb:'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+        productos:['SERVICIOS DE RÍGIDOS DISPONIBLES'],
+        imgs:[
+          'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+          'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+          'img/web%205/ofertas/vinil.jpg',
+          'img/web%205/ofertas/tendecia.webp'
+        ]},
+      { id:'promocionales', nombre:'Promocionales', desc:'Material promocional, regalos corporativos, artículos publicitarios y merchandising personalizado para eventos y campañas.', icon:'img/web 5/iconos/imprenta.png', thumb:'img/web%205/ofertas/vinil.jpg',
+        productos:['SERVICIOS PROMOCIONALES DISPONIBLES'],
+        imgs:[
+          'img/web%205/ofertas/vinil.jpg',
+          'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+          'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+          'img/web%205/ofertas/tendecia.webp'
+        ]},
+      { id:'diseno', nombre:'Diseño', desc:'Servicios de diseño gráfico, identidad corporativa, logotipos, branding y creatividad visual profesional para todos tus proyectos.', icon:'img/web 5/iconos/estampados.png', thumb:'img/web%205/ofertas/tendecia.webp',
+        productos:['SERVICIOS DE DISEÑO DISPONIBLES'],
+        imgs:[
+          'img/web%205/ofertas/tendecia.webp',
+          'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+          'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+          'img/web%205/ofertas/vinil.jpg'
+        ]},
+      { id:'otros-productos', nombre:'Otros Productos', desc:'Servicios adicionales, productos especializados y soluciones personalizadas para necesidades específicas de tu empresa.', icon:'img/web 5/iconos/gran_formato_.png', thumb:'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+        productos:['SERVICIOS ADICIONALES DISPONIBLES'],
+        imgs:[
+          'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+          'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+          'img/web%205/ofertas/vinil.jpg',
+          'img/web%205/ofertas/tendecia.webp'
+        ]},
+    ];
+
+    const articulosPopulares = [
+      {
+        id: 1,
+        titulo: 'Tendencias en Diseño Gráfico 2024',
+        categoria: 'Diseño',
+        imagen: 'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+        resumen: 'Descubre las últimas tendencias en diseño gráfico que están marcando el 2024. Colores, tipografías y estilos que debes conocer.',
+        vistas: 2847,
+        fecha: '15 Ene 2024',
+        trending: true
+      },
+      {
+        id: 2,
+        titulo: 'Guía Completa de Impresión Digital',
+        categoria: 'Impresión',
+        imagen: 'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+        resumen: 'Todo lo que necesitas saber sobre impresión digital: tipos de papel, resoluciones, colores y técnicas profesionales.',
+        vistas: 1923,
+        fecha: '12 Ene 2024',
+        trending: false
+      },
+      {
+        id: 3,
+        titulo: 'Vinil para Exterior: Durabilidad y Calidad',
+        categoria: 'Materiales',
+        imagen: 'img/web%205/ofertas/vinil.jpg',
+        resumen: 'Conoce los mejores tipos de vinil para trabajos exteriores. Resistencia a la intemperie y acabados profesionales.',
+        vistas: 1654,
+        fecha: '10 Ene 2024',
+        trending: false
+      },
+      {
+        id: 4,
+        titulo: 'Estampado en Textiles: Técnicas Modernas',
+        categoria: 'Estampado',
+        imagen: 'img/web%205/ofertas/tendecia.webp',
+        resumen: 'Serigrafía, sublimación y bordado. Las mejores técnicas de estampado para diferentes tipos de textiles.',
+        vistas: 1432,
+        fecha: '8 Ene 2024',
+        trending: true
+      },
+      {
+        id: 5,
+        titulo: 'Letreros Luminosos LED: Guía de Instalación',
+        categoria: 'Letreros',
+        imagen: 'img/web%205/ofertas/vinil.jpg',
+        resumen: 'Instalación profesional de letreros luminosos. Consejos de seguridad, cableado y mantenimiento.',
+        vistas: 1287,
+        fecha: '5 Ene 2024',
+        trending: false
+      },
+      {
+        id: 6,
+        titulo: 'Corte Láser: Materiales y Aplicaciones',
+        categoria: 'Grabados',
+        imagen: 'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+        resumen: 'Explora las posibilidades del corte láser en acrílico, madera, metal y otros materiales. Técnicas y acabados.',
+        vistas: 1156,
+        fecha: '3 Ene 2024',
+        trending: false
+      }
+    ];
+
+    // ================================================================================
+    // COMPONENTES REACT
+    // ================================================================================
+    
+    // LÍNEA 1145-1200: Componente Header con navegación
+    function Header(){
+      useEffect(() => {
+        const header = document.querySelector('.header');
+        let lastScrollY = window.scrollY;
+        let ticking = false;
+
+        const handleScroll = () => {
+          if (!ticking) {
+            requestAnimationFrame(() => {
+              const currentScrollY = window.scrollY;
+              
+              // Agregar sombra cuando se hace scroll
+              if (currentScrollY > 50) {
+                header?.classList.add('scrolled');
+              } else {
+                header?.classList.remove('scrolled');
+              }
+
+              // Lógica para mostrar/ocultar header
+              if (currentScrollY > lastScrollY && currentScrollY > 100) {
+                // Scrolling down - ocultar header
+                header?.classList.add('hidden');
+              } else {
+                // Scrolling up - mostrar header
+                header?.classList.remove('hidden');
+              }
+
+              lastScrollY = currentScrollY;
+              ticking = false;
+            });
+            ticking = true;
+          }
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+      }, []);
+
+      return React.createElement('header',{className:'header'},
+        React.createElement('div',{className:'header-inner'},[
+          React.createElement('div',{className:'logo',key:'logo'},[
+            React.createElement('img',{className:'logo-img',src:'img/web%205/zona%20grafica.jpeg',alt:'Zona Gráfica'})
+          ]),
+          React.createElement('nav',{className:'nav',key:'nav'},[
+            React.createElement('a',{href:'#servicios'},'Servicios'),
+            React.createElement('a',{href:'#ubicacion'},'Ubicación'),
+            React.createElement('a',{href:'#cotiza'},'Cotiza'),
+            React.createElement('a',{href:'#contacto'},'Contacto')
+          ]),
+          React.createElement('div',{className:'header-cta',key:'cta'},[
+            React.createElement('a',{className:'wa-btn',href:`https://api.whatsapp.com/send?phone=${WHATSAPP_PHONE}`,target:'_blank',rel:'noopener'},[
+              React.createElement('span',{style:{display:'inline-flex',width:18,height:18,background:'url(https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/brand-whatsapp.svg) center/contain no-repeat'}},''),
+              React.createElement('span',null,'WhatsApp'),
+              React.createElement('small',null,'+52 899 873 7313')
+            ])
+          ]),
+          React.createElement('button',{className:'menu-btn',id:'menuBtn',ariaControls:'mobilePanel',ariaExpanded:false,onClick:()=>{
+            const p = document.getElementById('mobilePanel');
+            if(!p) return;
+            const isOpen = p.classList.toggle('open');
+            const btn = document.getElementById('menuBtn');
+            if(btn) btn.setAttribute('aria-expanded', String(isOpen));
+          }}, '☰'),
+          React.createElement('div',{id:'mobilePanel',className:'mobile-panel',key:'mp'},[
+            React.createElement('a',{href:'#servicios',onClick:()=>{
+              const p = document.getElementById('mobilePanel');
+              if(p) p.classList.remove('open');
+              const btn = document.getElementById('menuBtn');
+              if(btn) btn.setAttribute('aria-expanded','false');
+            }},'Servicios'),
+            React.createElement('a',{href:'#ubicacion',onClick:()=>{
+              const p = document.getElementById('mobilePanel');
+              if(p) p.classList.remove('open');
+              const btn = document.getElementById('menuBtn');
+              if(btn) btn.setAttribute('aria-expanded','false');
+            }},'Ubicación'),
+            React.createElement('a',{href:'#cotiza',onClick:()=>{
+              const p = document.getElementById('mobilePanel');
+              if(p) p.classList.remove('open');
+              const btn = document.getElementById('menuBtn');
+              if(btn) btn.setAttribute('aria-expanded','false');
+            }},'Cotiza'),
+            React.createElement('a',{href:'#contacto',onClick:()=>{
+              const p = document.getElementById('mobilePanel');
+              if(p) p.classList.remove('open');
+              const btn = document.getElementById('menuBtn');
+              if(btn) btn.setAttribute('aria-expanded','false');
+            }},'Contacto'),
+            React.createElement('a',{href:'tel:+528998737313',onClick:()=>{
+              const p = document.getElementById('mobilePanel');
+              if(p) p.classList.remove('open');
+              const btn = document.getElementById('menuBtn');
+              if(btn) btn.setAttribute('aria-expanded','false');
+            }},'📞 Llamar'),
+            React.createElement('a',{href:`https://api.whatsapp.com/send?phone=${WHATSAPP_PHONE}`,target:'_blank',rel:'noopener',onClick:()=>{
+              const p = document.getElementById('mobilePanel');
+              if(p) p.classList.remove('open');
+              const btn = document.getElementById('menuBtn');
+              if(btn) btn.setAttribute('aria-expanded','false');
+            }},'💬 WhatsApp')
+          ])
+        ])
+      );
+    }
+
+    function BannerCarousel(){
+      useEffect(()=>{
+        // eslint-disable-next-line no-new
+        new Swiper('.swiper',{
+          loop:true,
+          autoplay:{delay:3500, disableOnInteraction:false},
+          pagination:{el:'.swiper-pagination', clickable:true},
+          navigation:{nextEl:'.swiper-button-next', prevEl:'.swiper-button-prev'}
+        });
+      },[]);
+
+      return React.createElement('section',{className:'hero'},
+        React.createElement('div',{className:'container'},
+          React.createElement('div',{className:'card hero-wrap'},
+            React.createElement('div',{className:'swiper'},[
+              React.createElement('div',{className:'swiper-wrapper',key:'w'},
+                banners.map((src,i)=>React.createElement('div',{className:'swiper-slide',key:i},
+                  React.createElement('img',{
+                    src,
+                    alt:`Banner ${i+1}`,
+                    loading:'lazy',
+                    onError:(e)=>{ 
+                      try { 
+                        // Usar imagen de ofertas como respaldo
+                        e.currentTarget.src = 'img/web%205/ofertas/vinil.jpg'; 
+                        e.currentTarget.onerror = null; // Evitar loops infinitos
+                      } catch(_){} 
+                    }
+                  })
+                ))
+              ),
+              React.createElement('div',{className:'swiper-pagination',key:'p'}),
+              React.createElement('div',{className:'swiper-button-prev',key:'prev'}),
+              React.createElement('div',{className:'swiper-button-next',key:'next'})
+            ])
+          
+          )
+        )
+      );
+    }
+
+    function ServicioModal({open,onClose,servicio}){
+      const [selectedImage, setSelectedImage] = useState(null);
+      
+      useEffect(() => {
+        if(open) {
+          document.body.style.overflow = 'hidden';
+          document.addEventListener('keydown', handleKeyDown);
+        } else {
+          document.body.style.overflow = 'unset';
+          document.removeEventListener('keydown', handleKeyDown);
+        }
+        return () => {
+          document.body.style.overflow = 'unset';
+          document.removeEventListener('keydown', handleKeyDown);
+        };
+      }, [open]);
+
+      const handleKeyDown = (e) => {
+        if(e.key === 'Escape') onClose();
+      };
+
+      const handleImageClick = (src) => {
+        setSelectedImage(src);
+      };
+
+      const closeImageModal = () => {
+        setSelectedImage(null);
+      };
+
+      if(!open) return null;
+      
+      return React.createElement('div',{className:'modal-backdrop',onClick:onClose},[
+        React.createElement('div',{className:'modal',onClick:(e)=>e.stopPropagation(),key:'modal'},[
+          React.createElement('div',{className:'modal-header',key:'h'},[
+            React.createElement('strong',null,servicio?.nombre||'Servicio'),
+            React.createElement('button',{className:'modal-close',onClick:onClose},'✕ Cerrar')
+          ]),
+          React.createElement('div',{className:'modal-body',key:'b'},[
+            React.createElement('div',{className:'service-description',key:'desc'},servicio?.desc||'Explora nuestra galería de trabajos realizados en este servicio.'),
+            servicio?.productos && servicio.productos.length > 0 && React.createElement('div',{className:'productos-lista',key:'productos'},[
+              React.createElement('h3',{className:'gallery-title',key:'productos-title'},'Productos Disponibles'),
+              React.createElement('div',{className:'productos-grid',key:'productos-grid'},
+                servicio.productos.map((producto,i)=>React.createElement('div',{
+                  className:'producto-item',
+                  key:i
+                },producto))
+              )
+            ]),
+            React.createElement('h3',{className:'gallery-title',key:'title'},'Galería de Trabajos'),
+            React.createElement('div',{className:'gallery',key:'gallery'},
+              (servicio?.imgs||[]).map((src,i)=>React.createElement('img',{
+                key:i,
+                src,
+                alt:`${servicio?.nombre||'Trabajo'} - Imagen ${i+1}`,
+                loading:'lazy',
+                onClick:()=>handleImageClick(src),
+                onError:(e)=>{
+                  e.currentTarget.src='img/web%205/ofertas/vinil.jpg';
+                  e.currentTarget.onerror = null;
+                }
+              }))
+            )
+          ])
+        ]),
+        // Modal para imagen ampliada
+        selectedImage && React.createElement('div',{className:'modal-backdrop',onClick:closeImageModal,key:'imgModal'},
+          React.createElement('div',{className:'modal',onClick:(e)=>e.stopPropagation(),style:{maxWidth:'90vw',maxHeight:'90vh',display:'flex',alignItems:'center',justifyContent:'center'}},[
+            React.createElement('img',{
+              src:selectedImage,
+              alt:'Imagen ampliada',
+              style:{maxWidth:'100%',maxHeight:'100%',objectFit:'contain',borderRadius:'12px'},
+              onClick:closeImageModal
+            })
+          ])
+        )
+      ]);
+    }
+
+    // LÍNEA 1371-1400: Componente ServiciosGrid con integración PocketBase
+    // Escucha evento de datos cargados; fallback a estáticos tras 3s; carrusel móvil
+    function ServiciosGrid(){
+      const [modal,setModal] = useState({open:false, servicio:null});
+      const [serviciosActuales, setServiciosActuales] = useState(servicios);
+      const [cargando, setCargando] = useState(true);
+      const [swiperInit, setSwiperInit] = useState(false);
+
+      useEffect(() => {
+        // LÍNEA 1378-1382: Escuchar evento de datos cargados desde PocketBase
+        const handleDatosCargados = (event) => {
+          if (event.detail.servicios && event.detail.servicios.length > 0) {
+            setServiciosActuales(event.detail.servicios);
+            setCargando(false);
+          }
+        };
+
+        window.addEventListener('datosCargados', handleDatosCargados);
+        
+        // LÍNEA 1387-1393: Timeout de fallback si no se cargan datos dinámicos
+        const timeout = setTimeout(() => {
+          if (cargando) {
+            setServiciosActuales(servicios);
+            setCargando(false);
+          }
+        }, 3000);
+
+        return () => {
+          window.removeEventListener('datosCargados', handleDatosCargados);
+          clearTimeout(timeout);
+        };
+      }, [cargando]);
+
+      // Inicializa Swiper para el carrusel móvil una vez haya datos y no esté inicializado
+      useEffect(() => {
+        if (!cargando && !swiperInit && typeof Swiper !== 'undefined') {
+          try {
+            // eslint-disable-next-line no-new
+            new Swiper('.servicios-swiper', {
+              slidesPerView: 2,
+              spaceBetween: 10,
+              centeredSlides: false,
+              allowTouchMove: true,
+              touchRatio: 1,
+              grabCursor: true,
+              pagination: { el: '.servicios-carousel .swiper-pagination', clickable: true },
+              breakpoints: {
+                320: { slidesPerView: 1.6, spaceBetween: 10 },
+                360: { slidesPerView: 1.8, spaceBetween: 10 },
+                480: { slidesPerView: 2.0, spaceBetween: 12 },
+                640: { slidesPerView: 2.4, spaceBetween: 12 }
+              }
+            });
+            setSwiperInit(true);
+          } catch(_){}
+        }
+      }, [cargando, swiperInit, serviciosActuales]);
+
+      return React.createElement(React.Fragment,null,[
+        React.createElement('section',{id:'servicios',className:'section container',key:'s'},[
+          React.createElement('div',{className:'title-wrap',key:'tw'},[
+            React.createElement('div',{className:'line'}),
+            React.createElement('h2',{style:{margin:0}},'NUESTROS SERVICIOS'),
+            React.createElement('div',{className:'line'})
+          ]),
+          // Indicador de deslizamiento en móvil
+          React.createElement('div',{className:'swipe-hint',key:'sub'},[
+            React.createElement('span',{className:'arrow'},'←'),
+            React.createElement('span',null,'Desliza para ver más servicios'),
+            React.createElement('span',{className:'arrow'},'→')
+          ]),
+          cargando ? 
+            React.createElement('div',{className:'loading-services',key:'loading',style:{textAlign:'center',padding:'40px',color:'#64748b'}},'Cargando servicios...') :
+            React.createElement(React.Fragment,{key:'content'},[
+              // Vista escritorio (grid)
+              React.createElement('div',{className:'grid servicios-grid-desktop',key:'g-desktop'},
+                serviciosActuales.map((s,idx)=>React.createElement('div',{className:`service ${idx===0?'active':''}`,key:s.id,onClick:()=>setModal({open:true,servicio:s})},[
+                  React.createElement('img',{
+                    src:s.icon,
+                    alt:s.nombre,
+                    loading:'lazy',
+                    onError:(e)=>{
+                      e.currentTarget.src='img/web%205/ofertas/vinil.jpg';
+                      e.currentTarget.onerror = null; // Evitar loops infinitos
+                    }
+                  }),
+                  React.createElement('b',null,s.nombre),
+                  React.createElement('div',{className:'desc'},s.desc||''),
+                  React.createElement('div',{className:'cta'},['Ver ejemplos ', React.createElement('span',{style:{width:'14px',height:'14px',display:'inline-block',background:'url(https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/arrow-right.svg) center/contain no-repeat'}})])
+                ]))
+              ),
+              // Vista móvil (carrusel)
+              React.createElement('div',{className:'servicios-carousel',key:'g-mobile'},
+                React.createElement('div',{className:'swiper servicios-swiper'},[
+                  React.createElement('div',{className:'swiper-wrapper',key:'wrap'},
+                    serviciosActuales.map((s,idx)=>React.createElement('div',{className:'swiper-slide',key:s.id},
+                      React.createElement('div',{className:`service ${idx===0?'active':''}`,onClick:()=>setModal({open:true,servicio:s})},[
+                        React.createElement('img',{
+                          src:s.icon,
+                          alt:s.nombre,
+                          loading:'lazy',
+                          onError:(e)=>{
+                            e.currentTarget.src='img/web%205/ofertas/vinil.jpg';
+                            e.currentTarget.onerror = null;
+                          }
+                        }),
+                        React.createElement('b',null,s.nombre)
+                      ])
+                    ))
+                  ),
+                  React.createElement('div',{className:'swiper-pagination',key:'pag'})
+                ])
+              )
+            ])
+        ]),
+        React.createElement(ServicioModal,{key:'m',open:modal.open,onClose:()=>setModal({open:false,servicio:null}),servicio:modal.servicio})
+      ]);
+    }
+
+    function TrustBadges(){
+      return React.createElement('section',{className:'trust section'},
+        React.createElement('div',{className:'container'},[
+          React.createElement('div',{className:'title-wrap'},[
+            React.createElement('div',{className:'line'}),
+            React.createElement('h2',null,'¿Por qué elegirnos?'),
+            React.createElement('div',{className:'line'})
+          ]),
+          React.createElement('div',{className:'grid'},[
+            React.createElement('div',{className:'badge',key:'b1'},[
+              React.createElement('span',{className:'icon shield'}),
+              React.createElement('div',{className:'txt'},[
+                React.createElement('b',null,'Garantía de satisfacción'),
+                React.createElement('small',null,'Calidad constante en cada proyecto')
+              ])
+            ]),
+            React.createElement('div',{className:'badge',key:'b2'},[
+              React.createElement('span',{className:'icon bolt'}),
+              React.createElement('div',{className:'txt'},[
+                React.createElement('b',null,'Respuesta rápida'),
+                React.createElement('small',null,'Atención ágil por WhatsApp')
+              ])
+            ]),
+            React.createElement('div',{className:'badge',key:'b3'},[
+              React.createElement('span',{className:'icon certificate'}),
+              React.createElement('div',{className:'txt'},[
+                React.createElement('b',null,'Materiales certificados'),
+                React.createElement('small',null,'Marcas líderes y acabados pro')
+              ])
+            ]),
+            React.createElement('div',{className:'badge',key:'b4'},[
+              React.createElement('span',{className:'icon truck'}),
+              React.createElement('div',{className:'txt'},[
+                React.createElement('b',null,'Entregas puntuales'),
+                React.createElement('small',null,'Cumplimos tus tiempos de entrega')
+              ])
+            ])
+          ])
+        ]),
+        React.createElement('div',{className:'fade-bottom'})
+      );
+    }
+
+    function TestimonialsSection(){
+      const [index,setIndex] = React.useState(0);
+      const [perView,setPerView] = React.useState(3);
+
+      React.useEffect(()=>{
+        const update = ()=>{
+          const w = window.innerWidth;
+          if (w <= 480) setPerView(1);
+          else if (w <= 768) setPerView(2);
+          else setPerView(3);
+        };
+        update();
+        window.addEventListener('resize', update, { passive:true });
+        return ()=> window.removeEventListener('resize', update);
+      },[]);
+
+      const maxIndex = Math.max(0, testimonios.length - perView);
+      const goPrev = ()=> setIndex(i => Math.max(0, i - 1));
+      const goNext = ()=> setIndex(i => Math.min(maxIndex, i + 1));
+
+      const translateX = `translateX(-${(index * (100 / perView))}%)`;
+
+      return React.createElement('section',{className:'testimonials'},
+        React.createElement('div',{className:'container'},[
+          React.createElement('h2',{key:'title'},'Lo que dicen nuestros clientes'),
+          React.createElement('p',{className:'subtitle',key:'subtitle'},'Testimonios reales de clientes satisfechos con nuestros servicios'),
+          React.createElement('div',{className:'testimonials-carousel',key:'carousel'},[
+            React.createElement('button',{className:'tc-arrow tc-prev',onClick:goPrev,disabled:index===0},'‹'),
+            React.createElement('div',{className:'tc-viewport'},
+              React.createElement('div',{className:'tc-track',style:{transform:translateX}},
+                testimonios.map(t => React.createElement('div',{className:'tc-item',key:t.id},
+                  React.createElement('div',{className:'testimonial-card'},[
+                    React.createElement('div',{className:'testimonial-text',key:'text'},t.testimonio),
+                    React.createElement('div',{className:'testimonial-author',key:'author'},[
+                      React.createElement('img',{
+                        className:'author-avatar',
+                        src:t.avatar,
+                        alt:t.nombre,
+                        key:'avatar',
+                        onError:(e)=>{e.currentTarget.src='img/web%205/ofertas/vinil.jpg'; e.currentTarget.onerror=null;}
+                      }),
+                      React.createElement('div',{className:'author-info',key:'info'},[
+                        React.createElement('h4',null,t.nombre),
+                        React.createElement('p',null,t.empresa)
+                      ])
+                    ]),
+                    React.createElement('div',{className:'testimonial-rating',key:'rating'},
+                      Array.from({length: t.rating}, (_, i) => React.createElement('span',{className:'star',key:i},'★'))
+                    )
+                  ])
+                ))
+              )
+            ),
+            React.createElement('button',{className:'tc-arrow tc-next',onClick:goNext,disabled:index===maxIndex},'›')
+          ])
+        ])
+      );
+    }
+
+    // LÍNEA 1513-1545: Componente PopularArticlesSection con integración PocketBase
+    // Obtiene artículos dinámicos; usa respaldo ante errores; IU ya es responsive (2x en móvil)
+    function PopularArticlesSection(){
+      const [articulos, setArticulos] = React.useState(articulosRespaldo);
+      const [cargando, setCargando] = React.useState(true);
+
+      React.useEffect(() => {
+        // LÍNEA 1518-1530: Cargar artículos al montar el componente
+        const cargarArticulos = async () => {
+          setCargando(true);
+          try {
+            const articulosData = await obtenerArticulosPocketBase();
+            setArticulos(articulosData);
+          } catch (error) {
+            console.warn('Error al cargar artículos:', error);
+            setArticulos(articulosRespaldo);
+          } finally {
+            setCargando(false);
+          }
+        };
+
+        cargarArticulos();
+
+        // LÍNEA 1534-1540: Escuchar eventos de actualización desde PocketBase
+        const handleArticulosCargados = (event) => {
+          setArticulos(event.detail);
+          setCargando(false);
+        };
+
+        window.addEventListener('articulosCargados', handleArticulosCargados);
+        
+        return () => {
+          window.removeEventListener('articulosCargados', handleArticulosCargados);
+        };
+      }, []);
+
+      return React.createElement('section',{className:'popular-articles'},
+        React.createElement('div',{className:'container'},[
+          React.createElement('h2',{key:'title'},'Artículos Más Buscados'),
+          React.createElement('p',{className:'subtitle',key:'subtitle'},'Descubre los temas más populares y tendencias en diseño gráfico e impresión'),
+          cargando ? 
+            React.createElement('div',{className:'loading-articles',key:'loading',style:{textAlign:'center',padding:'40px',color:'#64748b'}},'Cargando artículos...') :
+            React.createElement('div',{className:'articles-grid',key:'grid'},
+              articulos.map(articulo => 
+                React.createElement('div',{className:'article-card',key:articulo.id},[
+                  articulo.trending && React.createElement('div',{className:'trending-badge',key:'trending'},'Trending'),
+                  React.createElement('img',{
+                    className:'article-image',
+                    src:articulo.imagen,
+                    alt:articulo.titulo,
+                    key:'image',
+                    onError:(e)=>{
+                      e.currentTarget.src='img/web%205/ofertas/vinil.jpg';
+                      e.currentTarget.onerror = null;
+                    }
+                  }),
+                  React.createElement('div',{className:'article-content',key:'content'},[
+                    React.createElement('span',{className:'article-category',key:'category'},articulo.categoria),
+                    React.createElement('h3',{className:'article-title',key:'title'},articulo.titulo),
+                    React.createElement('p',{className:'article-excerpt',key:'excerpt'},articulo.resumen),
+                    React.createElement('div',{className:'article-meta',key:'meta'},[
+                      React.createElement('div',{className:'article-views',key:'views'},[
+                        React.createElement('span',{className:'view-icon'}),
+                        React.createElement('span',null,articulo.vistas.toLocaleString())
+                      ]),
+                      React.createElement('div',{className:'article-date',key:'date'},[
+                        React.createElement('span',{className:'date-icon'}),
+                        React.createElement('span',null,articulo.fecha)
+                      ])
+                    ])
+                  ])
+                ])
+              )
+            )
+        ])
+      );
+    }
+
+    function LocationSection(){
+      return React.createElement('section',{id:'ubicacion',className:'location-section'},
+        React.createElement('div',{className:'location-container'},[
+          React.createElement('h2',null,'Nuestra Ubicación'),
+          React.createElement('p',null,'Encuéntranos en Reynosa, Tamaulipas'),
+          React.createElement('div',{className:'location-info'},[
+            React.createElement('div',{className:'location-item',key:'address'},[
+              React.createElement('div',{className:'location-icon'}),
+              React.createElement('div',{className:'location-text'},[
+                React.createElement('h4',null,'Dirección'),
+                React.createElement('p',null,'Blvd. Las Fuentes #654 Col. Aztlán, Reynosa, Tamaulipas')
+              ])
+            ]),
+            React.createElement('div',{className:'location-item',key:'hours'},[
+              React.createElement('div',{className:'location-icon'}),
+              React.createElement('div',{className:'location-text'},[
+                React.createElement('h4',null,'Horarios'),
+                React.createElement('p',null,'Lun-Vie: 9:00-18:00, Sáb: 9:00-14:00')
+              ])
+            ]),
+            React.createElement('div',{className:'location-item',key:'contact'},[
+              React.createElement('div',{className:'location-icon'}),
+              React.createElement('div',{className:'location-text'},[
+                React.createElement('h4',null,'Contacto'),
+                React.createElement('p',null,'WhatsApp: +52 899 873 7313')
+              ])
+            ])
+          ])
+        ])
+      );
+    }
+
+    function ContactForm(){
+      function handleEmailClick(){
+        const mailTo = 'zgrafica.mx@gmail.com';
+        const subject = 'Solicitud de cotización - Zona Gráfica';
+        const body = `¡Hola! Me pongo en contacto para solicitar una cotización.
+
+DATOS DE CONTACTO:
+• Nombre: [Tu nombre]
+• Email: [Tu email]
+• Teléfono: [Tu teléfono]
+
+SERVICIO DE INTERÉS:
+• Gran Formato
+• Imprenta
+• Estampados
+• Grabados
+• Letreros
+• Otro: [Especificar]
+
+DESCRIPCIÓN DEL PROYECTO:
+[Describe tu proyecto: dimensiones, materiales, cantidad, colores, etc.]
+
+FECHA REQUERIDA:
+[Fecha de entrega deseada]
+
+¡Espero su respuesta pronto!
+
+Saludos cordiales,
+[Tu nombre]`;
+
+          const href = `mailto:${mailTo}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.open(href, '_blank');
+      }
+
+      return React.createElement('section',{id:'cotiza',className:'email-section'},
+        React.createElement('div',{className:'email-container'},[
+          React.createElement('div',{className:'email-header',key:'header'},[
+            React.createElement('h2',{className:'email-title'},'Solicita una cotización'),
+            React.createElement('p',{className:'email-subtitle'},'¿Tienes un proyecto en mente?'),
+            React.createElement('p',{className:'email-description'},'Envíanos un correo con los detalles de tu proyecto y te enviaremos una cotización personalizada en menos de 24 horas.')
+          ]),
+          React.createElement('a',{
+            className:'email-button',
+            onClick:handleEmailClick,
+            href:'#',
+            key:'button'
+          },[
+            React.createElement('span',{className:'email-icon'}),
+            React.createElement('span',null,'Enviar correo ahora')
+          ]),
+          React.createElement('div',{className:'email-features',key:'features'},[
+            React.createElement('div',{className:'feature-card',key:'f1'},[
+              React.createElement('div',{className:'feature-icon'},'⚡'),
+              React.createElement('h4',{className:'feature-title'},'Respuesta rápida'),
+              React.createElement('p',{className:'feature-desc'},'Te contactamos en menos de 24 horas')
+            ]),
+            React.createElement('div',{className:'feature-card',key:'f2'},[
+              React.createElement('div',{className:'feature-icon'},'💰'),
+              React.createElement('h4',{className:'feature-title'},'Cotización gratuita'),
+              React.createElement('p',{className:'feature-desc'},'Sin compromiso, sin costo oculto')
+            ]),
+            React.createElement('div',{className:'feature-card',key:'f3'},[
+              React.createElement('div',{className:'feature-icon'},'🎯'),
+              React.createElement('h4',{className:'feature-title'},'Precio personalizado'),
+              React.createElement('p',{className:'feature-desc'},'Cotización específica para tu proyecto')
+              ])
+            ]),
+          React.createElement('div',{className:'email-cta',key:'cta'},[
+            React.createElement('p',{className:'cta-text'},'¿Prefieres contactarnos directamente?'),
+            React.createElement('a',{className:'cta-email',href:'mailto:zgrafica.mx@gmail.com'},'zgrafica.mx@gmail.com')
+          ])
+        ])
+      );
+    }
+
+    function Footer(){
+      return React.createElement('footer',{id:'contacto',className:'footer'},
+        React.createElement('div',{className:'container cols'},[
+          React.createElement('div',{className:'brand-line',key:'left'},[
+            React.createElement('img',{className:'footer-logo',src:'img/web%205/zona%20grafica%20hacemos%20posible%20tus%20ideas.jpeg',alt:'Zona Gráfica – Hacemos posible tus ideas'})
+          ]),
+          React.createElement('div',{key:'right',className:'contact'},[
+            React.createElement('h4',null,'CONTÁCTANOS'),
+            React.createElement('div',{className:'citem'},[
+              React.createElement('span',{className:'cicon mail'}),
+              React.createElement('span',null,'zgrafica.mx@gmail.com')
+            ]),
+            React.createElement('div',{className:'citem'},[
+              React.createElement('span',{className:'cicon facebook'}),
+              React.createElement('span',null,'Zona Gráfica')
+            ]),
+            React.createElement('div',{className:'citem'},[
+              React.createElement('span',{className:'cicon map'}),
+              React.createElement('span',null,'Blvd. Las Fuentes #654 Col. Aztlán, 88740 Reynosa, México')
+            ])
+          ])
+        ]),
+        React.createElement('div',{className:'container footer-links'},
+          React.createElement('div',{className:'grid'},[
+            React.createElement('div',{key:'f1'},[
+              React.createElement('h5',null,'Nosotros'),
+              React.createElement('a',{href:'#servicios'},'Quiénes somos'),
+              React.createElement('a',{href:'#servicios'},'Marcas y materiales'),
+              React.createElement('a',{href:'#servicios'},'Portafolio')
+            ]),
+            React.createElement('div',{key:'f2'},[
+              React.createElement('h5',null,'Atención'),
+              React.createElement('a',{href:'#cotiza'},'Cotiza ahora'),
+              React.createElement('a',{href:'mailto:zgrafica.mx@gmail.com'},'Email'),
+              React.createElement('a',{href:`https://api.whatsapp.com/send?phone=${WHATSAPP_PHONE}`,target:'_blank',rel:'noopener'},'WhatsApp')
+            ]),
+            React.createElement('div',{key:'f3'},[
+              React.createElement('h5',null,'Políticas'),
+              React.createElement('a',{href:'/privacy-policy.html'},'Privacidad'),
+              React.createElement('a',{href:'/terms.html'},'Términos'),
+              React.createElement('a',{href:'#contacto'},'Garantías y envíos')
+            ]),
+            React.createElement('div',{key:'f4'},[
+              React.createElement('h5',null,'Ubicación'),
+              React.createElement('a',{href:'#contacto'},'Reynosa, Tamaulipas'),
+              React.createElement('a',{href:'#contacto'},'Cómo llegar')
+            ])
+          ])
+        )
+      );
+    }
+
+    // ================================================================================
+    // COMPONENTE PRINCIPAL DE LA APLICACIÓN
+    // ================================================================================
+    
+    // LÍNEA 1753-1769: Componente App principal que renderiza toda la aplicación
+    function App(){
+      return React.createElement(React.Fragment,null,[
+        React.createElement(Header),
+        React.createElement(BannerCarousel),
+        React.createElement(ServiciosGrid), // Con integración PocketBase
+          React.createElement(TrustBadges),
+        React.createElement(PopularArticlesSection), // Con integración PocketBase
+        React.createElement(LocationSection),
+        React.createElement(ContactForm),
+          React.createElement(TestimonialsSection),
+        React.createElement('a',{href:`https://api.whatsapp.com/send?phone=${WHATSAPP_PHONE}`,className:'wa-btn wa-float',target:'_blank',rel:'noopener'},[
+          React.createElement('span',{style:{display:'inline-flex',width:18,height:18,background:'url(https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/brand-whatsapp.svg) center/contain no-repeat'}},''),
+          React.createElement('span',null,'WhatsApp')
+        ]),
+        React.createElement(Footer)
+      ]);
+    }
+
+    // ================================================================================
+    // INICIALIZACIÓN DE LA APLICACIÓN REACT
+    // ================================================================================
+    
+    // LÍNEA 1776-1777: Crear root de React y renderizar la aplicación
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(React.createElement(App));
+  </script>
+</body>
+</html>
