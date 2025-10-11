@@ -897,6 +897,36 @@
                     <p class="section-subtitle">Credenciales que validan mi expertise en tecnologías de vanguardia</p>
                 </div>
                 
+                <!-- Contenedor de tarjetas deslizables para móvil -->
+                <div class="certifications-swipe-container" id="certifications-swipe-container">
+                    <div class="certifications-swipe-wrapper" id="certifications-swipe-wrapper">
+                        <!-- Las tarjetas se cargarán dinámicamente -->
+                        <div class="loading-certificates">
+                            <div class="loading-spinner"></div>
+                            <p>Cargando certificaciones...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Indicadores de progreso -->
+                    <div class="certifications-indicators" id="certifications-indicators">
+                        <!-- Se generarán dinámicamente -->
+                    </div>
+                    
+                    <!-- Controles de navegación -->
+                    <div class="certifications-nav-controls">
+                        <button class="certification-nav-btn" id="prev-cert-btn" disabled>
+                            <span>‹</span>
+                        </button>
+                        <div class="certification-counter" id="certification-counter">
+                            1 / 10
+                        </div>
+                        <button class="certification-nav-btn" id="next-cert-btn">
+                            <span>›</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Tabla tradicional para desktop -->
                 <div class="certifications-table-container">
                     <div class="certifications-table-header">
                         <span class="header-item">ID</span>
@@ -7034,6 +7064,13 @@
             gap: 1rem;
         }
         
+        /* Ocultar indicadores de sección en móvil */
+        @media (max-width: 768px) {
+            .section-indicators {
+                display: none;
+            }
+        }
+        
         .section-indicator {
             width: 8px;
             height: 8px;
@@ -9064,6 +9101,232 @@
             z-index: 10;
         }
         
+        /* ===== SISTEMA DE TARJETAS DESLIZABLES PARA MÓVIL ===== */
+        
+        .certifications-swipe-container {
+            display: none;
+            position: relative;
+            width: 100%;
+            height: 400px;
+            overflow: hidden;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            mask: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+            -webkit-mask: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+        }
+        
+        .certifications-swipe-wrapper {
+            display: flex;
+            height: 100%;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+        
+        .certification-swipe-card {
+            flex: 0 0 100%;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.1) 0%, 
+                rgba(255, 255, 255, 0.05) 100%);
+            border-radius: 12px;
+            margin: 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .certification-swipe-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(0, 255, 255, 0.1) 0%, 
+                rgba(0, 100, 255, 0.1) 50%, 
+                rgba(128, 0, 255, 0.1) 100%);
+            border-radius: 12px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+        
+        .certification-swipe-card:hover::before {
+            opacity: 1;
+        }
+        
+        .certification-card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .certification-card-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .certification-card-logo img {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+        }
+        
+        .certification-card-info {
+            flex: 1;
+        }
+        
+        .certification-card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 0.3rem;
+            line-height: 1.3;
+        }
+        
+        .certification-card-entity {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 0.2rem;
+        }
+        
+        .certification-card-date {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .certification-card-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+        
+        .certification-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.3rem 0.8rem;
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #4caf50;
+        }
+        
+        .certification-card-actions {
+            display: flex;
+            justify-content: center;
+            margin-top: auto;
+        }
+        
+        .certification-view-btn {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: linear-gradient(135deg, 
+                rgba(0, 255, 255, 0.2) 0%, 
+                rgba(0, 100, 255, 0.2) 100%);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 8px;
+            color: #00ffff;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        
+        .certification-view-btn:hover {
+            background: linear-gradient(135deg, 
+                rgba(0, 255, 255, 0.3) 0%, 
+                rgba(0, 100, 255, 0.3) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 255, 255, 0.3);
+        }
+        
+        /* Indicadores de progreso */
+        .certifications-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .certification-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .certification-indicator.active {
+            background: #00ffff;
+            transform: scale(1.2);
+        }
+        
+        /* Controles de navegación */
+        .certifications-nav-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+        }
+        
+        .certification-nav-btn {
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+        }
+        
+        .certification-nav-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+        
+        .certification-nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .certification-counter {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 500;
+        }
+        
         /* Loading y estados de error */
         .loading-certificates {
             display: flex;
@@ -9720,127 +9983,102 @@
             }
         }
         
-        /* Responsive para móviles - MODAL MÁS PEQUEÑO */
+        /* Responsive para móviles - TARJETAS DESLIZABLES */
         @media (max-width: 768px) {
+            /* Mostrar tarjetas deslizables en móvil */
+            .certifications-swipe-container {
+                display: block;
+            }
+            
+            /* Ocultar tabla en móvil */
+            .certifications-table-container {
+                display: none;
+            }
+            
+            /* Ajustar altura del contenedor de tarjetas */
+            .certifications-swipe-container {
+                height: 350px;
+            }
+            
+            /* Optimizar tarjetas para móvil */
+            .certification-swipe-card {
+                padding: 1.2rem;
+                margin: 0;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            
+            .certification-card-title {
+                font-size: 1rem;
+            }
+            
+            .certification-card-entity {
+                font-size: 0.85rem;
+            }
+            
+            .certification-card-date {
+                font-size: 0.75rem;
+            }
+            
+            .certification-view-btn {
+                padding: 0.7rem 0.8rem;
+                font-size: 0.85rem;
+            }
+            
+            /* Modal optimizado para móvil */
+            .certification-modal {
+                padding: 0.3rem;
+                align-items: flex-start;
+                padding-top: 1rem;
+            }
+            
             .certification-modal .modal-content {
-                max-width: 95%;
-                max-height: 90vh;
-                border-radius: 12px;
-                margin: 2rem 1rem;
+                max-width: 98%;
+                max-height: 95vh;
+                border-radius: 8px;
+                margin: 0;
                 position: relative;
-                top: 50%;
-                transform: translateY(-50%);
+                top: 0;
+                transform: none;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                background: rgba(0, 0, 0, 0.95);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
             }
             
             .modal-header {
-                padding: 1.2rem 1rem 0.8rem 1rem;
+                padding: 1rem 0.8rem 0.6rem 0.8rem;
                 flex-direction: column;
-                gap: 0.8rem;
+                gap: 0.6rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             }
             
             .modal-title {
-                font-size: 1.2rem;
-                margin-bottom: 0.6rem;
-            }
-            
-            .certification-badge {
-                padding: 0.4rem 0.8rem;
-                font-size: 0.8rem;
-                margin-bottom: 0.6rem;
-            }
-            
-            .certification-meta {
-                gap: 0.8rem;
-            }
-            
-            .meta-item {
-                font-size: 0.8rem;
-            }
-            
-            .modal-body {
-                padding: 0.8rem;
-                gap: 0.8rem;
-            }
-            
-            .certification-image {
-                max-height: 200px;
-                border-radius: 8px;
-            }
-            
-            .info-card {
-                padding: 0.8rem;
-            }
-            
-            .info-title {
-                font-size: 1rem;
-                margin-bottom: 0.5rem;
-            }
-            
-            .info-description {
-                font-size: 0.85rem;
+                font-size: 1.1rem;
+                margin-bottom: 0.4rem;
                 line-height: 1.3;
-            }
-            
-            .skill-tag {
-                font-size: 0.75rem;
-                padding: 0.3rem 0.6rem;
-            }
-            
-            .modal-footer {
-                padding: 0.8rem;
-                flex-direction: column;
-                gap: 0.8rem;
                 text-align: center;
             }
             
-            .verification-status {
-                font-size: 0.8rem;
-            }
-            
-            .download-btn {
-                width: 100%;
-                justify-content: center;
-                padding: 0.7rem 1.2rem;
-                font-size: 0.9rem;
-            }
-        }
-        
-        /* ===== MODAL ULTRA-OPTIMIZADO PARA MÓVILES PEQUEÑOS ===== */
-        
-        /* Modal compacto para móviles pequeños - Solo información esencial */
-        @media (max-width: 480px) {
-            .certification-modal .modal-content {
-                max-width: 92%;
-                max-height: 85vh;
-                margin: 1.5rem 0.8rem;
-                border-radius: 10px;
-            }
-            
-            .modal-header {
-                padding: 0.8rem 0.6rem 0.6rem 0.6rem;
-                gap: 0.6rem;
-            }
-            
             .certification-badge {
                 padding: 0.3rem 0.6rem;
-                font-size: 0.7rem;
-                margin-bottom: 0.6rem;
-            }
-            
-            .modal-title {
-                font-size: 1rem;
-                margin: 0 0 0.6rem 0;
-                line-height: 1.1;
+                font-size: 0.75rem;
+                margin-bottom: 0.4rem;
+                align-self: center;
             }
             
             .certification-meta {
-                gap: 0.5rem;
+                gap: 0.6rem;
                 flex-wrap: wrap;
+                justify-content: center;
             }
             
             .meta-item {
-                font-size: 0.7rem;
-                gap: 0.2rem;
+                font-size: 0.75rem;
+                display: flex;
+                align-items: center;
+                gap: 0.3rem;
             }
             
             .meta-icon {
@@ -9855,11 +10093,7 @@
             
             .certification-image-section {
                 order: 1;
-            }
-            
-            .certification-image {
-                max-height: 150px;
-                border-radius: 6px;
+                margin-bottom: 0.5rem;
             }
             
             .certification-info-section {
@@ -9868,25 +10102,35 @@
                 overflow: visible;
             }
             
-            /* Mostrar solo información esencial en móviles pequeños */
-            .info-card:nth-child(1) {
-                display: block; /* Descripción del curso - SIEMPRE VISIBLE */
-                padding: 0.6rem;
+            .certification-image {
+                max-height: 200px;
+                border-radius: 6px;
+                width: 100%;
+                object-fit: contain;
             }
             
-            .info-card:nth-child(2) {
-                display: block; /* Habilidades - SIEMPRE VISIBLE */
-                padding: 0.6rem;
+            .image-container {
+                text-align: center;
             }
             
-            .info-card:nth-child(3) {
-                display: none; /* Aplicaciones profesionales - OCULTO EN MÓVILES PEQUEÑOS */
+            .image-overlay {
+                display: none;
+            }
+            
+            .info-card {
+                margin-bottom: 0.8rem;
+                padding: 0.8rem;
+                border-radius: 6px;
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.1);
             }
             
             .info-title {
                 font-size: 0.9rem;
-                margin-bottom: 0.5rem;
-                gap: 0.3rem;
+                margin-bottom: 0.4rem;
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
             }
             
             .title-icon {
@@ -9894,103 +10138,157 @@
             }
             
             .info-description {
-                font-size: 0.75rem;
-                line-height: 1.3;
-                margin-bottom: 0.4rem;
+                font-size: 0.8rem;
+                line-height: 1.4;
+                color: rgba(255, 255, 255, 0.8);
             }
             
             .skills-grid {
+                display: flex;
+                flex-wrap: wrap;
                 gap: 0.3rem;
+                margin-top: 0.4rem;
             }
             
             .skill-tag {
-                font-size: 0.65rem;
-                padding: 0.25rem 0.5rem;
-                border-radius: 3px;
+                font-size: 0.7rem;
+                padding: 0.2rem 0.5rem;
+                border-radius: 12px;
+                background: rgba(0, 255, 255, 0.1);
+                border: 1px solid rgba(0, 255, 255, 0.2);
+                color: rgba(0, 255, 255, 0.9);
             }
             
             .modal-footer {
-                padding: 0.6rem;
+                padding: 0.6rem 0.8rem;
+                flex-direction: column;
                 gap: 0.6rem;
+                text-align: center;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
             }
             
             .verification-status {
-                font-size: 0.7rem;
+                font-size: 0.75rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
                 gap: 0.3rem;
+                color: rgba(255, 255, 255, 0.7);
             }
             
             .status-icon {
                 font-size: 0.8rem;
             }
             
-            .download-btn {
-                padding: 0.5rem 1rem;
-                font-size: 0.8rem;
-                gap: 0.3rem;
+            .modal-close {
+                position: absolute;
+                top: 0.5rem;
+                right: 0.5rem;
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                color: rgba(255, 255, 255, 0.8);
+                font-size: 1.2rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
             }
             
-            .download-icon {
-                font-size: 0.8rem;
+            .modal-close:hover {
+                background: rgba(255, 255, 255, 0.2);
+                transform: scale(1.1);
             }
         }
         
-        /* Responsive para móviles pequeños */
+        /* ===== MODAL ULTRA-OPTIMIZADO PARA MÓVILES PEQUEÑOS ===== */
+        
+        /* Modal compacto para móviles pequeños - Solo información esencial */
         @media (max-width: 480px) {
-            .modal-title {
-                font-size: 1.2rem;
+            .certification-modal {
+                padding: 0.2rem;
+                align-items: flex-start;
+                padding-top: 0.5rem;
             }
             
-            .certification-meta {
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-            
-            .certification-image {
-                max-height: 200px;
-            }
-            
-            .info-card {
-                padding: 0.75rem;
-            }
-            
-            .skill-tag {
-                font-size: 0.75rem;
-                padding: 0.3rem 0.6rem;
-            }
-            
-            /* Optimización específica para tabla de certificaciones en móviles pequeños */
-            .certifications-table-header,
-            .certification-row {
-                grid-template-columns: 35px 1.2fr 70px;
-                gap: 0.4rem;
-                padding: 0.6rem;
-            }
-            
-            .certification-title {
-                font-size: clamp(0.7rem, 2.8vw, 0.9rem);
-                line-height: 1.1;
-            }
-            
-            .certification-id {
-                font-size: clamp(0.6rem, 2.2vw, 0.8rem);
-            }
-            
-            .verify-btn {
-                padding: 0.3rem 0.6rem;
-                font-size: clamp(0.6rem, 2.2vw, 0.7rem);
-                min-height: 40px;
-                min-width: 55px;
-            }
-            
-            /* Asegurar que el contenedor de la tabla sea responsive */
-            .certifications-table-container {
-                overflow-x: auto;
+            .certification-modal .modal-content {
+                max-width: 99%;
+                max-height: 98vh;
+                border-radius: 6px;
+                margin: 0;
+                overflow-y: auto;
                 -webkit-overflow-scrolling: touch;
             }
             
-            .certifications-table-header,
-            .certification-row {
-                min-width: 280px;
+            .modal-header {
+                padding: 0.8rem 0.6rem 0.4rem 0.6rem;
+                gap: 0.4rem;
+            }
+            
+            .modal-title {
+                font-size: 1rem;
+                margin-bottom: 0.3rem;
+            }
+            
+            .certification-badge {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.7rem;
+                margin-bottom: 0.3rem;
+            }
+            
+            .meta-item {
+                font-size: 0.7rem;
+            }
+            
+            .modal-body {
+                padding: 0.4rem;
+                gap: 0.4rem;
+            }
+            
+            .certification-image {
+                max-height: 150px;
+                border-radius: 4px;
+            }
+            
+            .info-card {
+                padding: 0.6rem;
+                margin-bottom: 0.6rem;
+                border-radius: 4px;
+            }
+            
+            .info-title {
+                font-size: 0.8rem;
+                margin-bottom: 0.3rem;
+            }
+            
+            .info-description {
+                font-size: 0.75rem;
+                line-height: 1.3;
+            }
+            
+            .skill-tag {
+                font-size: 0.65rem;
+                padding: 0.15rem 0.4rem;
+            }
+            
+            .modal-footer {
+                padding: 0.4rem 0.6rem;
+                gap: 0.4rem;
+            }
+            
+            .verification-status {
+                font-size: 0.7rem;
+            }
+            
+            .modal-close {
+                top: 0.3rem;
+                right: 0.3rem;
+                width: 28px;
+                height: 28px;
+                font-size: 1rem;
             }
         }
         
@@ -15304,6 +15602,316 @@
         }
         
         /* Eliminado: media queries del carrusel antiguo */
+        
+        /* ===== MODAL PROFESIONAL PARA MÓVIL ===== */
+        @media (max-width: 768px) {
+            /* Mostrar tarjetas deslizables en móvil */
+            .certifications-swipe-container {
+                display: block;
+            }
+            
+            /* Ocultar tabla en móvil */
+            .certifications-table-container {
+                display: none;
+            }
+            
+            /* Ocultar indicadores de progreso en móvil */
+            .certifications-indicators {
+                display: none;
+            }
+            
+            /* Ajustar altura del contenedor de tarjetas */
+            .certifications-swipe-container {
+                height: 350px;
+            }
+            
+            /* Optimizar tarjetas para móvil */
+            .certification-swipe-card {
+                padding: 1.2rem;
+                margin: 0;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            
+            .certification-card-title {
+                font-size: 1rem;
+            }
+            
+            .certification-card-entity {
+                font-size: 0.85rem;
+            }
+            
+            .certification-card-date {
+                font-size: 0.75rem;
+            }
+            
+            .certification-view-btn {
+                padding: 0.7rem 0.8rem;
+                font-size: 0.85rem;
+            }
+            
+            /* Modal profesional para móvil */
+            .certification-modal {
+                padding: 0.5rem;
+                align-items: flex-start;
+                padding-top: 1rem;
+            }
+            
+            .certification-modal .modal-content {
+                max-width: 95%;
+                max-height: 90vh;
+                border-radius: 12px;
+                margin: 0;
+                position: relative;
+                top: 0;
+                transform: none;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                background: rgba(0, 0, 0, 0.95);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+            }
+            
+            .modal-header {
+                padding: 1rem 0.8rem 0.6rem 0.8rem;
+                flex-direction: column;
+                gap: 0.6rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .modal-title {
+                font-size: 1.1rem;
+                margin-bottom: 0.4rem;
+                line-height: 1.3;
+                text-align: center;
+            }
+            
+            .certification-badge {
+                padding: 0.3rem 0.6rem;
+                font-size: 0.75rem;
+                margin-bottom: 0.4rem;
+                align-self: center;
+            }
+            
+            .certification-meta {
+                gap: 0.6rem;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .meta-item {
+                font-size: 0.75rem;
+                display: flex;
+                align-items: center;
+                gap: 0.3rem;
+            }
+            
+            .meta-icon {
+                font-size: 0.8rem;
+            }
+            
+            .modal-body {
+                padding: 0.6rem;
+                gap: 0.6rem;
+                flex-direction: column;
+            }
+            
+            .certification-image-section {
+                order: 1;
+                margin-bottom: 0.5rem;
+            }
+            
+            .certification-info-section {
+                order: 2;
+                max-height: none;
+                overflow: visible;
+            }
+            
+            .certification-image {
+                max-height: 200px;
+                border-radius: 6px;
+                width: 100%;
+                object-fit: contain;
+            }
+            
+            .image-container {
+                text-align: center;
+            }
+            
+            .image-overlay {
+                display: none;
+            }
+            
+            .info-card {
+                margin-bottom: 0.8rem;
+                padding: 0.8rem;
+                border-radius: 6px;
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .info-title {
+                font-size: 0.9rem;
+                margin-bottom: 0.4rem;
+                display: flex;
+                align-items: center;
+                gap: 0.4rem;
+            }
+            
+            .title-icon {
+                font-size: 0.8rem;
+            }
+            
+            .info-description,
+            .info-applications {
+                font-size: 0.8rem;
+                line-height: 1.4;
+                color: rgba(255, 255, 255, 0.8);
+            }
+            
+            .skills-grid {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.3rem;
+                margin-top: 0.4rem;
+            }
+            
+            .skill-tag {
+                font-size: 0.7rem;
+                padding: 0.2rem 0.5rem;
+                border-radius: 12px;
+                background: rgba(0, 255, 255, 0.1);
+                border: 1px solid rgba(0, 255, 255, 0.2);
+                color: rgba(0, 255, 255, 0.9);
+            }
+            
+            .modal-footer {
+                padding: 0.6rem 0.8rem;
+                flex-direction: column;
+                gap: 0.6rem;
+                text-align: center;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .verification-status {
+                font-size: 0.75rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.3rem;
+                color: rgba(255, 255, 255, 0.7);
+            }
+            
+            .status-icon {
+                font-size: 0.8rem;
+            }
+            
+            .modal-close {
+                position: absolute;
+                top: 0.5rem;
+                right: 0.5rem;
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                color: rgba(255, 255, 255, 0.8);
+                font-size: 1.2rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            
+            .modal-close:hover {
+                background: rgba(255, 255, 255, 0.2);
+                transform: scale(1.1);
+            }
+        }
+        
+        /* Modal ultra-compacto para móviles pequeños */
+        @media (max-width: 480px) {
+            .certification-modal {
+                padding: 0.3rem;
+                align-items: flex-start;
+                padding-top: 0.5rem;
+            }
+            
+            .certification-modal .modal-content {
+                max-width: 98%;
+                max-height: 95vh;
+                border-radius: 8px;
+            }
+            
+            .modal-header {
+                padding: 0.8rem 0.6rem 0.4rem 0.6rem;
+                gap: 0.4rem;
+            }
+            
+            .modal-title {
+                font-size: 1rem;
+                margin-bottom: 0.3rem;
+            }
+            
+            .certification-badge {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.7rem;
+                margin-bottom: 0.3rem;
+            }
+            
+            .meta-item {
+                font-size: 0.7rem;
+            }
+            
+            .modal-body {
+                padding: 0.4rem;
+                gap: 0.4rem;
+            }
+            
+            .certification-image {
+                max-height: 150px;
+                border-radius: 4px;
+            }
+            
+            .info-card {
+                padding: 0.6rem;
+                margin-bottom: 0.6rem;
+                border-radius: 4px;
+            }
+            
+            .info-title {
+                font-size: 0.8rem;
+                margin-bottom: 0.3rem;
+            }
+            
+            .info-description {
+                font-size: 0.75rem;
+                line-height: 1.3;
+            }
+            
+            .skill-tag {
+                font-size: 0.65rem;
+                padding: 0.15rem 0.4rem;
+            }
+            
+            .modal-footer {
+                padding: 0.4rem 0.6rem;
+                gap: 0.4rem;
+            }
+            
+            .verification-status {
+                font-size: 0.7rem;
+            }
+            
+            .modal-close {
+                top: 0.3rem;
+                right: 0.3rem;
+                width: 28px;
+                height: 28px;
+                font-size: 1rem;
+            }
+        }
 
     </style>
 
@@ -16491,10 +17099,15 @@
         // Función para renderizar certificaciones en formato tabla
         function renderCertifications(certificaciones) {
             const list = document.getElementById('certifications-list');
-            if (!list) return;
+            const swipeWrapper = document.getElementById('certifications-swipe-wrapper');
+            const indicatorsContainer = document.getElementById('certifications-indicators');
             
-            // Limpiar lista
+            if (!list || !swipeWrapper) return;
+            
+            // Limpiar listas
             list.innerHTML = '';
+            swipeWrapper.innerHTML = '';
+            indicatorsContainer.innerHTML = '';
             
             // Certificados reales con información de las imágenes
             const realCertifications = [
@@ -16590,11 +17203,27 @@
                 }
             ];
             
-            // Crear elementos de certificación en formato tabla
+            // Crear elementos de certificación en formato tabla (desktop)
             realCertifications.forEach((cert, index) => {
                 const certElement = createCertificationRow(cert, index);
                 list.appendChild(certElement);
             });
+            
+            // Crear tarjetas deslizables (móvil)
+            realCertifications.forEach((cert, index) => {
+                const swipeCard = createSwipeCard(cert, index);
+                swipeWrapper.appendChild(swipeCard);
+                
+                // Crear indicador
+                const indicator = document.createElement('div');
+                indicator.className = 'certification-indicator';
+                if (index === 0) indicator.classList.add('active');
+                indicator.addEventListener('click', () => goToSlide(index));
+                indicatorsContainer.appendChild(indicator);
+            });
+            
+            // Inicializar sistema de swipe
+            initializeSwipeSystem(realCertifications.length);
             
             // Aplicar animaciones después de renderizar
             setTimeout(() => {
@@ -16738,6 +17367,9 @@
             // Manejar cursor personalizado cuando se abre el modal
             handleModalCursor();
             
+            // Detectar si estamos en móvil
+            const isMobile = window.innerWidth <= 768;
+            
             // Crear modal para mostrar la imagen
             const modal = document.createElement('div');
             modal.className = 'certification-modal';
@@ -16750,12 +17382,14 @@
                 background: rgba(0, 0, 0, 0.95);
                 display: flex;
                 justify-content: center;
-                align-items: center;
+                align-items: ${isMobile ? 'flex-start' : 'center'};
                 z-index: 10000;
                 opacity: 0;
                 transition: opacity 0.3s ease;
-                padding: 1rem;
+                padding: ${isMobile ? '0.5rem' : '1rem'};
                 cursor: default;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
             `;
             
             // Obtener información detallada de la certificación
@@ -16839,10 +17473,6 @@
                             <span class="status-icon">✅</span>
                             <span class="status-text">Certificación autenticada y verificada</span>
                         </div>
-                        <button class="download-btn" onclick="downloadCertification('${certId}')">
-                            <span class="download-icon">⬇️</span>
-                            <span class="download-text">Descargar PDF</span>
-                        </button>
                     </div>
                 </div>
             `;
@@ -16868,6 +17498,24 @@
                     closeCertificationModal();
                 }
             });
+            
+            // En móvil, agregar evento de scroll para cerrar modal
+            if (isMobile) {
+                let scrollStartY = 0;
+                modal.addEventListener('touchstart', (e) => {
+                    scrollStartY = e.touches[0].clientY;
+                });
+                
+                modal.addEventListener('touchmove', (e) => {
+                    const currentY = e.touches[0].clientY;
+                    const scrollY = scrollStartY - currentY;
+                    
+                    // Si el usuario hace scroll hacia arriba desde la parte superior, cerrar modal
+                    if (scrollY > 50 && window.scrollY === 0) {
+                        closeCertificationModal();
+                    }
+                });
+            }
             
             // Restaurar cursor personalizado si se cierra el modal de otra manera
             window.addEventListener('beforeunload', () => {
@@ -16929,6 +17577,224 @@
                 'CERT-010': 'Introduction to HTML, CSS, & JavaScript.jpg'
             };
             return imageNames[certId] || 'certification.jpg';
+        }
+        
+        // ===== SISTEMA DE TARJETAS DESLIZABLES =====
+        
+        let currentSlide = 0;
+        let totalSlides = 0;
+        let isDragging = false;
+        let startX = 0;
+        let currentX = 0;
+        let initialTransform = 0;
+        
+        // Función para crear tarjeta deslizable
+        function createSwipeCard(cert, index) {
+            const card = document.createElement('div');
+            card.className = 'certification-swipe-card';
+            card.setAttribute('data-index', index);
+            
+            const fechaFormateada = new Date(cert.fecha).toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+            
+            const statusClass = cert.estado === 'verificada' ? 'verified' : 'pending';
+            const statusText = cert.estado === 'verificada' ? 'Verificada' : 'Pendiente';
+            
+            card.innerHTML = `
+                <div class="certification-card-header">
+                    <div class="certification-card-logo">
+                        <img src="${cert.logo}" alt="${cert.entidad}" 
+                             onerror="handleImageError(this, 'logo')">
+                    </div>
+                    <div class="certification-card-info">
+                        <h3 class="certification-card-title">${cert.titulo}</h3>
+                        <p class="certification-card-entity">${cert.entidad}</p>
+                        <p class="certification-card-date">${fechaFormateada}</p>
+                    </div>
+                </div>
+                
+                <div class="certification-card-status">
+                    <div class="certification-status-badge ${statusClass}">
+                        <span class="status-icon">✅</span>
+                        <span class="status-text">${statusText}</span>
+                    </div>
+                </div>
+                
+                <div class="certification-card-actions">
+                    <button class="certification-view-btn" onclick="viewCertification('${cert.id}', '${cert.imagen}')">
+                        Ver Certificado
+                    </button>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        // Función para inicializar el sistema de swipe
+        function initializeSwipeSystem(total) {
+            totalSlides = total;
+            const wrapper = document.getElementById('certifications-swipe-wrapper');
+            const prevBtn = document.getElementById('prev-cert-btn');
+            const nextBtn = document.getElementById('next-cert-btn');
+            const counter = document.getElementById('certification-counter');
+            
+            if (!wrapper || !prevBtn || !nextBtn || !counter) return;
+            
+            // Event listeners para botones
+            prevBtn.addEventListener('click', () => goToSlide(currentSlide - 1));
+            nextBtn.addEventListener('click', () => goToSlide(currentSlide + 1));
+            
+            // Event listeners para gestos táctiles
+            wrapper.addEventListener('touchstart', handleTouchStart, { passive: false });
+            wrapper.addEventListener('touchmove', handleTouchMove, { passive: false });
+            wrapper.addEventListener('touchend', handleTouchEnd, { passive: false });
+            
+            // Event listeners para mouse (desktop con touch)
+            wrapper.addEventListener('mousedown', handleMouseDown);
+            wrapper.addEventListener('mousemove', handleMouseMove);
+            wrapper.addEventListener('mouseup', handleMouseUp);
+            wrapper.addEventListener('mouseleave', handleMouseUp);
+            
+            // Actualizar estado inicial
+            updateSlideState();
+        }
+        
+        // Función para ir a una slide específica
+        function goToSlide(index) {
+            if (index < 0 || index >= totalSlides) return;
+            
+            currentSlide = index;
+            const wrapper = document.getElementById('certifications-swipe-wrapper');
+            if (!wrapper) return;
+            
+            const translateX = -index * 100;
+            wrapper.style.transform = `translateX(${translateX}%)`;
+            
+            updateSlideState();
+        }
+        
+        // Función para actualizar el estado de la slide
+        function updateSlideState() {
+            const prevBtn = document.getElementById('prev-cert-btn');
+            const nextBtn = document.getElementById('next-cert-btn');
+            const counter = document.getElementById('certification-counter');
+            const indicators = document.querySelectorAll('.certification-indicator');
+            
+            if (prevBtn) prevBtn.disabled = currentSlide === 0;
+            if (nextBtn) nextBtn.disabled = currentSlide === totalSlides - 1;
+            if (counter) counter.textContent = `${currentSlide + 1} / ${totalSlides}`;
+            
+            // Actualizar indicadores
+            indicators.forEach((indicator, index) => {
+                indicator.classList.toggle('active', index === currentSlide);
+            });
+        }
+        
+        // ===== GESTOS TÁCTILES =====
+        
+        function handleTouchStart(e) {
+            isDragging = true;
+            startX = e.touches[0].clientX;
+            const wrapper = document.getElementById('certifications-swipe-wrapper');
+            if (wrapper) {
+                initialTransform = currentSlide * -100;
+                wrapper.style.transition = 'none';
+            }
+        }
+        
+        function handleTouchMove(e) {
+            if (!isDragging) return;
+            
+            e.preventDefault();
+            currentX = e.touches[0].clientX;
+            const diffX = currentX - startX;
+            const wrapper = document.getElementById('certifications-swipe-wrapper');
+            
+            if (wrapper) {
+                const containerWidth = wrapper.parentElement.offsetWidth;
+                const translateX = initialTransform + (diffX / containerWidth) * 100;
+                wrapper.style.transform = `translateX(${translateX}%)`;
+            }
+        }
+        
+        function handleTouchEnd(e) {
+            if (!isDragging) return;
+            
+            isDragging = false;
+            const wrapper = document.getElementById('certifications-swipe-wrapper');
+            if (!wrapper) return;
+            
+            wrapper.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+            
+            const diffX = currentX - startX;
+            const threshold = wrapper.offsetWidth * 0.2; // 20% del ancho
+            
+            if (Math.abs(diffX) > threshold) {
+                if (diffX > 0 && currentSlide > 0) {
+                    goToSlide(currentSlide - 1);
+                } else if (diffX < 0 && currentSlide < totalSlides - 1) {
+                    goToSlide(currentSlide + 1);
+                } else {
+                    goToSlide(currentSlide); // Volver a la posición actual
+                }
+            } else {
+                goToSlide(currentSlide); // Volver a la posición actual
+            }
+        }
+        
+        // ===== SOPORTE PARA MOUSE (DESKTOP) =====
+        
+        function handleMouseDown(e) {
+            isDragging = true;
+            startX = e.clientX;
+            const wrapper = document.getElementById('certifications-swipe-wrapper');
+            if (wrapper) {
+                initialTransform = currentSlide * -100;
+                wrapper.style.transition = 'none';
+            }
+            e.preventDefault();
+        }
+        
+        function handleMouseMove(e) {
+            if (!isDragging) return;
+            
+            currentX = e.clientX;
+            const diffX = currentX - startX;
+            const wrapper = document.getElementById('certifications-swipe-wrapper');
+            
+            if (wrapper) {
+                const containerWidth = wrapper.parentElement.offsetWidth;
+                const translateX = initialTransform + (diffX / containerWidth) * 100;
+                wrapper.style.transform = `translateX(${translateX}%)`;
+            }
+        }
+        
+        function handleMouseUp(e) {
+            if (!isDragging) return;
+            
+            isDragging = false;
+            const wrapper = document.getElementById('certifications-swipe-wrapper');
+            if (!wrapper) return;
+            
+            wrapper.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+            
+            const diffX = currentX - startX;
+            const threshold = wrapper.offsetWidth * 0.2;
+            
+            if (Math.abs(diffX) > threshold) {
+                if (diffX > 0 && currentSlide > 0) {
+                    goToSlide(currentSlide - 1);
+                } else if (diffX < 0 && currentSlide < totalSlides - 1) {
+                    goToSlide(currentSlide + 1);
+                } else {
+                    goToSlide(currentSlide);
+                }
+            } else {
+                goToSlide(currentSlide);
+            }
         }
         
         // Función para manejar el cursor personalizado en el modal
