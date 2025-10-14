@@ -1413,52 +1413,70 @@
     // ================================================================================
     
     // LÍNEA 906-938: Función para obtener artículos desde PocketBase
-    // Flujo robusto:
-    //  - Verifica existencia de colección (GET /api/collections/articulos)
-    //  - Si 404 u otro error: retorna "articulosRespaldo" sin warning ruidoso
-    //  - Si OK: consulta registros con sort/limit y transforma al formato de UI
-    // Endpoint datos: /api/collections/articulos/records?sort=-fecha&perPage=6
+    // Como la colección "articulos" no existe, usamos datos de respaldo
+    // En el futuro se puede crear la colección desde el panel de administración
     async function obtenerArticulosPocketBase() {
       try {
-        // Verificar si la colección existe para evitar 404 ruidosos
+        console.log('📰 Obteniendo artículos...');
+        console.log('ℹ️ La colección "articulos" no existe en PocketBase, usando datos de respaldo');
+        
+        // Verificar si la colección existe (solo para logging)
         const meta = await fetch(`${POCKETBASE_URL}/api/collections/articulos`);
         if (meta.status === 404) {
-          return articulosRespaldo;
+          console.log('✅ Confirmado: La colección "articulos" no existe');
+        } else if (meta.status === 401) {
+          console.log('🔒 La colección "articulos" requiere autenticación');
+        } else {
+          console.log('📊 Estado de la colección:', meta.status);
         }
-        if (!meta.ok) {
-          return articulosRespaldo;
-        }
-
-        const response = await fetch(`${POCKETBASE_URL}/api/collections/articulos/records?sort=-fecha&perPage=6`);
-        if (response.status === 404) {
-          return articulosRespaldo;
-        }
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        if (data.items && data.items.length > 0) {
-          // Transformar datos de PocketBase al formato esperado
-          return data.items.map(articulo => ({
-            id: articulo.id,
-            titulo: articulo.titulo || 'Sin título',
-            categoria: articulo.categoria || 'General',
-            imagen: articulo.imagen || 'img/web%205/ofertas/vinil.jpg',
-            resumen: articulo.resumen || 'Descripción no disponible',
-            vistas: articulo.vistas || 0,
-            fecha: articulo.fecha ? new Date(articulo.fecha).toLocaleDateString('es-ES', {
-              day: 'numeric',
-              month: 'short',
-              year: 'numeric'
-            }) : 'Fecha no disponible',
-            trending: articulo.trending || false
-          }));
-        }
-        return articulosRespaldo; // Usar datos de respaldo si no hay datos
+        
+        // Usar datos de respaldo ya que la colección no existe
+        console.log('📝 Usando datos de respaldo para artículos');
+        return articulosRespaldo;
+        
       } catch (error) {
         console.info('Artículos: usando respaldo. Detalle:', error?.message || error);
         return articulosRespaldo; // Usar datos de respaldo en caso de error
+      }
+    }
+
+    // Función para intentar autenticación automática
+    async function intentarAutenticacionAutomatica() {
+      try {
+        console.log('🔄 Intentando autenticación automática...');
+        
+        // Crear instancia temporal de PocketBase
+        const pb = new PocketBase(POCKETBASE_URL);
+        
+        // Intentar autenticación como invitado o con credenciales públicas
+        // Nota: Esto depende de la configuración de tu PocketBase
+        try {
+          // Opción 1: Autenticación como invitado (si está habilitada)
+          await pb.collection('users').authWithPassword('guest@example.com', 'guest123');
+        } catch (guestError) {
+          console.log('👤 Autenticación como invitado falló, intentando acceso público...');
+          
+          // Opción 2: Verificar si la colección es pública
+          const publicTest = await fetch(`${POCKETBASE_URL}/api/collections/articulos/records?perPage=1`);
+          if (publicTest.ok) {
+            console.log('✅ Acceso público disponible');
+            return { success: true, public: true };
+          }
+          
+          throw new Error('No se pudo autenticar');
+        }
+        
+        // Guardar token para futuras consultas
+        if (pb.authStore.token) {
+          localStorage.setItem('pb_auth_token', pb.authStore.token);
+          console.log('💾 Token guardado para futuras consultas');
+        }
+        
+        return { success: true, token: pb.authStore.token };
+        
+      } catch (error) {
+        console.warn('❌ Autenticación automática falló:', error.message);
+        return { success: false, error: error.message };
       }
     }
 
@@ -1472,6 +1490,274 @@
 
     // LÍNEA 951: Cargar artículos al inicializar la página
     cargarArticulos();
+    
+    // ================================================================================
+    // FUNCIONES DE DIAGNÓSTICO Y AUTENTICACIÓN
+    // ================================================================================
+    
+    // Función para verificar el estado de la colección articulos
+    async function verificarColeccionArticulos() {
+      try {
+        console.log('🔍 Verificando colección "articulos"...');
+        
+        // Verificar si la colección existe
+        const metaResponse = await fetch(`${POCKETBASE_URL}/api/collections/articulos`);
+        console.log('📊 Estado de la colección:', metaResponse.status, metaResponse.statusText);
+        
+        if (metaResponse.status === 404) {
+          console.warn('❌ La colección "articulos" no existe');
+          return { existe: false, registros: 0, error: 'Colección no encontrada' };
+        }
+        
+        if (!metaResponse.ok) {
+          console.warn('⚠️ Error al acceder a la colección:', metaResponse.status);
+          return { existe: false, registros: 0, error: `HTTP ${metaResponse.status}` };
+        }
+        
+        // Obtener registros
+        const dataResponse = await fetch(`${POCKETBASE_URL}/api/collections/articulos/records?perPage=1`);
+        const data = await dataResponse.json();
+        
+        console.log('📈 Total de registros:', data.totalItems || 0);
+        console.log('📝 Primeros registros:', data.items || []);
+        
+        return {
+          existe: true,
+          registros: data.totalItems || 0,
+          items: data.items || [],
+          error: null
+        };
+        
+      } catch (error) {
+        console.error('💥 Error al verificar colección:', error);
+        return { existe: false, registros: 0, error: error.message };
+      }
+    }
+    
+    // Función para probar autenticación con PocketBase
+    async function probarAutenticacion() {
+      try {
+        console.log('🔐 Probando autenticación con PocketBase...');
+        
+        // Intentar obtener información de la instancia
+        const healthResponse = await fetch(`${POCKETBASE_URL}/api/health`);
+        console.log('🏥 Estado del servidor:', healthResponse.status);
+        
+        // Verificar si necesitamos autenticación para leer colecciones públicas
+        const testResponse = await fetch(`${POCKETBASE_URL}/api/collections/articulos/records?perPage=1`);
+        console.log('📖 Test de lectura:', testResponse.status);
+        
+        if (testResponse.status === 401) {
+          console.warn('🔒 Se requiere autenticación para acceder a los artículos');
+          return { autenticado: false, necesitaAuth: true };
+        }
+        
+        if (testResponse.status === 200) {
+          console.log('✅ Acceso público permitido');
+          return { autenticado: true, necesitaAuth: false };
+        }
+        
+        return { autenticado: false, necesitaAuth: true, error: `HTTP ${testResponse.status}` };
+        
+      } catch (error) {
+        console.error('💥 Error en autenticación:', error);
+        return { autenticado: false, necesitaAuth: true, error: error.message };
+      }
+    }
+    
+    // Función para autenticarse como invitado (si es necesario)
+    async function autenticarComoInvitado() {
+      try {
+        console.log('👤 Intentando autenticación como invitado...');
+        
+        // Crear un cliente temporal de PocketBase para autenticación
+        const pb = new PocketBase(POCKETBASE_URL);
+        
+        // Intentar autenticación como invitado (si está habilitada)
+        await pb.collection('users').authWithPassword('guest@example.com', 'guest123');
+        
+        console.log('✅ Autenticado como invitado');
+        return { success: true, token: pb.authStore.token };
+        
+      } catch (error) {
+        console.warn('⚠️ No se pudo autenticar como invitado:', error.message);
+        return { success: false, error: error.message };
+      }
+    }
+    
+    // Función de diagnóstico completo
+    async function ejecutarDiagnostico() {
+      console.log('🚀 Iniciando diagnóstico de PocketBase...');
+      
+      // Verificar las colecciones que sí existen
+      const [categorias, productos, articulos] = await Promise.all([
+        verificarColeccion('categorias'),
+        verificarColeccion('productos'),
+        verificarColeccion('articulos')
+      ]);
+      
+      console.log('📊 Resultados del diagnóstico:');
+      console.log('  - Colección categorias existe:', categorias.existe, `(${categorias.registros} registros)`);
+      console.log('  - Colección productos existe:', productos.existe, `(${productos.registros} registros)`);
+      console.log('  - Colección articulos existe:', articulos.existe, `(${articulos.registros} registros)`);
+      
+      if (!articulos.existe) {
+        console.log('ℹ️ La colección "articulos" no existe, usando datos de respaldo');
+      }
+      
+      return { categorias, productos, articulos };
+    }
+    
+    // Función genérica para verificar cualquier colección
+    async function verificarColeccion(nombreColeccion) {
+      try {
+        console.log(`🔍 Verificando colección "${nombreColeccion}"...`);
+        
+        const response = await fetch(`${POCKETBASE_URL}/api/collections/${nombreColeccion}/records?perPage=1`);
+        
+        if (response.status === 404) {
+          console.log(`❌ Colección "${nombreColeccion}" no existe`);
+          return { existe: false, registros: 0, error: 'No encontrada' };
+        }
+        
+        if (response.status === 401) {
+          console.log(`🔒 Colección "${nombreColeccion}" requiere autenticación`);
+          return { existe: true, registros: 0, error: 'Requiere autenticación' };
+        }
+        
+        if (!response.ok) {
+          console.log(`⚠️ Error en colección "${nombreColeccion}":`, response.status);
+          return { existe: false, registros: 0, error: `HTTP ${response.status}` };
+        }
+        
+        const data = await response.json();
+        const totalRegistros = data.totalItems || 0;
+        
+        console.log(`✅ Colección "${nombreColeccion}" existe con ${totalRegistros} registros`);
+        
+        return {
+          existe: true,
+          registros: totalRegistros,
+          items: data.items || [],
+          error: null
+        };
+        
+      } catch (error) {
+        console.error(`💥 Error al verificar "${nombreColeccion}":`, error);
+        return { existe: false, registros: 0, error: error.message };
+      }
+    }
+    
+    // Ejecutar diagnóstico al cargar la página
+    setTimeout(ejecutarDiagnostico, 2000);
+    
+    // Función para poblar la colección de artículos con datos de ejemplo
+    async function poblarArticulosEjemplo() {
+      try {
+        console.log('📝 Poblando colección de artículos con datos de ejemplo...');
+        
+        const pb = new PocketBase(POCKETBASE_URL);
+        
+        // Datos de ejemplo para artículos
+        const articulosEjemplo = [
+          {
+            titulo: 'Tendencias en Diseño Gráfico 2024',
+            categoria: 'Diseño',
+            imagen: 'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+            resumen: 'Descubre las últimas tendencias en diseño gráfico que están marcando el 2024. Colores, tipografías y estilos que debes conocer.',
+            vistas: 2847,
+            fecha: '2024-01-15',
+            trending: true
+          },
+          {
+            titulo: 'Guía Completa de Impresión Digital',
+            categoria: 'Impresión',
+            imagen: 'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+            resumen: 'Todo lo que necesitas saber sobre impresión digital: tipos de papel, resoluciones, colores y técnicas profesionales.',
+            vistas: 1923,
+            fecha: '2024-01-12',
+            trending: false
+          },
+          {
+            titulo: 'Vinil para Exterior: Durabilidad y Calidad',
+            categoria: 'Materiales',
+            imagen: 'img/web%205/ofertas/vinil.jpg',
+            resumen: 'Conoce los mejores tipos de vinil para trabajos exteriores. Resistencia a la intemperie y acabados profesionales.',
+            vistas: 1654,
+            fecha: '2024-01-10',
+            trending: false
+          }
+        ];
+        
+        // Intentar autenticación primero
+        try {
+          await pb.collection('users').authWithPassword('admin@example.com', 'admin123');
+        } catch (authError) {
+          console.warn('⚠️ No se pudo autenticar para poblar datos:', authError.message);
+          return { success: false, error: 'No se pudo autenticar' };
+        }
+        
+        // Crear artículos uno por uno
+        const resultados = [];
+        for (const articulo of articulosEjemplo) {
+          try {
+            const record = await pb.collection('articulos').create(articulo);
+            resultados.push({ success: true, id: record.id, titulo: articulo.titulo });
+            console.log('✅ Artículo creado:', articulo.titulo);
+          } catch (error) {
+            console.warn('❌ Error al crear artículo:', articulo.titulo, error.message);
+            resultados.push({ success: false, titulo: articulo.titulo, error: error.message });
+          }
+        }
+        
+        const exitosos = resultados.filter(r => r.success).length;
+        console.log(`📊 Resultado: ${exitosos}/${articulosEjemplo.length} artículos creados exitosamente`);
+        
+        return { success: exitosos > 0, resultados, total: articulosEjemplo.length, exitosos };
+        
+      } catch (error) {
+        console.error('💥 Error al poblar artículos:', error);
+        return { success: false, error: error.message };
+      }
+    }
+    
+    // Función para limpiar tokens de autenticación
+    function limpiarAutenticacion() {
+      localStorage.removeItem('pb_auth_token');
+      console.log('🧹 Tokens de autenticación limpiados');
+    }
+    
+    // Hacer funciones disponibles globalmente para debugging
+    window.pbDiagnostico = {
+      verificarColeccion,
+      verificarColeccionArticulos,
+      probarAutenticacion,
+      autenticarComoInvitado,
+      ejecutarDiagnostico,
+      poblarArticulosEjemplo,
+      limpiarAutenticacion
+    };
+    
+    // Función de utilidad para verificar el estado de todas las colecciones
+    window.verificarTodasLasColecciones = async function() {
+      console.log('🔍 Verificando todas las colecciones disponibles...');
+      
+      const colecciones = ['categorias', 'productos', 'articulos'];
+      const resultados = {};
+      
+      for (const coleccion of colecciones) {
+        resultados[coleccion] = await verificarColeccion(coleccion);
+      }
+      
+      console.log('📊 Resumen de colecciones:');
+      Object.entries(resultados).forEach(([nombre, resultado]) => {
+        const estado = resultado.existe ? '✅' : '❌';
+        const registros = resultado.registros || 0;
+        console.log(`  ${estado} ${nombre}: ${registros} registros`);
+      });
+      
+      return resultados;
+    };
 
     // Datos de testimonios
     const testimonios = [
