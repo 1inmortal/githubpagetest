@@ -48,6 +48,23 @@
             padding: 0;
             box-sizing: border-box;
         }
+        
+        /* Prevenir que elementos se salgan del viewport */
+        * {
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        
+        /* Excepciones para elementos que necesitan ancho completo */
+        img, video, canvas, svg, iframe, object, embed {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        /* Elementos de layout que pueden necesitar ancho completo */
+        .container, .hero, .section, .drone-feed-container, .fullscreen-demo-overlay {
+            max-width: none;
+        }
 
         /* Base HTML */
         html {
@@ -66,6 +83,9 @@
             -webkit-text-size-adjust: 100%;
             -ms-text-size-adjust: 100%;
             text-size-adjust: 100%;
+            /* Prevenir scroll horizontal en todos los dispositivos */
+            max-width: 100vw;
+            box-sizing: border-box;
         }
 
         /* Fondo dinámico con gradiente animado */
@@ -120,9 +140,11 @@
         /*                 LAYOUT SYSTEM                 */
         /* ============================================= */
         .container {
-            max-width: 1200px;
+            max-width: 100%;
+            width: 100%;
             margin: 0 auto;
-            padding: 0 2rem;
+            padding: 0 1rem;
+            box-sizing: border-box;
         }
 
         section {
@@ -254,7 +276,7 @@
         /* ---------------------------------- */
         .code-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 30px;
             margin-top: 40px;
         }
@@ -607,23 +629,26 @@
             -ms-flex-wrap: wrap;
             flex-wrap: wrap;
             width: 100%;
-            margin: -20px;
+            margin: 0;
+            overflow: hidden;
         }
 
         /* CSS Grid para navegadores modernos */
         @supports (display: grid) {
             .features-grid {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                gap: 40px;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
                 margin: 0;
+                width: 100%;
+                max-width: 100%;
             }
         }
 
         .feature-card {
             background: rgba(10, 10, 20, 0.5);
             border: 1px solid var(--border-color);
-            padding: 40px 30px;
+            padding: 20px 15px;
             text-align: center;
             -webkit-backdrop-filter: blur(5px);
             backdrop-filter: blur(5px);
@@ -635,11 +660,14 @@
             will-change: transform, opacity;
             /* Fallback para flexbox */
             -webkit-box-flex: 1;
-            -webkit-flex: 1 1 300px;
+            -webkit-flex: 1 1 250px;
             -moz-box-flex: 1;
-            -ms-flex: 1 1 300px;
-            flex: 1 1 300px;
-            margin: 20px;
+            -ms-flex: 1 1 250px;
+            flex: 1 1 250px;
+            margin: 10px 5px;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         /* Optimización de rendimiento para elementos animados */
@@ -1226,7 +1254,8 @@
             padding: 10px 15px;
             font-family: var(--font-mono);
             font-size: 0.9rem;
-            width: 200px;
+            width: 100%;
+            max-width: 200px;
             margin-right: 10px;
             transition: all 0.3s ease;
         }
@@ -1470,8 +1499,10 @@
         /* ============================================= */
         .python-demo-container {
             width: 100%;
-            max-width: 900px;
-            margin: 40px auto;
+            max-width: 100%;
+            margin: 20px auto;
+            padding: 0 10px;
+            box-sizing: border-box;
         }
 
         .python-terminal {
@@ -1481,6 +1512,9 @@
             overflow: hidden;
             box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
             font-family: var(--font-mono);
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         .terminal-header {
@@ -1598,19 +1632,24 @@
 
         .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 100%;
         }
 
         .metric-card {
             background: rgba(10, 10, 20, 0.6);
             border: 1px solid var(--border-color);
-            padding: 25px 20px;
+            padding: 15px 10px;
             text-align: center;
             border-radius: 8px;
             transition: all 0.3s ease;
             backdrop-filter: blur(5px);
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         .metric-card:hover {
@@ -1870,6 +1909,26 @@
         /*                RESPONSIVE DESIGN               */
         /* ============================================= */
         
+        /* Tablets grandes (1200px y menos) */
+        @media (max-width: 1200px) {
+            .container {
+                padding: 0 1.8rem;
+            }
+            
+            .hero-title {
+                font-size: clamp(3rem, 8vw, 5.5rem);
+            }
+            
+            .section-title {
+                font-size: 2.8rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 35px;
+            }
+        }
+
         /* Tablet y móvil grande */
         @media (max-width: 1024px) {
             .container {
@@ -1888,7 +1947,34 @@
         /* Móvil */
         @media (max-width: 768px) {
             .container {
-                padding: 0 1rem;
+                padding: 0 0.5rem;
+                max-width: 100%;
+                width: 100%;
+            }
+            
+            /* Forzar que todos los elementos respeten el viewport */
+            .features-grid,
+            .metrics-grid,
+            .demo-grid {
+                width: 100%;
+                max-width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            
+            .feature-card,
+            .metric-card,
+            .demo-card {
+                width: 100%;
+                max-width: 100%;
+                margin: 5px 0;
+            }
+            
+            .python-demo-container,
+            .python-terminal {
+                width: 100%;
+                max-width: 100%;
+                margin: 10px 0;
             }
 
             /* Tipografía móvil optimizada con mejor jerarquía y legibilidad */
@@ -1901,9 +1987,9 @@
             }
 
             .section-title {
-                font-size: clamp(1.75rem, 5vw, 2rem);
+                font-size: clamp(1.4rem, 4vw, 1.6rem);
                 line-height: 1.2;
-                margin-bottom: 1.5rem;
+                margin-bottom: 1.2rem;
                 letter-spacing: 0.5px;
             }
             
@@ -1961,10 +2047,10 @@
             
             /* Mejoras en tarjetas para móvil */
             .feature-card {
-                padding: 24px 20px;
-                margin-bottom: 16px;
-                border-radius: 16px;
-                min-height: 200px;
+                padding: 20px 16px;
+                margin-bottom: 12px;
+                border-radius: 12px;
+                min-height: 160px;
                 display: flex;
                 flex-direction: column;
                 justify-content: space-between;
@@ -2111,11 +2197,16 @@
             }
 
             .terminal-body {
-                padding: 16px 12px;
-                font-size: clamp(0.75rem, 3vw, 0.85rem);
-                line-height: 1.4;
-                min-height: 180px;
+                padding: 12px 10px;
+                font-size: clamp(0.7rem, 2.8vw, 0.8rem);
+                line-height: 1.3;
+                min-height: 150px;
                 overflow-x: auto;
+            }
+            
+            .terminal-header {
+                padding: 8px 12px;
+                font-size: 0.8rem;
             }
             
             /* Líneas de código optimizadas para móvil */
@@ -2135,10 +2226,10 @@
             }
             
             .metric-card {
-                padding: 16px 12px;
-                border-radius: 12px;
+                padding: 12px 10px;
+                border-radius: 10px;
                 text-align: center;
-                min-height: 80px;
+                min-height: 70px;
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
@@ -2210,10 +2301,114 @@
             }
         }
 
+        /* Pantallas muy pequeñas (320px y menos) */
+        @media (max-width: 320px) {
+            .container {
+                padding: 0 0.25rem;
+                max-width: 100%;
+                width: 100%;
+            }
+            
+            /* Forzar todos los elementos a una columna y ancho completo */
+            .features-grid,
+            .metrics-grid,
+            .demo-grid,
+            .code-container {
+                grid-template-columns: 1fr !important;
+                gap: 8px !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            
+            .feature-card,
+            .metric-card,
+            .demo-card {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 3px 0 !important;
+                padding: 12px 8px !important;
+            }
+            
+            .python-demo-container,
+            .python-terminal {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 5px 0 !important;
+                padding: 0 !important;
+            }
+            
+            .hero-title {
+                font-size: clamp(1.5rem, 4vw, 2.5rem);
+                line-height: 1.05;
+                letter-spacing: 0.3px;
+                margin-bottom: 0.8rem;
+            }
+            
+            .hero-subtitle {
+                font-size: clamp(0.8rem, 3vw, 1rem);
+                line-height: 1.3;
+                margin-bottom: 1.5rem;
+            }
+            
+            .section-title {
+                font-size: clamp(1.2rem, 4.5vw, 1.5rem);
+                margin-bottom: 1rem;
+            }
+            
+            .feature-card {
+                padding: 16px 12px;
+                min-height: 140px;
+            }
+            
+            .feature-card h3 {
+                font-size: clamp(1rem, 3.5vw, 1.1rem);
+                margin-bottom: 8px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+        }
+
         /* Móvil pequeño (480px y menos) */
         @media (max-width: 480px) {
             .container {
-                padding: 0 0.75rem;
+                padding: 0 0.5rem;
+                max-width: 100%;
+                width: 100%;
+            }
+            
+            /* Forzar elementos a una columna */
+            .features-grid,
+            .metrics-grid,
+            .demo-grid {
+                grid-template-columns: 1fr !important;
+                gap: 10px !important;
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .feature-card,
+            .metric-card,
+            .demo-card {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 5px 0 !important;
+                padding: 15px 10px !important;
+            }
+            
+            /* Grid de código en una columna para móviles pequeños */
+            .code-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
             }
             
             /* Tipografía ultra-compacta */
@@ -2225,9 +2420,9 @@
             }
 
             .section-title {
-                font-size: clamp(1.5rem, 4.5vw, 1.8rem);
+                font-size: clamp(1.1rem, 4vw, 1.3rem);
                 line-height: 1.1;
-                margin-bottom: 1rem;
+                margin-bottom: 0.8rem;
             }
             
             .hero-subtitle {
@@ -2262,19 +2457,19 @@
 
             /* Tarjetas ultra-compactas */
             .feature-card {
-                padding: 20px 16px;
-                min-height: 160px;
-                border-radius: 12px;
+                padding: 14px 12px;
+                min-height: 120px;
+                border-radius: 10px;
             }
             
             .feature-card h3 {
-                font-size: clamp(1rem, 3.5vw, 1.2rem);
-                margin-bottom: 8px;
+                font-size: clamp(0.9rem, 3vw, 1rem);
+                margin-bottom: 6px;
             }
             
             .feature-card p {
-                font-size: clamp(0.8rem, 3vw, 0.9rem);
-                line-height: 1.4;
+                font-size: clamp(0.75rem, 2.8vw, 0.85rem);
+                line-height: 1.3;
             }
 
             /* Video ultra-compacto */
@@ -2296,9 +2491,19 @@
             }
 
             .terminal-body {
-                padding: 12px 8px;
-                min-height: 160px;
-                font-size: clamp(0.7rem, 2.5vw, 0.8rem);
+                padding: 10px 6px;
+                min-height: 120px;
+                font-size: clamp(0.65rem, 2.2vw, 0.75rem);
+                line-height: 1.2;
+            }
+            
+            .terminal-header {
+                padding: 6px 8px;
+                font-size: 0.7rem;
+            }
+            
+            .python-demo-container {
+                margin: 15px auto;
             }
 
             .code-line {
@@ -3214,7 +3419,8 @@
                         position: fixed !important;
                         top: 0 !important;
                         left: 0 !important;
-                        width: 100vw !important;
+                        width: 100% !important;
+                        max-width: 100vw !important;
                         height: 100vh !important;
                         background: 
                             radial-gradient(circle at 20% 20%, rgba(0, 255, 136, 0.1), transparent 50%),
@@ -3689,7 +3895,8 @@
                             position: fixed !important;
                             top: 0 !important;
                             left: 0 !important;
-                            width: 100vw !important;
+                            width: 100% !important;
+                            max-width: 100vw !important;
                             height: 100vh !important;
                             z-index: 99999 !important;
                             transform: translateZ(0) !important;
@@ -4064,7 +4271,8 @@
                     position: fixed;
                     top: 0;
                     left: 0;
-                    width: 100vw;
+                    width: 100%;
+                    max-width: 100vw;
                     height: 100vh;
                     background: linear-gradient(135deg, #0a0a14 0%, #1a1a2e 50%, #16213e 100%);
                     display: flex;
@@ -5765,5 +5973,7 @@
         }
     </script>
 
+    <!-- Script de análisis de problemas móviles -->
+    <script src="../../analyze-mobile-issues.js"></script>
 </body>
 </html>
