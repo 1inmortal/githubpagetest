@@ -1,0 +1,380 @@
+    // ================================================================================
+    // CONFIGURACIÓN DE POCKETBASE BACKEND
+    // ================================================================================
+    // URL del backend PocketBase
+    const POCKETBASE_URL = 'https://zonagraficapd.ezhostingit.com';
+    
+    // Variables globales para almacenar datos dinámicos
+    let serviciosDinamicos = [];
+    let productosDinamicos = [];
+
+    // ================================================================================
+    // FUNCIONES DE CONEXIÓN CON POCKETBASE BACKEND
+    // ================================================================================
+    
+    // LÍNEA 720-728: Función para obtener categorías desde PocketBase
+    // Endpoint: /api/collections/categorias/records
+    async function obtenerCategorias() {
+      try {
+        const response = await fetch(`${POCKETBASE_URL}/api/collections/categorias/records`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        return data.items || [];
+      } catch (error) {
+        console.warn('Error al obtener categorías de PocketBase:', error);
+        return [];
+      }
+    }
+
+    // LÍNEA 734-742: Función para obtener productos desde PocketBase
+    // Endpoint: /api/collections/productos/records
+    async function obtenerProductos() {
+      try {
+        const response = await fetch(`${POCKETBASE_URL}/api/collections/productos/records`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        return data.items || [];
+      } catch (error) {
+        console.warn('Error al obtener productos de PocketBase:', error);
+        return [];
+      }
+    }
+
+    // LÍNEA 748-756: Función para obtener productos por categoría
+    // Endpoint: /api/collections/productos/records?filter=(categoria='CATEGORIA')
+    async function obtenerProductosPorCategoria(categoria) {
+      try {
+        const response = await fetch(`${POCKETBASE_URL}/api/collections/productos/records?filter=(categoria='${categoria}')`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        return data.items || [];
+      } catch (error) {
+        console.warn(`Error al obtener productos de ${categoria}:`, error);
+        return [];
+      }
+    }
+
+    // ================================================================================
+    // FUNCIÓN PRINCIPAL DE CARGA DE DATOS DINÁMICOS
+    // ================================================================================
+    
+    // LÍNEA 766-824: Función principal que carga todos los datos desde PocketBase
+    // Procesa categorías y productos, los organiza y dispara eventos
+    async function cargarDatosDinamicos() {
+      try {
+        const [categorias, productos] = await Promise.all([
+          obtenerCategorias(),
+          obtenerProductos()
+        ]);
+
+        // Procesar categorías con productos específicos
+        serviciosDinamicos = categorias.map(cat => {
+          let productos = [];
+          let descripcion = '';
+          
+          // Asignar productos específicos según la categoría
+          switch(cat.nombre) {
+            case 'IMPRENTA':
+              productos = [
+                'CARPETAS IMPRESAS',
+                'TABLOIDE EN PAPEL COUCHE', 
+                'TABLOIDE ADHESIVO CON RECORTE',
+                'BLOCK DE NOTAS / FORMATOS',
+                'VOLANTES / DIPTICOS / TRIPTICOS',
+                'TARJETAS DE PRESENTACION'
+              ];
+              descripcion = 'Impresión digital y offset de alta calidad. Tarjetas de presentación, volantes, dípticos, trípticos, block de notas, tabloides adhesivos y carpetas impresas.';
+              break;
+            case 'GRAN FORMATO':
+              productos = [
+                'VINIL ESTATICO',
+                'BANDERAS PUBLICITARIAS',
+                'BACKLITE',
+                'VINIL MATE / BRILLANTE',
+                'MICROPERFORADO',
+                'LONA IMPRESA'
+              ];
+              descripcion = 'Trabajos de gran formato para publicidad exterior e interior. Lonas impresas, microperforado, vinil mate/brillante, backlite, banderas publicitarias y vinil estático.';
+              break;
+            case 'ESTAMPADOS':
+              productos = ['SERVICIOS DE ESTAMPADO DISPONIBLES'];
+              descripcion = 'Playeras, gorras, textil personalizado y merchandising corporativo. Técnicas de serigrafía, sublimación y bordado profesional.';
+              break;
+            case 'RÍGIDOS':
+              productos = ['SERVICIOS DE RÍGIDOS DISPONIBLES'];
+              descripcion = 'Letreros rígidos, displays, stands y señalética de materiales sólidos como acrílico, PVC, foam board y metal. Durabilidad y resistencia.';
+              break;
+            case 'PROMOCIONALES':
+              productos = ['SERVICIOS PROMOCIONALES DISPONIBLES'];
+              descripcion = 'Material promocional, regalos corporativos, artículos publicitarios y merchandising personalizado para eventos y campañas.';
+              break;
+            case 'DISEÑO':
+              productos = ['SERVICIOS DE DISEÑO DISPONIBLES'];
+              descripcion = 'Servicios de diseño gráfico, identidad corporativa, logotipos, branding y creatividad visual profesional para todos tus proyectos.';
+              break;
+            case 'OTROS PRODUCTOS Y SERVICIOS':
+              productos = ['SERVICIOS ADICIONALES DISPONIBLES'];
+              descripcion = 'Servicios adicionales, productos especializados y soluciones personalizadas para necesidades específicas de tu empresa.';
+              break;
+            default:
+              productos = ['SERVICIOS DISPONIBLES'];
+              descripcion = cat.descripcion || `Servicios de ${cat.nombre.toLowerCase()}`;
+          }
+          
+          return {
+            id: cat.id,
+            nombre: cat.nombre,
+            desc: descripcion,
+            icon: 'img/web 5/iconos/gran_formato_.png', // Icono por defecto
+            productos: productos,
+            imgs: [
+              'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+              'img/web%205/ofertas/tendecia.webp',
+              'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+              'img/web%205/ofertas/vinil.jpg'
+            ]
+          };
+        });
+
+        // Procesar productos y agrupar por categoría
+        productos.forEach(producto => {
+          const servicio = serviciosDinamicos.find(s => s.nombre === producto.categoria);
+          if (servicio) {
+            servicio.productos.push(producto.nombre);
+          }
+        });
+
+        // Asignar iconos específicos según el nombre de la categoría
+        serviciosDinamicos.forEach(servicio => {
+          switch(servicio.nombre) {
+            case 'GRAN FORMATO':
+              servicio.icon = 'img/web 5/iconos/gran_formato_.png';
+              break;
+            case 'IMPRENTA':
+              servicio.icon = 'img/web 5/iconos/imprenta.png';
+              break;
+            case 'ESTAMPADOS':
+              servicio.icon = 'img/web 5/iconos/estampados.png';
+              break;
+            case 'RÍGIDOS':
+              servicio.icon = 'img/web 5/iconos/rigidos.png';
+              break;
+            case 'PROMOCIONALES':
+              servicio.icon = 'img/web 5/iconos/promocionales.png';
+              break;
+            case 'DISEÑO':
+              servicio.icon = 'img/web 5/iconos/diseño.png';
+              break;
+            case 'OTROS PRODUCTOS Y SERVICIOS':
+              servicio.icon = 'img/web 5/iconos/otros productos.png';
+              break;
+            default:
+              servicio.icon = 'img/web 5/iconos/gran_formato_.png';
+          }
+        });
+
+        productosDinamicos = productos;
+        
+        // Disparar evento para actualizar componentes
+        const event = new CustomEvent('datosCargados', { 
+          detail: { servicios: serviciosDinamicos, productos: productosDinamicos } 
+        });
+        window.dispatchEvent(event);
+
+      } catch (error) {
+        console.warn('Error al cargar datos dinámicos:', error);
+      }
+    }
+
+    // ================================================================================
+    // INICIALIZACIÓN DE DATOS DINÁMICOS
+    // ================================================================================
+    
+    // LÍNEA 831: Cargar datos al inicializar la página
+    cargarDatosDinamicos();
+
+    // LÍNEA 834: Función global para refrescar datos (útil para debugging)
+    window.refrescarDatos = cargarDatosDinamicos;
+
+    // Datos de respaldo para artículos
+    const articulosRespaldo = [
+      {
+        id: 1,
+        titulo: 'Tendencias en Diseño Gráfico 2024',
+        categoria: 'Diseño',
+        imagen: 'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+        resumen: 'Descubre las últimas tendencias en diseño gráfico que están marcando el 2024. Colores, tipografías y estilos que debes conocer.',
+        vistas: 2847,
+        fecha: '15 Ene 2024',
+        trending: true
+      },
+      {
+        id: 2,
+        titulo: 'Guía Completa de Impresión Digital',
+        categoria: 'Impresión',
+        imagen: 'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+        resumen: 'Todo lo que necesitas saber sobre impresión digital: tipos de papel, resoluciones, colores y técnicas profesionales.',
+        vistas: 1923,
+        fecha: '12 Ene 2024',
+        trending: false
+      },
+      {
+        id: 3,
+        titulo: 'Vinil para Exterior: Durabilidad y Calidad',
+        categoria: 'Materiales',
+        imagen: 'img/web%205/ofertas/vinil.jpg',
+        resumen: 'Conoce los mejores tipos de vinil para trabajos exteriores. Resistencia a la intemperie y acabados profesionales.',
+        vistas: 1654,
+        fecha: '10 Ene 2024',
+        trending: false
+      },
+      {
+        id: 4,
+        titulo: 'Estampado en Textiles: Técnicas Modernas',
+        categoria: 'Estampado',
+        imagen: 'img/web%205/ofertas/tendecia.webp',
+        resumen: 'Serigrafía, sublimación y bordado. Las mejores técnicas de estampado para diferentes tipos de textiles.',
+        vistas: 1432,
+        fecha: '8 Ene 2024',
+        trending: true
+      },
+      {
+        id: 5,
+        titulo: 'Letreros Luminosos LED: Guía de Instalación',
+        categoria: 'Letreros',
+        imagen: 'img/web%205/ofertas/vinil.jpg',
+        resumen: 'Instalación profesional de letreros luminosos. Consejos de seguridad, cableado y mantenimiento.',
+        vistas: 1287,
+        fecha: '5 Ene 2024',
+        trending: false
+      },
+      {
+        id: 6,
+        titulo: 'Corte Láser: Materiales y Aplicaciones',
+        categoria: 'Grabados',
+        imagen: 'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+        resumen: 'Explora las posibilidades del corte láser en acrílico, madera, metal y otros materiales. Técnicas y acabados.',
+        vistas: 1156,
+        fecha: '3 Ene 2024',
+        trending: false
+      }
+    ];
+
+    // ================================================================================
+    // FUNCIONES DE CONEXIÓN PARA ARTÍCULOS (POCKETBASE)
+    // ================================================================================
+    
+    // LÍNEA 906-938: Función para obtener artículos desde PocketBase
+    // Flujo robusto:
+    //  - Verifica existencia de colección (GET /api/collections/articulos)
+    //  - Si 404 u otro error: retorna "articulosRespaldo" sin warning ruidoso
+    //  - Si OK: consulta registros con sort/limit y transforma al formato de UI
+    // Endpoint datos: /api/collections/articulos/records?sort=-fecha&perPage=6
+    async function obtenerArticulosPocketBase() {
+      try {
+        // Verificar si la colección existe para evitar 404 ruidosos
+        const meta = await fetch(`${POCKETBASE_URL}/api/collections/articulos`);
+        if (meta.status === 404) {
+          return articulosRespaldo;
+        }
+        if (!meta.ok) {
+          return articulosRespaldo;
+        }
+
+        const response = await fetch(`${POCKETBASE_URL}/api/collections/articulos/records?sort=-fecha&perPage=6`);
+        if (response.status === 404) {
+          return articulosRespaldo;
+        }
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data.items && data.items.length > 0) {
+          // Transformar datos de PocketBase al formato esperado
+          return data.items.map(articulo => ({
+            id: articulo.id,
+            titulo: articulo.titulo || 'Sin título',
+            categoria: articulo.categoria || 'General',
+            imagen: articulo.imagen || 'img/web%205/ofertas/vinil.jpg',
+            resumen: articulo.resumen || 'Descripción no disponible',
+            vistas: articulo.vistas || 0,
+            fecha: articulo.fecha ? new Date(articulo.fecha).toLocaleDateString('es-ES', {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric'
+            }) : 'Fecha no disponible',
+            trending: articulo.trending || false
+          }));
+        }
+        return articulosRespaldo; // Usar datos de respaldo si no hay datos
+      } catch (error) {
+        console.info('Artículos: usando respaldo. Detalle:', error?.message || error);
+        return articulosRespaldo; // Usar datos de respaldo en caso de error
+      }
+    }
+
+    // LÍNEA 943-949: Función para cargar artículos al inicializar
+    async function cargarArticulos() {
+      const articulos = await obtenerArticulosPocketBase();
+      // Forzar re-render del componente si es necesario
+      const event = new CustomEvent('articulosCargados', { detail: articulos });
+      window.dispatchEvent(event);
+    }
+
+    // LÍNEA 951: Cargar artículos al inicializar la página
+    cargarArticulos();
+
+    // Datos de testimonios
+    const testimonios = [
+      {
+        id: 1,
+        nombre: 'María González',
+        empresa: 'Restaurante El Buen Sabor',
+        testimonio: 'Excelente trabajo en nuestros menús y letreros. Muy profesionales y cumplieron con los tiempos de entrega.',
+        rating: 5,
+        avatar: 'img/web%205/ofertas/vinil.jpg'
+      },
+      {
+        id: 2,
+        nombre: 'Carlos Mendoza',
+        empresa: 'Gym Fitness Plus',
+        testimonio: 'Las playeras estampadas quedaron perfectas. Calidad superior y precios justos. Los recomiendo ampliamente.',
+        rating: 5,
+        avatar: 'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg'
+      },
+      {
+        id: 3,
+        nombre: 'Ana Rodríguez',
+        empresa: 'Farmacia San José',
+        testimonio: 'El diseño de nuestro logo y material promocional superó nuestras expectativas. Muy creativos y atentos.',
+        rating: 5,
+        avatar: 'img/web%205/ofertas/digital-printing-trends-Ghana-1.png'
+      },
+      {
+        id: 4,
+        nombre: 'Roberto Silva',
+        empresa: 'Taller Mecánico Rápido',
+        testimonio: 'Los letreros luminosos se ven increíbles. Trabajo de calidad y instalación profesional. Muy satisfecho.',
+        rating: 5,
+        avatar: 'img/web%205/ofertas/tendecia.webp'
+      },
+      {
+        id: 5,
+        nombre: 'Laura Pérez',
+        empresa: 'Boutique Elegance',
+        testimonio: 'El material impreso para nuestra tienda es de excelente calidad. Diseño moderno y acabados perfectos.',
+        rating: 5,
+        avatar: 'img/web%205/ofertas/vinil.jpg'
+      },
+      {
+        id: 6,
+        nombre: 'Miguel Torres',
+        empresa: 'Café del Centro',
+        testimonio: 'Los displays y señalética que nos hicieron son perfectos. Muy recomendables para cualquier negocio.',
+        rating: 5,
+        avatar: 'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg'
+      }
+    ];
+
+    // ================================================================================
