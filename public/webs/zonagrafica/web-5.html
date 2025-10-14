@@ -730,7 +730,7 @@
       background:linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.06) 100%);
       border:1px solid rgba(255,255,255,0.18);
       border-radius:18px;
-      padding:24px;
+      padding:20px;
       text-align:center;
       color:#e2e8f0;
       font-size:0.95rem;
@@ -739,11 +739,85 @@
       backdrop-filter:blur(12px);
       display:flex;
       flex-direction:column;
-      gap:16px;
+      gap:12px;
       align-items:center;
       position:relative;
       overflow:hidden;
       box-shadow:0 8px 32px rgba(0,0,0,0.2);
+    }
+    
+    .producto-imagen-container{
+      position:relative;
+      width:100%;
+      height:120px;
+      border-radius:12px;
+      overflow:hidden;
+      cursor:pointer;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.1);
+      transition:all 0.3s ease;
+    }
+    
+    .producto-imagen{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      transition:all 0.4s ease;
+      display:block;
+    }
+    
+    .producto-overlay{
+      position:absolute;
+      top:0;
+      left:0;
+      right:0;
+      bottom:0;
+      background:linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.6) 100%);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      opacity:0;
+      transition:all 0.3s ease;
+      backdrop-filter:blur(2px);
+    }
+    
+    .producto-zoom-icon{
+      font-size:1.2rem;
+      margin-bottom:4px;
+      transform:scale(0.8);
+      transition:transform 0.3s ease;
+    }
+    
+    .producto-zoom-text{
+      color:#fff;
+      font-size:0.7rem;
+      font-weight:600;
+      text-align:center;
+      text-shadow:0 2px 4px rgba(0,0,0,0.5);
+      transform:translateY(6px);
+      transition:transform 0.3s ease;
+    }
+    
+    .producto-imagen-container:hover .producto-overlay{
+      opacity:1;
+    }
+    
+    .producto-imagen-container:hover .producto-zoom-icon{
+      transform:scale(1.1);
+    }
+    
+    .producto-imagen-container:hover .producto-zoom-text{
+      transform:translateY(0);
+    }
+    
+    .producto-imagen-container:hover .producto-imagen{
+      transform:scale(1.05);
+    }
+    
+    .producto-imagen-container:hover{
+      border-color:rgba(59,130,246,0.6);
+      box-shadow:0 8px 24px rgba(59,130,246,0.3);
     }
     
     .producto-item::before{
@@ -843,6 +917,47 @@
       font-weight:500;
     }
     
+    /* Estilos para estado de carga de productos */
+    .productos-loading{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:40px 20px;
+      color:#e2e8f0;
+      font-size:1rem;
+      font-weight:500;
+      background:rgba(255,255,255,0.05);
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.1);
+      margin:20px 0;
+    }
+    
+    .productos-loading::before{
+      content:'';
+      width:24px;
+      height:24px;
+      border:3px solid rgba(59,130,246,0.2);
+      border-top:3px solid #3b82f6;
+      border-radius:50%;
+      animation:spin 1s linear infinite;
+      margin-right:15px;
+    }
+    
+    @keyframes spin{
+      0%{transform:rotate(0deg)}
+      100%{transform:rotate(360deg)}
+    }
+    
+    .productos-no-disponibles{
+      text-align:center;
+      padding:40px 20px;
+      color:#94a3b8;
+      font-style:italic;
+      background:rgba(255,255,255,0.05);
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.1);
+    }
+    
     .cta-whatsapp{
       background:linear-gradient(135deg, #25D366 0%, #128C7E 50%, #0d6b5c 100%);
       color:#fff;
@@ -898,6 +1013,9 @@
       .gallery-title{font-size:1.1rem;margin-bottom:12px}
       .productos-grid{grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));gap:10px}
       .producto-item{font-size:0.8rem;padding:10px 12px}
+      .producto-imagen-container{height:100px}
+      .producto-zoom-icon{font-size:1rem}
+      .producto-zoom-text{font-size:0.6rem}
     }
     
     @media (max-width:480px){
@@ -910,6 +1028,9 @@
       .gallery-title{font-size:1rem;margin-bottom:10px}
       .productos-grid{grid-template-columns:1fr;gap:8px}
       .producto-item{font-size:0.75rem;padding:8px 10px}
+      .producto-imagen-container{height:80px}
+      .producto-zoom-icon{font-size:0.9rem}
+      .producto-zoom-text{font-size:0.55rem}
     }
     
     @media (max-width:360px){
@@ -920,6 +1041,9 @@
       .service-description{font-size:0.85rem;padding:10px;margin-bottom:10px}
       .gallery-title{font-size:0.9rem;margin-bottom:8px}
       .producto-item{font-size:0.7rem;padding:6px 8px}
+      .producto-imagen-container{height:70px}
+      .producto-zoom-icon{font-size:0.8rem}
+      .producto-zoom-text{font-size:0.5rem}
     }
 
     /* ===== SECCIÓN EMAIL/COTIZACIÓN ===== */
@@ -1144,7 +1268,7 @@
     const { useState, useEffect } = React;
 
     // Configuración básica
-    const WHATSAPP_PHONE = '529898737313'; // Cambia al número real con código país
+    const WHATSAPP_PHONE = '528998737313'; // Número de WhatsApp: 899 873 7313
     
     // ================================================================================
     // CONFIGURACIÓN DE POCKETBASE BACKEND
@@ -1192,12 +1316,43 @@
     // Endpoint: /api/collections/productos/records?filter=(categoria='CATEGORIA')
     async function obtenerProductosPorCategoria(categoria) {
       try {
-        const response = await fetch(`${POCKETBASE_URL}/api/collections/productos/records?filter=(categoria='${categoria}')`);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
-        return data.items || [];
+        console.log(`🔍 Buscando productos para categoría: "${categoria}"`);
+        
+        // Intentar diferentes variaciones del nombre de la categoría
+        const variacionesCategoria = [
+          categoria,
+          categoria.toUpperCase(),
+          categoria.toLowerCase(),
+          categoria.replace(/\s+/g, ' ').trim()
+        ];
+        
+        // Eliminar duplicados
+        const categoriasUnicas = [...new Set(variacionesCategoria)];
+        
+        for (const catVariacion of categoriasUnicas) {
+          try {
+            const response = await fetch(`${POCKETBASE_URL}/api/collections/productos/records?filter=(categoria='${encodeURIComponent(catVariacion)}')`);
+            
+            if (response.ok) {
+              const data = await response.json();
+              const productos = data.items || [];
+              
+              if (productos.length > 0) {
+                console.log(`✅ Productos encontrados para "${catVariacion}": ${productos.length} productos`);
+                return productos;
+              }
+            }
+          } catch (catError) {
+            console.log(`⚠️ Error con variación "${catVariacion}":`, catError.message);
+            continue;
+          }
+        }
+        
+        console.log(`❌ No se encontraron productos para ninguna variación de "${categoria}"`);
+        return [];
+        
       } catch (error) {
-        console.warn(`Error al obtener productos de ${categoria}:`, error);
+        console.warn(`❌ Error general al obtener productos de ${categoria}:`, error);
         return [];
       }
     }
@@ -1759,6 +1914,60 @@
       return resultados;
     };
 
+    // Función de utilidad para listar todos los productos disponibles
+    window.listarTodosLosProductos = async function() {
+      try {
+        console.log('📦 Listando todos los productos disponibles...');
+        const response = await fetch(`${POCKETBASE_URL}/api/collections/productos/records?perPage=100`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const productos = data.items || [];
+        
+        console.log(`📊 Total de productos encontrados: ${productos.length}`);
+        
+        // Agrupar por categoría
+        const productosPorCategoria = {};
+        productos.forEach(producto => {
+          const categoria = producto.categoria || 'Sin categoría';
+          if (!productosPorCategoria[categoria]) {
+            productosPorCategoria[categoria] = [];
+          }
+          productosPorCategoria[categoria].push(producto.nombre || 'Sin nombre');
+        });
+        
+        console.log('📋 Productos por categoría:');
+        Object.entries(productosPorCategoria).forEach(([categoria, productos]) => {
+          console.log(`  📁 ${categoria}: ${productos.length} productos`);
+          productos.forEach(producto => console.log(`    - ${producto}`));
+        });
+        
+        return { productos, productosPorCategoria };
+        
+      } catch (error) {
+        console.error('❌ Error al listar productos:', error);
+        return { productos: [], productosPorCategoria: {} };
+      }
+    };
+
+    // Función de utilidad para probar la carga de productos de una categoría específica
+    window.probarCargaProductos = async function(nombreCategoria) {
+      console.log(`🧪 Probando carga de productos para: "${nombreCategoria}"`);
+      
+      try {
+        const productos = await obtenerProductosPorCategoria(nombreCategoria);
+        console.log(`✅ Resultado: ${productos.length} productos encontrados`);
+        console.log('📋 Productos:', productos);
+        return productos;
+      } catch (error) {
+        console.error('❌ Error en la prueba:', error);
+        return [];
+      }
+    };
+
     // Datos de testimonios
     const testimonios = [
       {
@@ -2103,20 +2312,29 @@
 
     function ServicioModal({open,onClose,servicio}){
       const [selectedImage, setSelectedImage] = useState(null);
+      const [productosDinamicos, setProductosDinamicos] = useState([]);
+      const [cargandoProductos, setCargandoProductos] = useState(false);
       
       useEffect(() => {
         if(open) {
           document.body.style.overflow = 'hidden';
           document.addEventListener('keydown', handleKeyDown);
+          
+          // Cargar productos dinámicamente cuando se abre el modal
+          if(servicio?.nombre) {
+            cargarProductosDelServicio(servicio.nombre);
+          }
         } else {
           document.body.style.overflow = 'unset';
           document.removeEventListener('keydown', handleKeyDown);
+          // Limpiar productos cuando se cierra el modal
+          setProductosDinamicos([]);
         }
         return () => {
           document.body.style.overflow = 'unset';
           document.removeEventListener('keydown', handleKeyDown);
         };
-      }, [open]);
+      }, [open, servicio?.nombre]);
 
       const handleKeyDown = (e) => {
         if(e.key === 'Escape') onClose();
@@ -2130,6 +2348,32 @@
         setSelectedImage(null);
       };
 
+      // Función para cargar productos dinámicamente desde PocketBase
+      const cargarProductosDelServicio = async (nombreServicio) => {
+        setCargandoProductos(true);
+        try {
+          console.log(`🔄 Cargando productos para: ${nombreServicio}`);
+          const productos = await obtenerProductosPorCategoria(nombreServicio);
+          
+          if (productos && productos.length > 0) {
+            console.log(`✅ Productos cargados: ${productos.length} productos para ${nombreServicio}`);
+            setProductosDinamicos(productos);
+          } else {
+            console.log(`⚠️ No se encontraron productos para ${nombreServicio}, usando productos estáticos`);
+            // Usar productos estáticos como fallback
+            const productosEstaticos = servicio?.productos || [];
+            setProductosDinamicos(productosEstaticos.map(nombre => ({ nombre })));
+          }
+        } catch (error) {
+          console.warn(`❌ Error al cargar productos para ${nombreServicio}:`, error);
+          // Usar productos estáticos como fallback
+          const productosEstaticos = servicio?.productos || [];
+          setProductosDinamicos(productosEstaticos.map(nombre => ({ nombre })));
+        } finally {
+          setCargandoProductos(false);
+        }
+      };
+
       if(!open) return null;
       
       return React.createElement('div',{className:'modal-backdrop',onClick:onClose},[
@@ -2140,24 +2384,47 @@
           ]),
           React.createElement('div',{className:'modal-body',key:'b'},[
             React.createElement('div',{className:'service-description',key:'desc'},servicio?.desc||'Explora nuestra galería de trabajos realizados en este servicio.'),
-            servicio?.productos && servicio.productos.length > 0 && React.createElement('div',{className:'productos-lista',key:'productos'},[
+            React.createElement('div',{className:'productos-lista',key:'productos'},[
               React.createElement('h3',{className:'gallery-title',key:'productos-title'},'Productos Disponibles'),
-              React.createElement('div',{className:'productos-grid',key:'productos-grid'},
-                servicio.productos.map((producto,i)=>React.createElement('div',{
-                  className:'producto-item',
-                  key:i
-                },[
-                  React.createElement('div',{className:'producto-nombre',key:'nombre'},producto),
-                  React.createElement('button',{
-                    className:'producto-btn',
-                    key:'btn',
-                    onClick:()=>{
-                      const whatsappMsg = `Hola! Me interesa cotizar: ${producto} - ${servicio.nombre}`;
-                      window.open(`https://api.whatsapp.com/send?phone=${WHATSAPP_PHONE}&text=${encodeURIComponent(whatsappMsg)}`, '_blank');
-                    }
-                  },'Cotizar')
-                ]))
-              ),
+              cargandoProductos ? 
+                React.createElement('div',{key:'loading',className:'productos-loading'},`Cargando productos de ${servicio?.nombre || 'este servicio'}...`) :
+                productosDinamicos && productosDinamicos.length > 0 ? 
+                  React.createElement('div',{className:'productos-grid',key:'productos-grid'},
+                    productosDinamicos.map((producto,i)=>React.createElement('div',{
+                      className:'producto-item',
+                      key:i
+                    },[
+                      // Imagen de ejemplo del producto
+                      React.createElement('div',{className:'producto-imagen-container',key:'img-container'},[
+                        React.createElement('img',{
+                          className:'producto-imagen',
+                          src:servicio?.imgs?.[i % servicio.imgs.length] || 'img/web%205/ofertas/vinil.jpg',
+                          alt:`${producto.nombre || producto} - Ejemplo`,
+                          key:'img',
+                          loading:'lazy',
+                          onError:(e)=>{
+                            e.currentTarget.src='img/web%205/ofertas/vinil.jpg';
+                            e.currentTarget.onerror = null;
+                          }
+                        }),
+                        React.createElement('div',{className:'producto-overlay',key:'overlay'},[
+                          React.createElement('span',{className:'producto-zoom-icon',key:'zoom'},'🔍'),
+                          React.createElement('span',{className:'producto-zoom-text',key:'text'},'Ver ejemplo')
+                        ])
+                      ]),
+                      React.createElement('div',{className:'producto-nombre',key:'nombre'},producto.nombre || producto),
+                      React.createElement('button',{
+                        className:'producto-btn',
+                        key:'btn',
+                        onClick:()=>{
+                          const nombreProducto = producto.nombre || producto;
+                          const whatsappMsg = `Hola! Me interesa cotizar: ${nombreProducto} - ${servicio.nombre}`;
+                          window.open(`https://api.whatsapp.com/send?phone=${WHATSAPP_PHONE}&text=${encodeURIComponent(whatsappMsg)}`, '_blank');
+                        }
+                      },'Cotizar')
+                    ]))
+                  ) :
+                  React.createElement('div',{key:'no-products',className:'productos-no-disponibles'},'No hay productos disponibles para este servicio'),
               React.createElement('div',{className:'productos-cta',key:'cta'},[
                 React.createElement('p',{key:'info'},'¿Necesitas más información sobre algún producto?'),
                 React.createElement('a',{
