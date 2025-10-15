@@ -97,23 +97,31 @@ async function obtenerProductosPorCategoria(categoriaId) {
 // DATOS ESTÁTICOS Y CONFIGURACIÓN
 // ================================================================================
 
+// Normaliza rutas de assets para GitHub Pages.
+// Calcula la base pública removiendo el sufijo 'dist/' de import.meta.env.BASE_URL.
+const __BASE_URL__ = (typeof importmeta !== 'undefined' ? importmeta : import.meta) && import.meta && import.meta.env && import.meta.env.BASE_URL
+  ? import.meta.env.BASE_URL
+  : '/';
+const __PUBLIC_BASE__ = __BASE_URL__.replace(/dist\/?$/, '');
+const asset = (relativePath) => `${__PUBLIC_BASE__}${String(relativePath).replace(/^\/?/, '')}`;
+
 // Servicios de respaldo (fallback)
 const servicios = [
-  { id: 1, nombre: 'Gran Formato', icono: 'img/web%205/servicios/gran-formato.png', descripcion: 'Impresiones de gran formato para publicidad exterior' },
-  { id: 2, nombre: 'Imprenta', icono: 'img/web%205/iconos/imprenta.png', descripcion: 'Servicios de imprenta tradicional y digital' },
-  { id: 3, nombre: 'Estampados', icono: 'img/web%205/servicios/estampados.png', descripcion: 'Estampados en playeras, gorras y textiles' },
-  { id: 4, nombre: 'Grabados', icono: 'img/web%205/servicios/grabados.png', descripcion: 'Grabados en láser y corte de precisión' },
-  { id: 5, nombre: 'Letreros', icono: 'img/web%205/servicios/letreros.png', descripcion: 'Letreros luminosos y señalización' },
-  { id: 6, nombre: 'Diseño', icono: 'img/web%205/servicios/diseno.png', descripcion: 'Servicios de diseño gráfico profesional' }
+  { id: 1, nombre: 'Gran Formato', icono: asset('img/web%205/servicios/gran-formato.png'), descripcion: 'Impresiones de gran formato para publicidad exterior' },
+  { id: 2, nombre: 'Imprenta', icono: asset('img/web%205/iconos/imprenta.png'), descripcion: 'Servicios de imprenta tradicional y digital' },
+  { id: 3, nombre: 'Estampados', icono: asset('img/web%205/servicios/estampados.png'), descripcion: 'Estampados en playeras, gorras y textiles' },
+  { id: 4, nombre: 'Grabados', icono: asset('img/web%205/servicios/grabados.png'), descripcion: 'Grabados en láser y corte de precisión' },
+  { id: 5, nombre: 'Letreros', icono: asset('img/web%205/servicios/letreros.png'), descripcion: 'Letreros luminosos y señalización' },
+  { id: 6, nombre: 'Diseño', icono: asset('img/web%205/servicios/diseno.png'), descripcion: 'Servicios de diseño gráfico profesional' }
 ];
 
 // Banners de publicidad
 const banners = [
-  'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
-  'img/web%205/ofertas/tendecia.webp',
-  'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
-  'img/web%205/ofertas/vinil.jpg',
-  'img/web%205/portada.jpeg'
+  asset('img/web%205/ofertas/digital-printing-trends-Ghana-1.png'),
+  asset('img/web%205/ofertas/tendecia.webp'),
+  asset('img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg'),
+  asset('img/web%205/ofertas/vinil.jpg'),
+  asset('img/web%205/portada.jpeg')
 ];
 
 // Testimonios
@@ -123,7 +131,7 @@ const testimonios = [
     texto: 'Excelente servicio y calidad en sus trabajos. Muy recomendable para cualquier proyecto gráfico.',
     autor: 'María González',
     empresa: 'Restaurante El Buen Sabor',
-    avatar: 'img/web%205/WhatsApp%20Image%202025-10-06%20at%2010.06.42%20AM%20(8).jpeg',
+    avatar: asset('img/web%205/WhatsApp%20Image%202025-10-06%20at%2010.06.42%20AM%20(8).jpeg'),
     calificacion: 5
   },
   {
@@ -131,7 +139,7 @@ const testimonios = [
     texto: 'Profesionales y puntuales. El resultado superó nuestras expectativas completamente.',
     autor: 'Carlos Rodríguez',
     empresa: 'Farmacia San Miguel',
-    avatar: 'img/web%205/WhatsApp%20Image%202025-10-06%20at%2010.06.42%20AM%20(7).jpeg',
+    avatar: asset('img/web%205/WhatsApp%20Image%202025-10-06%20at%2010.06.42%20AM%20(7).jpeg'),
     calificacion: 5
   },
   {
@@ -139,7 +147,7 @@ const testimonios = [
     texto: 'La mejor opción en Reynosa para servicios gráficos. Calidad y precio justo.',
     autor: 'Ana Martínez',
     empresa: 'Boutique Elegance',
-    avatar: 'img/web%205/WhatsApp%20Image%202025-10-06%20at%2010.06.42%20AM%20(4).jpeg',
+    avatar: asset('img/web%205/WhatsApp%20Image%202025-10-06%20at%2010.06.42%20AM%20(4).jpeg'),
     calificacion: 5
   }
 ];
@@ -239,7 +247,7 @@ function Header() {
               rel="noopener"
               title="WhatsApp: +52 899 873 7313"
             >
-              <span style={{display: 'inline-flex', width: 24, height: 24, background: 'url(img/web%205/iconos/whatsapp.png) center/contain no-repeat'}}></span>
+              <span style={{display: 'inline-flex', width: 24, height: 24, background: `url(${asset('img/web%205/iconos/whatsapp.png')}) center/contain no-repeat`}}></span>
             </a>
             <a className="login-btn" href="https://zonagraficapd.ezhostingit.com/_/#/collections?collection=_pb_users_auth_&filter=&sort=-%40rowid" rel="noopener">
               <span>Login</span>
@@ -339,7 +347,7 @@ function ServiciosGrid() {
     switch (upper) {
       case 'GRAN FORMATO':
         return { 
-          icono: 'img/web%205/iconos/gran_formato_.png', 
+          icono: asset('img/web%205/iconos/gran_formato_.png'), 
           descripcion: 'Lonas, microperforado, vinil, backlite y más.',
           imgs: [
             'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
@@ -349,7 +357,7 @@ function ServiciosGrid() {
         };
       case 'IMPRENTA':
         return { 
-          icono: 'img/web%205/iconos/imprenta.png', 
+          icono: asset('img/web%205/iconos/imprenta.png'), 
           descripcion: 'Impresión tradicional y digital.',
           imgs: [
             'img/web%205/ofertas/vinil.jpg',
@@ -359,7 +367,7 @@ function ServiciosGrid() {
         };
       case 'ESTAMPADOS':
         return { 
-          icono: 'img/web%205/iconos/estampados.png', 
+          icono: asset('img/web%205/iconos/estampados.png'), 
           descripcion: 'Playeras, gorras y textil personalizado.',
           imgs: [
             'img/web%205/ofertas/tendecia.webp',
@@ -370,7 +378,7 @@ function ServiciosGrid() {
       case 'RÍGIDOS':
       case 'RIGIDOS':
         return { 
-          icono: 'img/web%205/iconos/rigidos.png', 
+          icono: asset('img/web%205/iconos/rigidos.png'), 
           descripcion: 'Letreros rígidos, displays y señalética.',
           imgs: [
             'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
@@ -380,7 +388,7 @@ function ServiciosGrid() {
         };
       case 'PROMOCIONALES':
         return { 
-          icono: 'img/web%205/iconos/promocionales.png', 
+          icono: asset('img/web%205/iconos/promocionales.png'), 
           descripcion: 'Merchandising y regalos corporativos.',
           imgs: [
             'img/web%205/ofertas/vinil.jpg',
@@ -390,7 +398,7 @@ function ServiciosGrid() {
         };
       case 'DISEÑO':
         return { 
-          icono: 'img/web%205/iconos/diseño.png', 
+          icono: asset('img/web%205/iconos/diseño.png'), 
           descripcion: 'Identidad, branding y creatividad visual.',
           imgs: [
             'img/web%205/ofertas/tendecia.webp',
@@ -400,7 +408,7 @@ function ServiciosGrid() {
         };
       case 'OTROS PRODUCTOS Y SERVICIOS':
         return { 
-          icono: 'img/web%205/iconos/otros%20productos.png', 
+          icono: asset('img/web%205/iconos/otros%20productos.png'), 
           descripcion: 'Soluciones personalizadas y servicios adicionales.',
           imgs: [
             'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
@@ -409,7 +417,7 @@ function ServiciosGrid() {
           ]
         };
       default:
-        return { icono: 'img/web%205/servicios/default.png', descripcion: 'Servicio profesional.', imgs: [] };
+        return { icono: asset('img/web%205/servicios/default.png'), descripcion: 'Servicio profesional.', imgs: [] };
     }
   };
 
@@ -1055,7 +1063,7 @@ function Footer() {
                 rel="noopener"
                 title="WhatsApp: +52 899 873 7313"
               >
-                <span style={{display: 'inline-flex', width: 24, height: 24, background: 'url(img/web%205/iconos/whatsapp.png) center/contain no-repeat'}}></span>
+                <span style={{display: 'inline-flex', width: 24, height: 24, background: `url(${asset('img/web%205/iconos/whatsapp.png')}) center/contain no-repeat`}}></span>
               </a>
             </div>
             <div>
@@ -1099,7 +1107,7 @@ function App() {
         rel="noopener" 
         title="WhatsApp: +52 899 873 7313"
       >
-        <span style={{display: 'inline-flex', width: 32, height: 32, background: 'url(img/web%205/iconos/whatsapp.png) center/contain no-repeat'}}></span>
+        <span style={{display: 'inline-flex', width: 32, height: 32, background: `url(${asset('img/web%205/iconos/whatsapp.png')}) center/contain no-repeat`}}></span>
       </a>
       <Footer />
     </>
