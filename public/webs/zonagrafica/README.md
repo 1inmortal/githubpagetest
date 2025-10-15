@@ -33,28 +33,18 @@ public/webs/zonagrafica/
 
 ## 🚀 Instalación y Uso
 
-### Opción 1: Servidor Local Simple
+### Desarrollo con Vite (Recomendado)
 ```bash
-# Navegar al directorio
-cd public/webs/zonagrafica/
-
-# Instalar dependencias (opcional)
+cd public/webs/zonagrafica
 npm install
-
-# Iniciar servidor local
-npm start
-# o
-npx serve .
+npm run dev        # Abre http://localhost:3001
 ```
 
-### Opción 2: Live Server (Desarrollo)
+### Build y Preview
 ```bash
-# Iniciar live server para desarrollo
-npm run dev
+npm run build
+npm run preview    # Preview en http://localhost:4173
 ```
-
-### Opción 3: Servidor Web Cualquiera
-Simplemente abrir `index.html` en cualquier servidor web.
 
 ## 📱 Secciones de la Página
 
@@ -119,20 +109,10 @@ Notas:
 - Estados de carga y mensajes de error/éxito
 - Envío asíncrono al backend (Render) y lógica de email en el servidor
 
-### PocketBase (Frontend)
-- UMD (actual): `index.html` incluye `pocketbase.umd.js` y expone `window.pb` apuntando a `https://zonagraficapd.ezhostingit.com`.
-- npm (instalado): `npm i pocketbase` ya agregado en este subproyecto; si migras a Vite/ESM, podrás `import PocketBase from 'pocketbase'`.
-
-Ejemplos:
-```html
-<!-- UMD actual -->
-<script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
-<script>
-  window.pb = new window.PocketBase('https://zonagraficapd.ezhostingit.com');
-</script>
-```
+### PocketBase (Frontend con ESM)
+- npm (instalado): `npm i pocketbase`
+- Import en código:
 ```javascript
-// ESM (opcional con Vite)
 import PocketBase from 'pocketbase';
 const pb = new PocketBase('https://zonagraficapd.ezhostingit.com');
 // await pb.collection('correos').create({ email, mensaje });
