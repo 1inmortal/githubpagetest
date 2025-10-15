@@ -71,15 +71,15 @@ async function obtenerProductos() {
 }
 
 /**
- * OBTENER PRODUCTOS POR CATEGORÍA DESDE POCKETBASE
- * @param {string} categoriaNombre Nombre visible de la categoría
+ * OBTENER PRODUCTOS POR CATEGORÍA (USANDO ID) DESDE POCKETBASE
+ * @param {string} categoriaId ID de la categoría (relación en productos.categoria)
  * @returns {Array<string>} Lista de nombres de productos
  */
-async function obtenerProductosPorCategoria(categoriaNombre) {
-  const nombre = (categoriaNombre || '').toString().trim();
-  if (!nombre) return [];
+async function obtenerProductosPorCategoria(categoriaId) {
+  const id = (categoriaId || '').toString().trim();
+  if (!id) return [];
   try {
-    const filter = encodeURIComponent(`categoria='${nombre}'`);
+    const filter = encodeURIComponent(`categoria='${id}'`);
     const response = await fetch(`${POCKETBASE_URL}/api/collections/productos/records?filter=(${filter})&perPage=200`);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     const data = await response.json();
@@ -88,7 +88,7 @@ async function obtenerProductosPorCategoria(categoriaNombre) {
       .map(p => p.nombre || p.name || p.titulo || p.title)
       .filter(Boolean);
   } catch (error) {
-    console.error('Error obteniendo productos por categoría:', nombre, error);
+    console.error('Error obteniendo productos por categoría (ID):', id, error);
     return [];
   }
 }
@@ -436,13 +436,13 @@ function ServiciosGrid() {
             };
           });
 
-          // Agrupar productos por categoría si viene el campo
+          // Agrupar productos por categoría usando ID de relación
           if (Array.isArray(productos) && productos.length > 0) {
             productos.forEach(p => {
-              const categoriaProducto = p.categoria || p.category || p.categoria_nombre;
+              const categoriaIdProducto = p.categoria || p.categoryId || p.categoria_id;
               const nombreProducto = p.nombre || p.name || p.titulo || p.title;
-              if (!categoriaProducto || !nombreProducto) return;
-              const servicio = serviciosPocketBase.find(s => (s.nombre || '').toString().toUpperCase() === (categoriaProducto || '').toString().toUpperCase());
+              if (!categoriaIdProducto || !nombreProducto) return;
+              const servicio = serviciosPocketBase.find(s => (s.id || '').toString() === (categoriaIdProducto || '').toString());
               if (servicio) {
                 servicio.productos.push(nombreProducto);
               }
@@ -467,7 +467,7 @@ function ServiciosGrid() {
     setModal({ open: true, servicio });
     // Intentar enriquecer productos desde backend por categoría
     try {
-      const productosCat = await obtenerProductosPorCategoria(servicio?.nombre);
+      const productosCat = await obtenerProductosPorCategoria(servicio?.id);
       if (Array.isArray(productosCat) && productosCat.length > 0) {
         setModal(prev => ({ 
           ...prev, 
