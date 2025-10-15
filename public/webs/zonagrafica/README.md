@@ -31,6 +31,40 @@ public/webs/zonagrafica/
 - **CSS3** - Animaciones y glassmorphism
 - **Babel Standalone** - Compilación JSX en el navegador
 
+## 🌐 Despliegue en GitHub Pages
+
+1) Configurar base de Vite para Pages
+
+```
+// vite.config.js
+export default defineConfig({
+  base: '/githubpagetest/public/webs/zonagrafica/dist/',
+  build: { outDir: 'dist', assetsDir: 'assets' }
+});
+```
+
+2) Compilar y subir la build
+
+```bash
+cd public/webs/zonagrafica
+npm run build
+# forzar inclusión de dist (si .gitignore la omite)
+git add -f dist
+git commit -m "build: actualizar dist para Pages"
+git push
+```
+
+3) Enlace público
+
+- Abre: `https://1inmortal.github.io/githubpagetest/public/webs/zonagrafica/dist/`
+- En `public/proyectos.html` enlaza a `webs/zonagrafica/dist/index.html`.
+
+4) Evitar 404 de assets
+
+- Usa rutas normalizadas para imágenes (helper `asset()` ya añadido en `App.jsx`).
+- En CSS, usa rutas absolutas que incluyan el prefijo del repo para backgrounds.
+- Siempre sube los archivos con hash generados en `dist/assets`.
+
 ## 🚀 Instalación y Uso
 
 ### Desarrollo con Vite (Recomendado)
@@ -45,6 +79,19 @@ npm run dev        # Abre http://localhost:3001
 npm run build
 npm run preview    # Preview en http://localhost:4173
 ```
+
+## 🔐 CORS Backend (Formulario)
+
+En producción (Pages), el backend debe permitir el origen `https://1inmortal.github.io` y responder el preflight:
+
+```
+Access-Control-Allow-Origin: https://1inmortal.github.io
+Access-Control-Allow-Methods: GET, POST, OPTIONS
+Access-Control-Allow-Headers: Content-Type, Authorization
+```
+
+Endpoint esperado: `POST https://inmortal-backend.onrender.com/contacto`.
+Responde `OPTIONS /contacto` con 204 y los headers anteriores.
 
 ## 📱 Secciones de la Página
 

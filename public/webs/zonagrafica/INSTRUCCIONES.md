@@ -25,6 +25,21 @@ npm run serve
 # Accede a: http://localhost:5000
 ```
 
+### Despliegue en GitHub Pages
+
+```bash
+cd public/webs/zonagrafica
+npm run build
+git add -f dist              # forzar inclusión si está en .gitignore
+git commit -m "build: dist para Pages"
+git push
+```
+
+- URL: `https://1inmortal.github.io/githubpagetest/public/webs/zonagrafica/dist/`
+- Asegúrate de enlazar a `dist/index.html` desde `public/proyectos.html`.
+
+Si ves 404 de `index-*.js` o `index-*.css`, sube los archivos con hash actuales en `dist/assets/`.
+
 ## 📁 Archivos del Proyecto
 
 ```
@@ -79,7 +94,10 @@ npm run dev
 ```
 
 ### Si hay errores de CORS (formulario contacto):
-- Backend Render debe permitir `Access-Control-Allow-Origin` y responder `OPTIONS /contacto`.
+- Backend (Render) debe permitir el origen `https://1inmortal.github.io` y responder `OPTIONS /contacto` con:
+  - `Access-Control-Allow-Origin: https://1inmortal.github.io`
+  - `Access-Control-Allow-Methods: GET, POST, OPTIONS`
+  - `Access-Control-Allow-Headers: Content-Type, Authorization`
 
 ### Si hay errores de módulos:
 ```bash
