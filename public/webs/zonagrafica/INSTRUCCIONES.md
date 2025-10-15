@@ -2,25 +2,24 @@
 
 ## ✅ Estado Actual
 - ✅ **npm inicializado** correctamente
-- ✅ **Dependencias instaladas** (Vite, React, Swiper)
-- ✅ **Servidor ejecutándose** en segundo plano
+- ✅ **Dependencias instaladas** (Vite, React, Swiper, PocketBase)
 - ✅ **Configuración Vite** lista
 
 ## 🌐 Acceso al Proyecto
 
-### Opción 1: Servidor Vite (Recomendado)
+### Servidor Vite (Recomendado)
 ```bash
-# El servidor ya está ejecutándose
-# Accede a: http://localhost:3001
+npm install
+npm run dev
+# Acceso: http://localhost:3001
 ```
 
-### Opción 2: Live Server (Alternativo)
+### Live Server (Alternativo, solo si no usas imports npm)
 ```bash
 npm run dev:live
-# Accede a: http://localhost:3001
 ```
 
-### Opción 3: Servidor Estático
+### Servidor Estático
 ```bash
 npm run serve
 # Accede a: http://localhost:5000
@@ -57,7 +56,7 @@ npm run serve            # Servidor estático simple
 ## 🌟 Características del Proyecto
 
 - ✅ **React 18** con hooks modernos
-- ✅ **Vite** para desarrollo rápido
+- ✅ **Vite** para desarrollo rápido (JSX + módulos ESM)
 - ✅ **Swiper.js** para carruseles
 - ✅ **Responsive Design** completo
 - ✅ **Formulario de Contacto** funcional
@@ -79,9 +78,8 @@ npm install
 npm run dev
 ```
 
-### Si hay errores de CORS:
-- El proyecto está configurado para funcionar en localhost
-- No requiere configuración adicional de CORS
+### Si hay errores de CORS (formulario contacto):
+- Backend Render debe permitir `Access-Control-Allow-Origin` y responder `OPTIONS /contacto`.
 
 ### Si hay errores de módulos:
 ```bash
@@ -93,7 +91,7 @@ npm run dev
 ## 📱 URLs de Acceso
 
 - **Desarrollo**: http://localhost:3001
-- **Producción**: http://localhost:4173 (después de `npm run build`)
+- **Preview producción**: http://localhost:4173 (después de `npm run build`)
 
 ## 🎯 Próximos Pasos
 
@@ -105,7 +103,7 @@ npm run dev
    - Formulario de contacto
    - Testimonios
 3. **Personalizar contenido** según necesidades
-4. **Desplegar** cuando esté listo
+4. **Desplegar** cuando esté listo (usa `npm run build`)
 
 ---
 
