@@ -1,6 +1,6 @@
 // ============================================================================
 // ORDEN Y FLUJO DEL ARCHIVO (Guía rápida para mantenimiento)
-// 1) Configuración general y dependencias (React global desde CDN)
+// 1) Configuración general y dependencias (React vía ESM import)
 // 2) Configuración de backend (PocketBase URL, WhatsApp)
 // 3) Funciones de conexión (fetch a PocketBase vía REST: categorías/productos)
 // 4) Datos estáticos de respaldo (servicios, banners, testimonios)
@@ -18,9 +18,7 @@
 // Nota: window.BACKEND_URL se define en index.html. Este frontend no envía correos;
 //       solo inserta vía backend y el backend dispara el email.
 // ============================================================================
-// Quitar imports de módulos y usar React global
-// const React, useState, useEffect provienen del CDN UMD cargado en index.html
-const { useState, useEffect } = React;
+import React, { useState, useEffect } from 'react';
 
 // ================================================================================
 // CONFIGURACIÓN INICIAL Y DEPENDENCIAS
@@ -1108,5 +1106,4 @@ function App() {
   );
 }
 
-// Exponer App en el ámbito global para que index.html pueda renderizarla
-window.App = App;
+export default App;
