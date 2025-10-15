@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 
 export default defineConfig({
+  base: '/githubpagetest/public/webs/zonagrafica/',
   root: '.',
   server: {
     port: 3001,
