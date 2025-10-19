@@ -1451,6 +1451,45 @@
         /* ============================================= */
         /*                VIDEO CAROUSEL                   */
         /* ============================================= */
+        
+        /* Indicador de reproducción automática */
+        .auto-play-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 255, 136, 0.9);
+            color: #000;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 10;
+            animation: fadeInOut 3s ease-in-out;
+            pointer-events: none;
+        }
+        
+        .play-indicator-content {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .play-icon {
+            font-size: 14px;
+        }
+        
+        .play-text {
+            font-size: 11px;
+            white-space: nowrap;
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-10px); }
+            20% { opacity: 1; transform: translateY(0); }
+            80% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-10px); }
+        }
+        
         .video-carousel-container {
             position: relative;
             width: 100%;
@@ -3688,55 +3727,9 @@
                         <!-- Contenedor de videos -->
                         <div class="carousel-wrapper">
                             <div class="carousel-track" id="carouselTrack">
-                                <!-- Video 1 -->
-                                <div class="carousel-slide active">
-                                    <div class="drone-feed-container">
-                                        <video id="droneVideo1" class="drone-video" muted loop playsinline preload="metadata">
-                                            <source src="mp4/vigilancia_opt.mp4" type="video/mp4">
-                                            <div class="video-placeholder">
-                                                <div class="placeholder-content">
-                                                    <div class="placeholder-icon">📹</div>
-                                                    <div class="placeholder-text">DRONE FEED 1</div>
-                                                    <div class="placeholder-subtitle">Video en vivo desde DJI Mini 2</div>
-                                                    <div class="loading-spinner" id="loading1" style="display: none;">
-                                                        <div class="spinner"></div>
-                                                        <div class="loading-text">Cargando video...</div>
-                                                    </div>
-                                                    <div class="placeholder-subtitle" style="margin-top: 10px; font-size: 0.8rem; color: #ff0033;">
-                                                        Error: No se pudo cargar el video
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </video>
-                                        <!-- Botón de reproducción manual -->
-                                        <div class="play-button" id="playButton1" style="display: none;">
-                                        </div>
-                                        <!-- Retícula central -->
-                                        <div class="hud-element reticle">
-                                            <div class="reticle-line h"></div>
-                                            <div class="reticle-line v"></div>
-                                            <div class="reticle-corner tl"></div>
-                                            <div class="reticle-corner tr"></div>
-                                            <div class="reticle-corner bl"></div>
-                                            <div class="reticle-corner br"></div>
-                                        </div>
-                                        
-                                        <!-- Datos HUD -->
-                                        <div class="hud-element hud-data" id="data-target1">OBJETIVO: PERSONA DETECTADA</div>
-                                        <div class="hud-element hud-data" id="data-altitude1">ALT: 120 M</div>
-                                        <div class="hud-element hud-data" id="data-speed1">VEL: 16 M/S</div>
-                                        <div class="hud-element hud-data" id="data-bearing1">RBO: 075°</div>
-                                        <div class="hud-element hud-data" id="data-coords1">COORD: 40.7128° N, 74.0060° W</div>
-                                        <div class="hud-element hud-data" id="data-time1">HORA: 14:22:16Z</div>
-                                        <div class="hud-element hud-data" id="data-battery1">BAT: 87%</div>
-                                        <div class="hud-element hud-data" id="data-signal1">SEÑAL: -62 dBm</div>
-                                        <div class="hud-element hud-data" id="data-fps1">FPS: 30</div>
-                                        <div class="hud-element hud-data" id="data-confidence1">CONF: 0.94</div>
-                                    </div>
-                                </div>
                                 
                                 <!-- Video 2 -->
-                                <div class="carousel-slide">
+                                <div class="carousel-slide active">
                                     <div class="drone-feed-container">
                                         <video id="droneVideo2" class="drone-video" muted loop playsinline preload="metadata">
                                             <source src="mp4/DJI-2_vigilancia_small.mp4" type="video/mp4">
@@ -4614,10 +4607,7 @@
                 }
             }
             
-            setupScrollAnimations() {
-                // Animaciones adicionales basadas en scroll OPTIMIZADAS
-                window.addEventListener('scroll', this.throttledScroll, { passive: true });
-            }
+            // FUNCIÓN DUPLICADA ELIMINADA - Se maneja en GSAPAnimationSystem
             
             handleScroll() {
                 const pythonSection = document.getElementById('python');
@@ -4640,22 +4630,7 @@
                 }
             }
             
-            startTerminalSequence() {
-                const terminal = document.querySelector('.python-terminal');
-                const lines = terminal.querySelectorAll('.code-line');
-                
-                lines.forEach((line, index) => {
-                    setTimeout(() => {
-                        line.style.opacity = '1';
-                        line.style.transform = 'translateX(0)';
-                        
-                        // Efecto de escritura para comandos
-                        if (line.querySelector('.command')) {
-                            this.typeCommand(line.querySelector('.command'));
-                        }
-                    }, index * 300);
-                });
-            }
+            // FUNCIÓN DUPLICADA ELIMINADA - Se maneja en GSAPAnimationSystem
             
             typeCommand(commandElement) {
                 const text = commandElement.textContent;
@@ -4775,7 +4750,168 @@
                 this.setupFooterAnimations();
                 
                 this.isInitialized = true;
+                
+                // Forzar refresh de ScrollTrigger después de un breve delay
+                setTimeout(() => {
+                    ScrollTrigger.refresh();
+                    console.log('🔄 ScrollTrigger refrescado');
+                }, 100);
+                
                 console.log('✅ GSAPAnimationSystem inicializado correctamente');
+                
+                // Debug: Verificar estado de ScrollTrigger
+                setTimeout(() => {
+                    this.debugScrollTrigger();
+                }, 500);
+                
+                // Agregar listener de scroll para forzar animaciones
+                this.setupScrollListener();
+                
+                // Forzar animación de métricas después de la inicialización
+                setTimeout(() => {
+                    this.forceMetricsAnimation();
+                }, 2000);
+            }
+            
+            // Función de debug para verificar ScrollTrigger (simplificada)
+            debugScrollTrigger() {
+                const triggers = ScrollTrigger.getAll();
+                const animatedElements = document.querySelectorAll('[data-animate]');
+                const visibleElements = Array.from(animatedElements).filter(el => {
+                    const rect = el.getBoundingClientRect();
+                    return rect.top < window.innerHeight && rect.bottom > 0;
+                });
+                
+                console.log(`🔍 ScrollTrigger: ${triggers.length} triggers, ${animatedElements.length} elementos, ${visibleElements.length} visibles`);
+            }
+            
+            // Configurar listener de scroll para forzar animaciones
+            setupScrollListener() {
+                let scrollTimeout;
+                
+                const handleScroll = () => {
+                    clearTimeout(scrollTimeout);
+                    scrollTimeout = setTimeout(() => {
+                        // Forzar refresh de ScrollTrigger en scroll
+                        ScrollTrigger.refresh();
+                        
+                        // Verificar elementos visibles y forzar animaciones
+                        this.forceVisibleAnimations();
+                    }, 50);
+                };
+                
+                window.addEventListener('scroll', handleScroll, { passive: true });
+                this.eventListeners.set('scroll', handleScroll);
+            }
+            
+            // Forzar animaciones de elementos visibles
+            forceVisibleAnimations() {
+                const elements = document.querySelectorAll('[data-animate]');
+                elements.forEach(element => {
+                    const rect = element.getBoundingClientRect();
+                    const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+                    
+                    if (isVisible && !element.classList.contains('gsap-animated')) {
+                        element.classList.add('gsap-animated');
+                        
+                        // Aplicar animación GSAP si no está animado
+                        const animateType = element.getAttribute('data-animate');
+                        this.animateElement(element, animateType);
+                    }
+                });
+            }
+            
+            // Animar elemento individual
+            animateElement(element, animateType) {
+                const delay = parseFloat(element.getAttribute('data-delay')) || 0;
+                
+                switch(animateType) {
+                    case 'fadeInUp':
+                        gsap.fromTo(element, 
+                            { y: 50, opacity: 0 },
+                            { y: 0, opacity: 1, duration: 0.8, delay, ease: 'power2.out' }
+                        );
+                        break;
+                    case 'slideInLeft':
+                        gsap.fromTo(element,
+                            { x: -100, opacity: 0 },
+                            { x: 0, opacity: 1, duration: 0.8, delay, ease: 'power2.out' }
+                        );
+                        break;
+                    case 'slideInDown':
+                        gsap.fromTo(element,
+                            { y: -50, opacity: 0 },
+                            { y: 0, opacity: 1, duration: 0.8, delay, ease: 'power2.out' }
+                        );
+                        break;
+                    case 'bounceIn':
+                        gsap.fromTo(element,
+                            { scale: 0, opacity: 0 },
+                            { scale: 1, opacity: 1, duration: 0.8, delay, ease: 'back.out(1.7)' }
+                        );
+                        break;
+                    case 'zoomIn':
+                        gsap.fromTo(element,
+                            { scale: 0.5, opacity: 0 },
+                            { scale: 1, opacity: 1, duration: 0.8, delay, ease: 'power2.out' }
+                        );
+                        break;
+                    default:
+                        gsap.fromTo(element,
+                            { y: 30, opacity: 0 },
+                            { y: 0, opacity: 1, duration: 0.8, delay, ease: 'power2.out' }
+                        );
+                }
+            }
+            
+            // Forzar animación de métricas operativas
+            forceMetricsAnimation() {
+                console.log('🎯 Forzando animación de métricas desde GSAP...');
+                
+                const metricIds = ['stat-fps', 'stat-accuracy', 'stat-latency', 'stat-resolution'];
+                const foundElements = [];
+                
+                metricIds.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        foundElements.push(element);
+                        console.log(`✅ GSAP encontró: ${id}`);
+                    } else {
+                        console.warn(`⚠️ GSAP no encontró: ${id}`);
+                    }
+                });
+                
+                if (foundElements.length === 0) {
+                    console.warn('⚠️ GSAP: No se encontraron elementos de métricas');
+                    return;
+                }
+                
+                console.log(`📊 GSAP animando ${foundElements.length} métricas...`);
+                
+                foundElements.forEach((el, index) => {
+                    const target = parseFloat(el.getAttribute('data-target')) || 0;
+                    const decimals = parseInt(el.getAttribute('data-decimals')) || 0;
+                    const suffix = el.getAttribute('data-suffix') || '';
+                    
+                    // Asegurar que el elemento esté visible
+                    gsap.set(el, { opacity: 1, visibility: 'visible' });
+                    
+                    // Animar con GSAP
+                    const obj = { val: 0 };
+                    gsap.to(obj, {
+                        val: target,
+                        duration: 2,
+                        delay: index * 0.4,
+                        ease: 'power2.out',
+                        onUpdate: () => {
+                            const value = Number(obj.val).toFixed(decimals);
+                            el.textContent = `${value}${suffix}`;
+                        },
+                        onComplete: () => {
+                            console.log(`✅ GSAP métrica ${el.id} completada: ${target}${suffix}`);
+                        }
+                    });
+                });
             }
             
             // DESACTIVAR TODAS LAS ANIMACIONES CSS Y JS QUE NO SEAN GSAP
@@ -4813,21 +4949,15 @@
                         animation: none !important;
                     }
                     
-                    /* Desactivar keyframes CSS */
-                    @keyframes fadeInUp { display: none; }
-                    @keyframes slideInLeft { display: none; }
-                    @keyframes slideInDown { display: none; }
-                    @keyframes bounceIn { display: none; }
-                    @keyframes zoomIn { display: none; }
-                    @keyframes pulse { display: none; }
-                    @keyframes blink { display: none; }
-                    @keyframes typewriter { display: none; }
-                    @keyframes countUp { display: none; }
-                    @keyframes successGlow { display: none; }
-                    @keyframes dots { display: none; }
-                    @keyframes shimmer { display: none; }
-                    @keyframes particleFloat { display: none; }
-                    @keyframes loading { display: none; }
+                    /* Desactivar keyframes CSS solo para elementos específicos */
+                    [data-animate] {
+                        animation: none !important;
+                    }
+                    
+                    /* Mantener keyframes para GSAP pero desactivar para data-animate */
+                    .gsap-animated {
+                        animation: none !important;
+                    }
                 `;
                 document.head.appendChild(style);
                 
@@ -5056,22 +5186,44 @@
             
             // CONFIGURAR ESTADOS INICIALES PARA TODOS LOS ELEMENTOS
             setInitialStates() {
-                // Elementos con data-animate
-                gsap.set('[data-animate]', { 
-                    opacity: 0, 
-                    y: 50,
-                    x: 0,
-                    scale: 0.9,
-                    rotation: 0
-                });
-                
-                // Tarjetas y elementos principales
-                gsap.set('.feature-card', { opacity: 0, y: 80, scale: 0.8 });
-                gsap.set('.metric-card', { opacity: 0, y: 60, scale: 0.9 });
-                gsap.set('.demo-card', { opacity: 0, y: 100, scale: 0.8 });
-                gsap.set('.code-block', { opacity: 0, y: 60, scale: 0.9 });
-                
-                console.log('🎯 Estados iniciales configurados para GSAP');
+                try {
+                    // Verificar que los elementos existan antes de aplicar estilos
+                    const dataAnimateElements = document.querySelectorAll('[data-animate]');
+                    if (dataAnimateElements.length > 0) {
+                        gsap.set(dataAnimateElements, { 
+                            opacity: 0, 
+                            y: 50,
+                            x: 0,
+                            scale: 0.9,
+                            rotation: 0
+                        });
+                    }
+                    
+                    // Tarjetas y elementos principales con verificación
+                    const featureCards = document.querySelectorAll('.feature-card');
+                    if (featureCards.length > 0) {
+                        gsap.set(featureCards, { opacity: 0, y: 80, scale: 0.8 });
+                    }
+                    
+                    const metricCards = document.querySelectorAll('.metric-card');
+                    if (metricCards.length > 0) {
+                        gsap.set(metricCards, { opacity: 0, y: 60, scale: 0.9 });
+                    }
+                    
+                    const demoCards = document.querySelectorAll('.demo-card');
+                    if (demoCards.length > 0) {
+                        gsap.set(demoCards, { opacity: 0, y: 100, scale: 0.8 });
+                    }
+                    
+                    const codeBlocks = document.querySelectorAll('.code-block');
+                    if (codeBlocks.length > 0) {
+                        gsap.set(codeBlocks, { opacity: 0, y: 60, scale: 0.9 });
+                    }
+                    
+                    console.log('🎯 Estados iniciales configurados para GSAP');
+                } catch (error) {
+                    console.warn('⚠️ Error configurando estados iniciales:', error);
+                }
             }
             
             // ANIMAR TODOS LOS ELEMENTOS CON data-animate USANDO GSAP
@@ -5293,13 +5445,19 @@
             }
             
             setupPythonAnimations() {
+                // console.log('🐍 Configurando animaciones de Python...');
+                
                 // Timeline del terminal Python
                 const terminalTl = gsap.timeline({
                     scrollTrigger: {
                         trigger: '.python-terminal',
                         start: 'top 80%',
                         end: 'bottom 20%',
-                        toggleActions: 'play none none reverse'
+                        toggleActions: 'play none none reverse',
+                        onEnter: () => {
+                            // console.log('🎬 Terminal Python entrando en vista');
+                            this.startTerminalSequence();
+                        }
                     }
                 });
                 
@@ -5317,13 +5475,29 @@
                     opacity: 0,
                     ease: 'power2.out'
                 }, '-=0.4')
+                .from('.terminal-buttons .btn', {
+                    duration: 0.3,
+                    scale: 0,
+                    rotation: 180,
+                    stagger: 0.1,
+                    ease: 'back.out(1.7)'
+                }, '-=0.3')
+                .from('.terminal-title', {
+                    duration: 0.8,
+                    x: -100,
+                    opacity: 0,
+                    ease: 'power2.out'
+                }, '-=0.2')
                 .from('.code-line', {
                     duration: 0.4,
                     x: -50,
                     opacity: 0,
-                    stagger: 0.1,
+                    stagger: 0.15,
                     ease: 'power2.out'
-                }, '-=0.2');
+                }, '-=0.1');
+                
+                // Animación de elementos con data-animate en la sección Python
+                this.animatePythonElements();
                 
                 // Animación de las líneas de código con efecto de escritura
                 const codeLines = document.querySelectorAll('.code-line');
@@ -5369,6 +5543,231 @@
                 });
                 
                 this.timelines.set('terminal', terminalTl);
+            }
+            
+            // Función para iniciar la secuencia de la terminal
+            startTerminalSequence() {
+                // console.log('🚀 Iniciando secuencia de terminal...');
+                
+                const codeLines = document.querySelectorAll('.code-line');
+                const terminal = document.querySelector('.python-terminal');
+                
+                if (!terminal || codeLines.length === 0) {
+                    console.warn('⚠️ Terminal o líneas de código no encontradas');
+                    return;
+                }
+                
+                // Timeline para la secuencia de escritura
+                const sequenceTl = gsap.timeline();
+                
+                // Efecto de cursor parpadeante en el terminal
+                const cursor = document.createElement('span');
+                cursor.className = 'cursor';
+                cursor.textContent = '_';
+                terminal.querySelector('.terminal-body').appendChild(cursor);
+                
+                // Animar cada línea de código con efecto de escritura
+                codeLines.forEach((line, index) => {
+                    // Ocultar línea inicialmente
+                    gsap.set(line, { opacity: 0, x: -30 });
+                    
+                    sequenceTl.to(line, {
+                        duration: 0.3,
+                        opacity: 1,
+                        x: 0,
+                        ease: 'power2.out'
+                    }, index * 0.2);
+                    
+                    // Efecto especial para líneas de éxito
+                    if (line.querySelector('.output.success')) {
+                        sequenceTl.to(line.querySelector('.output.success'), {
+                            duration: 0.5,
+                            scale: 1.05,
+                            textShadow: '0 0 10px var(--primary-glow)',
+                            ease: 'power2.out'
+                        }, `-=${0.1}`);
+                    }
+                    
+                    // Efecto especial para líneas de procesamiento
+                    if (line.querySelector('.output.processing')) {
+                        sequenceTl.to(line.querySelector('.output.processing'), {
+                            duration: 0.3,
+                            color: 'var(--tertiary-glow)',
+                            ease: 'power2.out'
+                        }, `-=${0.1}`);
+                    }
+                });
+                
+                // Efecto final del cursor
+                sequenceTl.to(cursor, {
+                    duration: 0.5,
+                    opacity: 0,
+                    ease: 'power2.out'
+                }, '-=0.2');
+                
+                // Efecto de brillo en el terminal
+                sequenceTl.to(terminal, {
+                    duration: 0.5,
+                    boxShadow: '0 0 40px rgba(0, 255, 136, 0.3)',
+                    ease: 'power2.out'
+                }, '-=0.3');
+                
+                // console.log('✅ Secuencia de terminal iniciada');
+            }
+            
+            // Animar elementos específicos de Python con data-animate
+            animatePythonElements() {
+                // console.log('🐍 Animando elementos de Python...');
+                
+                // Animar contenedor principal
+                const pythonContainer = document.querySelector('.python-demo-container');
+                if (pythonContainer) {
+                    gsap.fromTo(pythonContainer, 
+                        { y: 50, opacity: 0, scale: 0.95 },
+                        { 
+                            y: 0, 
+                            opacity: 1, 
+                            scale: 1, 
+                            duration: 0.8, 
+                            ease: 'power3.out',
+                            scrollTrigger: {
+                                trigger: pythonContainer,
+                                start: 'top 80%',
+                                toggleActions: 'play none none reverse'
+                            }
+                        }
+                    );
+                }
+                
+                // Animar terminal
+                const terminal = document.querySelector('.python-terminal');
+                if (terminal) {
+                    gsap.fromTo(terminal,
+                        { x: -100, opacity: 0, scale: 0.9 },
+                        {
+                            x: 0,
+                            opacity: 1,
+                            scale: 1,
+                            duration: 0.8,
+                            ease: 'power2.out',
+                            scrollTrigger: {
+                                trigger: terminal,
+                                start: 'top 80%',
+                                toggleActions: 'play none none reverse'
+                            }
+                        }
+                    );
+                }
+                
+                // Animar botones de terminal
+                const terminalButtons = document.querySelectorAll('.terminal-buttons .btn');
+                terminalButtons.forEach((btn, index) => {
+                    gsap.fromTo(btn,
+                        { scale: 0, rotation: 180, opacity: 0 },
+                        {
+                            scale: 1,
+                            rotation: 0,
+                            opacity: 1,
+                            duration: 0.4,
+                            delay: index * 0.1,
+                            ease: 'back.out(1.7)',
+                            scrollTrigger: {
+                                trigger: btn,
+                                start: 'top 80%',
+                                toggleActions: 'play none none reverse'
+                            }
+                        }
+                    );
+                });
+                
+                // Animar título de terminal con efecto typewriter
+                const terminalTitle = document.querySelector('.terminal-title');
+                if (terminalTitle) {
+                    const originalText = terminalTitle.textContent;
+                    terminalTitle.textContent = '';
+                    
+                    gsap.fromTo(terminalTitle,
+                        { x: -50, opacity: 0 },
+                        {
+                            x: 0,
+                            opacity: 1,
+                            duration: 0.6,
+                            ease: 'power2.out',
+                            onComplete: () => {
+                                this.typewriterEffect(terminalTitle, originalText);
+                            },
+                            scrollTrigger: {
+                                trigger: terminalTitle,
+                                start: 'top 80%',
+                                toggleActions: 'play none none reverse'
+                            }
+                        }
+                    );
+                }
+                
+                // Animar tarjetas de características
+                const featureCards = document.querySelectorAll('#python .feature-card');
+                featureCards.forEach((card, index) => {
+                    gsap.fromTo(card,
+                        { y: 50, opacity: 0, scale: 0.9 },
+                        {
+                            y: 0,
+                            opacity: 1,
+                            scale: 1,
+                            duration: 0.6,
+                            delay: index * 0.2,
+                            ease: 'power2.out',
+                            scrollTrigger: {
+                                trigger: card,
+                                start: 'top 80%',
+                                toggleActions: 'play none none reverse'
+                            }
+                        }
+                    );
+                });
+                
+                // Animar tarjetas de métricas
+                const metricCards = document.querySelectorAll('#python .metric-card');
+                metricCards.forEach((card, index) => {
+                    gsap.fromTo(card,
+                        { y: 30, opacity: 0, scale: 0.95 },
+                        {
+                            y: 0,
+                            opacity: 1,
+                            scale: 1,
+                            duration: 0.5,
+                            delay: index * 0.15,
+                            ease: 'power2.out',
+                            scrollTrigger: {
+                                trigger: card,
+                                start: 'top 80%',
+                                toggleActions: 'play none none reverse'
+                            }
+                        }
+                    );
+                });
+                
+                // console.log('✅ Elementos de Python animados');
+            }
+            
+            // Efecto typewriter para texto
+            typewriterEffect(element, text) {
+                let i = 0;
+                const speed = 50; // ms por carácter
+                
+                const typeInterval = setInterval(() => {
+                    element.textContent += text.charAt(i);
+                    i++;
+                    
+                    if (i >= text.length) {
+                        clearInterval(typeInterval);
+                        // Agregar cursor parpadeante al final
+                        const cursor = document.createElement('span');
+                        cursor.className = 'cursor';
+                        cursor.textContent = '_';
+                        element.appendChild(cursor);
+                    }
+                }, speed);
             }
             
             setupVideoDemoAnimations() {
@@ -5418,6 +5817,9 @@
                     });
                 }
                 
+                // ScrollTrigger para reproducir video automáticamente al llegar a la sección
+                this.setupVideoAutoPlay();
+                
                 // Efectos hover para demo cards
                 document.querySelectorAll('.demo-card').forEach(card => {
                     card.addEventListener('mouseenter', () => {
@@ -5442,6 +5844,145 @@
                         });
                     });
                 });
+            }
+            
+            // Configurar reproducción automática del video al llegar a la sección
+            setupVideoAutoPlay() {
+                const videoContainer = document.querySelector('.video-carousel-container');
+                const video = document.getElementById('droneVideo2');
+                
+                if (videoContainer && video) {
+                    console.log('🎬 Configurando reproducción automática del video...');
+                    
+                    // ScrollTrigger para reproducir video cuando se llegue a la sección
+                    ScrollTrigger.create({
+                        trigger: videoContainer,
+                        start: 'top 70%',
+                        end: 'bottom 30%',
+                        onEnter: () => {
+                            console.log('▶️ Usuario llegó a la sección de video - iniciando reproducción automática');
+                            this.autoPlayVideo();
+                        },
+                        onLeave: () => {
+                            console.log('⏸️ Usuario salió de la sección de video - pausando video');
+                            this.pauseVideo();
+                        },
+                        onEnterBack: () => {
+                            console.log('▶️ Usuario regresó a la sección de video - reanudando reproducción');
+                            this.autoPlayVideo();
+                        },
+                        onLeaveBack: () => {
+                            console.log('⏸️ Usuario salió hacia arriba de la sección de video - pausando video');
+                            this.pauseVideo();
+                        }
+                    });
+                }
+            }
+            
+            // Función para reproducir video automáticamente
+            autoPlayVideo() {
+                const video = document.getElementById('droneVideo2');
+                if (video) {
+                    // Asegurar que el video sea visible
+                    video.style.display = 'block';
+                    video.style.opacity = '1';
+                    video.style.visibility = 'visible';
+                    
+                    // Configurar para reproducción automática
+                    video.muted = true;
+                    video.loop = true;
+                    video.playsInline = true;
+                    video.autoplay = true;
+                    
+                    // Intentar reproducir
+                    video.play().then(() => {
+                        console.log('✅ Video reproduciéndose automáticamente');
+                        
+                        // Ocultar placeholder si existe
+                        const placeholder = video.querySelector('.video-placeholder');
+                        if (placeholder) {
+                            placeholder.style.display = 'none';
+                        }
+                        
+                        // Mostrar indicador de reproducción
+                        this.showPlayIndicator();
+                        
+                    }).catch(e => {
+                        console.log('⚠️ No se pudo reproducir automáticamente:', e);
+                        
+                        // Mostrar placeholder con mensaje de interacción requerida
+                        const placeholder = video.querySelector('.video-placeholder');
+                        if (placeholder) {
+                            placeholder.style.display = 'flex';
+                            const subtitle = placeholder.querySelector('.placeholder-subtitle');
+                            if (subtitle) {
+                                subtitle.textContent = 'Haz clic para reproducir el video';
+                            }
+                        }
+                    });
+                }
+            }
+            
+            // Función para pausar video
+            pauseVideo() {
+                const video = document.getElementById('droneVideo2');
+                if (video && !video.paused) {
+                    video.pause();
+                    console.log('⏸️ Video pausado');
+                    
+                    // Ocultar indicador de reproducción
+                    this.hidePlayIndicator();
+                }
+            }
+            
+            // Función para mostrar indicador de reproducción
+            showPlayIndicator() {
+                const video = document.getElementById('droneVideo2');
+                if (video) {
+                    // Crear o mostrar indicador de reproducción
+                    let indicator = video.querySelector('.auto-play-indicator');
+                    if (!indicator) {
+                        indicator = document.createElement('div');
+                        indicator.className = 'auto-play-indicator';
+                        indicator.innerHTML = `
+                            <div class="play-indicator-content">
+                                <div class="play-icon">▶️</div>
+                                <div class="play-text">Reproduciendo automáticamente</div>
+                            </div>
+                        `;
+                        indicator.style.cssText = `
+                            position: absolute;
+                            top: 10px;
+                            right: 10px;
+                            background: rgba(0, 255, 136, 0.9);
+                            color: #000;
+                            padding: 8px 12px;
+                            border-radius: 20px;
+                            font-size: 12px;
+                            font-weight: bold;
+                            z-index: 10;
+                            animation: fadeInOut 3s ease-in-out;
+                        `;
+                        video.parentElement.appendChild(indicator);
+                    }
+                    
+                    indicator.style.display = 'block';
+                    
+                    // Ocultar después de 3 segundos
+                    setTimeout(() => {
+                        if (indicator) {
+                            indicator.style.display = 'none';
+                        }
+                    }, 3000);
+                }
+            }
+            
+            // Función para ocultar indicador de reproducción
+            hidePlayIndicator() {
+                const indicator = document.querySelector('.auto-play-indicator');
+                if (indicator) {
+                    indicator.style.display = 'none';
+                }
             }
             
             setupSpecialEffects() {
@@ -5584,6 +6125,37 @@
             }
             
             setupFooterAnimations() {
+                console.log('🦶 Configurando animaciones del footer...');
+                
+                // Animación de la sección About (arriba del footer)
+                gsap.from('#about .about-content', {
+                    scrollTrigger: {
+                        trigger: '#about',
+                        start: 'top 80%',
+                        end: 'bottom 20%',
+                        toggleActions: 'play none none reverse'
+                    },
+                    y: 50,
+                    opacity: 0,
+                    duration: 1,
+                    stagger: 0.2,
+                    ease: 'power2.out'
+                });
+                
+                // Animación de la línea vertical
+                gsap.from('#about .animated-line', {
+                    scrollTrigger: {
+                        trigger: '#about',
+                        start: 'top 80%',
+                        end: 'bottom 20%',
+                        toggleActions: 'play none none reverse'
+                    },
+                    scaleY: 0,
+                    duration: 1.2,
+                    ease: 'power2.out',
+                    transformOrigin: 'top'
+                });
+                
                 // Animación del footer
                 gsap.from('.footer-section', {
                     scrollTrigger: {
@@ -5613,6 +6185,25 @@
                     delay: 0.3,
                     ease: 'power2.out'
                 });
+                
+                // Animación de enlaces del footer
+                gsap.from('.footer-section a', {
+                    scrollTrigger: {
+                        trigger: 'footer',
+                        start: 'top 85%',
+                        end: 'bottom 10%',
+                        toggleActions: 'play none none reverse'
+                    },
+                    y: 20,
+                    opacity: 0,
+                    duration: 0.5,
+                    stagger: 0.1,
+                    delay: 0.5,
+                    ease: 'power2.out'
+                });
+                
+                console.log('✅ Animaciones del footer configuradas');
+            }
             }
             
             // Método para pausar todas las animaciones
@@ -5666,22 +6257,98 @@
             }
         }
         
-        // Inicializar sistema GSAP
-        const gsapSystem = new GSAPAnimationSystem();
+        // Inicializar sistema GSAP con delay para asegurar DOM completo
+        setTimeout(() => {
+            const gsapSystem = new GSAPAnimationSystem();
+            
+            // Indicador de estado de animaciones GSAP
+            console.log('🚀 Sistema GSAP inicializado:', {
+                version: gsap.version,
+                scrollTrigger: ScrollTrigger.isTouch,
+                timelines: gsapSystem.timelines.size,
+                reducedMotion: gsapSystem.isReducedMotion
+            });
+        }, 100);
         
-        // Indicador de estado de animaciones GSAP
-        console.log('🚀 Sistema GSAP inicializado:', {
-            version: gsap.version,
-            scrollTrigger: ScrollTrigger.isTouch,
-            timelines: gsapSystem.timelines.size,
-            reducedMotion: gsapSystem.isReducedMotion
-        });
+        // Limpiar consola y mostrar información esencial
+        console.clear();
+        console.log('🚀 Sistema T-1 Iniciado');
+        console.log('📱 Responsive Design: Optimizado');
+        console.log('🎬 Animaciones GSAP: Activas');
+        console.log('🎮 Controles: Ctrl+P (pausar), Ctrl+R (reanudar), Ctrl+S (detener)');
         
-        // Mostrar controles de teclado en consola
-        console.log('🎮 Controles de teclado disponibles:');
-        console.log('  Ctrl+P: Pausar animaciones');
-        console.log('  Ctrl+R: Reanudar animaciones');
-        console.log('  Ctrl+S: Detener todas las animaciones');
+        // SOLUCIÓN DIRECTA PARA MÉTRICAS - EJECUTAR INMEDIATAMENTE
+        function forceShowMetrics() {
+            console.log('🔧 SOLUCIÓN DIRECTA: Forzando visibilidad de métricas...');
+            
+            // Buscar la sección de métricas
+            const interSection = document.querySelector('.inter-section');
+            if (!interSection) {
+                console.error('❌ No se encontró .inter-section');
+                return;
+            }
+            
+            // Buscar el grid de estadísticas
+            const statsGrid = interSection.querySelector('.stats-grid');
+            if (!statsGrid) {
+                console.error('❌ No se encontró .stats-grid');
+                return;
+            }
+            
+            // Buscar todos los elementos stat-item
+            const statItems = statsGrid.querySelectorAll('.stat-item');
+            console.log(`📊 Encontrados ${statItems.length} stat-items`);
+            
+            statItems.forEach((item, index) => {
+                console.log(`📋 Stat-item ${index + 1}:`, item);
+                
+                // Buscar el stat-value dentro de cada item
+                const statValue = item.querySelector('.stat-value');
+                if (statValue) {
+                    console.log(`✅ Stat-value ${index + 1}:`, statValue);
+                    console.log(`   - ID: ${statValue.id}`);
+                    console.log(`   - data-target: ${statValue.getAttribute('data-target')}`);
+                    console.log(`   - data-suffix: ${statValue.getAttribute('data-suffix')}`);
+                    console.log(`   - data-decimals: ${statValue.getAttribute('data-decimals')}`);
+                    
+                    // Forzar visibilidad
+                    statValue.style.opacity = '1';
+                    statValue.style.visibility = 'visible';
+                    statValue.style.display = 'block';
+                    
+                    // Animar inmediatamente
+                    const target = parseFloat(statValue.getAttribute('data-target')) || 0;
+                    const decimals = parseInt(statValue.getAttribute('data-decimals')) || 0;
+                    const suffix = statValue.getAttribute('data-suffix') || '';
+                    
+                    console.log(`🎯 Animando ${statValue.id}: ${target}${suffix}`);
+                    
+                    const obj = { val: 0 };
+                    gsap.to(obj, {
+                        val: target,
+                        duration: 2,
+                        delay: index * 0.5,
+                        ease: 'power2.out',
+                        onUpdate: () => {
+                            const value = Number(obj.val).toFixed(decimals);
+                            statValue.textContent = `${value}${suffix}`;
+                        },
+                        onComplete: () => {
+                            console.log(`✅ COMPLETADO: ${statValue.id} = ${target}${suffix}`);
+                        }
+                    });
+                } else {
+                    console.warn(`⚠️ No se encontró .stat-value en stat-item ${index + 1}`);
+                }
+            });
+        }
+        
+        // Ejecutar inmediatamente y con delays
+        forceShowMetrics();
+        setTimeout(forceShowMetrics, 1000);
+        setTimeout(forceShowMetrics, 3000);
+        
+        // EVENT LISTENER DUPLICADO ELIMINADO - Se maneja en el sistema GSAP
         
         // Cleanup automático al cambiar de página - SOLO GSAP
         window.addEventListener('beforeunload', () => {
@@ -7631,7 +8298,6 @@
                     this.nextBtn = document.getElementById('nextBtn');
                     this.indicators = document.querySelectorAll('.indicator');
                     this.videos = [
-                        document.getElementById('droneVideo1'),
                         document.getElementById('droneVideo2')
                     ];
                     
@@ -7682,8 +8348,64 @@
                     // Configurar videos
                     this.setupVideos();
                     
-                    // Mostrar slide inicial
+                    // Mostrar slide inicial con configuración especial
                     this.showSlide(0);
+                    
+                    // Asegurar que el primer video se muestre correctamente
+                    setTimeout(() => {
+                        this.ensureFirstVideoVisible();
+                    }, 500);
+                }
+                
+                // Función para asegurar que el video sea visible
+                ensureFirstVideoVisible() {
+                    const video = this.videos[0];
+                    const slide = this.slides[0];
+                    
+                    if (video && slide) {
+                        console.log('🔍 Verificando visibilidad del video...');
+                        
+                        // Asegurar que el slide esté activo
+                        slide.classList.add('active');
+                        
+                        // Asegurar que el video sea visible
+                        video.style.display = 'block';
+                        video.style.opacity = '1';
+                        video.style.visibility = 'visible';
+                        video.style.width = '100%';
+                        video.style.height = '100%';
+                        
+                        // Ocultar placeholder si el video está reproduciéndose
+                        const placeholder = video.querySelector('.video-placeholder');
+                        if (placeholder && !video.paused) {
+                            placeholder.style.display = 'none';
+                        }
+                        
+                        // Si el video no está reproduciéndose, intentar reproducirlo
+                        if (video.paused && video.readyState >= 2) {
+                            console.log('▶️ Intentando reproducir video...');
+                            video.play().then(() => {
+                                console.log('✅ Video reproduciéndose correctamente');
+                                if (placeholder) {
+                                    placeholder.style.display = 'none';
+                                }
+                            }).catch(e => {
+                                console.log('⚠️ No se pudo reproducir video:', e);
+                                if (placeholder) {
+                                    placeholder.style.display = 'flex';
+                                }
+                            });
+                        }
+                        
+                        console.log('Estado del video:', {
+                            readyState: video.readyState,
+                            paused: video.paused,
+                            ended: video.ended,
+                            display: video.style.display,
+                            opacity: video.style.opacity,
+                            visibility: video.style.visibility
+                        });
+                    }
                 }
                 
                 setupVideos() {
@@ -7706,6 +8428,7 @@
                             }
                             
                             // Configurar calidad adaptativa
+                            const isLargeFile = video.duration > 30; // Archivo grande si dura más de 30 segundos
                             if (isLargeFile) {
                                 video.style.objectFit = 'cover';
                                 video.style.width = '100%';
@@ -7837,9 +8560,9 @@
                         indicator.classList.toggle('active', i === index);
                     });
                     
-                    // Pausar todos los videos
-                    this.videos.forEach(video => {
-                        if (video) {
+                    // Pausar todos los videos EXCEPTO el que se va a mostrar
+                    this.videos.forEach((video, videoIndex) => {
+                        if (video && videoIndex !== index) {
                             video.pause();
                             video.currentTime = 0; // Reiniciar al inicio
                         }
@@ -7864,26 +8587,51 @@
                                 currentVideo.loop = true;
                                 currentVideo.playsInline = true;
                                 
+                                // Asegurar visibilidad del video
+                                currentVideo.style.display = 'block';
+                                currentVideo.style.opacity = '1';
+                                currentVideo.style.visibility = 'visible';
+                                
                                 currentVideo.play().then(() => {
-                                    console.log(`Video ${index + 1} reproduciéndose correctamente`);
+                                    console.log(`✅ Video ${index + 1} reproduciéndose correctamente`);
+                                    
+                                    // Ocultar placeholder cuando el video se reproduce
+                                    const placeholder = currentVideo.querySelector('.video-placeholder');
+                                    if (placeholder) {
+                                        placeholder.style.display = 'none';
+                                    }
+                                    
                                     // Verificar que realmente está reproduciéndose
                                     setTimeout(() => {
                                         if (currentVideo.paused) {
-                                            console.warn(`Video ${index + 1} se pausó inesperadamente, reintentando...`);
+                                            console.warn(`⚠️ Video ${index + 1} se pausó inesperadamente, reintentando...`);
                                             currentVideo.play().catch(e => console.error('Error en reintento:', e));
                                         }
                                     }, 1000);
                                 }).catch(e => {
-                                    console.error('Error al reproducir video:', e);
+                                    console.error('❌ Error al reproducir video:', e);
+                                    
+                                    // Mostrar placeholder en caso de error
+                                    const placeholder = currentVideo.querySelector('.video-placeholder');
+                                    if (placeholder) {
+                                        placeholder.style.display = 'flex';
+                                    }
+                                    
                                     // Intentar de nuevo después de un breve delay
                                     setTimeout(() => {
                                         currentVideo.play().catch(err => {
-                                            console.error('Segundo intento fallido:', err);
+                                            console.error('❌ Segundo intento fallido:', err);
                                         });
                                     }, 100);
                                 });
                             } else {
-                                console.log(`Video ${index + 1} no está listo, esperando...`);
+                                console.log(`⏳ Video ${index + 1} no está listo, esperando...`);
+                                
+                                // Mostrar placeholder mientras carga
+                                const placeholder = currentVideo.querySelector('.video-placeholder');
+                                if (placeholder) {
+                                    placeholder.style.display = 'flex';
+                                }
                             }
                         };
                         
@@ -7902,13 +8650,34 @@
                             currentVideo.playsInline = true;
                             currentVideo.autoplay = true;
                             
+                            // Asegurar que el video sea visible
+                            currentVideo.style.display = 'block';
+                            currentVideo.style.opacity = '1';
+                            currentVideo.style.visibility = 'visible';
+                            
                             // Intentar reproducción inmediata
                             if (currentVideo.readyState >= 1) {
                                 currentVideo.play().then(() => {
-                                    console.log('Video de vigilancia reproduciéndose inmediatamente');
+                                    console.log('✅ Video de vigilancia reproduciéndose inmediatamente');
+                                    // Ocultar placeholder si existe
+                                    const placeholder = currentVideo.querySelector('.video-placeholder');
+                                    if (placeholder) {
+                                        placeholder.style.display = 'none';
+                                    }
                                 }).catch(e => {
-                                    console.log('Autoplay falló, esperando carga completa...', e);
+                                    console.log('⚠️ Autoplay falló, esperando carga completa...', e);
+                                    // Mostrar placeholder temporalmente
+                                    const placeholder = currentVideo.querySelector('.video-placeholder');
+                                    if (placeholder) {
+                                        placeholder.style.display = 'flex';
+                                    }
                                 });
+                            } else {
+                                // Si no está listo, mostrar placeholder
+                                const placeholder = currentVideo.querySelector('.video-placeholder');
+                                if (placeholder) {
+                                    placeholder.style.display = 'flex';
+                                }
                             }
                         }
                         
@@ -8076,8 +8845,8 @@
                                     <button class="retry-button" onclick="videoCarousel.retryVideo(${videoIndex})">
                                         Reintentar
                                     </button>
-                                    <button class="fallback-button" onclick="videoCarousel.useFallbackVideo(${videoIndex})">
-                                        Usar Video 1
+                                    <button class="fallback-button" onclick="videoCarousel.reloadVideo(${videoIndex})">
+                                        Recargar Video
                                     </button>
                                 </div>
                             </div>
@@ -8115,12 +8884,12 @@
                 }
                 
                 // Función para usar video de fallback (Video 1)
-                useFallbackVideo(videoIndex) {
+                reloadVideo(videoIndex) {
                     const video = this.videos[videoIndex];
                     const slide = this.slides[videoIndex];
                     
                     if (video && slide) {
-                        console.log(`Usando Video 1 como fallback para Video ${videoIndex + 1}...`);
+                        console.log(`Recargando video ${videoIndex + 1}...`);
                         
                         // Remover mensaje de error
                         const errorDiv = slide.querySelector('.video-error-message');
@@ -8128,20 +8897,20 @@
                             errorDiv.remove();
                         }
                         
-                        // Cambiar la fuente al Video 1
-                        video.src = 'mp4/vigilancia_opt.mp4';
+                        // Recargar el video
                         video.load();
-                        
-                        // Actualizar datos HUD para que coincidan con Video 1
-                        this.updateHUDForFallback(videoIndex);
                         
                         // Mostrar loading
                         this.showLoading(videoIndex, true);
                         
                         // Intentar reproducir
                         setTimeout(() => {
-                            video.play().catch(e => {
-                                console.log('Error al reproducir fallback:', e);
+                            video.play().then(() => {
+                                console.log('Video recargado y reproduciéndose');
+                                this.showLoading(videoIndex, false);
+                            }).catch(e => {
+                                console.error('Error al recargar:', e);
+                                this.showVideoError(videoIndex);
                             });
                         }, 1000);
                         
@@ -8191,40 +8960,35 @@
                 }
             }
             
-            // Verificar archivos de video antes de inicializar
-            console.log('=== VERIFICANDO ARCHIVOS DE VIDEO ===');
-            Promise.all([
-                checkVideoFile('mp4/vigilancia_opt.mp4'),
-                checkVideoFile('mp4/DJI-2_vigilancia_small.mp4')
-            ]).then(results => {
-                results.forEach((result, index) => {
-                    console.log(`Video ${index + 1}:`, result);
-                    if (!result.exists) {
-                        console.error(`❌ Video ${index + 1} no accesible:`, result.error || `Status: ${result.status}`);
-                    } else {
-                        console.log(`✅ Video ${index + 1} accesible (${result.contentLength} bytes, ${result.contentType})`);
-                    }
-                });
+            // Verificar archivo de video antes de inicializar
+            console.log('=== VERIFICANDO ARCHIVO DE VIDEO ===');
+            checkVideoFile('mp4/DJI-2_vigilancia_small.mp4').then(result => {
+                console.log('Video:', result);
+                if (!result.exists) {
+                    console.error(`❌ Video no accesible:`, result.error || `Status: ${result.status}`);
+                } else {
+                    console.log(`✅ Video accesible (${result.contentLength} bytes, ${result.contentType})`);
+                }
             });
             
             // Inicializar carrusel
             const videoCarousel = new VideoCarousel();
             
-            // Verificación inmediata de videos
-            console.log('=== VERIFICACIÓN DE VIDEOS ===');
+            // Verificación inmediata de video
+            console.log('=== VERIFICACIÓN DE VIDEO ===');
             console.log('Total de slides:', videoCarousel.slides.length);
             console.log('Total de videos:', videoCarousel.videos.length);
             
             videoCarousel.videos.forEach((video, index) => {
                 if (video) {
-                    console.log(`✅ Video ${index + 1} detectado:`, {
+                    console.log(`✅ Video detectado:`, {
                         id: video.id,
                         src: video.src,
                         tagName: video.tagName,
                         readyState: video.readyState
                     });
                 } else {
-                    console.error(`❌ Video ${index + 1} NO detectado`);
+                    console.error(`❌ Video NO detectado`);
                 }
             });
             
@@ -8794,29 +9558,18 @@
             /* ============================================= */
             /*            INTER-SECTION BAND ANIMATIONS     */
             /* ============================================= */
-            document.querySelectorAll('.inter-section').forEach((section, index) => {
-                ScrollTrigger.create({
-                    trigger: section,
-                    start: 'top 80%',
-                    once: true,
-                    onEnter: () => {
-                        const items = section.querySelectorAll('.stat-item, .spec-item');
-                        gsap.from(items, {
-                            autoAlpha: 0,
-                            y: 24,
-                            stagger: 0.08,
-                            duration: 0.9,
-                            ease: 'power3.out'
-                        });
-                    }
-                });
-            });
+            // SCROLLTRIGGER DUPLICADO ELIMINADO - Se maneja en la sección de métricas específicas
 
             /* ============================================= */
             /*                METRICS COUNTERS               */
             /* ============================================= */
             function animateCounter(el, target, decimals, suffix) {
-                if (!el) return;
+                if (!el) {
+                    console.warn('⚠️ Elemento no encontrado para animateCounter');
+                    return;
+                }
+                
+                console.log(`🎯 Animando contador: ${el.id} -> ${target}${suffix}`);
                 
                 const obj = { val: 0 };
                 gsap.to(obj, {
@@ -8826,27 +9579,39 @@
                     onUpdate: () => {
                         const value = Number(obj.val).toFixed(decimals);
                         el.textContent = `${value}${suffix}`;
+                    },
+                    onComplete: () => {
+                        console.log(`✅ Contador completado: ${el.id} = ${target}${suffix}`);
                     }
                 });
             }
 
             const statsGrid = document.querySelector('.inter-section .stats-grid');
             if (statsGrid) {
+                console.log('📊 Stats grid encontrado, configurando ScrollTrigger...');
                 ScrollTrigger.create({
                     trigger: statsGrid,
                     start: 'top 85%',
                     once: true,
                     onEnter: () => {
+                        console.log('🎬 ScrollTrigger activado para métricas operativas');
                         const statValues = document.querySelectorAll('.stat-value');
-                        statValues.forEach(el => {
+                        console.log(`📈 Encontrados ${statValues.length} elementos de métricas`);
+                        
+                        statValues.forEach((el, index) => {
                             const target = parseFloat(el.getAttribute('data-target')) || 0;
                             const decimals = parseInt(el.getAttribute('data-decimals')) || 0;
                             const suffix = el.getAttribute('data-suffix') || '';
+                            console.log(`📊 Métrica ${index + 1}: ${el.id} -> ${target}${suffix}`);
                             animateCounter(el, target, decimals, suffix);
                         });
                     }
                 });
+            } else {
+                console.warn('⚠️ Stats grid no encontrado');
             }
+            
+            // FUNCIÓN DUPLICADA ELIMINADA - Se usa forceShowMetrics() en su lugar
             
 
             /* ============================================= */
@@ -9145,7 +9910,7 @@
         }
     </script>
 
-    <!-- Script de análisis de problemas móviles -->
-    <script src="../../analyze-mobile-issues.js"></script>
+    <!-- Script de análisis de problemas móviles - DESACTIVADO TEMPORALMENTE -->
+    <!-- <script src="../../analyze-mobile-issues.js"></script> -->
 </body>
 </html>
