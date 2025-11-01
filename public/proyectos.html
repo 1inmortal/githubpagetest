@@ -3,9 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Portfolio de proyectos musicales con diseño moderno y interactivo">
-    <meta name="keywords" content="música, portfolio, proyectos, artistas, álbumes">
+    <meta name="description" content="Portfolio de proyectos musicales con diseño moderno y interactivo. Explora proyectos web, animaciones Three.js y efectos GSAP.">
+    <meta name="keywords" content="música, portfolio, proyectos, artistas, álbumes, web development, three.js, gsap, animaciones">
     <meta name="author" content="Tu Nombre">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#050505">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="">
+    <meta property="og:title" content="Portfolio de Proyectos Musicales">
+    <meta property="og:description" content="Portfolio de proyectos musicales con diseño moderno y interactivo">
+    <meta property="og:image" content="">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="">
+    <meta property="twitter:title" content="Portfolio de Proyectos Musicales">
+    <meta property="twitter:description" content="Portfolio de proyectos musicales con diseño moderno y interactivo">
+    <meta property="twitter:image" content="">
 
     <title>Portfolio de Proyectos Musicales</title>
 
@@ -115,6 +131,341 @@
           border-bottom: 1px solid rgba(200, 255, 200, 0.1);
           position: relative;
           z-index: 150;
+        }
+
+        /* Controles de vista (Lista/Grid) */
+        .view-controls {
+          display: flex;
+          gap: 0.5rem;
+          margin-left: auto;
+          align-items: center;
+        }
+
+        .view-toggle {
+          background: none;
+          border: none;
+          color: var(--color-foreground);
+          font-family: var(--font-primary);
+          font-size: 10px;
+          padding: 6px 12px;
+          cursor: pointer;
+          opacity: 0.6;
+          transition: all 0.3s ease;
+          border-radius: 2px;
+          position: relative;
+        }
+
+        .view-toggle:hover {
+          opacity: 1;
+          background-color: rgba(255, 223, 0, 0.1);
+        }
+
+        .view-toggle.active {
+          opacity: 1;
+          background-color: rgba(255, 223, 0, 0.2);
+        }
+
+        /* Vista de lista (default) */
+        .project-list.list-view .project-preview,
+        .project-list:not(.grid-view) .project-preview {
+          display: none;
+        }
+
+        .project-list.list-view .project-meta,
+        .project-list:not(.grid-view) .project-meta {
+          display: none;
+        }
+
+        /* Vista de cuadrícula */
+        .project-list.grid-view {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+          gap: 2rem;
+          padding: 2rem 0;
+        }
+
+        .project-list.grid-view .project-preview {
+          display: block;
+        }
+
+        .project-list.grid-view .project-meta {
+          display: flex;
+        }
+
+        .project-list.grid-view .project-item {
+          display: flex;
+          flex-direction: column;
+          padding: 1.5rem;
+          border: 1px solid rgba(200, 255, 200, 0.1);
+          border-radius: 4px;
+          background: rgba(255, 255, 255, 0.02);
+          transition: all 0.3s ease;
+          cursor: pointer;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .project-list.grid-view .project-item::before {
+          display: none;
+        }
+
+        .project-list.grid-view .project-item:hover {
+          border-color: var(--color-accent);
+          background: rgba(255, 223, 0, 0.05);
+          transform: translateY(-4px);
+          box-shadow: 0 8px 24px rgba(255, 223, 0, 0.1);
+        }
+
+        .project-list.grid-view .project-item .project-preview {
+          width: 100%;
+          aspect-ratio: 16/9;
+          background-size: cover;
+          background-position: center;
+          margin-bottom: 1rem;
+          border-radius: 2px;
+          opacity: 0.8;
+          transition: opacity 0.3s ease;
+        }
+
+        .project-list.grid-view .project-item:hover .project-preview {
+          opacity: 1;
+        }
+
+        .project-list.grid-view .project-item .project-data {
+          white-space: normal;
+          margin-bottom: 0.5rem;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          line-clamp: 2;
+          -webkit-box-orient: vertical;
+        }
+
+        .project-list.grid-view .project-item .project-data.artist {
+          font-weight: bold;
+          font-size: 14px;
+        }
+
+        .project-list.grid-view .project-item .project-data.album {
+          font-size: 12px;
+          opacity: 0.8;
+        }
+
+        .project-list.grid-view .project-item .project-meta {
+          display: flex;
+          justify-content: space-between;
+          margin-top: auto;
+          padding-top: 1rem;
+          border-top: 1px solid rgba(200, 255, 200, 0.1);
+          font-size: 10px;
+          opacity: 0.6;
+        }
+
+        /* Partículas de microinteracción */
+        .particles-container {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+          z-index: 50;
+          overflow: hidden;
+        }
+
+        .particle {
+          position: absolute;
+          width: 4px;
+          height: 4px;
+          background: var(--color-accent);
+          border-radius: 50%;
+          pointer-events: none;
+          opacity: 0;
+        }
+
+        @keyframes particle-float {
+          0% {
+            opacity: 1;
+            transform: translate(0, 0) scale(1);
+          }
+          100% {
+            opacity: 0;
+            transform: translate(var(--tx, 0), var(--ty, -100px)) scale(0);
+          }
+        }
+
+        .particle {
+          animation: particle-float 1s ease-out forwards;
+          will-change: transform, opacity;
+        }
+
+        /* Efecto de ripple en hover */
+        .project-item::after {
+          content: "";
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%) scale(0);
+          background: radial-gradient(circle, rgba(255, 223, 0, 0.2) 0%, transparent 70%);
+          border-radius: 50%;
+          pointer-events: none;
+          opacity: 0;
+          transition: transform 0.6s ease, opacity 0.6s ease;
+        }
+
+        .project-item:hover::after {
+          transform: translate(-50%, -50%) scale(2);
+          opacity: 1;
+        }
+
+        /* Sección de recomendaciones */
+        .recommendations-section {
+          margin-top: 3rem;
+          padding-top: 2rem;
+          border-top: 1px solid rgba(200, 255, 200, 0.1);
+        }
+
+        .recommendations-title {
+          font-size: 14px;
+          margin-bottom: 1.5rem;
+          opacity: 0.8;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+        }
+
+        .recommendations-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 1.5rem;
+        }
+
+        .recommendation-card {
+          padding: 1rem;
+          border: 1px solid rgba(200, 255, 200, 0.1);
+          border-radius: 4px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          background: rgba(255, 255, 255, 0.01);
+        }
+
+        .recommendation-card:hover {
+          border-color: var(--color-accent);
+          background: rgba(255, 223, 0, 0.05);
+          transform: translateY(-2px);
+        }
+
+        .recommendation-card .recommendation-badge {
+          display: inline-block;
+          padding: 2px 8px;
+          background: var(--color-accent);
+          color: var(--color-background);
+          font-size: 9px;
+          border-radius: 10px;
+          margin-bottom: 0.5rem;
+        }
+
+        /* View Transitions API */
+        @view-transition {
+          navigation: auto;
+        }
+
+        ::view-transition-old(root),
+        ::view-transition-new(root) {
+          animation-duration: 0.5s;
+          animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        /* Lazy loading placeholder */
+        .lazy-load-placeholder {
+          background: linear-gradient(90deg, 
+            rgba(255, 255, 255, 0.05) 0%, 
+            rgba(255, 255, 255, 0.1) 50%, 
+            rgba(255, 255, 255, 0.05) 100%);
+          background-size: 200% 100%;
+          animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+
+        /* Prefers reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+          *,
+          *::before,
+          *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+          }
+
+          .particle {
+            display: none !important;
+          }
+
+          .idle-animation {
+            display: none !important;
+          }
+        }
+
+        /* Focus visible para accesibilidad */
+        .filter-button:focus-visible,
+        .view-toggle:focus-visible,
+        .project-item:focus-visible,
+        .back-button:focus-visible,
+        .audio-toggle:focus-visible {
+          outline: 2px solid var(--color-accent);
+          outline-offset: 2px;
+        }
+
+        /* Estados de carga mejorados */
+        .loading-spinner {
+          display: inline-block;
+          width: 16px;
+          height: 16px;
+          border: 2px solid var(--color-accent);
+          border-top-color: transparent;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+        }
+
+        .error-message {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: rgba(255, 68, 68, 0.95);
+          color: white;
+          padding: 12px 18px;
+          border-radius: 4px;
+          font-family: var(--font-primary);
+          font-size: 11px;
+          z-index: 10000;
+          max-width: 350px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+          animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+
+        /* Estados de hover deshabilitado */
+        .project-item.disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+          pointer-events: none;
         }
 
         .filter-button {
@@ -798,6 +1149,25 @@
         }
 
     </style>
+
+    <!-- Structured Data (JSON-LD) para SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "Portfolio de Proyectos Musicales",
+      "description": "Portfolio de proyectos musicales con diseño moderno y interactivo",
+      "url": "",
+      "author": {
+        "@type": "Person",
+        "name": "Tu Nombre"
+      },
+      "mainEntity": {
+        "@type": "ItemList",
+        "itemListElement": []
+      }
+    }
+    </script>
 </head>
 <body>
     <main class="portfolio-container">
@@ -824,15 +1194,24 @@
                 GSAP
                 <span class="count" id="count-gsap">0</span>
             </button>
+            <div class="view-controls">
+                <button class="view-toggle active" data-view="list" aria-label="Vista de lista" title="Vista de lista">
+                    ☰
+                </button>
+                <button class="view-toggle" data-view="grid" aria-label="Vista de cuadrícula" title="Vista de cuadrícula">
+                    ⊞
+                </button>
+            </div>
         </nav>
 
         <div class="project-counter">
             <span id="current-count">0</span> de <span id="total-count">0</span> proyectos
         </div>
 
-        <ul class="project-list" role="list">
+        <ul class="project-list" role="list" id="projectList">
           <!-- WEBS -->
           <li class="project-item" data-image="img/actividad-github.jpg" data-sound="mp3/hover.mp3" data-link="webs/web-1.html" data-category="webs">
+            <div class="project-preview lazy-load-placeholder" data-lazy-image="img/actividad-github.jpg"></div>
             <span class="project-data artist hover-text">PROYECTO WEB 1</span>
             <span class="project-data album hover-text">DISEÑO MODERNO</span>
             <span class="project-data category hover-text">WEBSITE</span>
@@ -934,7 +1313,7 @@
           </li>
 
           <!-- GSAP -->
-          <li class="project-item" data-image="https://assets.codepen.io/7558/portrait-fashion-004.jpg" data-sound="mp3/hover.mp3" data-link="gsap/T-1.html" data-category="gsap">
+          <li class="project-item" data-image="https://assets.codepen.io/7558/portrait-fashion-004.jpg" data-sound="mp3/hover.mp3" data-link="proyectos/t-1/t-1.html" data-category="gsap">
             <span class="project-data artist hover-text">DJI</span>
             <span class="project-data album hover-text">LINES</span>
             <span class="project-data category hover-text">ALBUM</span>
@@ -977,9 +1356,16 @@
             <span class="project-data year hover-text">2023</span>
           </li>
         </ul>
+
+        <!-- Sección de recomendaciones -->
+        <div class="recommendations-section" id="recommendationsSection" style="display: none;">
+          <div class="recommendations-title">PROYECTOS RECOMENDADOS</div>
+          <div class="recommendations-grid" id="recommendationsGrid"></div>
+        </div>
       </main>
 
       <div class="background-image" id="backgroundImage" role="img" aria-hidden="true"></div>
+      <div class="particles-container" id="particlesContainer"></div>
 
       <!-- Audio de fondo ambiente -->
       <audio id="ambientSound" loop preload="auto">
@@ -1099,16 +1485,31 @@ class FilterManager {
   }
 
   handleResize() {
-    // Actualizar detección de móvil si cambia el tamaño de ventana
-    window.addEventListener('resize', () => {
-      const wasMobile = this.isMobile;
-      this.isMobile = this.detectMobileDevice();
-      
-      // Si cambió de móvil a PC, ocultar advertencia si está visible
-      if (wasMobile && !this.isMobile && this.performanceWarning.classList.contains('show')) {
-        this.hidePerformanceWarning();
+    // Actualizar detección de móvil si cambia el tamaño de ventana con throttle
+    const throttledResize = throttle(() => {
+      try {
+        const wasMobile = this.isMobile;
+        this.isMobile = this.detectMobileDevice();
+        
+        // Si cambió de móvil a PC, ocultar advertencia si está visible
+        if (wasMobile && !this.isMobile && this.performanceWarning && this.performanceWarning.classList.contains('show')) {
+          this.hidePerformanceWarning();
+        }
+      } catch (error) {
+        ErrorHandler.handleAsyncError(error, 'handleResize');
       }
-    });
+    }, 250);
+
+    window.addEventListener('resize', throttledResize);
+    
+    // Guardar para cleanup
+    this.resizeHandler = throttledResize;
+  }
+
+  cleanup() {
+    if (this.resizeHandler) {
+      window.removeEventListener('resize', this.resizeHandler);
+    }
   }
   
   detectMobileDevice() {
@@ -1572,9 +1973,19 @@ class AnimationManager {
           targetHref = projectLink;
         }
 
-        // Pequeña pausa para el sonido antes de redirigir
+        // Registrar interacción para recomendaciones
+        if (window.recommendationsManager) {
+          const category = item.dataset.category;
+          window.recommendationsManager.recordInteraction(targetHref, category, 0);
+        }
+
+        // Usar View Transitions API si está disponible, sino redirección normal
         setTimeout(() => {
-          window.location.href = targetHref;
+          if (window.viewTransitionManager && window.viewTransitionManager.supportsViewTransitions) {
+            window.viewTransitionManager.navigateWithTransition(targetHref);
+          } else {
+            window.location.href = targetHref;
+          }
         }, 200);
       }
     };
@@ -1828,38 +2239,988 @@ function checkGSAPAvailability() {
   return typeof gsap !== 'undefined';
 }
 
-// Función para inicializar la aplicación cuando GSAP esté disponible
-function initializeApp() {
-  // Inicializar el gestor de filtros primero
-  const filterManager = new FilterManager();
-  window.filterManager = filterManager;
-  
-  // Inicializar el gestor de animaciones
-  const animationManager = new AnimationManager();
-  animationManager.initializeAnimations();
-  window.animationManager = animationManager;
-  
-  // Inicializar el display de tiempo
-  const timeDisplay = new TimeDisplay("current-time");
-  timeDisplay.start();
+// ============================================
+// UTILIDADES: Manejo de Errores, Accesibilidad, Performance
+// ============================================
 
-  // Configurar control de audio
-  const audioToggle = document.getElementById("audioToggle");
-  if (audioToggle) {
-    audioToggle.addEventListener("click", () => {
-      const isEnabled = animationManager.toggleAudio();
-      if (isEnabled) {
-        audioToggle.textContent = "🔊";
-        audioToggle.classList.remove("muted");
-      } else {
-        audioToggle.textContent = "🔇";
-        audioToggle.classList.add("muted");
+/**
+ * Utilidad para manejo de errores
+ */
+class ErrorHandler {
+  static showError(message, duration = 5000) {
+    const existingError = document.querySelector('.error-message');
+    if (existingError) {
+      existingError.remove();
+    }
+
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.textContent = message;
+    errorDiv.setAttribute('role', 'alert');
+    errorDiv.setAttribute('aria-live', 'assertive');
+    
+    document.body.appendChild(errorDiv);
+
+    setTimeout(() => {
+      errorDiv.style.animation = 'slideIn 0.3s ease-out reverse';
+      setTimeout(() => {
+        if (errorDiv.parentNode) {
+          errorDiv.parentNode.removeChild(errorDiv);
+        }
+      }, 300);
+    }, duration);
+
+    // Log en consola
+    console.error('[Portfolio Error]', message);
+  }
+
+  static handleAsyncError(error, context = 'Unknown') {
+    const message = `Error en ${context}: ${error.message || 'Error desconocido'}`;
+    this.showError(message);
+    
+    // Enviar a analytics si está disponible
+    if (window.gtag) {
+      try {
+        gtag('event', 'exception', {
+          'description': message,
+          'fatal': false
+        });
+      } catch (e) {
+        console.log('Error al enviar analytics:', e);
+      }
+    }
+  }
+}
+
+/**
+ * Utilidad para debouncing (optimización de performance)
+ */
+function debounce(func, wait = 300) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+/**
+ * Utilidad para throttle (optimización de performance)
+ */
+function throttle(func, limit = 100) {
+  let inThrottle;
+  return function executedFunction(...args) {
+    if (!inThrottle) {
+      func(...args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  };
+}
+
+/**
+ * Utilidad para validación de datos
+ */
+class DataValidator {
+  static isElement(element) {
+    return element && element instanceof HTMLElement;
+  }
+
+  static isValidUrl(url) {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      try {
+        new URL(url, window.location.href);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+  }
+
+  static safeGetElement(selector, context = document) {
+    try {
+      const element = context.querySelector(selector);
+      if (!this.isElement(element)) {
+        console.warn(`Element not found: ${selector}`);
+        return null;
+      }
+      return element;
+    } catch (error) {
+      ErrorHandler.handleAsyncError(error, `safeGetElement(${selector})`);
+      return null;
+    }
+  }
+}
+
+/**
+ * Gestor de accesibilidad (navegación por teclado, ARIA)
+ */
+class AccessibilityManager {
+  constructor() {
+    this.init();
+  }
+
+  init() {
+    this.setupKeyboardNavigation();
+    this.addAriaLabels();
+    this.setupFocusManagement();
+  }
+
+  setupKeyboardNavigation() {
+    // Navegación por teclado en proyectos
+    document.addEventListener('keydown', (e) => {
+      const projectItems = Array.from(document.querySelectorAll('.project-item:not(.hidden)'));
+      const focusedIndex = projectItems.findIndex(item => item === document.activeElement);
+      
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        const direction = e.key === 'ArrowDown' ? 1 : -1;
+        const nextIndex = Math.max(0, Math.min(projectItems.length - 1, focusedIndex + direction));
+        
+        if (projectItems[nextIndex]) {
+          projectItems[nextIndex].focus();
+          projectItems[nextIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      } else if (e.key === 'Enter' || e.key === ' ') {
+        const focusedItem = document.activeElement;
+        if (focusedItem.classList.contains('project-item')) {
+          e.preventDefault();
+          focusedItem.click();
+        }
+      }
+    });
+
+    // Navegación en filtros con Tab
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab') {
+        const focusableElements = document.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        // Asegurar que todos los elementos interactivos sean accesibles
+        focusableElements.forEach(el => {
+          if (!el.hasAttribute('tabindex') && el.tagName === 'LI') {
+            el.setAttribute('tabindex', '0');
+          }
+        });
       }
     });
   }
-  
-  // Aplicar filtro inicial
-  filterManager.filterProjects('all');
+
+  addAriaLabels() {
+    // Agregar ARIA labels a elementos que no los tienen
+    const projectItems = document.querySelectorAll('.project-item');
+    projectItems.forEach((item, index) => {
+      if (!item.hasAttribute('role')) {
+        item.setAttribute('role', 'button');
+        item.setAttribute('tabindex', '0');
+      }
+      if (!item.hasAttribute('aria-label')) {
+        const artist = item.querySelector('.artist')?.textContent || `Proyecto ${index + 1}`;
+        const album = item.querySelector('.album')?.textContent || '';
+        item.setAttribute('aria-label', `${artist} - ${album}`);
+      }
+    });
+
+    // ARIA labels para filtros
+    document.querySelectorAll('.filter-button').forEach((button, index) => {
+      const filter = button.dataset.filter || 'all';
+      button.setAttribute('aria-label', `Filtro: ${filter}`);
+      button.setAttribute('role', 'tab');
+      button.setAttribute('aria-selected', button.classList.contains('active'));
+    });
+
+    // ARIA labels para vista toggle
+    document.querySelectorAll('.view-toggle').forEach(toggle => {
+      if (!toggle.hasAttribute('aria-label')) {
+        toggle.setAttribute('aria-label', toggle.dataset.view === 'list' ? 'Vista de lista' : 'Vista de cuadrícula');
+      }
+    });
+  }
+
+  setupFocusManagement() {
+    // Mantener focus visible cuando se navega con teclado
+    document.addEventListener('mousedown', () => {
+      document.body.classList.add('using-mouse');
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab') {
+        document.body.classList.remove('using-mouse');
+      }
+    });
+
+    // CSS para focus solo cuando se usa teclado
+    const style = document.createElement('style');
+    style.textContent = `
+      body.using-mouse *:focus {
+        outline: none;
+      }
+      body:not(.using-mouse) *:focus-visible {
+        outline: 2px solid var(--color-accent);
+        outline-offset: 2px;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  updateAriaStates() {
+    // Actualizar estados ARIA cuando cambian los filtros
+    document.querySelectorAll('.filter-button').forEach(button => {
+      button.setAttribute('aria-selected', button.classList.contains('active'));
+    });
+  }
+}
+
+/**
+ * Gestor de cleanup de recursos
+ */
+class ResourceCleanup {
+  static listeners = new Map();
+  static observers = new Map();
+  static timers = new Set();
+
+  static addListener(element, event, handler, options = {}) {
+    element.addEventListener(event, handler, options);
+    const key = `${element.constructor.name}-${event}`;
+    if (!this.listeners.has(key)) {
+      this.listeners.set(key, []);
+    }
+    this.listeners.get(key).push({ element, event, handler, options });
+  }
+
+  static addObserver(observer, element) {
+    const key = `observer-${Date.now()}`;
+    this.observers.set(key, { observer, element });
+    return key;
+  }
+
+  static addTimer(timerId) {
+    this.timers.add(timerId);
+    return timerId;
+  }
+
+  static cleanup() {
+    // Limpiar listeners
+    this.listeners.forEach((listeners, key) => {
+      listeners.forEach(({ element, event, handler, options }) => {
+        element.removeEventListener(event, handler, options);
+      });
+    });
+    this.listeners.clear();
+
+    // Limpiar observers
+    this.observers.forEach(({ observer, element }) => {
+      try {
+        observer.disconnect();
+      } catch (e) {
+        console.log('Error al desconectar observer:', e);
+      }
+    });
+    this.observers.clear();
+
+    // Limpiar timers
+    this.timers.forEach(timerId => {
+      clearTimeout(timerId);
+      clearInterval(timerId);
+    });
+    this.timers.clear();
+  }
+}
+
+// ============================================
+// MEJORA 3: View Transitions API
+// ============================================
+class ViewTransitionManager {
+  constructor() {
+    this.supportsViewTransitions = 'startViewTransition' in document;
+    this.init();
+  }
+
+  init() {
+    // View Transitions API se maneja en el AnimationManager
+    // Solo verificamos soporte aquí
+    if (!this.supportsViewTransitions) {
+      console.log('View Transitions API no soportada en este navegador');
+    }
+  }
+
+  navigateWithTransition(url) {
+    if (!this.supportsViewTransitions) {
+      window.location.href = url;
+      return;
+    }
+
+    document.startViewTransition(() => {
+      window.location.href = url;
+    });
+  }
+
+  transitionElement(element, callback) {
+    if (!this.supportsViewTransitions || !element) {
+      callback();
+      return;
+    }
+
+    document.startViewTransition(() => {
+      callback();
+    });
+  }
+}
+
+// ============================================
+// MEJORA 4: Intersection Observer (Lazy Loading)
+// ============================================
+class LazyLoadManager {
+  constructor() {
+    this.imageObserver = null;
+    this.animationObserver = null;
+    this.loadedImages = new Set();
+    this.init();
+  }
+
+  init() {
+    if (!('IntersectionObserver' in window)) {
+      // Fallback: cargar todas las imágenes
+      this.loadAllImages();
+      return;
+    }
+
+    // Observer para imágenes lazy
+    this.imageObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          this.loadImage(entry.target);
+          this.imageObserver.unobserve(entry.target);
+        }
+      });
+    }, {
+      rootMargin: '200px',
+      threshold: 0.01
+    });
+
+    // Observer para animaciones (solo cuando son visibles)
+    this.animationObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        } else {
+          entry.target.classList.remove('visible');
+        }
+      });
+    }, {
+      rootMargin: '50px',
+      threshold: 0.1
+    });
+
+    this.observeElements();
+  }
+
+  observeElements() {
+    // Observar imágenes lazy
+    document.querySelectorAll('[data-lazy-image]').forEach(img => {
+      this.imageObserver.observe(img);
+    });
+
+    // Observar proyectos para animaciones
+    document.querySelectorAll('.project-item').forEach(item => {
+      this.animationObserver.observe(item);
+    });
+  }
+
+  loadImage(element) {
+    const imageUrl = element.dataset.lazyImage;
+    if (!imageUrl || this.loadedImages.has(imageUrl)) return;
+
+    const img = new Image();
+    img.onload = () => {
+      element.style.backgroundImage = `url(${resolveImageUrl(imageUrl)})`;
+      element.classList.remove('lazy-load-placeholder');
+      element.classList.add('loaded');
+      this.loadedImages.add(imageUrl);
+    };
+    img.onerror = () => {
+      console.log(`Error al cargar imagen: ${imageUrl}`);
+      element.classList.remove('lazy-load-placeholder');
+    };
+    img.src = resolveImageUrl(imageUrl);
+  }
+
+  loadAllImages() {
+    document.querySelectorAll('[data-lazy-image]').forEach(img => {
+      this.loadImage(img);
+    });
+  }
+
+  updateObservers() {
+    // Actualizar observers después de filtros
+    this.observeElements();
+  }
+}
+
+// ============================================
+// MEJORA 10: Sistema de Recomendaciones
+// ============================================
+class RecommendationsManager {
+  constructor() {
+    this.storageKey = 'portfolio_interactions';
+    this.interactions = this.loadInteractions();
+    this.maxRecommendations = 6;
+    this.minInteractionsToShow = 2;
+    this.init();
+  }
+
+  loadInteractions() {
+    try {
+      const stored = localStorage.getItem(this.storageKey);
+      return stored ? JSON.parse(stored) : {};
+    } catch (e) {
+      console.log('Error al cargar interacciones:', e);
+      return {};
+    }
+  }
+
+  saveInteractions() {
+    try {
+      localStorage.setItem(this.storageKey, JSON.stringify(this.interactions));
+    } catch (e) {
+      console.log('Error al guardar interacciones:', e);
+    }
+  }
+
+  recordInteraction(projectLink, category, duration = 0) {
+    const key = projectLink;
+    if (!this.interactions[key]) {
+      this.interactions[key] = {
+        count: 0,
+        totalDuration: 0,
+        category: category,
+        lastVisit: Date.now()
+      };
+    }
+
+    this.interactions[key].count++;
+    this.interactions[key].totalDuration += duration;
+    this.interactions[key].lastVisit = Date.now();
+
+    this.saveInteractions();
+  }
+
+  getRecommendations() {
+    const allProjects = Array.from(document.querySelectorAll('.project-item'));
+    const scoredProjects = allProjects.map(item => {
+      const link = item.dataset.link;
+      const interaction = this.interactions[link] || { count: 0, totalDuration: 0 };
+      const category = item.dataset.category;
+      
+      // Calcular score basado en:
+      // - Número de visitas
+      // - Tiempo total de interacción
+      // - Categorías similares visitadas
+      const visitScore = interaction.count * 10;
+      const durationScore = interaction.totalDuration / 1000; // en segundos
+      const categoryScore = this.getCategoryScore(category);
+      const recencyScore = this.getRecencyScore(interaction.lastVisit);
+      
+      const totalScore = visitScore + durationScore + categoryScore + recencyScore;
+
+      return {
+        item: item,
+        score: totalScore,
+        interaction: interaction
+      };
+    }).filter(p => p.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, this.maxRecommendations);
+
+    return scoredProjects;
+  }
+
+  getCategoryScore(category) {
+    // Aumentar score si se visitaron proyectos de la misma categoría
+    const categoryVisits = Object.values(this.interactions)
+      .filter(i => i.category === category)
+      .reduce((sum, i) => sum + i.count, 0);
+    
+    return categoryVisits * 5;
+  }
+
+  getRecencyScore(lastVisit) {
+    if (!lastVisit) return 0;
+    const daysSinceVisit = (Date.now() - lastVisit) / (1000 * 60 * 60 * 24);
+    // Más reciente = mayor score, pero decae con el tiempo
+    return Math.max(0, 20 - daysSinceVisit);
+  }
+
+  displayRecommendations() {
+    const recommendations = this.getRecommendations();
+    const section = document.getElementById('recommendationsSection');
+    const grid = document.getElementById('recommendationsGrid');
+
+    if (!section || !grid) return;
+
+    if (recommendations.length < this.minInteractionsToShow) {
+      section.style.display = 'none';
+      return;
+    }
+
+    section.style.display = 'block';
+    grid.innerHTML = '';
+
+    recommendations.forEach(({ item, interaction }) => {
+      const card = this.createRecommendationCard(item, interaction);
+      grid.appendChild(card);
+    });
+
+    // Animar aparición
+    if (checkGSAPAvailability()) {
+      gsap.from(grid.children, {
+        opacity: 0,
+        y: 20,
+        duration: 0.5,
+        stagger: 0.1,
+        ease: "power2.out"
+      });
+    }
+  }
+
+  createRecommendationCard(item, interaction) {
+    const card = document.createElement('div');
+    card.className = 'recommendation-card';
+    
+    const artist = item.querySelector('.artist')?.textContent || '';
+    const album = item.querySelector('.album')?.textContent || '';
+    const category = item.dataset.category || '';
+    const link = item.dataset.link || '';
+
+    const visitCount = interaction.count || 0;
+    const badge = visitCount > 5 ? '⭐ POPULAR' : '💡 RECOMENDADO';
+
+    card.innerHTML = `
+      <div class="recommendation-badge">${badge}</div>
+      <div style="font-weight: bold; margin-bottom: 0.5rem;">${artist}</div>
+      <div style="opacity: 0.8; font-size: 11px; margin-bottom: 0.5rem;">${album}</div>
+      <div style="opacity: 0.6; font-size: 10px; text-transform: uppercase;">${category}</div>
+    `;
+
+    card.addEventListener('click', () => {
+      this.recordInteraction(link, category, 0);
+      if (window.viewTransitionManager) {
+        window.viewTransitionManager.navigateWithTransition(link);
+      } else {
+        window.location.href = link;
+      }
+    });
+
+    return card;
+  }
+
+  init() {
+    // Interceptar clicks en proyectos para registrar interacciones
+    document.addEventListener('click', (e) => {
+      const projectItem = e.target.closest('.project-item');
+      if (projectItem && projectItem.dataset.link) {
+        const startTime = Date.now();
+        const link = projectItem.dataset.link;
+        const category = projectItem.dataset.category;
+
+        // Registrar interacción después de un delay
+        setTimeout(() => {
+          const duration = Date.now() - startTime;
+          this.recordInteraction(link, category, duration);
+          this.displayRecommendations();
+        }, 1000);
+      }
+    }, true);
+
+    // Mostrar recomendaciones al cargar
+    setTimeout(() => {
+      this.displayRecommendations();
+    }, 2000);
+  }
+}
+
+// ============================================
+// MEJORA 11: Sistema de Partículas
+// ============================================
+class ParticleSystem {
+  constructor() {
+    this.container = document.getElementById('particlesContainer');
+    this.particles = [];
+    this.maxParticles = 50;
+    this.init();
+  }
+
+  init() {
+    if (!this.container) return;
+
+    // Crear partículas en eventos de hover
+    document.querySelectorAll('.project-item').forEach(item => {
+      item.addEventListener('mouseenter', (e) => {
+        this.createParticles(e, 8);
+      });
+
+      item.addEventListener('click', (e) => {
+        this.createParticles(e, 15);
+      });
+    });
+
+    // Partículas en botones de filtro
+    document.querySelectorAll('.filter-button, .view-toggle').forEach(button => {
+      button.addEventListener('click', (e) => {
+        this.createParticles(e, 5);
+      });
+    });
+  }
+
+  createParticles(event, count = 10) {
+    if (!this.container) return;
+
+    const rect = event.target.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+
+    for (let i = 0; i < count; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+
+      // Tamaño aleatorio
+      const size = 2 + Math.random() * 4;
+      particle.style.width = `${size}px`;
+      particle.style.height = `${size}px`;
+
+      // Posición inicial
+      particle.style.left = `${x}px`;
+      particle.style.top = `${y}px`;
+
+      // Dirección aleatoria
+      const angle = (Math.PI * 2 * i) / count + Math.random() * 0.5;
+      const distance = 50 + Math.random() * 50;
+      const tx = Math.cos(angle) * distance;
+      const ty = -Math.sin(angle) * distance; // Negativo para ir hacia arriba
+
+      particle.style.setProperty('--tx', `${tx}px`);
+      particle.style.setProperty('--ty', `${ty}px`);
+
+      // Color aleatorio (amarillo o variaciones)
+      const colors = [
+        'rgb(255, 223, 0)',
+        'rgb(255, 240, 100)',
+        'rgb(200, 255, 200)',
+        'rgb(255, 180, 0)'
+      ];
+      particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+      this.container.appendChild(particle);
+
+      // Remover después de animación
+      setTimeout(() => {
+        if (particle.parentNode) {
+          particle.parentNode.removeChild(particle);
+        }
+      }, 1000);
+    }
+  }
+
+  cleanup() {
+    if (this.container) {
+      this.container.innerHTML = '';
+    }
+  }
+}
+
+// ============================================
+// MEJORA 16: Gestor de Vista (Lista/Cuadrícula)
+// ============================================
+class ViewToggleManager {
+  constructor() {
+    this.currentView = this.loadViewPreference() || 'list';
+    this.projectList = document.getElementById('projectList');
+    this.viewToggles = document.querySelectorAll('.view-toggle');
+    this.init();
+  }
+
+  loadViewPreference() {
+    try {
+      return localStorage.getItem('portfolio_view_preference') || 'list';
+    } catch (e) {
+      return 'list';
+    }
+  }
+
+  saveViewPreference(view) {
+    try {
+      localStorage.setItem('portfolio_view_preference', view);
+    } catch (e) {
+      console.log('Error al guardar preferencia de vista:', e);
+    }
+  }
+
+  init() {
+    // Agregar listeners a los botones de vista
+    this.viewToggles.forEach(toggle => {
+      toggle.addEventListener('click', () => {
+        const view = toggle.dataset.view;
+        this.switchView(view);
+      });
+    });
+
+    // Aplicar vista guardada
+    this.switchView(this.currentView, false);
+
+    // Agregar previews a items si no existen (para vista grid)
+    this.addPreviewsToItems();
+  }
+
+  addPreviewsToItems() {
+    if (!this.projectList) return;
+
+    const items = this.projectList.querySelectorAll('.project-item');
+    items.forEach(item => {
+      // Solo agregar si no existe
+      if (!item.querySelector('.project-preview')) {
+        const imageUrl = item.dataset.image;
+        if (imageUrl) {
+          const preview = document.createElement('div');
+          preview.className = 'project-preview lazy-load-placeholder';
+          preview.dataset.lazyImage = imageUrl;
+          // Insertar al principio, pero después del pseudo-elemento ::before
+          const firstDataElement = item.querySelector('.project-data');
+          if (firstDataElement) {
+            item.insertBefore(preview, firstDataElement);
+          } else {
+            item.insertBefore(preview, item.firstChild);
+          }
+        }
+
+        // Agregar meta info para grid view si no existe
+        if (!item.querySelector('.project-meta')) {
+          const meta = document.createElement('div');
+          meta.className = 'project-meta';
+          const category = item.querySelector('.category')?.textContent || '';
+          const year = item.querySelector('.year')?.textContent || '';
+          meta.innerHTML = `<span>${category}</span><span>${year}</span>`;
+          item.appendChild(meta);
+        }
+      }
+    });
+    
+    // Actualizar lazy loading después de agregar previews
+    if (window.lazyLoadManager) {
+      setTimeout(() => {
+        window.lazyLoadManager.updateObservers();
+      }, 100);
+    }
+  }
+
+  switchView(view, animate = true) {
+    if (!this.projectList) return;
+
+    this.currentView = view;
+    this.saveViewPreference(view);
+
+    // Actualizar botones
+    this.viewToggles.forEach(toggle => {
+      toggle.classList.toggle('active', toggle.dataset.view === view);
+    });
+
+    // Cambiar clase del contenedor
+    if (animate && checkGSAPAvailability()) {
+      gsap.to(this.projectList.children, {
+        opacity: 0,
+        scale: 0.95,
+        duration: 0.2,
+        stagger: 0.02,
+        onComplete: () => {
+          this.applyViewClass(view);
+          gsap.fromTo(this.projectList.children, 
+            { opacity: 0, scale: 0.95 },
+            { 
+              opacity: 1, 
+              scale: 1, 
+              duration: 0.3, 
+              stagger: 0.03,
+              ease: "power2.out"
+            }
+          );
+        }
+      });
+    } else {
+      this.applyViewClass(view);
+    }
+
+    // Actualizar lazy loading
+    if (window.lazyLoadManager) {
+      setTimeout(() => {
+        window.lazyLoadManager.updateObservers();
+      }, 100);
+    }
+  }
+
+  applyViewClass(view) {
+    if (view === 'grid') {
+      this.projectList.classList.add('grid-view');
+      this.projectList.classList.remove('list-view');
+    } else {
+      this.projectList.classList.remove('grid-view');
+      this.projectList.classList.add('list-view');
+    }
+  }
+
+  getCurrentView() {
+    return this.currentView;
+  }
+}
+
+// Función para inicializar la aplicación cuando GSAP esté disponible
+function initializeApp() {
+  try {
+    // Inicializar gestor de accesibilidad PRIMERO
+    const accessibilityManager = new AccessibilityManager();
+    window.accessibilityManager = accessibilityManager;
+
+    // MEJORA 3: Inicializar View Transitions API
+    try {
+      const viewTransitionManager = new ViewTransitionManager();
+      window.viewTransitionManager = viewTransitionManager;
+    } catch (error) {
+      ErrorHandler.handleAsyncError(error, 'ViewTransitionManager');
+    }
+    
+    // MEJORA 4: Inicializar Lazy Loading con Intersection Observer
+    try {
+      const lazyLoadManager = new LazyLoadManager();
+      window.lazyLoadManager = lazyLoadManager;
+    } catch (error) {
+      ErrorHandler.handleAsyncError(error, 'LazyLoadManager');
+    }
+    
+    // MEJORA 10: Inicializar Sistema de Recomendaciones
+    try {
+      const recommendationsManager = new RecommendationsManager();
+      window.recommendationsManager = recommendationsManager;
+    } catch (error) {
+      ErrorHandler.handleAsyncError(error, 'RecommendationsManager');
+    }
+    
+    // MEJORA 11: Inicializar Sistema de Partículas
+    try {
+      const particleSystem = new ParticleSystem();
+      window.particleSystem = particleSystem;
+    } catch (error) {
+      ErrorHandler.handleAsyncError(error, 'ParticleSystem');
+    }
+    
+    // MEJORA 16: Inicializar Gestor de Vista (Lista/Cuadrícula)
+    try {
+      const viewToggleManager = new ViewToggleManager();
+      window.viewToggleManager = viewToggleManager;
+    } catch (error) {
+      ErrorHandler.handleAsyncError(error, 'ViewToggleManager');
+    }
+    
+    // Inicializar el gestor de filtros
+    try {
+      const filterManager = new FilterManager();
+      window.filterManager = filterManager;
+      
+      // Actualizar estados ARIA cuando cambian filtros
+      const originalFilterProjects = filterManager.filterProjects.bind(filterManager);
+      filterManager.filterProjects = function(filter) {
+        originalFilterProjects(filter);
+        if (window.accessibilityManager) {
+          window.accessibilityManager.updateAriaStates();
+        }
+      };
+    } catch (error) {
+      ErrorHandler.handleAsyncError(error, 'FilterManager');
+    }
+    
+    // Inicializar el gestor de animaciones
+    try {
+      const animationManager = new AnimationManager();
+      animationManager.initializeAnimations();
+      window.animationManager = animationManager;
+    } catch (error) {
+      ErrorHandler.handleAsyncError(error, 'AnimationManager');
+    }
+    
+    // Inicializar el display de tiempo
+    try {
+      const timeDisplay = new TimeDisplay("current-time");
+      timeDisplay.start();
+    } catch (error) {
+      ErrorHandler.handleAsyncError(error, 'TimeDisplay');
+    }
+
+    // Configurar control de audio con validación
+    const audioToggle = DataValidator.safeGetElement("#audioToggle");
+    if (audioToggle && window.animationManager) {
+      audioToggle.addEventListener("click", () => {
+        try {
+          const isEnabled = window.animationManager.toggleAudio();
+          if (isEnabled) {
+            audioToggle.textContent = "🔊";
+            audioToggle.classList.remove("muted");
+            audioToggle.setAttribute('aria-label', 'Silenciar audio');
+          } else {
+            audioToggle.textContent = "🔇";
+            audioToggle.classList.add("muted");
+            audioToggle.setAttribute('aria-label', 'Activar audio');
+          }
+        } catch (error) {
+          ErrorHandler.handleAsyncError(error, 'toggleAudio');
+        }
+      });
+    }
+    
+    // Aplicar filtro inicial con debouncing
+    if (window.filterManager) {
+      const debouncedFilter = debounce(() => {
+        window.filterManager.filterProjects('all');
+      }, 100);
+      debouncedFilter();
+    }
+    
+    // Actualizar observadores después de inicialización
+    setTimeout(() => {
+      try {
+        if (window.lazyLoadManager) {
+          window.lazyLoadManager.updateObservers();
+        }
+      } catch (error) {
+        ErrorHandler.handleAsyncError(error, 'updateObservers');
+      }
+    }, 500);
+
+    // Cleanup al cerrar página
+    window.addEventListener('beforeunload', () => {
+      try {
+        ResourceCleanup.cleanup();
+      } catch (error) {
+        console.log('Error en cleanup:', error);
+      }
+    });
+
+    // Manejo global de errores no capturados
+    window.addEventListener('error', (e) => {
+      ErrorHandler.handleAsyncError(e.error || new Error(e.message), 'Global Error Handler');
+    });
+
+    window.addEventListener('unhandledrejection', (e) => {
+      ErrorHandler.handleAsyncError(e.reason, 'Unhandled Promise Rejection');
+    });
+
+  } catch (error) {
+    ErrorHandler.handleAsyncError(error, 'initializeApp');
+    // Intentar inicialización mínima aunque falle algo
+    console.log('Intentando inicialización mínima...');
+  }
 }
 
 // Función para mostrar mensaje de error si GSAP no se carga
