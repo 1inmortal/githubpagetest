@@ -1314,7 +1314,7 @@ def main():
     global CAPTURE_SIMPLE_MODE, CAPTURE_FALLBACK_AFTER_FRAMES
     
     ap = argparse.ArgumentParser(description="Sistema de vigilancia y análisis de tráfico con medición real v2.0")
-    ap.add_argument("--video", default=r"C:\Users\INMORTAL\OneDrive\Documentos\python\src\Proyectos\captura de objetos\DJI-2.mp4", help="Ruta al video (por defecto usa C:\\Users\\INMORTAL\\OneDrive\\Documentos\\python\\src\\Proyectos\\captura de objetos\\DJI-2.mp4).")
+    ap.add_argument("--video", default=r"C:\Users\INMORTAL\Desktop\FFMEG\DJI4_h265_optimizado.mp4", help="Ruta al video (por defecto usa C:\\Users\\INMORTAL\\Desktop\\FFMEG\\DJI4_h265_optimizado.mp4).")
     ap.add_argument("--out", default=None, help="Nombre base para salidas.")
     ap.add_argument("--weights", default="yolov8n.pt", help="Pesos YOLOv8.")
     ap.add_argument("--device", default="cpu", help="Dispositivo: 'cpu' o '0' para GPU.")
@@ -1364,9 +1364,17 @@ def main():
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     cap.release()
 
-    base = args.out or os.path.splitext(os.path.basename(args.video))[0]
-    writer = cv2.VideoWriter(f"{base}_vigilancia.mp4", cv2.VideoWriter_fourcc(*"mp4v"), fps, (W, H))
-    fcsv = open(f"{base}_datos_completos.csv", "w", newline=""); csvw = csv.writer(fcsv)
+    # Obtener directorio del video original y crear nombre base
+    video_dir = os.path.dirname(args.video)
+    video_name = os.path.splitext(os.path.basename(args.video))[0]
+    base = args.out or f"{video_name}_analisis"
+    
+    # Crear rutas de salida en el mismo directorio que el video original
+    output_video = os.path.join(video_dir, f"{base}_vigilancia.mp4")
+    output_csv = os.path.join(video_dir, f"{base}_datos_completos.csv")
+    
+    writer = cv2.VideoWriter(output_video, cv2.VideoWriter_fourcc(*"mp4v"), fps, (W, H))
+    fcsv = open(output_csv, "w", newline=""); csvw = csv.writer(fcsv)
     csvw.writerow(["frame", "time_s", "track_id", "class", "conf", "x1","y1","x2","y2", "speed_kmh", "plate", "distance_m", "photo_captured"])
 
     # Actualizar constantes con argumentos de línea de comandos
@@ -1552,8 +1560,8 @@ def main():
     report_path = generate_capture_report()
     
     print("\n" + "="*60 + "\n🎉 PROCESO TERMINADO\n" + "="*60)
-    print(f"✅ Video con HUD: {base}_vigilancia.mp4")
-    print(f"✅ Datos en CSV: {base}_datos_completos.csv")
+    print(f"✅ Video con HUD: {output_video}")
+    print(f"✅ Datos en CSV: {output_csv}")
     print(f"📸 Fotos guardadas en: {CAPTURE_FOLDER}/")
     if report_path:
         print(f"📊 Reporte generado: {report_path}")
