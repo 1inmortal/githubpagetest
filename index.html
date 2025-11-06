@@ -66,7 +66,7 @@
     <!-- Preload de fuentes críticas -->
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..800&family=Orbitron:wght@500;700&display=swap" as="style">
     
-    <!-- Fuentes profesionales: Inter (variable) y Orbitron -->
+    <!-- Fuentes profesionales: Inter (variable) y Orbitron con font-display optimizado -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..800&family=Orbitron:wght@500;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     <noscript>
         <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..800&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
@@ -76,6 +76,11 @@
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" as="script" crossorigin="anonymous">
     <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" as="script" crossorigin="anonymous">
     <link rel="preload" href="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1/bundled/lenis.min.js" as="script">
+    
+    <!-- Prefetch de recursos futuros para mejor rendimiento -->
+    <link rel="prefetch" href="https://i.pinimg.com/1200x/a5/ca/51/a5ca519d1ce2b61fdfa779c4a428e33f.jpg" as="image">
+    <link rel="prefetch" href="https://i.pinimg.com/1200x/ff/3b/2b/ff3b2b07e81f0636eeebee255700ac42.jpg" as="image">
+    <link rel="prefetch" href="https://i.pinimg.com/1200x/a5/1d/11/a51d11ee16d57efb9d21b7e4d372abdc.jpg" as="image">
     <script>
         (function() {
             try {
@@ -136,6 +141,7 @@
                 scripts.forEach((scriptData, index) => {
                     const script = document.createElement('script');
                     script.src = scriptData.src;
+                    script.defer = true; // Optimización: cargar scripts de forma asíncrona
                     if (scriptData.crossorigin) script.crossOrigin = scriptData.crossorigin;
                     
                     script.onload = () => {
@@ -149,6 +155,7 @@
                         // Intentar CDN alternativo
                         const fallbackScript = document.createElement('script');
                         fallbackScript.src = scriptData.src.replace('cdnjs.cloudflare.com', 'unpkg.com');
+                        fallbackScript.defer = true; // Optimización: cargar scripts de forma asíncrona
                         fallbackScript.crossOrigin = scriptData.crossorigin;
                         fallbackScript.onload = () => {
                             loadedCount++;
@@ -178,6 +185,17 @@
     
     <!-- Lenis para scroll suave -->
     <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1/bundled/lenis.min.js" defer></script>
+    
+    <!-- Service Worker para caché y rendimiento -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/src/sw.js')
+                    .then(reg => console.log('SW registrado:', reg))
+                    .catch(err => console.log('SW error:', err));
+            });
+        }
+    </script>
 
     <!-- Estilos del menú al estilo proyectos.html -->
     <style>
@@ -273,10 +291,22 @@
         }
 
         @media (max-width: 768px) {
-          .navigation-menu { display: none; }
+          .navigation-menu { 
+            display: none; 
+          }
           .filter-button {
             font-size: 10px;
             padding: 6px 10px;
+          }
+          
+          /* Navbar con padding responsivo */
+          .site-header {
+            padding: 0.75rem 1rem;
+          }
+          
+          .header-container {
+            padding: 0 1rem;
+            flex-wrap: wrap;
           }
         }
 
@@ -333,7 +363,6 @@
                     <div class="submenu" role="menu" aria-label="Submenú Inicio">
                         <div class="submenu-content">
                             <a href="index.html" class="submenu-link" role="menuitem">
-                                <span class="submenu-icon">🏠</span>
                                 <span class="submenu-text">Inicio Principal</span>
                             </a>
                             
@@ -346,19 +375,15 @@
                     <div class="submenu" role="menu" aria-label="Submenú Acerca de">
                         <div class="submenu-content">
                             <a href="#mission" class="submenu-link" role="menuitem">
-                                <span class="submenu-icon">🎯</span>
                                 <span class="submenu-text">Misión</span>
                             </a>
                             <a href="#vision" class="submenu-link" role="menuitem">
-                                <span class="submenu-icon">👁️</span>
                                 <span class="submenu-text">Visión</span>
                             </a>
                             <a href="public/proyectos.html" class="submenu-link" role="menuitem">
-                                <span class="submenu-icon">🔍</span>
                                 <span class="submenu-text">Evidencias</span>
                             </a>
                             <a href="src/src.html" class="submenu-link" role="menuitem">
-                                <span class="submenu-icon">📜</span>
                                 <span class="submenu-text">Certificaciones</span>
                             </a>
                         </div>
@@ -370,15 +395,12 @@
                     <div class="submenu" role="menu" aria-label="Submenú Servicios">
                         <div class="submenu-content">
                             <a href="pruebas/tets-tarjeta.html" class="submenu-link" role="menuitem">
-                                <span class="submenu-icon">🎵</span>
                                 <span class="submenu-text">Test Tarjetas</span>
                             </a>
                             <a href="pruebas/tarjetas.html" class="submenu-link" role="menuitem">
-                                <span class="submenu-icon">🎴</span>
                                 <span class="submenu-text">Tarjetas</span>
                             </a>
                             <a href="src/components/evidencias/presentacion/presentacion.html" class="submenu-link" role="menuitem">
-                                <span class="submenu-icon">🎭</span>
                                 <span class="submenu-text">Presentación</span>
                             </a>
                         </div>
@@ -390,15 +412,12 @@
                     <div class="submenu" role="menu" aria-label="Submenú Proyectos">
                         <div class="submenu-content">
                             <a href="public/proyectos.html" class="submenu-link" role="menuitem">
-                                <span class="submenu-icon">📁</span>
                                 <span class="submenu-text">Portfolio General</span>
                             </a>
                             <a href="src/components/evidencias/Proyecto x/main.html" class="submenu-link" role="menuitem">
-                                <span class="submenu-icon">🚀</span>
                                 <span class="submenu-text">Proyecto X</span>
                             </a>                       
                             <a href="src/components/evidencias/laboratorio/index.html" class="submenu-link" role="menuitem">
-                                <span class="submenu-icon">🧪</span>
                                 <span class="submenu-text">Laboratorio</span>
                             </a>
                         </div>
@@ -410,15 +429,12 @@
                     <div class="submenu" role="menu" aria-label="Submenú Contacto">
                         <div class="submenu-content">
                             <a href="terms.html" class="submenu-link" role="menuitem">
-                                <span class="submenu-icon">📋</span>
                                 <span class="submenu-text">Términos</span>
                             </a>
                             <a href="privacy-policy.html" class="submenu-link" role="menuitem">
-                                <span class="submenu-icon">🔒</span>
                                 <span class="submenu-text">Privacidad</span>
                             </a>
                             <a href="sitemap.xml" class="submenu-link" role="menuitem">
-                                <span class="submenu-icon">🗺️</span>
                                 <span class="submenu-text">Sitemap</span>
                             </a>
                         </div>
@@ -457,7 +473,6 @@
                 </a>
                 <div class="mobile-submenu">
                     <a href="index.html" class="mobile-submenu-link">
-                        <span class="mobile-submenu-icon">🏠</span>
                         Inicio Principal
                     </a>
                     <!-- <a href="wordpress.html" class="mobile-submenu-link">
@@ -476,7 +491,6 @@
                 <div class="mobile-submenu">
                     
                     <a href="public/proyectos.html" class="mobile-submenu-link">
-                        <span class="mobile-submenu-icon">🔍</span>
                         Evidencias
                     </a>
                 </div>
@@ -491,15 +505,12 @@
                 </a>
                 <div class="mobile-submenu">
                     <a href="pruebas/tets-tarjeta.html" class="mobile-submenu-link">
-                        <span class="mobile-submenu-icon">🎵</span>
                         Test Tarjetas
                     </a>
                     <a href="pruebas/tarjetas.html" class="mobile-submenu-link">
-                        <span class="mobile-submenu-icon">🎴</span>
                         Tarjetas
                     </a>
                     <a href="src/components/evidencias/presentacion/presentacion.html" class="mobile-submenu-link">
-                        <span class="mobile-submenu-icon">🎭</span>
                         Presentación
                     </a>
                 </div>
@@ -512,15 +523,12 @@
                 </a>
                 <div class="mobile-submenu">
                     <a href="terms.html" class="mobile-submenu-link">
-                        <span class="mobile-submenu-icon">📋</span>
                         Términos
                     </a>
                     <a href="privacy-policy.html" class="mobile-submenu-link">
-                        <span class="mobile-submenu-icon">🔒</span>
                         Privacidad
                     </a>
                     <a href="sitemap.xml" class="mobile-submenu-link">
-                        <span class="mobile-submenu-icon">🗺️</span>
                         Sitemap
                     </a>
                 </div>
@@ -604,7 +612,7 @@
 
 
     <!-- Content Sections -->
-    <section id="hero" class="section section-1">
+    <section id="hero" class="section section-1" data-bg-image="https://i.pinimg.com/1200x/a5/ca/51/a5ca519d1ce2b61fdfa779c4a428e33f.jpg">
         <div class="section-content">
             <!-- Hero Section -->
             <div class="hero-container">
@@ -649,7 +657,6 @@
         <div class="scroll-progress" id="scrollProgress">
             <div class="progress-fill"></div>
         </div>
-        <div class="scroll-percentage" id="scrollPercentage">0%</div>
     </div>
     
     <!-- Section Indicators Mejorados con Tooltips -->
@@ -686,7 +693,7 @@
     </button>
 
 
-    <section id="about" class="section section-2 grid-pattern geometric-bg reveal">
+    <section id="about" class="section section-2 grid-pattern geometric-bg reveal" data-bg-image="https://i.pinimg.com/1200x/ff/3b/2b/ff3b2b07e81f0636eeebee255700ac42.jpg">
         <div class="section-content">
             <!-- About Section -->
             <div class="about-container reveal-up">
@@ -698,17 +705,14 @@
                 <!-- Resumen compacto -->
                 <div class="about-summary-compact">
                     <div class="summary-card">
-                        <div class="summary-icon">🚀</div>
                         <h3>Desarrollo Frontend</h3>
                         <p>Interfaces web inmersivas y experiencias impulsadas por IA</p>
                     </div>
                     <div class="summary-card">
-                        <div class="summary-icon">⚡</div>
                         <h3>Alto Rendimiento</h3>
                         <p>Productos digitales accesibles, seguros y escalables</p>
                     </div>
                     <div class="summary-card">
-                        <div class="summary-icon">🎯</div>
                         <h3>Orientados a Resultados</h3>
                         <p>Calidad, transparencia y colaboración estratégica</p>
                     </div>
@@ -745,26 +749,21 @@
                         <h3 class="specialties-title">Especialidades</h3>
                         <div class="specialties-grid-compact">
                             <div class="specialty-compact">
-                                <span class="specialty-icon">🌐</span>
                                 <span class="specialty-text">Web 3.0 & Blockchain</span>
                             </div>
                             <div class="specialty-compact">
-                                <span class="specialty-icon">🤖</span>
                                 <span class="specialty-text">Inteligencia Artificial</span>
                             </div>
                             <div class="specialty-compact">
-                                <span class="specialty-icon">🎮</span>
                                 <span class="specialty-text">Experiencias 3D</span>
                             </div>
                             <div class="specialty-compact">
-                                <span class="specialty-icon">⚡</span>
                                 <span class="specialty-text">Performance & Optimización</span>
                             </div>
                         </div>
                     </div>
                     
                     <div class="about-quote">
-                        <div class="quote-icon">⚡</div>
                         <p class="quote-text">"Cada línea de código es una oportunidad para innovar. La tecnología es mi herramienta, la creatividad mi motor."</p>
                         <span class="quote-author">- INMORTAL_OS</span>
                     </div>
@@ -796,17 +795,14 @@
                 </div>
                 <div class="mission-content">
                     <div class="mission-card">
-                        <div class="mission-icon">🎯</div>
                         <h3>Innovación Constante</h3>
                         <p>Desarrollar soluciones tecnológicas de vanguardia que transformen ideas en experiencias digitales excepcionales, utilizando las últimas tecnologías y metodologías de desarrollo.</p>
                     </div>
                     <div class="mission-card">
-                        <div class="mission-icon">🚀</div>
                         <h3>Excelencia Técnica</h3>
                         <p>Mantener los más altos estándares de calidad en cada proyecto, garantizando código limpio, arquitecturas escalables y rendimiento optimizado para nuestros clientes.</p>
                     </div>
                     <div class="mission-card">
-                        <div class="mission-icon">🤝</div>
                         <h3>Colaboración Estratégica</h3>
                         <p>Trabajar de cerca con nuestros clientes para entender sus necesidades y objetivos, proporcionando soluciones personalizadas que impulsen su crecimiento digital.</p>
                     </div>
@@ -825,7 +821,6 @@
                 </div>
                 <div class="vision-content">
                     <div class="vision-main">
-                        <div class="vision-icon">👁️</div>
                         <h3>Líderes en Innovación Digital</h3>
                         <p>Ser reconocidos como la empresa líder en desarrollo de soluciones Web 3.0, Inteligencia Artificial y experiencias inmersivas, estableciendo nuevos estándares en la industria tecnológica.</p>
                     </div>
@@ -852,7 +847,7 @@
     </section>
 
     <!-- Certificaciones Section -->
-    <section id="certifications" class="section section-4">
+    <section id="certifications" class="section section-4" data-bg-image="https://i.pinimg.com/1200x/22/34/8c/22348cd14df60aae68d804dfbad44325.jpg">
         <div class="section-content">
             <div class="certifications-container reveal-up">
                 <div class="section-header">
@@ -998,7 +993,7 @@
     </section>
 
     <!-- Sección de Contacto Futurista -->
-    <section id="contact" class="section section-7">
+    <section id="contact" class="section section-7" data-bg-image="https://i.pinimg.com/1200x/00/c6/cb/00c6cbd9e4f01ed7efbd31a47e2527a6.jpg">
         <div class="section-content">
             <div class="contact-hologram reveal-up">
                 <div class="section-header">
@@ -2794,6 +2789,9 @@
             position: relative;
             background-size: cover;
             background-position: center;
+            /* Optimización de rendimiento: content-visibility */
+            content-visibility: auto;
+            contain-intrinsic-size: auto 200vh;
             background-attachment: fixed;
             background-repeat: no-repeat;
             margin: 0;
@@ -2810,20 +2808,17 @@
             overflow: visible;
         }
         
-        .section-1 {
-            background-image: url("https://i.pinimg.com/1200x/a5/ca/51/a5ca519d1ce2b61fdfa779c4a428e33f.jpg");
-        }
-        
-        .section-2 {
-            background-image: url("https://i.pinimg.com/1200x/ff/3b/2b/ff3b2b07e81f0636eeebee255700ac42.jpg");
-        }
-        
-        .section-3 {
-            background-image: url("https://i.pinimg.com/1200x/a5/1d/11/a51d11ee16d57efb9d21b7e4d372abdc.jpg");
-        }
-        
+        /* Lazy loading de imágenes de fondo - se cargarán con Intersection Observer */
+        .section-1,
+        .section-2,
+        .section-3,
         .section-4 {
-            background-image: url("https://i.pinimg.com/1200x/22/34/8c/22348cd14df60aae68d804dfbad44325.jpg");
+            background-image: none; /* Se cargará cuando esté visible */
+            background-color: rgba(5, 5, 10, 0.95); /* Color de fondo mientras carga */
+        }
+        
+        .section.bg-loaded {
+            transition: background-image 0.5s ease;
         }
         
         .section-5 {
@@ -2836,8 +2831,10 @@
             background-image: none;
         }
         
+        /* section-7 también usa lazy loading */
         .section-7 {
-            background-image: url("https://i.pinimg.com/1200x/00/c6/cb/00c6cbd9e4f01ed7efbd31a47e2527a6.jpg");
+            background-image: none;
+            background-color: rgba(5, 5, 10, 0.95);
         }
         
         .section-content {
@@ -2848,6 +2845,8 @@
             padding: 2rem;
             /* Prevenir superposición */
             overflow: visible;
+            /* Optimización: contain para mejor rendimiento */
+            contain: layout style paint;
         }
         
         /* Geometric Background */
@@ -2859,6 +2858,9 @@
             height: var(--viewport-height);
             z-index: 1;
             pointer-events: none;
+            will-change: transform;
+            contain: layout style paint;
+            backface-visibility: hidden;
         }
         
         .geometric-svg {
@@ -3453,6 +3455,13 @@
                 min-height: 48px;
             }
             
+            /* Formulario de contacto - Evitar zoom en iOS */
+            .contact-form input,
+            .contact-form textarea {
+                font-size: 16px;
+                padding: 1rem;
+            }
+            
             .form-group textarea {
                 min-height: 120px;
             }
@@ -3568,8 +3577,9 @@
             }
             
             .header-container {
-                padding: 0 1rem;
+                padding: 0.75rem 1rem;
                 gap: 1rem;
+                flex-wrap: wrap;
             }
             
             /* Logo móvil */
@@ -5429,6 +5439,8 @@
             pointer-events: none;
             animation: particleFloat 8s infinite ease-in-out;
             box-shadow: 0 0 6px rgba(0, 212, 255, 0.8);
+            /* Optimización: will-change para mejor rendimiento */
+            will-change: transform, opacity;
         }
         
         @keyframes particleFloat {
@@ -5439,6 +5451,23 @@
             50% {
                 transform: translate(20px, -20px) scale(1.2);
                 opacity: 0.8;
+            }
+        }
+        
+        /* Partículas más lentas en móvil */
+        @media (max-width: 768px) {
+            .hero-particle {
+                animation-duration: 16s !important; /* Duplicar la duración = más lento */
+                /* Optimización: reducir will-change en móvil */
+                will-change: auto;
+            }
+            
+            /* Optimización: reducir backdrop-filter en móvil para mejor rendimiento */
+            .glass-effect,
+            .site-header,
+            .mobile-menu-content {
+                backdrop-filter: blur(10px) !important;
+                -webkit-backdrop-filter: blur(10px) !important;
             }
         }
         
@@ -5541,6 +5570,22 @@
             overflow: visible;
             word-wrap: break-word;
             hyphens: auto;
+        }
+        
+        /* Hero Section - Texto responsivo para móvil */
+        @media (max-width: 768px) {
+            #futuristic-title {
+                font-size: 2rem;
+                line-height: 1.2;
+            }
+            
+            .hero-description {
+                font-size: 1.2rem;
+            }
+            
+            .glitch {
+                font-size: 2.5rem;
+            }
         }
         
         .typewriter-text {
@@ -5873,31 +5918,7 @@
             margin-bottom: 1.5rem;
             display: block;
             filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.6));
-            animation: iconPulse 3s ease-in-out infinite;
-            transform-style: preserve-3d;
-        }
-        
-        .summary-card:nth-child(1) .summary-icon {
-            animation-delay: 0s;
-        }
-        
-        .summary-card:nth-child(2) .summary-icon {
-            animation-delay: 0.5s;
-        }
-        
-        .summary-card:nth-child(3) .summary-icon {
-            animation-delay: 1s;
-        }
-        
-        @keyframes iconPulse {
-            0%, 100% { 
-                transform: scale(1) rotateY(0deg);
-                filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.6));
-            }
-            50% { 
-                transform: scale(1.1) rotateY(10deg);
-                filter: drop-shadow(0 0 30px rgba(0, 255, 136, 0.8));
-            }
+            /* Animación eliminada - los emojis no se animarán */
         }
         
         .summary-card h3 {
@@ -7084,17 +7105,14 @@
         .section-title {
             font-size: clamp(2.2rem, 6vw, 3.2rem);
             margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
-            color: #ffffff;
-            text-shadow: 
-                0 2px 4px rgba(0, 0, 0, 0.8),
-                0 0 20px rgba(0, 0, 0, 0.4);
             font-weight: 800;
             line-height: 1.1;
             letter-spacing: -0.02em;
-            background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.9) 100%);
+            background: linear-gradient(135deg, #0080ff 0%, #00ffff 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            text-shadow: 0 0 30px rgba(0, 128, 255, 0.5);
             filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
         }
         
@@ -7624,18 +7642,7 @@
             text-align: center;
             margin-bottom: 1.5rem;
             filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.8));
-            animation: quoteIconPulse 3s ease-in-out infinite;
-        }
-        
-        @keyframes quoteIconPulse {
-            0%, 100% { 
-                transform: scale(1) rotate(0deg);
-                filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.8));
-            }
-            50% { 
-                transform: scale(1.2) rotate(180deg);
-                filter: drop-shadow(0 0 30px rgba(0, 255, 136, 1));
-            }
+            /* Animación eliminada - los emojis no se animarán */
         }
         
         .quote-text {
@@ -7913,8 +7920,11 @@
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.3);
             transform: scale(0);
-            animation: ripple-animation 0.6s linear;
+            animation: ripple-animation 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             pointer-events: none;
+            will-change: transform, opacity;
+            transform-origin: center center;
+            contain: layout style paint;
         }
         
         @keyframes ripple-animation {
@@ -7924,16 +7934,19 @@
             }
         }
         
-        /* Animaciones de scroll */
+        /* Animaciones de scroll - Optimizadas con GPU */
         .animate-on-scroll {
             opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(30px) translateZ(0);
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform, opacity;
+            contain: layout style paint;
         }
         
         .animate-on-scroll.animate-in {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(0) translateZ(0);
+            will-change: auto;
         }
         
         /* Delay progresivo para elementos */
@@ -7985,6 +7998,9 @@
         .parallax-element {
             transform: translateZ(0);
             transition: transform 0.1s ease-out;
+            will-change: transform;
+            contain: layout style paint;
+            backface-visibility: hidden;
         }
         
         /* ===== 21. TIPOGRAFÍA Y ESPACIADO MEJORADO ===== */
@@ -7996,10 +8012,11 @@
             letter-spacing: -0.02em;
             line-height: 1.1;
             margin-bottom: 1.5rem;
-            background: linear-gradient(135deg, var(--text-color) 0%, rgba(255, 255, 255, 0.8) 100%);
+            background: linear-gradient(135deg, #0080ff 0%, #00ffff 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            text-shadow: 0 0 30px rgba(0, 128, 255, 0.5);
         }
         
         .section-subtitle {
@@ -8402,7 +8419,7 @@
             top: 50%;
             transform: translateY(-50%);
             z-index: 9997;
-            display: flex;
+            display: none; /* Oculto inicialmente - solo se muestra después de hacer clic en INICIAR */
             flex-direction: column;
             gap: 1.5rem;
             padding: 1rem 0.5rem;
@@ -8412,12 +8429,22 @@
             border-radius: 30px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: opacity 0.5s ease, display 0.5s ease;
+        }
+        
+        .section-indicators.show {
+            display: flex;
+            opacity: 1;
         }
         
         /* Ocultar indicadores de sección en móvil */
         @media (max-width: 768px) {
-            .section-indicators {
-                display: none;
+            .section-indicators,
+            .section-indicators.show {
+                display: none !important;
+                opacity: 0 !important;
+                visibility: hidden !important;
             }
             
             .scroll-percentage {
@@ -9335,21 +9362,25 @@
         /* Reveal Animations */
         .reveal-up {
             opacity: 0;
-            transform: translateY(30px);
-            -webkit-transform: translateY(30px);
-            -moz-transform: translateY(30px);
-            -ms-transform: translateY(30px);
-            transition: all 0.8s ease;
-            -webkit-transition: all 0.8s ease;
-            -moz-transition: all 0.8s ease;
+            transform: translateY(30px) translateZ(0);
+            -webkit-transform: translateY(30px) translateZ(0);
+            -moz-transform: translateY(30px) translateZ(0);
+            -ms-transform: translateY(30px) translateZ(0);
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            -webkit-transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            -moz-transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform, opacity;
+            contain: layout style paint;
+            backface-visibility: hidden;
         }
         
         .reveal-up.revealed {
             opacity: 1;
-            transform: translateY(0);
-            -webkit-transform: translateY(0);
-            -moz-transform: translateY(0);
-            -ms-transform: translateY(0);
+            transform: translateY(0) translateZ(0);
+            -webkit-transform: translateY(0) translateZ(0);
+            -moz-transform: translateY(0) translateZ(0);
+            -ms-transform: translateY(0) translateZ(0);
+            will-change: auto;
         }
         
         /* Responsive Design for Content */
@@ -9921,8 +9952,11 @@
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.3);
             transform: scale(0);
-            animation: ripple-animation 0.6s linear;
+            animation: ripple-animation 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             pointer-events: none;
+            will-change: transform, opacity;
+            transform-origin: center center;
+            contain: layout style paint;
         }
         
         @keyframes ripple-animation {
@@ -10352,30 +10386,32 @@
             visibility: visible !important;
         }
         
-        /* Punto central del cursor */
+        /* Punto central del cursor - Optimizado con GPU */
         .cursor-dot {
             position: absolute;
             width: 8px;
             height: 8px;
             background: rgba(255, 255, 255, 0.9);
             border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: all 0.05s linear;
+            transform: translate(-50%, -50%) translateZ(0);
+            transition: transform 0.05s linear, opacity 0.05s linear;
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             will-change: transform;
+            contain: layout style paint;
+            backface-visibility: hidden;
         }
         
-        /* Anillo exterior con efecto glass */
+        /* Anillo exterior con efecto glass - Optimizado con GPU */
         .cursor-ring {
             position: absolute;
             width: 40px;
             height: 40px;
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: all 0.15s linear;
+            transform: translate(-50%, -50%) translateZ(0);
+            transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s linear;
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             background: rgba(255, 255, 255, 0.05);
@@ -10383,6 +10419,8 @@
                 0 0 30px rgba(255, 255, 255, 0.2),
                 inset 0 0 20px rgba(255, 255, 255, 0.1);
             will-change: transform;
+            contain: layout style paint;
+            backface-visibility: hidden;
         }
         
         /* Trazo del cursor */
@@ -10392,8 +10430,8 @@
             height: 60px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: all 0.2s linear;
+            transform: translate(-50%, -50%) translateZ(0);
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s linear;
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             background: rgba(255, 255, 255, 0.02);
@@ -10401,6 +10439,8 @@
                 0 0 40px rgba(255, 255, 255, 0.1),
                 inset 0 0 30px rgba(255, 255, 255, 0.05);
             will-change: transform;
+            contain: layout style paint;
+            backface-visibility: hidden;
         }
         
         /* Estados del cursor */
@@ -12416,11 +12456,40 @@
             z-index: 10;
         }
         
+        /* Espaciado consistente para secciones */
+        section {
+            padding: 4rem 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            section {
+                padding: 3rem 1.5rem;
+            }
+            
+            .projects-showcase {
+                padding: 3rem 1.5rem;
+            }
+        }
+        
         .projects-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 2rem;
             margin-top: 3rem;
+        }
+        
+        /* Grid responsive progresivo */
+        @media (max-width: 480px) {
+            .projects-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+        }
+        
+        @media (min-width: 481px) and (max-width: 768px) {
+            .projects-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
         }
         
         .project-card {
@@ -12514,9 +12583,9 @@
         }
         
         .project-description {
-            color: var(--text-color);
-            opacity: 0.8;
-            line-height: 1.5;
+            color: #b0b0b0;
+            opacity: 0.9;
+            line-height: 1.6;
             margin-bottom: 1.2rem;
             font-size: 0.9rem;
         }
@@ -12536,6 +12605,22 @@
             font-size: 0.8rem;
             font-weight: 500;
             transition: all 0.3s ease;
+        }
+        
+        /* Skills Pills - Texto cortado en móvil */
+        @media (max-width: 480px) {
+            .tech-tag,
+            .skill-pill {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.8rem;
+                white-space: nowrap;
+            }
+            
+            .skills-container,
+            .project-tech {
+                justify-content: flex-start;
+                gap: 0.5rem;
+            }
         }
         
         .project-card:hover .tech-tag {
@@ -17543,6 +17628,146 @@
             max-width: 800px;
             margin: 0 auto;
         }
+        
+        /* ===== MEDIA QUERIES FALTANTES CRÍTICAS ===== */
+        
+        /* MÓVILES PEQUEÑOS (320px - 480px) */
+        @media (max-width: 480px) {
+            html {
+                font-size: 14px;
+            }
+            
+            .container {
+                padding: 0 1rem;
+            }
+            
+            .hero {
+                min-height: 70vh;
+                padding: 2rem 1rem;
+            }
+            
+            .btn {
+                padding: 0.7rem 1.5rem;
+                font-size: 0.9rem;
+            }
+            
+            .timeline-item {
+                padding-left: 2rem;
+            }
+            
+            .timeline-item::before {
+                left: 0;
+            }
+        }
+        
+        /* TABLETS (481px - 768px) */
+        @media (min-width: 481px) and (max-width: 768px) {
+            .hero h1,
+            #futuristic-title {
+                font-size: 2.5rem;
+            }
+            
+            .projects-grid {
+                gap: 2rem;
+            }
+        }
+        
+        /* LANDSCAPE MÓVIL */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .hero {
+                min-height: 100vh;
+                padding: 1rem;
+            }
+            
+            .hero h1,
+            #futuristic-title {
+                font-size: 2rem;
+            }
+        }
+        
+        /* Touch Targets - Estándar iOS (44px) */
+        @media (max-width: 768px) {
+            .btn,
+            .nav-links a,
+            .social-links a,
+            .filter-button,
+            .contact-link a {
+                min-height: 44px;
+                min-width: 44px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+        
+        /* ===== OPTIMIZACIONES ADICIONALES DE RENDIMIENTO ===== */
+        
+        /* Lazy loading de imágenes con Intersection Observer */
+        img[loading="lazy"] {
+            content-visibility: auto;
+        }
+        
+        /* Optimización: reducir repaints en elementos animados */
+        .animated-element {
+            contain: layout style paint;
+            transform: translateZ(0); /* GPU acceleration */
+        }
+        
+        /* Optimización: reducir animaciones en móvil para mejor rendimiento */
+        @media (max-width: 768px) {
+            * {
+                animation-duration: 0.3s !important;
+                transition-duration: 0.2s !important;
+            }
+            
+            /* Desactivar animaciones complejas en móvil */
+            .glassmorphism-frame::after,
+            .glassmorphism-frame .hero-content::before,
+            .glassmorphism-frame .hero-content::after {
+                animation: none !important;
+            }
+        }
+        
+        /* Optimización: prefer-reduced-motion */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+        
+        /* ===== GRADIENTE AZUL ELÉCTRICO-CIAN PARA TODOS LOS TÍTULOS DE SECCIÓN ===== */
+        .section-title {
+            background: linear-gradient(135deg, #0080ff 0%, #00ffff 100%) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+            text-shadow: 0 0 30px rgba(0, 128, 255, 0.5) !important;
+        }
+        
+        /* Asegurar que funcione en todos los breakpoints */
+        @media (max-width: 768px) {
+            .section-title {
+                background: linear-gradient(135deg, #0080ff 0%, #00ffff 100%) !important;
+                -webkit-background-clip: text !important;
+                -webkit-text-fill-color: transparent !important;
+                background-clip: text !important;
+                text-shadow: 0 0 30px rgba(0, 128, 255, 0.5) !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .section-title {
+                background: linear-gradient(135deg, #0080ff 0%, #00ffff 100%) !important;
+                -webkit-background-clip: text !important;
+                -webkit-text-fill-color: transparent !important;
+                background-clip: text !important;
+                text-shadow: 0 0 30px rgba(0, 128, 255, 0.5) !important;
+            }
+        }
 
     </style>
 
@@ -17619,11 +17844,20 @@
                 }
             }
             
-            // Actualizar viewport en cambios de orientación y resize
+            // Actualizar viewport en cambios de orientación y resize - Optimizado con throttle
             if (viewportCapabilities.dynamic) {
                 updateViewportHeight();
-                window.addEventListener('resize', updateViewportHeight);
-                window.addEventListener('orientationchange', updateViewportHeight);
+                let resizeThrottle;
+                const throttledResize = () => {
+                    if (!resizeThrottle) {
+                        resizeThrottle = requestAnimationFrame(() => {
+                            updateViewportHeight();
+                            resizeThrottle = null;
+                        });
+                    }
+                };
+                window.addEventListener('resize', throttledResize, { passive: true });
+                window.addEventListener('orientationchange', updateViewportHeight, { passive: true });
             }
             
             // Exponer capacidades globalmente para debugging
@@ -17719,6 +17953,11 @@
                         setupGeometricBackground();
                         startAnimations();
                         setupSectionScrollSounds();
+                        // Mostrar indicadores de sección después de iniciar
+                        const sectionIndicators = document.getElementById("sectionIndicators");
+                        if (sectionIndicators) {
+                            sectionIndicators.classList.add("show");
+                        }
                     }, 500);
                 }
             }, 50);
@@ -17749,6 +17988,11 @@
             setupGeometricBackground();
             startAnimations();
             setupSectionScrollSounds();
+            // Mostrar indicadores de sección después de iniciar
+            const sectionIndicators = document.getElementById("sectionIndicators");
+            if (sectionIndicators) {
+                sectionIndicators.classList.add("show");
+            }
         }
 
         // Verificar si han pasado 10 minutos desde la última visita
@@ -17806,24 +18050,32 @@
                 });
             }
 
-            window.addEventListener("scroll", () => {
-                const newSection = getCurrentSection();
-                isScrolling = true;
-                if (newSection !== currentSection) {
-                    stopAllScrollSounds();
-                    currentSection = newSection;
+            // Optimización: Throttle de scroll para mejor rendimiento
+            let scrollThrottle;
+            const throttledScrollHandler = () => {
+                if (!scrollThrottle) {
+                    scrollThrottle = requestAnimationFrame(() => {
+                        const newSection = getCurrentSection();
+                        isScrolling = true;
+                        if (newSection !== currentSection) {
+                            stopAllScrollSounds();
+                            currentSection = newSection;
+                        }
+                        const currentScrollSound = eval(`scrollSound${currentSection}`);
+                        if (currentScrollSound && currentScrollSound.paused) {
+                            currentScrollSound.currentTime = 0;
+                            currentScrollSound.play().catch((e) => {});
+                        }
+                        clearTimeout(scrollTimeout);
+                        scrollTimeout = setTimeout(() => {
+                            stopAllScrollSounds();
+                            isScrolling = false;
+                        }, 150);
+                        scrollThrottle = null;
+                    });
                 }
-                const currentScrollSound = eval(`scrollSound${currentSection}`);
-                if (currentScrollSound && currentScrollSound.paused) {
-                    currentScrollSound.currentTime = 0;
-                    currentScrollSound.play().catch((e) => {});
-                }
-                clearTimeout(scrollTimeout);
-                scrollTimeout = setTimeout(() => {
-                    stopAllScrollSounds();
-                    isScrolling = false;
-                }, 150);
-            });
+            };
+            window.addEventListener("scroll", throttledScrollHandler, { passive: true });
         }
 
         // Sistema de verificación de dependencias mejorado
@@ -18062,28 +18314,31 @@
                     }
                 });
                 
-                // Asegurar que el submenú se oculte si el mouse sale completamente
+                // Asegurar que el submenú se oculte si el mouse sale completamente - Optimizado
                 navItem.addEventListener("mouseleave", (e) => {
-                    const rect = navItem.getBoundingClientRect();
-                    const mouseX = e.clientX;
-                    const mouseY = e.clientY;
-                    
-                    // Si el mouse sale completamente del área del nav-item
-                    if (mouseX < rect.left || mouseX > rect.right || mouseY < rect.top || mouseY > rect.bottom) {
-                        if (square) {
-                            safeGsapTo(square, { scaleX: 0, duration: 0.2, ease: "power2.in" });
-                        }
+                    // Optimización: Usar requestAnimationFrame para getBoundingClientRect
+                    requestAnimationFrame(() => {
+                        const rect = navItem.getBoundingClientRect();
+                        const mouseX = e.clientX;
+                        const mouseY = e.clientY;
                         
-                        if (submenu) {
-                            safeGsapTo(submenu, {
-                                opacity: 0,
-                                visibility: "hidden",
-                                y: 15,
-                                duration: 0.3,
-                                ease: "power2.in"
-                            });
+                        // Si el mouse sale completamente del área del nav-item
+                        if (mouseX < rect.left || mouseX > rect.right || mouseY < rect.top || mouseY > rect.bottom) {
+                            if (square) {
+                                safeGsapTo(square, { scaleX: 0, duration: 0.2, ease: "power2.in" });
+                            }
+                            
+                            if (submenu) {
+                                safeGsapTo(submenu, {
+                                    opacity: 0,
+                                    visibility: "hidden",
+                                    y: 15,
+                                    duration: 0.3,
+                                    ease: "power2.in"
+                                });
+                            }
                         }
-                    }
+                    });
                 });
         });
         
@@ -18185,18 +18440,38 @@
             const debugLine4 = document.getElementById("debugLine4");
 
             let animationFrame;
+            // Optimización: Cachear elementos y cálculos para evitar reflows
+            let cachedFooterStart = null;
+            let cachedGeometricTexts = null;
+            let lastScrollY = 0;
+            
             function updateAnimations() {
                 const scrollY = window.scrollY;
                 const maxScroll = document.body.scrollHeight - window.innerHeight;
                 const progress = Math.min(scrollY / maxScroll, 1);
 
-                // Opacidad del texto geométrico
-                const footerStart = document.querySelector(".site-footer").offsetTop - window.innerHeight;
-                const footerProgress = Math.max(0, (scrollY - footerStart) / (window.innerHeight * 0.5));
-                const textOpacity = Math.max(0, 1 - footerProgress * 2);
-                document.querySelectorAll(".geometric-text").forEach((text) => {
-                    text.style.opacity = textOpacity;
-                });
+                // Opacidad del texto geométrico - Optimizado con cache
+                if (!cachedFooterStart || Math.abs(scrollY - lastScrollY) > 50) {
+                    const footer = document.querySelector(".site-footer");
+                    if (footer) {
+                        cachedFooterStart = footer.offsetTop - window.innerHeight;
+                    }
+                    lastScrollY = scrollY;
+                }
+                
+                if (cachedFooterStart !== null) {
+                    const footerProgress = Math.max(0, (scrollY - cachedFooterStart) / (window.innerHeight * 0.5));
+                    const textOpacity = Math.max(0, 1 - footerProgress * 2);
+                    
+                    // Cachear elementos geometric-text
+                    if (!cachedGeometricTexts) {
+                        cachedGeometricTexts = document.querySelectorAll(".geometric-text");
+                    }
+                    
+                    cachedGeometricTexts.forEach((text) => {
+                        text.style.opacity = textOpacity;
+                    });
+                }
 
                 // Cálculo de frecuencias y estados
                 const freq1 = (432 + progress * 108).toFixed(1);
@@ -18273,25 +18548,23 @@
             
             // ===== ANIMACIONES PARA EL CONTENIDO INTEGRADO =====
             
-            // Función para revelar elementos al hacer scroll
-            function revealOnScroll() {
-                const reveals = document.querySelectorAll('.reveal-up');
-                
-                reveals.forEach(element => {
-                    const elementTop = element.getBoundingClientRect().top;
-                    const elementVisible = 150;
-                    
-                    if (elementTop < window.innerHeight - elementVisible) {
-                        element.classList.add('revealed');
+            // Función para revelar elementos al hacer scroll - Optimizada con Intersection Observer
+            const revealObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('revealed');
+                        revealObserver.unobserve(entry.target);
                     }
                 });
-            }
+            }, { 
+                threshold: 0.1,
+                rootMargin: '50px'
+            });
             
-            // Event listener para scroll
-            window.addEventListener('scroll', revealOnScroll);
-            
-            // Ejecutar una vez al cargar
-            revealOnScroll();
+            // Observar todos los elementos reveal-up
+            document.querySelectorAll('.reveal-up').forEach(element => {
+                revealObserver.observe(element);
+            });
             
             // Funcionalidad del botón de habilidades
             const ctaHabilidades = document.getElementById('cta-habilidades');
@@ -18302,7 +18575,7 @@
                 });
             }
             
-            // Efecto de ripple para botones
+            // Efecto de ripple para botones - Optimizado con transform para GPU
             function createRipple(event) {
                 const button = event.currentTarget;
                 const ripple = document.createElement('span');
@@ -18311,12 +18584,20 @@
                 const x = event.clientX - rect.left - size / 2;
                 const y = event.clientY - rect.top - size / 2;
                 
+                // Optimización: Usar transform y scale en lugar de width/height/left/top
                 ripple.style.width = ripple.style.height = size + 'px';
-                ripple.style.left = x + 'px';
-                ripple.style.top = y + 'px';
+                ripple.style.transform = `translate(${x}px, ${y}px) scale(0)`;
+                ripple.style.transformOrigin = 'center center';
                 ripple.classList.add('ripple');
                 
                 button.appendChild(ripple);
+                
+                // Forzar reflow y luego animar
+                ripple.offsetHeight;
+                requestAnimationFrame(() => {
+                    ripple.style.transform = `translate(${x}px, ${y}px) scale(1)`;
+                    ripple.style.opacity = '0';
+                });
                 
                 setTimeout(() => {
                     ripple.remove();
@@ -18412,31 +18693,40 @@
                 mouseY = e.clientY;
                 
                 // Actualizar posición del punto central inmediatamente
-                cursorDot.style.left = mouseX + 'px';
-                cursorDot.style.top = mouseY + 'px';
+                // Optimización: Usar transform en lugar de left/top para mejor rendimiento GPU
+                cursorDot.style.transform = `translate(${mouseX}px, ${mouseY}px)`;
                 
                 // Asegurar que el cursor esté visible
                 cursor.style.opacity = '1';
                 cursor.style.visibility = 'visible';
             }
             
-            document.addEventListener('mousemove', updateMousePosition);
-            // También escuchar en el documento completo para capturar todos los eventos
-            document.documentElement.addEventListener('mousemove', updateMousePosition);
+            // Optimización: Throttle de mousemove con requestAnimationFrame
+            let mouseThrottle;
+            const throttledMouseMove = (e) => {
+                if (!mouseThrottle) {
+                    mouseThrottle = requestAnimationFrame(() => {
+                        updateMousePosition(e);
+                        mouseThrottle = null;
+                    });
+                }
+            };
+            document.addEventListener('mousemove', throttledMouseMove, { passive: true });
+            document.documentElement.addEventListener('mousemove', throttledMouseMove, { passive: true });
             
-            // Animación suave del anillo y trazo - Optimizada para mayor velocidad
+            // Animación suave del anillo y trazo - Optimizada con transform para GPU
             function animateCursor() {
                 // Anillo con retraso suave - Aumentado a 0.25 para respuesta más rápida
                 ringX += (mouseX - ringX) * 0.25;
                 ringY += (mouseY - ringY) * 0.25;
-                cursorRing.style.left = ringX + 'px';
-                cursorRing.style.top = ringY + 'px';
+                // Optimización: Usar transform en lugar de left/top
+                cursorRing.style.transform = `translate(${ringX}px, ${ringY}px)`;
                 
                 // Trazo con retraso mayor - Aumentado a 0.15 para respuesta más rápida
                 trailX += (mouseX - trailX) * 0.15;
                 trailY += (mouseY - trailY) * 0.15;
-                cursorTrail.style.left = trailX + 'px';
-                cursorTrail.style.top = trailY + 'px';
+                // Optimización: Usar transform en lugar de left/top
+                cursorTrail.style.transform = `translate(${trailX}px, ${trailY}px)`;
                 
                 requestAnimationFrame(animateCursor);
             }
@@ -19834,12 +20124,16 @@
                 }
             });
             
-            // Cerrar menú al cambiar tamaño de ventana
+            // Cerrar menú al cambiar tamaño de ventana - Optimizado con debounce
+            let resizeDebounce;
             window.addEventListener('resize', () => {
-                if (window.innerWidth > 768 && mobileMenuContent.classList.contains('active')) {
-                    closeMobileMenu();
-                }
-            });
+                clearTimeout(resizeDebounce);
+                resizeDebounce = setTimeout(() => {
+                    if (window.innerWidth > 768 && mobileMenuContent.classList.contains('active')) {
+                        closeMobileMenu();
+                    }
+                }, 150);
+            }, { passive: true });
         }
         
         // Sistema de Navegación Inteligente
@@ -19881,23 +20175,30 @@
                 });
             });
             
-            // Detectar sección activa durante el scroll
-            window.addEventListener('scroll', () => {
-                const scrollPos = window.scrollY + 100;
-                
-                sections.forEach(section => {
-                    const sectionTop = section.offsetTop;
-                    const sectionHeight = section.offsetHeight;
-                    
-                    if (scrollPos >= sectionTop && scrollPos < sectionTop + sectionHeight) {
-                        const activeLink = document.querySelector(`.main-nav > ul > li > a[href="#${section.id}"]`);
-                        if (activeLink) {
-                            navLinks.forEach(l => l.classList.remove('active'));
-                            activeLink.classList.add('active');
-                        }
-                    }
-                });
-            });
+            // Detectar sección activa durante el scroll - Optimizado con requestAnimationFrame
+            let scrollRAF;
+            const throttledScrollHandler = () => {
+                if (!scrollRAF) {
+                    scrollRAF = requestAnimationFrame(() => {
+                        const scrollPos = window.scrollY + 100;
+                        
+                        sections.forEach(section => {
+                            const sectionTop = section.offsetTop;
+                            const sectionHeight = section.offsetHeight;
+                            
+                            if (scrollPos >= sectionTop && scrollPos < sectionTop + sectionHeight) {
+                                const activeLink = document.querySelector(`.main-nav > ul > li > a[href="#${section.id}"]`);
+                                if (activeLink) {
+                                    navLinks.forEach(l => l.classList.remove('active'));
+                                    activeLink.classList.add('active');
+                                }
+                            }
+                        });
+                        scrollRAF = null;
+                    });
+                }
+            };
+            window.addEventListener('scroll', throttledScrollHandler, { passive: true });
         }
         
         // Sistema de Navegación de Submenús
@@ -20064,7 +20365,8 @@
         // Sistema de Partículas Flotantes
         function setupFloatingParticles() {
             const particlesContainer = document.getElementById('floatingParticles');
-            const particleCount = 50;
+            // Optimizar partículas para móvil
+            const particleCount = window.innerWidth < 768 ? 30 : 50;
             
             for (let i = 0; i < particleCount; i++) {
                 createParticle(particlesContainer, i);
@@ -20697,14 +20999,19 @@
                 applyDynamicDuration();
             });
             
-            // Recalcular en resize (con debounce)
+            // Recalcular en resize (con debounce) - Optimizado con requestAnimationFrame
             let resizeTimer;
+            let resizeRAF;
             window.addEventListener('resize', () => {
                 clearTimeout(resizeTimer);
-                resizeTimer = setTimeout(() => {
-                    applyDynamicDuration();
-                }, 150);
-            });
+                if (resizeRAF) cancelAnimationFrame(resizeRAF);
+                resizeRAF = requestAnimationFrame(() => {
+                    clearTimeout(resizeTimer);
+                    resizeTimer = setTimeout(() => {
+                        applyDynamicDuration();
+                    }, 150);
+                });
+            }, { passive: true });
             
             // Add hover pause functionality
             track.addEventListener('mouseenter', () => {
@@ -21240,13 +21547,12 @@
                 const cursor = customCursor.querySelector('.cursor');
                 const cursorDot = customCursor.querySelector('.cursor-dot');
                 
+                // Optimización: Usar transform en lugar de left/top
                 if (cursor) {
-                    cursor.style.left = e.clientX + 'px';
-                    cursor.style.top = e.clientY + 'px';
+                    cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
                 }
                 if (cursorDot) {
-                    cursorDot.style.left = e.clientX + 'px';
-                    cursorDot.style.top = e.clientY + 'px';
+                    cursorDot.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
                 }
             }
         }
@@ -21308,8 +21614,33 @@
             });
         }, observerOptions);
         
-        // Observar elementos para animaciones
+        // Observar elementos para animaciones - Optimizado con Intersection Observer
         document.addEventListener('DOMContentLoaded', function() {
+            // Lazy loading de imágenes de fondo con Intersection Observer
+            const lazyBackgroundObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const section = entry.target;
+                        const bgImage = section.dataset.bgImage;
+                        if (bgImage && !section.style.backgroundImage) {
+                            // Cargar imagen de fondo cuando esté visible
+                            const img = new Image();
+                            img.onload = () => {
+                                section.style.backgroundImage = `url(${bgImage})`;
+                                section.classList.add('bg-loaded');
+                            };
+                            img.src = bgImage;
+                            lazyBackgroundObserver.unobserve(section);
+                        }
+                    }
+                });
+            }, { rootMargin: '100px' });
+            
+            // Observar secciones con imágenes de fondo
+            document.querySelectorAll('.section[data-bg-image]').forEach(section => {
+                lazyBackgroundObserver.observe(section);
+            });
+            
             const animateElements = document.querySelectorAll('.timeline-item, .specialty-item, .project-card, .service-item');
             animateElements.forEach(el => {
                 el.classList.add('animate-on-scroll');
@@ -21317,20 +21648,26 @@
             });
         });
         
-        // Counter animations para números
+        // Counter animations para números - Optimizado con requestAnimationFrame
         function animateCounter(element, target, duration = 2000) {
             const start = 0;
-            const increment = target / (duration / 16);
-            let current = start;
+            const startTime = performance.now();
             
-            const timer = setInterval(() => {
-                current += increment;
-                if (current >= target) {
-                    current = target;
-                    clearInterval(timer);
-                }
+            function updateCounter(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const current = start + (target - start) * progress;
+                
                 element.textContent = Math.floor(current);
-            }, 16);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(updateCounter);
+                } else {
+                    element.textContent = target;
+                }
+            }
+            
+            requestAnimationFrame(updateCounter);
         }
         
         // Typewriter effect
@@ -21350,17 +21687,19 @@
         
         // ===== NAVEGACIÓN Y UX AVANZADO =====
         
-        // Progress bar del scroll mejorado con porcentaje
+        // Progress bar del scroll mejorado - Optimizado con requestAnimationFrame
+        let scrollProgressRAF;
         function updateScrollProgress() {
-            const progressFill = document.querySelector('.progress-fill');
-            const scrollPercentage = document.getElementById('scrollPercentage');
-            if (progressFill && scrollPercentage) {
-                const scrollTop = window.pageYOffset;
-                const docHeight = document.body.scrollHeight - window.innerHeight;
-                const scrollPercent = (scrollTop / docHeight) * 100;
-                progressFill.style.width = scrollPercent + '%';
-                scrollPercentage.textContent = Math.round(scrollPercent) + '%';
-            }
+            if (scrollProgressRAF) cancelAnimationFrame(scrollProgressRAF);
+            scrollProgressRAF = requestAnimationFrame(() => {
+                const progressFill = document.querySelector('.progress-fill');
+                if (progressFill) {
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+                    const scrollPercent = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+                    progressFill.style.width = Math.min(scrollPercent, 100) + '%';
+                }
+            });
         }
         
         // Contador animado para hero stats
@@ -21402,13 +21741,18 @@
             if (!particlesContainer) return;
             
             const particleCount = 20;
+            // Detectar si es móvil para ajustar la velocidad
+            const isMobile = window.innerWidth <= 768;
+            const baseDuration = isMobile ? 12 : 6; // Más lento en móvil (12-16s vs 6-10s)
+            const durationRange = isMobile ? 8 : 4; // Rango más amplio en móvil
+            
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
                 particle.className = 'hero-particle';
                 particle.style.left = Math.random() * 100 + '%';
                 particle.style.top = Math.random() * 100 + '%';
                 particle.style.animationDelay = Math.random() * 8 + 's';
-                particle.style.animationDuration = (Math.random() * 4 + 6) + 's';
+                particle.style.animationDuration = (Math.random() * durationRange + baseDuration) + 's';
                 particlesContainer.appendChild(particle);
             }
         }
@@ -21460,14 +21804,30 @@
             }
         }
         
-        // Parallax effect sutil
+        // Parallax effect sutil - Optimizado con requestAnimationFrame y GPU
+        let parallaxRAF;
+        let cachedParallaxElements = null;
+        let lastScrollY = 0;
+        
         function updateParallax() {
-            const parallaxElements = document.querySelectorAll('.parallax-element');
-            const scrolled = window.pageYOffset;
+            if (parallaxRAF) cancelAnimationFrame(parallaxRAF);
             
-            parallaxElements.forEach(element => {
-                const rate = scrolled * -0.5;
-                element.style.transform = `translateY(${rate}px)`;
+            parallaxRAF = requestAnimationFrame(() => {
+                const scrolled = window.pageYOffset;
+                
+                // Cachear elementos solo si cambian o no están cacheados
+                if (!cachedParallaxElements || Math.abs(scrolled - lastScrollY) > 100) {
+                    cachedParallaxElements = document.querySelectorAll('.parallax-element');
+                    lastScrollY = scrolled;
+                }
+                
+                cachedParallaxElements.forEach(element => {
+                    const rate = scrolled * -0.5;
+                    // Optimización: Usar translate3d para GPU
+                    element.style.transform = `translate3d(0, ${rate}px, 0)`;
+                });
+                
+                parallaxRAF = null;
             });
         }
         
@@ -21526,7 +21886,8 @@
                 }
             }
             
-            window.addEventListener('scroll', onScroll);
+            // Optimización: onScroll ya usa requestAnimationFrame, solo agregar passive
+            window.addEventListener('scroll', onScroll, { passive: true });
             
             // Initial calls
             updateScrollProgress();
