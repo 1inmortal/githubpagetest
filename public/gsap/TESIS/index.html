@@ -1,0 +1,2185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Digital PPAP - JCE 2025</title>
+    
+    <!-- Fuentes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;600;700;800&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-blue: #0047BA;
+            --accent-orange: #FF671F;
+            --dark-bg: #ffffff;
+            --dark-surface: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --success-green: #16a34a;
+            --danger-red: #dc2626;
+            --font-main: Arial, sans-serif;
+            --font-mono: 'Courier New', monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-main);
+            font-size: 15px;
+            background-color: var(--dark-bg);
+            color: var(--text-main);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+        }
+
+        /* --- WebGL Background --- */
+        #webgl-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* --- UI Controls --- */
+        .ui-layer {
+            position: fixed;
+            z-index: 100;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .nav-controls {
+            position: absolute;
+            bottom: 30px; right: 40px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            pointer-events: auto;
+        }
+
+        .theme-toggle-btn.active {
+            background: var(--primary-blue);
+            border-color: var(--primary-blue);
+            color: white;
+        }
+
+        .fullscreen-btn.active {
+            background: var(--accent-orange);
+            border-color: var(--accent-orange);
+        }
+
+        .progress-bar {
+            position: absolute;
+            bottom: 0; left: 0;
+            height: 4px;
+            background: var(--accent-orange);
+            width: 0%;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px var(--accent-orange);
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.9);
+            border: 1px solid rgba(0,0,0,0.15);
+            color: var(--text-main);
+            width: 45px; height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .nav-btn:hover { background: var(--primary-blue); border-color: var(--primary-blue); color: white; transform: scale(1.1); }
+        
+        .slide-counter {
+            font-family: var(--font-mono);
+            margin-right: 20px;
+            opacity: 0.8;
+            color: var(--text-main);
+        }
+
+        /* --- UMN Logos --- */
+        .umn-logo {
+            position: absolute;
+            width: 200px;
+            height: auto;
+            z-index: 200;
+            opacity: 0.85;
+            pointer-events: auto;
+            cursor: move;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+            transition: opacity 0.2s;
+            transform-origin: center center;
+            mix-blend-mode: normal;
+            display: block !important;
+            visibility: visible !important;
+        }
+        .umn-logo:hover {
+            opacity: 1;
+        }
+        .umn-logo.dragging {
+            opacity: 1;
+            z-index: 1000;
+            cursor: grabbing;
+        }
+
+        .umn-logo-top-right {
+            top: -60px;
+            right: -80px;
+            transform: rotate(20deg);
+        }
+
+        .umn-logo-bottom-left {
+            bottom: -60px;
+            left: -80px;
+            transform: rotate(-20deg);
+        }
+
+        .student-logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 80px;
+            height: auto;
+            z-index: 200;
+            opacity: 0.85;
+            pointer-events: auto;
+            cursor: move;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+            transition: opacity 0.2s;
+            transform-origin: center center;
+            mix-blend-mode: normal;
+            display: block !important;
+            visibility: visible !important;
+        }
+        .student-logo:hover {
+            opacity: 1;
+        }
+        .student-logo.dragging {
+            opacity: 1;
+            z-index: 1000;
+            cursor: grabbing;
+        }
+
+        .research-logo {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            width: 120px;
+            height: auto;
+            z-index: 200;
+            opacity: 0.85;
+            pointer-events: auto;
+            cursor: move;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+            transition: opacity 0.2s;
+            transform-origin: center center;
+            mix-blend-mode: normal;
+            display: block !important;
+            visibility: visible !important;
+        }
+        .research-logo:hover {
+            opacity: 1;
+        }
+        .research-logo.dragging {
+            opacity: 1;
+            z-index: 1000;
+            cursor: grabbing;
+        }
+
+        .university-logo {
+            position: absolute;
+            bottom: 25px;
+            left: 25px;
+            width: 120px;
+            height: auto;
+            z-index: 200;
+            opacity: 0.85;
+            pointer-events: auto;
+            cursor: move;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+            transition: opacity 0.2s;
+            transform-origin: center center;
+            mix-blend-mode: normal;
+            display: block !important;
+            visibility: visible !important;
+        }
+        .university-logo:hover {
+            opacity: 1;
+        }
+        .university-logo.dragging {
+            opacity: 1;
+            z-index: 1000;
+            cursor: grabbing;
+        }
+
+        /* --- Slides Layout --- */
+        #presentation-container {
+            position: relative;
+            width: 100%; height: 100%;
+            z-index: 10;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            padding: 4rem 6rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* --- Typography & Components --- */
+        h1 {
+            font-size: 2.5rem;
+            line-height: 1.1;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, #0047BA, #1e293b);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        h2 {
+            font-size: 2rem;
+            color: var(--accent-orange);
+            border-left: 5px solid var(--primary-blue);
+            padding-left: 20px;
+            margin-bottom: 2rem;
+        }
+
+        h3 { font-size: 1.5rem; color: var(--primary-blue); margin-bottom: 1rem; }
+        
+        p, li { font-size: 1rem; line-height: 1.6; color: var(--text-muted); margin-bottom: 1rem; }
+        strong { color: var(--text-main); font-weight: 700; }
+        
+        .text-orange { color: var(--accent-orange); }
+        .text-blue { color: var(--primary-blue); }
+        .mono { font-family: var(--font-mono); }
+
+        /* Layout Grids */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+
+        /* --- Specific Slide Styles --- */
+        
+        /* Slide 1: Cover */
+        .cover-layout { text-align: center; max-width: 1000px; margin: 0 auto; }
+        .jce-badge { 
+            display: inline-block; padding: 5px 15px; 
+            border: 1px solid var(--primary-blue); 
+            border-radius: 20px; color: var(--primary-blue);
+            font-weight: 600; margin-bottom: 20px; letter-spacing: 2px;
+        }
+        .authors { margin-top: 3rem; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 20px; }
+        .authors p:first-child {
+            font-size: 15px;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(248, 250, 252, 0.9);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid rgba(0,0,0,0.08);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        /* Slide 2: Features */
+        .feature-item { 
+            display: flex; align-items: center; gap: 20px; 
+            padding: 15px; background: rgba(248, 250, 252, 0.8); 
+            margin-bottom: 15px; border-radius: 8px; 
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .feature-icon { font-size: 1.5rem; width: 40px; text-align: center; }
+        .feature-loop {
+            position: relative;
+            overflow: hidden;
+            height: 260px;
+            margin-top: 1rem;
+        }
+        .feature-loop::before,
+        .feature-loop::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 40px;
+            z-index: 2;
+            pointer-events: none;
+        }
+        .feature-loop::before {
+            top: 0;
+            background: linear-gradient(to bottom, #ffffff, transparent);
+        }
+        .feature-loop::after {
+            bottom: 0;
+            background: linear-gradient(to top, #ffffff, transparent);
+        }
+        .feature-track {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            animation: featureScroll 18s linear infinite;
+        }
+        .feature-track:hover { animation-play-state: paused; }
+        @keyframes featureScroll {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-50%); }
+        }
+
+        /* Slide 4: Hypothesis Badge */
+        .hypo-badge {
+            background: #ffffff;
+            border: 2px solid var(--accent-orange);
+            width: 280px; height: 280px;
+            border-radius: 50%;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            margin: 0 auto;
+            box-shadow: 0 0 30px rgba(255, 103, 31, 0.3);
+        }
+        .hypo-val { font-size: 4rem; font-weight: 800; color: var(--accent-orange); line-height: 1; }
+        .hypo-summary {
+            margin-top: 1.2rem;
+            padding: 1.5rem;
+            background: rgba(248, 250, 252, 0.8);
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+        .hypo-chart {
+            margin-top: 2rem;
+            display: flex;
+            gap: 2rem;
+            align-items: flex-end;
+        }
+        .hypo-column {
+            flex: 1;
+            text-align: center;
+        }
+        .hypo-column .bar-val {
+            font-family: Arial, sans-serif;
+            font-size: 1rem;
+        }
+        .hypo-column small {
+            font-family: Arial, sans-serif;
+            font-size: 1rem;
+        }
+        .hypo-column span.label {
+            display: block;
+            margin-top: 0.6rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+        }
+        .hypo-bar {
+            width: 70%;
+            margin: 0 auto;
+            border-radius: 14px 14px 0 0;
+            position: relative;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.35);
+        }
+        .hypo-bar.before { background: linear-gradient(to top, #991b1b, #ef4444); }
+        .hypo-bar.after { background: linear-gradient(to top, #15803d, #4ade80); }
+
+        /* Slide 7: Charts */
+        .chart-container {
+            height: 400px;
+            display: flex; align-items: flex-end; justify-content: center; gap: 50px;
+            border-bottom: 2px solid rgba(0,0,0,0.1);
+            padding-bottom: 20px;
+        }
+
+        .chart-details {
+            margin: 2rem auto 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.8rem;
+            max-width: 1000px;
+        }
+
+        .radial-panel,
+        .trend-panel {
+            background: rgba(248, 250, 252, 0.95);
+            border-radius: 18px;
+            padding: 1.6rem;
+            border: 1px solid rgba(0,0,0,0.08);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 15px 45px rgba(0,0,0,0.1);
+        }
+
+        .radial-chart {
+            width: 190px;
+            height: 190px;
+            border-radius: 50%;
+            margin: 0 auto 1.2rem;
+            background: conic-gradient(var(--accent-orange) 0 var(--progress, 0%), rgba(0,0,0,0.08) var(--progress, 0%) 100%);
+            position: relative;
+            transition: background 0.3s ease;
+        }
+
+        .radial-chart::after {
+            content: "";
+            position: absolute;
+            inset: 20px;
+            border-radius: 50%;
+            background: #ffffff;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.05);
+        }
+
+        .radial-value {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-orange);
+            z-index: 2;
+        }
+
+        .radial-value span {
+            font-size: 0.9rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .metrics-grid {
+            margin-top: 0.8rem;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.8rem;
+        }
+
+        .metric-card {
+            background: rgba(255,255,255,0.8);
+            border-radius: 14px;
+            padding: 0.85rem;
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .metric-card strong {
+            display: block;
+            font-size: 0.75rem;
+            letter-spacing: 0.16em;
+            color: var(--text-muted);
+            margin-bottom: 0.3rem;
+        }
+
+        .metric-card span {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .trend-panel h3 {
+            color: var(--text-main);
+            margin-bottom: 1rem;
+        }
+
+        .trend-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .trend-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .trend-item span {
+            width: 80px;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .trend-bar {
+            flex: 1;
+            height: 14px;
+            border-radius: 999px;
+            background: rgba(0,0,0,0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .trend-fill {
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--primary-blue), var(--accent-orange));
+            width: 0%;
+        }
+
+        .trend-item strong {
+            width: 70px;
+            text-align: right;
+            font-family: var(--font-mono);
+            color: var(--text-main);
+        }
+        .bar-group { text-align: center; width: 150px; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; }
+        .bar { width: 100%; border-radius: 10px 10px 0 0; position: relative; transform-origin: bottom; }
+        .bar-val { position: absolute; top: -30px; width: 100%; font-weight: bold; color: var(--text-main); }
+        .bg-blue { background: linear-gradient(to top, var(--primary-blue), #4f46e5); }
+        .bg-orange { background: linear-gradient(to top, var(--accent-orange), #f97316); }
+
+        /* Slide 10: References */
+        .ref-list { max-height: 60vh; overflow-y: auto; padding-right: 20px; }
+        .ref-list li { font-size: 0.9rem; border-bottom: 1px solid rgba(0,0,0,0.08); padding: 10px 0; }
+
+        /* Slide 6: Methodology */
+        .methodology-pro {
+            padding: 3rem 4rem;
+            color: var(--text-main);
+        }
+        .methodology-pro > h2 {
+            max-width: 95%;
+            margin: 0 auto 2rem;
+            padding-left: 0.5rem;
+        }
+
+        .methodology-panel {
+            background: linear-gradient(135deg, rgba(248, 250, 252, 0.95), rgba(255, 255, 255, 0.9));
+            border-radius: 28px;
+            padding: 3rem 3.5rem;
+            box-shadow: 0 30px 120px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(18px);
+        }
+
+        .methodology-panel h2 {
+            border: none;
+            padding: 0;
+            margin-bottom: 0.75rem;
+            color: var(--accent-orange);
+            font-size: 2rem;
+            letter-spacing: 0.04em;
+        }
+
+        .methodology-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+
+        .methodology-panel p.lead {
+            color: rgba(30, 41, 59, 0.8);
+            margin-bottom: 2rem;
+            max-width: 720px;
+        }
+
+        .methodology-meta {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .methodology-meta-item {
+            padding: 1rem 1.2rem;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .methodology-meta-item span {
+            display: block;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-muted);
+        }
+
+        .methodology-meta-item strong {
+            display: block;
+            margin-top: 0.3rem;
+            font-size: 1rem;
+            color: var(--text-main);
+        }
+
+        .methodology-grid {
+            display: grid;
+            grid-template-columns: 1.05fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            max-width: 95%;
+            margin: 0 auto;
+        }
+
+        .methodology-details {
+            padding-right: 2rem;
+        }
+        .methodology-details h3 {
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .methodology-details h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--accent-orange);
+            letter-spacing: 0.2em;
+            margin-top: 2rem;
+            text-transform: uppercase;
+        }
+
+        .methodology-details p {
+            color: rgba(30, 41, 59, 0.85);
+            font-size: 1rem;
+            margin: 0.35rem 0 0.75rem;
+        }
+
+        .methodology-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 0.75rem;
+        }
+
+        .methodology-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            color: rgba(30, 41, 59, 0.9);
+            font-size: 1rem;
+            line-height: 1.5;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .methodology-list li:last-child {
+            border-bottom: none;
+        }
+
+        .methodology-list span {
+            font-weight: 700;
+            color: var(--accent-orange);
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+        }
+        .question-visual {
+            position: relative;
+            padding: 4rem;
+            border-radius: 32px;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(6, 11, 32, 0.96), rgba(4, 20, 60, 0.9));
+            box-shadow: 0 35px 90px rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .question-visual::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(180deg, rgba(5,5,15,0.4) 25%, rgba(5,5,15,0.85) 100%), url('img/sistema/1.2.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.5;
+            transform: scale(1.05);
+            filter: blur(1px);
+            mix-blend-mode: screen;
+        }
+        .question-visual::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(145deg, rgba(0,0,0,0.65), rgba(0,71,186,0.35));
+        }
+        .question-visual-content {
+            position: relative;
+            z-index: 2;
+        }
+        .question-visual h1,
+        .question-visual p {
+            color: #f8fafc;
+            background: none;
+            -webkit-text-fill-color: #f8fafc;
+        }
+        .question-visual .text-orange { color: #facc15; }
+        .question-visual .text-blue { color: #60a5fa; }
+        .results-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+            padding: 3rem;
+            border-radius: 28px;
+            background: rgba(248, 250, 252, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0,0,0,0.08);
+            box-shadow: 0 25px 80px rgba(0,0,0,0.1);
+        }
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1.5rem;
+        }
+        .result-card {
+            background: rgba(255,255,255,0.9);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid rgba(0,0,0,0.08);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .result-card strong {
+            display: block;
+            font-size: 0.85rem;
+            letter-spacing: 0.2em;
+            color: var(--accent-orange);
+            margin-bottom: 0.75rem;
+        }
+        .result-card p {
+            color: rgba(30, 41, 59, 0.85);
+            font-size: 1rem;
+        }
+        .system-videos {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 2rem;
+        }
+        .video-card {
+            background: rgba(248, 250, 252, 0.95);
+            border-radius: 24px;
+            padding: 1.5rem;
+            border: 1px solid rgba(0,0,0,0.08);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .video-card h4 {
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-main);
+        }
+        .video-frame {
+            width: 100%;
+            border-radius: 18px;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        .video-frame video {
+            width: 100%;
+            display: block;
+            border-radius: 18px;
+            object-fit: cover;
+            max-height: 260px;
+        }
+
+        .procedure-flow {
+            position: relative;
+            width: 100%;
+            max-width: 520px;
+            min-height: 440px;
+            margin: 0 auto;
+        }
+
+        .procedure-label {
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .flow-node {
+            position: absolute;
+            width: 165px;
+            height: 165px;
+            border-radius: 32px;
+            background: rgba(248, 250, 252, 0.95);
+            color: #1e293b;
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            box-shadow: 0 18px 55px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+            padding: 1.5rem;
+            gap: 0.5rem;
+        }
+
+        .flow-node strong {
+            text-transform: uppercase;
+            font-size: 0.95rem;
+            letter-spacing: 0.2em;
+            color: #1e293b;
+        }
+
+        .flow-node p {
+            font-size: 0.82rem;
+            color: rgba(30, 41, 59, 0.8);
+            line-height: 1.45;
+            margin: 0;
+        }
+
+        .flow-analysis { top: 0; left: 50%; transform: translate(-50%, 0); background: linear-gradient(145deg, rgba(0,71,186,0.15), rgba(0,71,186,0.25)); color: var(--primary-blue); }
+        .flow-design   { top: 55%; right: 0; transform: translate(0, -50%); background: linear-gradient(145deg, rgba(2,132,199,0.15), rgba(2,132,199,0.25)); color: #0284c7; }
+        .flow-validation { bottom: 0; left: 50%; transform: translate(-50%, 0); background: linear-gradient(145deg, rgba(255,103,31,0.2), rgba(255,103,31,0.3)); color: var(--accent-orange); }
+        .flow-results  { top: 55%; left: 0; transform: translate(0, -50%); background: linear-gradient(145deg, rgba(6,182,212,0.15), rgba(6,182,212,0.25)); color: #06b6d4; }
+
+        .flow-connector {
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border: 1px dashed rgba(0, 0, 0, 0.2);
+            border-radius: 50%;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .flow-arrow-icon {
+            position: absolute;
+            font-size: 1.3rem;
+            color: var(--accent-orange);
+            opacity: 0.8;
+        }
+
+        .arrow-top { top: 10%; left: 72%; transform: translate(-50%, -50%) rotate(0deg); }
+        .arrow-right { top: 70%; left: 88%; transform: translate(-50%, -50%) rotate(90deg); }
+        .arrow-bottom { top: 92%; left: 28%; transform: translate(-50%, -50%) rotate(180deg); }
+        .arrow-left { top: 32%; left: 12%; transform: translate(-50%, -50%) rotate(-90deg); }
+
+        /* --- Dark Mode Overrides --- */
+        body.dark-mode {
+            --dark-bg: #050915;
+            --dark-surface: #0f172a;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+        }
+        body.dark-mode .card,
+        body.dark-mode .feature-item,
+        body.dark-mode .methodology-panel,
+        body.dark-mode .result-card,
+        body.dark-mode .video-card,
+        body.dark-mode .radial-panel,
+        body.dark-mode .trend-panel,
+        body.dark-mode .metric-card,
+        body.dark-mode .methodology-meta-item,
+        body.dark-mode .flow-node,
+        body.dark-mode .results-panel,
+        body.dark-mode .hypo-summary,
+        body.dark-mode .hypo-badge,
+        body.dark-mode .video-frame,
+        body.dark-mode .feature-loop,
+        body.dark-mode .trend-bar {
+            background: rgba(15, 23, 42, 0.9);
+            border-color: rgba(255, 255, 255, 0.08);
+            color: var(--text-main);
+        }
+        body.dark-mode .methodology-panel {
+            background: linear-gradient(135deg, rgba(7, 12, 32, 0.95), rgba(12, 20, 48, 0.92));
+            box-shadow: 0 30px 120px rgba(0, 0, 0, 0.55);
+        }
+        body.dark-mode .procedure-flow {
+            background: transparent;
+        }
+        body.dark-mode .flow-connector {
+            border-color: rgba(255,255,255,0.15);
+        }
+        body.dark-mode .flow-node {
+            background: rgba(15, 23, 42, 0.92);
+            border-color: rgba(255,255,255,0.1);
+            color: #e2e8f0;
+            box-shadow: 0 18px 55px rgba(0, 0, 0, 0.55);
+        }
+        body.dark-mode .flow-node p,
+        body.dark-mode .flow-node strong {
+            color: #e2e8f0;
+        }
+        body.dark-mode .flow-analysis {
+            background: linear-gradient(145deg, rgba(14, 116, 144, 0.25), rgba(14, 165, 233, 0.25));
+            color: #7dd3fc;
+        }
+        body.dark-mode .flow-design {
+            background: linear-gradient(145deg, rgba(59, 130, 246, 0.25), rgba(147, 197, 253, 0.25));
+            color: #93c5fd;
+        }
+        body.dark-mode .flow-validation {
+            background: linear-gradient(145deg, rgba(255,103,31,0.35), rgba(248,113,113,0.3));
+            color: #fcd34d;
+        }
+        body.dark-mode .flow-results {
+            background: linear-gradient(145deg, rgba(5,150,105,0.3), rgba(16,185,129,0.25));
+            color: #a7f3d0;
+        }
+        body.dark-mode .methodology-details h3,
+        body.dark-mode .methodology-details h4,
+        body.dark-mode .methodology-details p,
+        body.dark-mode .methodology-list li,
+        body.dark-mode .methodology-list span,
+        body.dark-mode .methodology-meta-item span,
+        body.dark-mode .methodology-meta-item strong,
+        body.dark-mode .procedure-label {
+            color: #e2e8f0;
+        }
+        body.dark-mode .methodology-list span,
+        body.dark-mode .methodology-meta-item strong {
+            color: #facc15;
+        }
+        body.dark-mode .slide {
+            background-color: transparent;
+        }
+        body.dark-mode h1,
+        body.dark-mode h2,
+        body.dark-mode h3,
+        body.dark-mode h4,
+        body.dark-mode strong {
+            color: var(--text-main);
+            -webkit-text-fill-color: initial;
+        }
+        body.dark-mode .nav-btn {
+            background: rgba(15,23,42,0.7);
+            color: var(--text-main);
+            border-color: rgba(255,255,255,0.1);
+        }
+        body.dark-mode .nav-btn:hover {
+            color: white;
+        }
+        body.dark-mode .trend-fill {
+            background: linear-gradient(90deg, var(--accent-orange), #facc15);
+        }
+        body.dark-mode .radial-chart::after {
+            background: #0f172a;
+        }
+        body.dark-mode .feature-loop::before {
+            background: linear-gradient(to bottom, #0f172a, transparent);
+        }
+        body.dark-mode .feature-loop::after {
+            background: linear-gradient(to top, #0f172a, transparent);
+        }
+        body.dark-mode .progress-bar {
+            box-shadow: 0 0 10px rgba(255,103,31,0.4);
+        }
+        body.dark-mode .results-panel {
+            background: rgba(15, 23, 42, 0.95);
+        }
+
+        /* Responsiveness */
+        @media (max-width: 1024px) {
+            .slide { padding: 2rem; }
+            .grid-2, .grid-3 { grid-template-columns: 1fr; gap: 2rem; }
+            h1 { font-size: 2.5rem; }
+            .chart-container { height: 300px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- UMN Logos -->
+    <img src="img/umn.png" alt="UMN Logo" class="umn-logo umn-logo-top-right">
+    <img src="img/umn.png" alt="UMN Logo" class="umn-logo umn-logo-bottom-left">
+    <img src="img/logo-estudiantil-removebg-preview.png" alt="Logo estudiantil" class="student-logo">
+    <img src="img/area_de_investigacion-removebg-preview.png" alt="Área de investigación" class="research-logo">
+    <img src="img/universidad_mxico_americana_del_norte_logo-removebg-preview.png" alt="Universidad México Americana del Norte" class="university-logo">
+
+    <!-- WebGL Canvas -->
+    <canvas id="webgl-canvas"></canvas>
+
+    <!-- UI & Navigation -->
+    <div class="ui-layer">
+        <div class="progress-bar"></div>
+        <div class="nav-controls">
+            <div class="slide-counter">01 / 10</div>
+            <button class="nav-btn theme-toggle-btn" id="theme-toggle-btn" title="Modo oscuro">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+            <button class="nav-btn fullscreen-btn" id="fullscreen-btn" title="Pantalla completa">
+                <i class="fa-solid fa-maximize"></i>
+            </button>
+            <button class="nav-btn" id="prev-btn"><i class="fa-solid fa-chevron-left"></i></button>
+            <button class="nav-btn" id="next-btn"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <!-- Presentation Slides -->
+    <div id="presentation-container">
+
+        <!-- SLIDE 1: Cover -->
+        <section class="slide active" id="slide-1">
+            <div class="cover-layout">
+                <div class="jce-badge anim-fade-down">JORNADA CIENTÍFICA ESTUDIANTIL 2025</div>
+                <h1 class="anim-scale-in">SISTEMA DIGITAL PARA EL CONTROL Y VALIDACIÓN DEL PPAP</h1>
+                <h3 class="text-orange anim-fade-in">KIMBALL ELECTRONICS</h3>
+                <div class="authors anim-fade-up">
+                    <p class="mono"><strong>Autores:</strong> De la Cruz Rodríguez Jorge Emiliano*, Espinosa Martínez José Armando</p>
+                    <p>Universidad México Americana del Norte | Cd. Reynosa, Tamaulipas</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 2: Problem -->
+        <section class="slide" id="slide-2">
+            <h2 class="anim-slide-right">PLANTEAMIENTO DEL PROBLEMA</h2>
+            <div class="grid-2">
+                <div class="anim-fade-right">
+                    <p>Actualmente, la gestión del PPAP se realiza de forma manual, lo que genera:</p>
+                    <div class="feature-loop">
+                        <div class="feature-track">
+                            <div class="feature-item">
+                                <div class="feature-icon text-orange"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                                <div>Ineficiencias operativas y retrasos.</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon text-blue"><i class="fa-solid fa-envelope-open-text"></i></div>
+                                <div>Gestión por correos y hojas de cálculo desconectadas.</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon text-muted"><i class="fa-solid fa-file-circle-xmark"></i></div>
+                                <div>Errores humanos y poca trazabilidad.</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon text-orange"><i class="fa-solid fa-stopwatch"></i></div>
+                                <div>Retrasos en auditorías internas y entregables PPAP.</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon text-blue"><i class="fa-solid fa-copy"></i></div>
+                                <div>Duplicidad de versiones y aprobaciones tardías.</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon text-muted"><i class="fa-solid fa-database"></i></div>
+                                <div>Dependencia de archivos locales sin respaldo.</div>
+                            </div>
+                            <!-- Duplicate items for seamless loop -->
+                            <div class="feature-item">
+                                <div class="feature-icon text-orange"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                                <div>Ineficiencias operativas y retrasos.</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon text-blue"><i class="fa-solid fa-envelope-open-text"></i></div>
+                                <div>Gestión por correos y hojas de cálculo desconectadas.</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon text-muted"><i class="fa-solid fa-file-circle-xmark"></i></div>
+                                <div>Errores humanos y poca trazabilidad.</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon text-orange"><i class="fa-solid fa-stopwatch"></i></div>
+                                <div>Retrasos en auditorías internas y entregables PPAP.</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon text-blue"><i class="fa-solid fa-copy"></i></div>
+                                <div>Duplicidad de versiones y aprobaciones tardías.</div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon text-muted"><i class="fa-solid fa-database"></i></div>
+                                <div>Dependencia de archivos locales sin respaldo.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="anim-scale-in" style="display: flex; align-items: center; justify-content: center;">
+                    <img src="img/manual-removebg-preview.png" alt="Manual PPAP" style="max-width: 60%; height: auto; object-fit: contain;">
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 3: Question -->
+        <section class="slide" id="slide-3">
+            <div class="question-visual anim-zoom-in" style="max-width: 1000px; margin: 0 auto;">
+                <div class="question-visual-content" style="text-align: center;">
+                    <i class="fa-solid fa-quote-left text-blue anim-fade-down" style="font-size: 2rem; margin-bottom: 2rem;"></i>
+                    <h1 style="font-size: 2rem; line-height: 1.4;">¿Puede un sistema web modular mejorar la <span class="text-orange">trazabilidad</span>, <span class="text-blue">estandarización</span> y eficiencia del flujo PPAP?</h1>
+                    <p class="anim-fade-up" style="margin-top: 2rem;">— Pregunta de Investigación</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 4: Hypothesis -->
+        <section class="slide" id="slide-4">
+            <h2 class="anim-slide-right">HIPÓTESIS</h2>
+            <div class="grid-2">
+                <div class="hypo-badge anim-bounce">
+                    <span class="hypo-val count-up" data-target="50">0</span>
+                    <span class="text-orange mono" style="font-size: 2rem; font-weight: 700;">%</span>
+                    <span style="font-size: 1.3rem; margin-top: 10px; font-weight: 600; letter-spacing: 0.1em;">REDUCCIÓN</span>
+                </div>
+                <div class="anim-fade-left">
+                    <h3>Automatización Inteligente</h3>
+                    <p>La adopción de un sistema digital automatizado:</p>
+                    <ul>
+                        <li>Incrementa la eficiencia operativa.</li>
+                        <li>Reduce tiempos de aprobación (50%).</li>
+                        <li>Minimiza errores humanos en documentación.</li>
+                        <li>Garantiza seguimiento de piezas en tiempo real.</li>
+                    </ul>
+                    <p class="hypo-summary">La adopción de un sistema digital automatizado para la gestión del PPAP incrementa la eficiencia operativa y la trazabilidad del proceso, reduciendo al menos en un 50 % los tiempos de aprobación y minimizando errores humanos en la documentación y seguimiento de las piezas.</p>
+                    <div class="hypo-chart">
+                        <div class="hypo-column">
+                            <span class="bar-val mono count-up" data-target="10">0</span>
+                            <div class="hypo-bar before anim-grow-bar" data-height="85%"></div>
+                            <span class="label text-orange">Antes</span>
+                            <small class="mono text-muted">Tiempo aprobación (días)</small>
+                        </div>
+                        <div class="hypo-column">
+                            <span class="bar-val mono count-up" data-target="5">0</span>
+                            <div class="hypo-bar after anim-grow-bar" data-height="45%"></div>
+                            <span class="label text-blue">Después</span>
+                            <small class="mono text-muted">Tiempo aprobación (días)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 5: Objectives -->
+        <section class="slide" id="slide-5">
+            <h2 class="anim-slide-right">OBJETIVOS</h2>
+            <div class="grid-3">
+                <div class="card anim-stagger">
+                    <div class="text-blue" style="font-size: 1.5rem; margin-bottom: 1rem;"><i class="fa-solid fa-laptop-code"></i></div>
+                    <h3>Desarrollar</h3>
+                    <p>Prototipo de sistema digital para la gestión del proceso PPAP en Kimball Electronics.</p>
+                </div>
+                <div class="card anim-stagger">
+                    <div class="text-orange" style="font-size: 1.5rem; margin-bottom: 1rem;"><i class="fa-solid fa-gears"></i></div>
+                    <h3>Automatizar</h3>
+                    <p>Optimizar el control documental y la trazabilidad del flujo de trabajo.</p>
+                </div>
+                <div class="card anim-stagger">
+                    <div class="text-muted" style="font-size: 1.5rem; margin-bottom: 1rem;"><i class="fa-solid fa-check-double"></i></div>
+                    <h3>Validar</h3>
+                    <p>Demostrar la eficiencia del sistema mediante pruebas funcionales.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 6: Methodology -->
+        <section class="slide methodology-pro" id="slide-6">
+            <h2 class="anim-slide-right">METODOLOGÍA</h2>
+            <div class="methodology-grid anim-fade-in">
+                <div class="methodology-details anim-fade-in">
+                    <h3>Investigación descriptiva-experimental aplicada</h3>
+                    <p>Documenta el estado actual, identifica brechas y prueba la solución digital bajo condiciones controladas.</p>
+                    <h4>Tipo de estudio</h4>
+                    <p>Enfoque descriptivo-experimental con iteraciones ágiles sobre el flujo PPAP.</p>
+                    <h4>Métodos de recolección de datos</h4>
+                    <ul class="methodology-list">
+                        <li><span>01.</span> Revisión documental del proceso actual y normativa PPAP.</li>
+                        <li><span>02.</span> Entrevistas semi-estructuradas con usuarios clave.</li>
+                        <li><span>03.</span> Pruebas funcionales y de usabilidad del prototipo digital.</li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="procedure-label">Procedimiento</div>
+                    <div class="procedure-flow anim-scale-in">
+                        <span class="flow-connector"></span>
+                        <i class="fa-solid fa-circle-arrow-right flow-arrow-icon arrow-top"></i>
+                        <i class="fa-solid fa-circle-arrow-right flow-arrow-icon arrow-right"></i>
+                        <i class="fa-solid fa-circle-arrow-right flow-arrow-icon arrow-bottom"></i>
+                        <i class="fa-solid fa-circle-arrow-right flow-arrow-icon arrow-left"></i>
+                        <div class="flow-node flow-analysis">
+                            <strong>Análisis</strong>
+                            <p>Levantamiento de requerimientos en KEMX y criterios de éxito para la digitalización.</p>
+                        </div>
+                        <div class="flow-node flow-design">
+                            <strong>Diseño</strong>
+                            <p>Arquitectura MVC, modelo de datos y checklist digital listo para auditoría.</p>
+                        </div>
+                        <div class="flow-node flow-validation">
+                            <strong>Validación</strong>
+                            <p>Pilotos funcionales y simulación de liberaciones con usuarios clave.</p>
+                        </div>
+                        <div class="flow-node flow-results">
+                            <strong>Resultados</strong>
+                            <p>Viabilidad técnica probada y mejoras proyectadas en trazabilidad y tiempos.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 7: Evidencia Digital -->
+        <section class="slide" id="slide-7">
+            <h2 class="anim-slide-right">VALIDACIÓN DEL PROTOTIPO</h2>
+            <div class="results-grid anim-fade-in">
+                <div class="result-card">
+                    <strong>01 · EFICIENCIA</strong>
+                    <p>Hasta <span class="text-orange">30,000 minutos</span> ahorrados en validaciones de ingeniería y <span class="text-blue">9,000 minutos</span> en solicitudes de calidad.</p>
+                </div>
+                <div class="result-card">
+                    <strong>02 · FINANZAS</strong>
+                    <p>El desarrollo interno evita licencias entre <span class="text-orange">$7k y $10k USD</span> anuales, habilitando ventaja competitiva sostenible.</p>
+                </div>
+                <div class="result-card">
+                    <strong>03 · SOBERANÍA</strong>
+                    <p>Control completo de la infraestructura y los datos, con proyección para integrar SAP y Power BI sin depender de nubes externas.</p>
+                </div>
+            </div>
+            <div class="system-videos" style="margin-top: 3rem;">
+                <div class="video-card anim-fade-right">
+                    <h4>Paso 1 · Inicio de sesión y tablero</h4>
+                    <div class="video-frame">
+                        <video src="img/mp4/secion.mp4" poster="img/sistema/1.2.jpg" controls preload="metadata"></video>
+                    </div>
+                    <p style="margin-top: 0.75rem; color: var(--text-muted);">Se muestran los accesos seguros y la vista general del dashboard PPAP Management.</p>
+                </div>
+                <div class="video-card anim-fade-left">
+                    <h4>Paso 2 · Flujo de validación</h4>
+                    <div class="video-frame">
+                        <video src="img/mp4/panel.mp4" poster="img/sistema/1.2.jpg" controls preload="metadata"></video>
+                    </div>
+                    <p style="margin-top: 0.75rem; color: var(--text-muted);">Recorrido por el checklist digital y la trazabilidad de liberaciones dentro del sistema.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 8: Quantitative Results -->
+        <section class="slide" id="slide-8">
+            <h2 class="anim-slide-right">RESULTADOS: AHORRO DE TIEMPO</h2>
+            <div style="text-align: center; margin-bottom: 30px;">
+                <p>Proyección de ahorro en minutos para liberación de validaciones.</p>
+            </div>
+            <div class="chart-container">
+                <div class="bar-group">
+                    <span class="bar-val mono count-up" data-target="30000">0</span>
+                    <div class="bar bg-blue anim-grow-bar" data-height="80%"></div>
+                    <span style="margin-top: 10px;">Ingeniería</span>
+                </div>
+                <div class="bar-group">
+                    <span class="bar-val mono count-up" data-target="9000">0</span>
+                    <div class="bar bg-orange anim-grow-bar" data-height="35%"></div>
+                    <span style="margin-top: 10px;">Calidad</span>
+                </div>
+            </div>
+            <div class="chart-details">
+                <div class="radial-panel anim-fade-right">
+                    <h3 style="text-align:center; margin-bottom: 1.5rem;">Índice global de optimización</h3>
+                    <div class="radial-chart anim-zoom-in" data-progress="72">
+                        <div class="radial-value">
+                            72%
+                            <span>meta 2025</span>
+                        </div>
+                    </div>
+                    <p style="text-align:center; color: var(--text-muted);">Porcentaje de entregables liberados antes de la fecha objetivo tras la digitalización.</p>
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <strong>Lead time</strong>
+                            <span>-4.2 días</span>
+                        </div>
+                        <div class="metric-card">
+                            <strong>Retrabajos</strong>
+                            <span>-38%</span>
+                        </div>
+                        <div class="metric-card">
+                            <strong>Alertas</strong>
+                            <span>+62</span>
+                        </div>
+                        <div class="metric-card">
+                            <strong>Checklist</strong>
+                            <span>99% OK</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="trend-panel anim-fade-left">
+                    <h3><i class="fa-solid fa-money-bill-trend-up"></i> Ahorro Financiero</h3>
+                    <div class="card" style="border-top: 4px solid var(--success-green); margin-top: 1rem;">
+                        <h3 style="color: var(--success-green); margin-bottom: 1rem;">Desarrollo In-house</h3>
+                        <p>El desarrollo interno evita costos de licenciamiento, habilitando ventaja competitiva sostenible.</p>
+                        <div style="background: rgba(74, 222, 128, 0.1); padding: 20px; border-radius: 12px; text-align: center; margin-top: 1.5rem;">
+                            <span class="mono" style="font-size: 2rem; color: var(--success-green); font-weight: 700;">$7k - $10k USD</span>
+                            <div style="font-size: 0.9rem; margin-top: 0.5rem; color: var(--text-muted);">Ahorro Anual Estimado</div>
+                        </div>
+                        <p style="margin-top: 1.5rem; color: var(--text-muted); font-size: 1rem;">Este ahorro recurrente permite reinvertir en mejoras continuas del sistema y expansión de funcionalidades.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 9: Conclusions -->
+        <section class="slide" id="slide-9">
+            <div style="text-align: center; max-width: 900px; margin: 0 auto;">
+                <h2 class="anim-fade-down" style="border:none; padding:0; margin-bottom: 30px;">CONCLUSIONES</h2>
+                <div class="card anim-zoom-in">
+                    <p style="font-size: 1rem; color: var(--text-main);">Se demostró la <strong>viabilidad técnica y funcional</strong> del prototipo digital.</p>
+                    <hr style="border-color: rgba(0,0,0,0.1); margin: 20px 0;">
+                    <p>Posiciona a Kimball Electronics para enfrentar los retos de la <span class="text-orange">transformación digital industrial</span>.</p>
+                    <p style="margin-top: 1rem;">El trabajo permitió demostrar la viabilidad técnica y funcional de un prototipo digital para la gestión del PPAP en Kimball Electronics México, anticipando mejoras en eficiencia, trazabilidad y preparación para auditorías en entornos simulados. Este prototipo aporta un marco práctico y un punto de partida para posteriores desarrollos, adaptaciones e implementación real, posicionando a la organización para enfrentar los retos de la transformación digital industrial.</p>
+                    <p style="margin-top: 1rem;"><strong>Recomendación:</strong> avanzar hacia proyectos piloto y pruebas en campo para validar plenamente el impacto en entornos reales.</p>
+                </div>
+                <div class="feature-item anim-fade-up" style="margin-top: 30px; justify-content: center; border: 1px solid var(--primary-blue);">
+                    <strong class="text-blue">RECOMENDACIÓN:</strong> Avanzar a proyectos piloto en campo.
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 10: References -->
+        <section class="slide" id="slide-10">
+            <h2 class="anim-slide-right">REFERENCIAS</h2>
+            <ul class="ref-list anim-fade-in">
+                <li>Checklist Fácil. (2025, julio 29). Qué es el PPAP y cómo realizarlo eficazmente.</li>
+                <li>Keypack Solutions. (2025, enero 7). El Impacto de la Digitalización en la Industria Automotriz.</li>
+                <li>Morales Alan. (2021). Maestría en Ingeniería e Innovación con orientación en calidad automotriz. CETYS Universidad.</li>
+                <li>SPC Consulting Group. (2025, mayo 29). PPAP Production Part Approval Process.</li>
+                <li>Studocu. (2024). Resumen Final del PPAP en ISO IATF 16949-2016.</li>
+                <li>Sydle One. (2024). PPAP: qué es, cómo prepararlo y lista de elementos.</li>
+                <li>WayKen RM. (2025). Guía del Proceso de Aprobación de Piezas de Producción (PPAP).</li>
+            </ul>
+        </section>
+
+    </div>
+
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- 1. STATE MANAGEMENT ---
+            let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        let isAnimating = false;
+        const progressBar = document.querySelector('.progress-bar');
+        const counterEl = document.querySelector('.slide-counter');
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        const trendBars = document.querySelectorAll('.trend-bar');
+        const themeToggleBtn = document.getElementById('theme-toggle-btn');
+        const body = document.body;
+
+            // --- 2. NAVIGATION LOGIC ---
+            function updateUI() {
+                counterEl.textContent = `0${currentSlide + 1} / ${totalSlides}`;
+                progressBar.style.width = `${((currentSlide + 1) / totalSlides) * 100}%`;
+            }
+
+            function goToSlide(index, direction) {
+                if (isAnimating || index < 0 || index >= totalSlides) return;
+                isAnimating = true;
+
+                const activeSlide = slides[currentSlide];
+                const nextSlide = slides[index];
+
+                // Out Animation
+                gsap.to(activeSlide, {
+                    opacity: 0,
+                    y: direction === 'next' ? -50 : 50,
+                    duration: 0.5,
+                    ease: "power2.inOut",
+                    onComplete: () => {
+                        activeSlide.classList.remove('active');
+                        activeSlide.style.visibility = 'hidden';
+                    }
+                });
+
+                // In Animation
+                nextSlide.style.visibility = 'visible';
+                gsap.fromTo(nextSlide, 
+                    { opacity: 0, y: direction === 'next' ? 50 : -50 },
+                    { 
+                        opacity: 1, y: 0, duration: 0.5, ease: "power2.out",
+                        onStart: () => {
+                            nextSlide.classList.add('active');
+                            currentSlide = index;
+                            updateUI();
+                            animateSlideContent(nextSlide);
+                        },
+                        onComplete: () => {
+                            isAnimating = false;
+                        }
+                    }
+                );
+            }
+
+            // --- 3. CONTENT ANIMATIONS ---
+            function animateSlideContent(slide) {
+                // Reset specific elements if needed
+                const chartBars = slide.querySelectorAll('.anim-grow-bar');
+                if (chartBars.length) {
+                    gsap.set(chartBars, { height: '0%' });
+                    chartBars.forEach(bar => {
+                        gsap.to(bar, { height: bar.dataset.height, duration: 1.5, delay: 0.3, ease: "power3.out" });
+                    });
+                }
+
+                const counters = slide.querySelectorAll('.count-up');
+                counters.forEach(counter => {
+                    let target = parseInt(counter.dataset.target);
+                    gsap.fromTo(counter, { innerText: 0 }, {
+                        innerText: target,
+                        duration: 2,
+                        snap: { innerText: 1 },
+                        ease: "power1.out",
+                        onUpdate: function() {
+                            this.targets()[0].innerText = Math.ceil(this.targets()[0].innerText).toLocaleString();
+                        }
+                    });
+                });
+
+                // General Stagger Animations
+                const staggers = slide.querySelectorAll('.anim-stagger');
+                if(staggers.length) gsap.from(staggers, { y: 20, opacity: 0, stagger: 0.2, duration: 0.6, delay: 0.2 });
+
+                const fadeRight = slide.querySelectorAll('.anim-fade-right');
+                if(fadeRight.length) gsap.from(fadeRight, { x: -30, opacity: 0, duration: 0.6, delay: 0.2 });
+                
+                const fadeLeft = slide.querySelectorAll('.anim-fade-left');
+                if(fadeLeft.length) gsap.from(fadeLeft, { x: 30, opacity: 0, duration: 0.6, delay: 0.2 });
+                
+                const zoomIn = slide.querySelectorAll('.anim-zoom-in');
+                if(zoomIn.length) gsap.from(zoomIn, { scale: 0.8, opacity: 0, duration: 0.6, delay: 0.2, ease: "back.out(1.7)" });
+        
+        const radialChart = slide.querySelector('.radial-chart');
+        if (radialChart) {
+            radialChart.style.setProperty('--progress', '0%');
+            const target = parseFloat(radialChart.dataset.progress || '0');
+            const progressObj = { value: 0 };
+            gsap.to(progressObj, {
+                value: target,
+                duration: 1.5,
+                ease: "elastic.out(1, 0.5)",
+                delay: 0.2,
+                onUpdate: () => radialChart.style.setProperty('--progress', `${progressObj.value}%`)
+            });
+            const radialValue = radialChart.querySelector('.radial-value');
+            if (radialValue) gsap.from(radialValue, { scale: 0.8, opacity: 0, duration: 0.6, delay: 0.2, ease: "power3.out" });
+        }
+
+        const trendFills = slide.querySelectorAll('.trend-fill');
+        if (trendFills.length) {
+            trendFills.forEach(fill => {
+                const value = parseFloat(fill.dataset.value || '0');
+                gsap.fromTo(fill, { width: '0%' }, { width: `${value}%`, duration: 1.1, ease: "elastic.out(1, 0.5)", delay: 0.15 });
+            });
+        }
+            }
+
+            // --- 4. THREE.JS BACKGROUND (Digital Network) ---
+            function initThreeJS() {
+                const canvas = document.getElementById('webgl-canvas');
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
+                
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+                // Particles
+                const particlesGeometry = new THREE.BufferGeometry();
+                const count = 100;
+                const posArray = new Float32Array(count * 3);
+
+                for(let i = 0; i < count * 3; i++) {
+                    posArray[i] = (Math.random() - 0.5) * 20; // Spread
+                }
+
+                particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+                const material = new THREE.PointsMaterial({ size: 0.05, color: 0x0047BA });
+                const particlesMesh = new THREE.Points(particlesGeometry, material);
+                scene.add(particlesMesh);
+
+                // Connecting Lines
+                const lineMaterial = new THREE.LineBasicMaterial({ color: 0x0047BA, transparent: true, opacity: 0.25 });
+                const linesGeometry = new THREE.BufferGeometry();
+                const linesMesh = new THREE.LineSegments(linesGeometry, lineMaterial);
+                scene.add(linesMesh);
+
+                camera.position.z = 5;
+
+                // Animation Loop
+                const clock = new THREE.Clock();
+                
+                function animate() {
+                    requestAnimationFrame(animate);
+                    const elapsedTime = clock.getElapsedTime();
+
+                    // Rotate System
+                    particlesMesh.rotation.y = elapsedTime * 0.05;
+                    linesMesh.rotation.y = elapsedTime * 0.05;
+
+                    // Update Lines dynamically
+                    const positions = particlesMesh.geometry.attributes.position.array;
+                    const linePositions = [];
+
+                    // Simple distance check for lines (heavy operation kept minimal by low count)
+                    for (let i = 0; i < count; i++) {
+                        for (let j = i + 1; j < count; j++) {
+                            const dx = positions[i*3] - positions[j*3];
+                            const dy = positions[i*3+1] - positions[j*3+1];
+                            const dz = positions[i*3+2] - positions[j*3+2];
+                            const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+
+                            if (dist < 3.5) {
+                                linePositions.push(
+                                    positions[i*3], positions[i*3+1], positions[i*3+2],
+                                    positions[j*3], positions[j*3+1], positions[j*3+2]
+                                );
+                            }
+                        }
+                    }
+                    linesMesh.geometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+
+                    renderer.render(scene, camera);
+                }
+                animate();
+
+                window.addEventListener('resize', () => {
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                });
+            }
+
+            // --- 5. INITIALIZATION & EVENT LISTENERS ---
+            initThreeJS();
+            updateUI();
+            animateSlideContent(slides[0]); // Animate first slide
+
+            document.getElementById('next-btn').addEventListener('click', () => goToSlide(currentSlide + 1, 'next'));
+            document.getElementById('prev-btn').addEventListener('click', () => goToSlide(currentSlide - 1, 'prev'));
+
+            // --- NAVEGACIÓN POR TECLADO (Múltiples opciones) ---
+            document.addEventListener('keydown', (e) => {
+                // Evitar navegación si el usuario está escribiendo en un input/textarea o interactuando con controles
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+                    return;
+                }
+                
+                // Evitar navegación si se está interactuando con videos
+                if (e.target.tagName === 'VIDEO' || e.target.closest('video')) {
+                    return;
+                }
+
+                // Flechas: Derecha/Abajo = Siguiente, Izquierda/Arriba = Anterior
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    goToSlide(currentSlide + 1, 'next');
+                }
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    goToSlide(currentSlide - 1, 'prev');
+                }
+
+                // Barra espaciadora = Siguiente (común en presentaciones)
+                if (e.key === ' ' || e.key === 'Spacebar') {
+                    e.preventDefault();
+                    goToSlide(currentSlide + 1, 'next');
+                }
+
+                // Enter = Siguiente
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    goToSlide(currentSlide + 1, 'next');
+                }
+
+                // Shift + Enter = Anterior
+                if (e.key === 'Enter' && e.shiftKey) {
+                    e.preventDefault();
+                    goToSlide(currentSlide - 1, 'prev');
+                }
+
+                // Home = Primera diapositiva
+                if (e.key === 'Home') {
+                    e.preventDefault();
+                    goToSlide(0, 'next');
+                }
+
+                // End = Última diapositiva
+                if (e.key === 'End') {
+                    e.preventDefault();
+                    goToSlide(totalSlides - 1, 'next');
+                }
+
+                // Page Down = Siguiente
+                if (e.key === 'PageDown') {
+                    e.preventDefault();
+                    goToSlide(currentSlide + 1, 'next');
+                }
+
+                // Page Up = Anterior
+                if (e.key === 'PageUp') {
+                    e.preventDefault();
+                    goToSlide(currentSlide - 1, 'prev');
+                }
+
+                // Números 1-9 = Ir a diapositiva específica (1 = primera, 2 = segunda, etc.)
+                const numKey = parseInt(e.key);
+                if (!isNaN(numKey) && numKey >= 1 && numKey <= 9) {
+                    e.preventDefault();
+                    const targetSlide = numKey - 1; // Convertir a índice (0-based)
+                    if (targetSlide < totalSlides) {
+                        goToSlide(targetSlide, targetSlide > currentSlide ? 'next' : 'prev');
+                    }
+                }
+
+                // Tecla '0' = Ir a la última diapositiva
+                if (e.key === '0') {
+                    e.preventDefault();
+                    goToSlide(totalSlides - 1, 'next');
+                }
+            });
+
+            // --- NAVEGACIÓN POR CLIC EN DIAPOSITIVAS ---
+            document.addEventListener('click', (e) => {
+                // Evitar navegación si se hace click en elementos interactivos
+                const interactiveElements = ['BUTTON', 'A', 'INPUT', 'VIDEO', 'SELECT', 'TEXTAREA'];
+                if (interactiveElements.includes(e.target.tagName) || 
+                    e.target.closest('button') || 
+                    e.target.closest('a') || 
+                    e.target.closest('video') ||
+                    e.target.closest('.nav-controls') ||
+                    e.target.closest('.umn-logo') ||
+                    e.target.closest('.student-logo') ||
+                    e.target.closest('.research-logo') ||
+                    e.target.closest('.university-logo')) {
+                    return;
+                }
+
+                // Obtener dimensiones de la ventana
+                const windowWidth = window.innerWidth;
+                const clickX = e.clientX;
+
+                // Click en la mitad derecha = Siguiente diapositiva
+                if (clickX > windowWidth / 2) {
+                    goToSlide(currentSlide + 1, 'next');
+                } 
+                // Click en la mitad izquierda = Anterior diapositiva
+                else {
+                    goToSlide(currentSlide - 1, 'prev');
+                }
+            });
+
+            // --- NAVEGACIÓN POR CLIC DERECHO (Anterior) ---
+            document.addEventListener('contextmenu', (e) => {
+                // Evitar navegación si se hace click derecho en elementos interactivos
+                const interactiveElements = ['BUTTON', 'A', 'INPUT', 'VIDEO', 'SELECT', 'TEXTAREA'];
+                if (interactiveElements.includes(e.target.tagName) || 
+                    e.target.closest('button') || 
+                    e.target.closest('a') || 
+                    e.target.closest('video') ||
+                    e.target.closest('.nav-controls')) {
+                    return;
+                }
+
+                // Click derecho = Anterior diapositiva
+                e.preventDefault();
+                goToSlide(currentSlide - 1, 'prev');
+                return false;
+            });
+
+            function toggleFullscreen() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen?.().catch(() => {});
+                } else {
+                    document.exitFullscreen?.();
+                }
+            }
+
+            function updateFullscreenIcon() {
+                const icon = fullscreenBtn.querySelector('i');
+                if (document.fullscreenElement) {
+                    icon.classList.remove('fa-maximize');
+                    icon.classList.add('fa-minimize');
+                    fullscreenBtn.classList.add('active');
+                    fullscreenBtn.setAttribute('aria-pressed', 'true');
+                } else {
+                    icon.classList.remove('fa-minimize');
+                    icon.classList.add('fa-maximize');
+                    fullscreenBtn.classList.remove('active');
+                    fullscreenBtn.setAttribute('aria-pressed', 'false');
+                }
+            }
+
+            fullscreenBtn.addEventListener('click', toggleFullscreen);
+            document.addEventListener('fullscreenchange', updateFullscreenIcon);
+            updateFullscreenIcon();
+
+            // --- THEME TOGGLE ---
+            function applyTheme(theme) {
+                const isDark = theme === 'dark';
+                body.classList.toggle('dark-mode', isDark);
+                const icon = themeToggleBtn.querySelector('i');
+                if (isDark) {
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                    themeToggleBtn.classList.add('active');
+                    themeToggleBtn.setAttribute('aria-pressed', 'true');
+                } else {
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                    themeToggleBtn.classList.remove('active');
+                    themeToggleBtn.setAttribute('aria-pressed', 'false');
+                }
+            }
+
+            const savedTheme = localStorage.getItem('presentation-theme') || 'light';
+            applyTheme(savedTheme);
+            themeToggleBtn.addEventListener('click', () => {
+                const newTheme = body.classList.contains('dark-mode') ? 'light' : 'dark';
+                applyTheme(newTheme);
+                localStorage.setItem('presentation-theme', newTheme);
+            });
+
+            // --- 6. DRAG AND DROP FOR LOGOS ---
+            function initDraggableLogos() {
+                const draggableLogos = document.querySelectorAll('.umn-logo, .student-logo, .research-logo, .university-logo');
+                
+                // Función para obtener ID único de cada logo
+                function getLogoId(logo) {
+                    // Identificar por clase principal y posición única
+                    if (logo.classList.contains('umn-logo-top-right')) return 'umn-logo-top-right';
+                    if (logo.classList.contains('umn-logo-bottom-left')) return 'umn-logo-bottom-left';
+                    if (logo.classList.contains('student-logo')) return 'student-logo';
+                    if (logo.classList.contains('research-logo')) return 'research-logo';
+                    if (logo.classList.contains('university-logo')) return 'university-logo';
+                    // Fallback: usar todas las clases relacionadas con logo
+                    return Array.from(logo.classList).filter(cls => cls.includes('logo')).join('-') || 'logo-unknown';
+                }
+                
+                // Función para aplicar transformaciones
+                function applyTransform(element) {
+                    const rotate = parseFloat(element.dataset.rotate || 0);
+                    const scale = parseFloat(element.dataset.scale || 1);
+                    element.style.transform = `rotate(${rotate}deg) scale(${scale})`;
+                }
+                
+                // Función para mantener logo dentro del viewport
+                function constrainToViewport(element) {
+                    const rect = element.getBoundingClientRect();
+                    const windowWidth = window.innerWidth;
+                    const windowHeight = window.innerHeight;
+                    const elementWidth = rect.width || 200;
+                    const elementHeight = rect.height || 200;
+                    
+                    // Obtener posición actual del elemento
+                    const computed = window.getComputedStyle(element);
+                    let top = 0;
+                    let left = 0;
+                    let changed = false;
+                    
+                    // Obtener valores de top y left
+                    if (element.style.top && element.style.top !== 'auto') {
+                        top = parseFloat(element.style.top) || 0;
+                    } else if (computed.top !== 'auto' && computed.top !== '0px') {
+                        top = parseFloat(computed.top) || 0;
+                    } else {
+                        // Si no hay top, usar getBoundingClientRect
+                        top = rect.top;
+                    }
+                    
+                    if (element.style.left && element.style.left !== 'auto') {
+                        left = parseFloat(element.style.left) || 0;
+                    } else if (computed.left !== 'auto' && computed.left !== '0px') {
+                        left = parseFloat(computed.left) || 0;
+                    } else {
+                        // Si no hay left, usar getBoundingClientRect
+                        left = rect.left;
+                    }
+                    
+                    // Asegurar que el logo esté visible (dejar al menos 20px visibles)
+                    const minVisible = 20;
+                    if (left + elementWidth < minVisible) {
+                        left = minVisible - elementWidth;
+                        changed = true;
+                    }
+                    if (left > windowWidth - minVisible) {
+                        left = windowWidth - minVisible;
+                        changed = true;
+                    }
+                    if (top + elementHeight < minVisible) {
+                        top = minVisible - elementHeight;
+                        changed = true;
+                    }
+                    if (top > windowHeight - minVisible) {
+                        top = windowHeight - minVisible;
+                        changed = true;
+                    }
+                    
+                    if (changed) {
+                        element.style.top = `${top}px`;
+                        element.style.left = `${left}px`;
+                        element.style.right = 'auto';
+                        element.style.bottom = 'auto';
+                        // Forzar visibilidad
+                        element.style.display = 'block';
+                        element.style.visibility = 'visible';
+                        element.style.opacity = '0.85';
+                    }
+                }
+                
+                // Cargar posiciones guardadas al iniciar
+                let loadedCount = 0;
+                draggableLogos.forEach(logo => {
+                    const logoId = getLogoId(logo);
+                    const savedPos = localStorage.getItem(`logo-pos-${logoId}`);
+                    
+                    // Asegurar que el logo sea visible inicialmente
+                    logo.style.display = 'block';
+                    logo.style.visibility = 'visible';
+                    logo.style.opacity = '0.85';
+                    
+                    if (savedPos) {
+                        try {
+                            const pos = JSON.parse(savedPos);
+                            
+                            // Aplicar posición
+                            if (pos.top !== undefined && pos.top !== '' && pos.top !== 'auto') {
+                                logo.style.top = pos.top;
+                                logo.style.bottom = 'auto';
+                            }
+                            if (pos.left !== undefined && pos.left !== '' && pos.left !== 'auto') {
+                                logo.style.left = pos.left;
+                                logo.style.right = 'auto';
+                            }
+                            if (pos.right !== undefined && pos.right !== '' && pos.right !== 'auto') {
+                                logo.style.right = pos.right;
+                                logo.style.left = 'auto';
+                            }
+                            if (pos.bottom !== undefined && pos.bottom !== '' && pos.bottom !== 'auto') {
+                                logo.style.bottom = pos.bottom;
+                                logo.style.top = 'auto';
+                            }
+                            
+                            // Cargar rotación y escala
+                            if (pos.rotate !== undefined && pos.rotate !== '') {
+                                logo.dataset.rotate = pos.rotate;
+                            } else {
+                                logo.dataset.rotate = '0';
+                            }
+                            if (pos.scale !== undefined && pos.scale !== '') {
+                                logo.dataset.scale = pos.scale;
+                            } else {
+                                logo.dataset.scale = '1';
+                            }
+                            
+                            applyTransform(logo);
+                            
+                            // Asegurar que esté dentro del viewport después de cargar
+                            setTimeout(() => constrainToViewport(logo), 100);
+                            
+                            loadedCount++;
+                        } catch (e) {
+                            console.warn('Error loading saved position for', logoId, e);
+                            // Inicializar valores por defecto en caso de error
+                            logo.dataset.rotate = '0';
+                            logo.dataset.scale = '1';
+                            applyTransform(logo);
+                        }
+                    } else {
+                        // Inicializar valores por defecto
+                        logo.dataset.rotate = '0';
+                        logo.dataset.scale = '1';
+                        applyTransform(logo);
+                    }
+                });
+                
+                if (loadedCount > 0) {
+                    console.log(`✓ ${loadedCount} logo(s) cargado(s) desde localStorage`);
+                }
+
+                // Función para guardar posición, rotación y escala
+                function savePosition(element) {
+                    const logoId = getLogoId(element);
+                    const computed = window.getComputedStyle(element);
+                    const pos = {
+                        top: element.style.top || (computed.top !== 'auto' && computed.top !== '0px' ? computed.top : ''),
+                        left: element.style.left || (computed.left !== 'auto' && computed.left !== '0px' ? computed.left : ''),
+                        right: element.style.right || (computed.right !== 'auto' && computed.right !== '0px' ? computed.right : ''),
+                        bottom: element.style.bottom || (computed.bottom !== 'auto' && computed.bottom !== '0px' ? computed.bottom : ''),
+                        rotate: element.dataset.rotate || '0',
+                        scale: element.dataset.scale || '1'
+                    };
+                    localStorage.setItem(`logo-pos-${logoId}`, JSON.stringify(pos));
+                    console.log(`Posición guardada para ${logoId}:`, pos);
+                }
+
+                // Inicializar drag, rotate y scale para cada logo
+                draggableLogos.forEach(logo => {
+                    let isDragging = false;
+                    let startX = 0;
+                    let startY = 0;
+                    let initialLeft = 0;
+                    let initialTop = 0;
+                    
+                    // Inicializar valores de rotación y escala si no existen
+                    if (!logo.dataset.rotate) logo.dataset.rotate = '0';
+                    if (!logo.dataset.scale) logo.dataset.scale = '1';
+                    applyTransform(logo);
+
+                    function getPosition() {
+                        const rect = logo.getBoundingClientRect();
+                        return {
+                            left: rect.left,
+                            top: rect.top
+                        };
+                    }
+
+                    function dragStart(e) {
+                        isDragging = true;
+                        logo.classList.add('dragging');
+                        
+                        const pos = getPosition();
+                        startX = (e.type === 'touchstart' ? e.touches[0].clientX : e.clientX);
+                        startY = (e.type === 'touchstart' ? e.touches[0].clientY : e.clientY);
+                        initialLeft = pos.left;
+                        initialTop = pos.top;
+                        
+                        // Convertir a top/left si está usando right/bottom
+                        const computed = window.getComputedStyle(logo);
+                        if (computed.right !== 'auto' && computed.right !== '0px') {
+                            logo.style.left = `${pos.left}px`;
+                            logo.style.right = 'auto';
+                        }
+                        if (computed.bottom !== 'auto' && computed.bottom !== '0px') {
+                            logo.style.top = `${pos.top}px`;
+                            logo.style.bottom = 'auto';
+                        }
+                        
+                        e.preventDefault();
+                    }
+
+                    function drag(e) {
+                        if (!isDragging) return;
+                        e.preventDefault();
+                        
+                        const currentX = (e.type === 'touchmove' ? e.touches[0].clientX : e.clientX);
+                        const currentY = (e.type === 'touchmove' ? e.touches[0].clientY : e.clientY);
+                        
+                        const deltaX = currentX - startX;
+                        const deltaY = currentY - startY;
+                        
+                        logo.style.left = `${initialLeft + deltaX}px`;
+                        logo.style.top = `${initialTop + deltaY}px`;
+                    }
+
+                    function dragEnd() {
+                        if (isDragging) {
+                            isDragging = false;
+                            logo.classList.remove('dragging');
+                            // Asegurar que el logo esté dentro del viewport
+                            constrainToViewport(logo);
+                            savePosition(logo);
+                        }
+                    }
+
+                    // Rotación y escalado con rueda del mouse
+                    logo.addEventListener('wheel', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        const delta = e.deltaY > 0 ? -1 : 1;
+                        
+                        if (e.shiftKey) {
+                            // Shift + rueda = Rotar
+                            const currentRotate = parseFloat(logo.dataset.rotate || 0);
+                            const newRotate = currentRotate + (delta * 5); // 5 grados por paso
+                            logo.dataset.rotate = newRotate.toString();
+                            applyTransform(logo);
+                            savePosition(logo);
+                        } else if (e.ctrlKey || e.metaKey) {
+                            // Ctrl/Cmd + rueda = Escalar
+                            const currentScale = parseFloat(logo.dataset.scale || 1);
+                            const scaleStep = 0.1;
+                            const newScale = Math.max(0.3, Math.min(3, currentScale + (delta * scaleStep)));
+                            logo.dataset.scale = newScale.toString();
+                            applyTransform(logo);
+                            savePosition(logo);
+                        } else {
+                            // Solo rueda = Escalar (sin Ctrl)
+                            const currentScale = parseFloat(logo.dataset.scale || 1);
+                            const scaleStep = 0.05;
+                            const newScale = Math.max(0.3, Math.min(3, currentScale + (delta * scaleStep)));
+                            logo.dataset.scale = newScale.toString();
+                            applyTransform(logo);
+                            savePosition(logo);
+                        }
+                    }, { passive: false });
+
+                    // Gestos táctiles para rotar y escalar
+                    let initialDistance = 0;
+                    let initialAngle = 0;
+                    let initialRotate = 0;
+                    let initialScale = 1;
+                    let isPinching = false;
+
+                    function touchStartHandler(e) {
+                        if (e.touches.length === 2) {
+                            // Dos dedos: rotar y escalar
+                            isPinching = true;
+                            isDragging = false;
+                            const touch1 = e.touches[0];
+                            const touch2 = e.touches[1];
+                            
+                            initialDistance = Math.hypot(
+                                touch2.clientX - touch1.clientX,
+                                touch2.clientY - touch1.clientY
+                            );
+                            initialAngle = Math.atan2(
+                                touch2.clientY - touch1.clientY,
+                                touch2.clientX - touch1.clientX
+                            ) * (180 / Math.PI);
+                            initialRotate = parseFloat(logo.dataset.rotate || 0);
+                            initialScale = parseFloat(logo.dataset.scale || 1);
+                            
+                            e.preventDefault();
+                        } else if (e.touches.length === 1 && !isPinching) {
+                            // Un dedo: arrastrar
+                            dragStart(e);
+                        }
+                    }
+
+                    function touchMoveHandler(e) {
+                        if (e.touches.length === 2 && isPinching) {
+                            const touch1 = e.touches[0];
+                            const touch2 = e.touches[1];
+                            
+                            const currentDistance = Math.hypot(
+                                touch2.clientX - touch1.clientX,
+                                touch2.clientY - touch1.clientY
+                            );
+                            const currentAngle = Math.atan2(
+                                touch2.clientY - touch1.clientY,
+                                touch2.clientX - touch1.clientX
+                            ) * (180 / Math.PI);
+                            
+                            // Escalar
+                            const scaleChange = currentDistance / initialDistance;
+                            const newScale = Math.max(0.3, Math.min(3, initialScale * scaleChange));
+                            logo.dataset.scale = newScale.toString();
+                            
+                            // Rotar
+                            const angleChange = currentAngle - initialAngle;
+                            const newRotate = initialRotate + angleChange;
+                            logo.dataset.rotate = newRotate.toString();
+                            
+                            applyTransform(logo);
+                            e.preventDefault();
+                        } else if (e.touches.length === 1 && !isPinching) {
+                            drag(e);
+                        }
+                    }
+
+                    function touchEndHandler(e) {
+                        if (isPinching) {
+                            isPinching = false;
+                            savePosition(logo);
+                        }
+                        if (isDragging) {
+                            dragEnd();
+                        }
+                    }
+
+                    // Eventos de arrastre y gestos
+                    logo.addEventListener('mousedown', dragStart);
+                    logo.addEventListener('touchstart', touchStartHandler, { passive: false });
+                    document.addEventListener('mousemove', drag);
+                    document.addEventListener('touchmove', touchMoveHandler, { passive: false });
+                    document.addEventListener('mouseup', dragEnd);
+                    document.addEventListener('touchend', touchEndHandler);
+                });
+            }
+
+            // Inicializar drag and drop
+            initDraggableLogos();
+            
+            // Verificar visibilidad de logos después de cargar completamente
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    const draggableLogos = document.querySelectorAll('.umn-logo, .student-logo, .research-logo, .university-logo');
+                    draggableLogos.forEach(logo => {
+                        // Asegurar que todos los logos sean visibles
+                        logo.style.display = 'block';
+                        logo.style.visibility = 'visible';
+                        if (!logo.style.opacity || logo.style.opacity === '0') {
+                            logo.style.opacity = '0.85';
+                        }
+                    });
+                }, 500);
+            });
+            
+            // Mantener logos visibles al redimensionar ventana
+            window.addEventListener('resize', () => {
+                const draggableLogos = document.querySelectorAll('.umn-logo, .student-logo, .research-logo, .university-logo');
+                draggableLogos.forEach(logo => {
+                    logo.style.display = 'block';
+                    logo.style.visibility = 'visible';
+                });
+            });
+
+            // --- 7. GUARDADO AUTOMÁTICO Y PERSISTENCIA ---
+            function getLogoId(logo) {
+                // Identificar por clase principal y posición única
+                if (logo.classList.contains('umn-logo-top-right')) return 'umn-logo-top-right';
+                if (logo.classList.contains('umn-logo-bottom-left')) return 'umn-logo-bottom-left';
+                if (logo.classList.contains('student-logo')) return 'student-logo';
+                if (logo.classList.contains('research-logo')) return 'research-logo';
+                if (logo.classList.contains('university-logo')) return 'university-logo';
+                // Fallback: usar todas las clases relacionadas con logo
+                return Array.from(logo.classList).filter(cls => cls.includes('logo')).join('-') || 'logo-unknown';
+            }
+            
+            function saveAllLogosPositions() {
+                const draggableLogos = document.querySelectorAll('.umn-logo, .student-logo, .research-logo, .university-logo');
+                draggableLogos.forEach(logo => {
+                    const logoId = getLogoId(logo);
+                    const computed = window.getComputedStyle(logo);
+                    const pos = {
+                        top: logo.style.top || (computed.top !== 'auto' && computed.top !== '0px' ? computed.top : ''),
+                        left: logo.style.left || (computed.left !== 'auto' && computed.left !== '0px' ? computed.left : ''),
+                        right: logo.style.right || (computed.right !== 'auto' && computed.right !== '0px' ? computed.right : ''),
+                        bottom: logo.style.bottom || (computed.bottom !== 'auto' && computed.bottom !== '0px' ? computed.bottom : ''),
+                        rotate: logo.dataset.rotate || '0',
+                        scale: logo.dataset.scale || '1'
+                    };
+                    localStorage.setItem(`logo-pos-${logoId}`, JSON.stringify(pos));
+                });
+                console.log('Todas las posiciones de logos guardadas');
+            }
+
+            // Guardar automáticamente cada 2 segundos como respaldo
+            setInterval(() => {
+                saveAllLogosPositions();
+            }, 2000);
+
+            // Guardar cuando se cierra la página o se recarga
+            window.addEventListener('beforeunload', () => {
+                saveAllLogosPositions();
+            });
+
+            // Guardar cuando la página pierde el foco (pestaña cambia, etc.)
+            window.addEventListener('blur', () => {
+                saveAllLogosPositions();
+            });
+
+            // Guardar cuando se detecta que la página está oculta (mobile)
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    saveAllLogosPositions();
+                }
+            });
+
+            console.log('Sistema de guardado automático activado');
+        });
+    </script>
+</body>
+</html>
