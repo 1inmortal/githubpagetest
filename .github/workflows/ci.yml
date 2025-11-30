@@ -188,8 +188,7 @@ jobs:
         test -f index.html
         test -f src/core/store.js
         test -f src/services/dataClient.js
-        test -f server/src/index.js
-        test -f server/prisma/schema.prisma
+        test -f server/server.js
 
     - name: Verificar dependencias de seguridad
       run: npm audit --audit-level=moderate
@@ -232,9 +231,22 @@ jobs:
         cp -r docs/ dist/
         cp README.md dist/
         cp LICENSE dist/
+        
+        # Verificar que el directorio dist existe
+        if [ ! -d "dist" ]; then
+          echo "❌ Error: El directorio dist no se creó correctamente"
+          exit 1
+        fi
+        
+        # Mostrar estadísticas del build
+        echo "📊 Estadísticas del build:"
+        echo "Archivos en dist: $(find dist -type f | wc -l)"
+        echo "Tamaño total: $(du -sh dist | cut -f1)"
+        
+        echo "✅ Preparación de archivos completada"
 
     - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3.0.0
+      uses: actions/upload-pages-artifact@v3
       with:
         path: './dist'
 

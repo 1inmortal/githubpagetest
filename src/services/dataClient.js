@@ -26,19 +26,17 @@ class DataClient {
 
   // Obtener la URL base según el entorno
   getBaseURL() {
-    // En desarrollo local
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    const hostname = window.location.hostname;
+    const allowedHosts = ['localhost', '127.0.0.1', '1inmortal.github.io'];
+
+    if (allowedHosts.includes(hostname)) {
+      if (hostname === '1inmortal.github.io') {
+        return 'https://tu-servidor-produccion.com/api';
+      }
       return 'http://localhost:3001/api';
     }
-    
-    // En GitHub Pages (producción)
-    if (window.location.hostname.includes('github.io')) {
-      // Cambiar esto por tu servidor real en producción
-      return 'https://tu-servidor-produccion.com/api';
-    }
-    
-    // Fallback para otros entornos
-    return '/api';
+
+    throw new Error(`Hostname no autorizado: ${hostname}`);
   }
 
   // Configurar revalidación automática
