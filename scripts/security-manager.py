@@ -61,16 +61,53 @@ class SecurityManager:
         }
 
     def run_command(self, command: str, cwd: Optional[str] = None) -> Tuple[int, str, str]:
-        """Ejecuta un comando y retorna el resultado"""
+        """Ejecuta un comando de forma segura y retorna el resultado"""
+        import shlex
         try:
-            result = subprocess.run(
-                command, 
-                shell=True, 
-                capture_output=True, 
-                text=True, 
-                cwd=cwd
-            )
+            # Validar que el comando no contenga caracteres peligrosos
+            dangerous_chars = ['|', '&', ';', '`', '$', '<', '>']
+            if any(char in command for char in dangerous_chars):
+                # Para comandos complejos, validar que no sean peligrosos
+                dangerous_cmds = ['rm -rf', 'del /f', 'format', 'mkfs', 'dd if=']
+                if any(danger in command.lower() for danger in dangerous_cmds):
+                    self.logger.warning(f"Comando potencialmente peligroso bloqueado: {command}")
+                    return -1, "", "Comando bloqueado por seguridad"
+            
+            # Parsear comando de forma segura
+            if isinstance(command, str):
+                # Intentar parsear como lista de argumentos (más seguro)
+                try:
+                    cmd_parts = shlex.split(command)
+                    result = subprocess.run(
+                        cmd_parts,
+                        capture_output=True,
+                        text=True,
+                        cwd=cwd,
+                        timeout=300  # Timeout de 5 minutos
+                    )
+                except ValueError:
+                    # Si falla el parsing, usar shell=True solo si es necesario
+                    result = subprocess.run(
+                        command,
+                        shell=True,
+                        capture_output=True,
+                        text=True,
+                        cwd=cwd,
+                        timeout=300
+                    )
+            else:
+                # Si ya es una lista, usarla directamente
+                result = subprocess.run(
+                    command,
+                    capture_output=True,
+                    text=True,
+                    cwd=cwd,
+                    timeout=300
+                )
+            
             return result.returncode, result.stdout, result.stderr
+        except subprocess.TimeoutExpired:
+            return -1, "", "Comando expiró (timeout)"
         except Exception as e:
             return -1, "", str(e)
 
