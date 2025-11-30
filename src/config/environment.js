@@ -22,19 +22,22 @@ const config = {
 };
 
 // Función para obtener la configuración actual
+const ALLOWED_HOSTS = ['1inmortal.github.io', 'localhost', '127.0.0.1'];
+
 export function getConfig() {
   const hostname = window.location.hostname;
-  
-  // Detectar entorno
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+
+  // Validación estricta por lista blanca de hostnames
+  if (!ALLOWED_HOSTS.includes(hostname)) {
+    // Host no autorizado: forzar entorno de desarrollo para evitar envs ambiguos
     return config.development;
   }
-  
-  if (hostname.includes('github.io')) {
+
+  if (hostname === '1inmortal.github.io') {
     return config.production;
   }
-  
-  // Fallback para otros entornos
+
+  // localhost o 127.0.0.1
   return config.development;
 }
 
