@@ -783,7 +783,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     if (submitBtn) {
                         submitBtn.disabled = true;
-                        submitBtn.innerHTML = '<span class="btn-loading"><span class="spinner">⏳</span> Enviando...</span>';
+                        // Usar textContent y crear elementos de forma segura
+                        const loadingSpan = document.createElement('span');
+                        loadingSpan.className = 'btn-loading';
+                        const spinner = document.createElement('span');
+                        spinner.className = 'spinner';
+                        spinner.textContent = '⏳';
+                        loadingSpan.appendChild(spinner);
+                        loadingSpan.appendChild(document.createTextNode(' Enviando...'));
+                        submitBtn.textContent = '';
+                        submitBtn.appendChild(loadingSpan);
                     }
                     
                     try {
@@ -807,7 +816,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     } finally {
                         if (submitBtn) {
                             submitBtn.disabled = false;
-                            submitBtn.innerHTML = 'Enviar Mensaje';
+                            submitBtn.textContent = 'Enviar Mensaje';
                         }
                     }
                 });

@@ -10,15 +10,16 @@ import os
 import sys
 import subprocess
 import shutil
+import shlex
 from pathlib import Path
 
 
 def run_command(command: str, check: bool = True) -> bool:
     """
-    Ejecutar comando del sistema.
+    Ejecutar comando del sistema de forma segura.
     
     Args:
-        command: Comando a ejecutar
+        command: Comando a ejecutar (se parsea de forma segura)
         check: Si es True, fallar si el comando falla
         
     Returns:
@@ -26,7 +27,26 @@ def run_command(command: str, check: bool = True) -> bool:
     """
     try:
         print(f"Ejecutando: {command}")
-        result = subprocess.run(command, shell=True, check=check, capture_output=True, text=True)
+        # Parsear comando de forma segura para evitar shell injection
+        if isinstance(command, str):
+            # Para comandos simples, usar shlex.split
+            # Para comandos complejos con pipes, usar shell=True solo si es necesario
+            # y validar que no contenga caracteres peligrosos
+            if any(char in command for char in ['|', '&', ';', '`', '$', '<', '>', '(', ')']):
+                # Comando complejo - validar que no sea peligroso
+                if any(danger in command.lower() for danger in ['rm -rf', 'del /f', 'format', 'mkfs']):
+                    print(f"❌ Comando potencialmente peligroso bloqueado: {command}")
+                    return False
+                # Usar shell=True solo para comandos complejos validados
+                result = subprocess.run(command, shell=True, check=check, capture_output=True, text=True)
+            else:
+                # Comando simple - usar lista de argumentos (más seguro)
+                cmd_parts = shlex.split(command)
+                result = subprocess.run(cmd_parts, check=check, capture_output=True, text=True)
+        else:
+            # Si ya es una lista, usarla directamente
+            result = subprocess.run(command, check=check, capture_output=True, text=True)
+        
         if result.stdout:
             print(result.stdout)
         return True
