@@ -80,10 +80,14 @@ pip-audit
 | Severidad | Cantidad | Estado |
 |-----------|----------|--------|
 | Crítica | 2 | ✅ Resuelto |
-| Alta | 5 | ✅ Resuelto |
-| Moderada | 7 | ✅ Resuelto |
+| Alta | 5 | ✅ 3 Resueltas, 2 Pendientes |
+| Moderada | 7 | ✅ 3 Resueltas, 4 Pendientes |
 | Baja | 2 | ✅ Resuelto |
-| **Total** | **16** | **✅ Resuelto** |
+| **Total** | **16** | **✅ 10 Resueltas, 6 Pendientes** |
+
+### ⏳ Alertas Restantes (6)
+
+Ver `SECURITY_REMAINING.md` para instrucciones detalladas sobre cómo resolver las 6 alertas restantes (todas de alcance Development).
 
 ---
 
