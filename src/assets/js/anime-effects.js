@@ -39,7 +39,8 @@ export function initAnimeText() {
                     round: 1,
                     duration: 2000,
                     update: function() {
-                        el.innerHTML = '+' + obj.val;
+                        // Seguro: obj.val es un número, no contenido de usuario
+                        el.textContent = '+' + obj.val;
                     },
                     complete: function() {
                         anime({
@@ -63,9 +64,28 @@ export function initAnimeHeadings() {
     const headings = document.querySelectorAll('.section h2');
     
     headings.forEach(h2 => {
-        // Wrap content
+        // Wrap content - usar createElement para evitar XSS
         const text = h2.innerText;
-        h2.innerHTML = `<span class="heading-wrapper">${text}<svg class="heading-line" viewBox="0 0 100 2" preserveAspectRatio="none"><path d="M0,1 L100,1" stroke="var(--accent-primary)" stroke-width="2" fill="none" vector-effect="non-scaling-stroke"></path></svg></span>`;
+        const wrapper = document.createElement('span');
+        wrapper.className = 'heading-wrapper';
+        wrapper.textContent = text;
+        
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('class', 'heading-line');
+        svg.setAttribute('viewBox', '0 0 100 2');
+        svg.setAttribute('preserveAspectRatio', 'none');
+        
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', 'M0,1 L100,1');
+        path.setAttribute('stroke', 'var(--accent-primary)');
+        path.setAttribute('stroke-width', '2');
+        path.setAttribute('fill', 'none');
+        path.setAttribute('vector-effect', 'non-scaling-stroke');
+        
+        svg.appendChild(path);
+        wrapper.appendChild(svg);
+        h2.innerHTML = ''; // Limpiar contenido anterior
+        h2.appendChild(wrapper);
         
         const path = h2.querySelector('path');
         if(!path) return;

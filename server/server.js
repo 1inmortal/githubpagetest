@@ -1,6 +1,7 @@
 const express = require('express');
 const { Pool } = require('pg');
 const bodyParser = require('express').json;
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -20,6 +21,27 @@ app.use((req, res, next) => {
 
 // Middleware para parsear JSON
 app.use(bodyParser());
+
+// Rate limiting - protección contra DDoS y fuerza bruta
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // máximo 100 peticiones por ventana
+  message: 'Demasiadas peticiones desde esta IP, intenta de nuevo más tarde.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Rate limiting más estricto para endpoints de escritura
+const writeLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20, // máximo 20 peticiones POST por ventana
+  message: 'Demasiadas peticiones de escritura, intenta de nuevo más tarde.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Aplicar rate limiting general
+app.use(limiter);
 
 // Configuración de la conexión a PostgreSQL usando variables de entorno
 const pool = new Pool({
@@ -49,7 +71,7 @@ app.get('/usuarios', async (req, res) => {
 });
 
 // Crear un nuevo usuario
-app.post('/usuarios', async (req, res) => {
+app.post('/usuarios', writeLimiter, async (req, res) => {
   const { nombre, email, password, proyecto, mensaje } = req.body;
   
   try {
@@ -87,7 +109,7 @@ app.post('/usuarios', async (req, res) => {
 });
 
 // Ruta específica para formulario de contacto
-app.post('/contacto', async (req, res) => {
+app.post('/contacto', writeLimiter, async (req, res) => {
   const { nombre, email, proyecto, mensaje } = req.body;
   
   try {
@@ -136,7 +158,7 @@ app.get('/productos', async (req, res) => {
 });
 
 // Crear un nuevo producto
-app.post('/productos', async (req, res) => {
+app.post('/productos', writeLimiter, async (req, res) => {
   const { nombre, descripcion, precio, stock } = req.body;
   try {
     const result = await pool.query(
