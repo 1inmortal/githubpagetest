@@ -1,0 +1,2100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js Ultimate Light Grid</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        
+        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Inter', sans-serif; }
+        
+        #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+
+        .ui-overlay {
+            position: absolute; z-index: 10; width: 100%; height: 100%; pointer-events: none;
+            display: flex; flex-direction: column; justify-content: space-between; padding: 2rem; box-sizing: border-box;
+        }
+
+        .header h1 {
+            color: #fff; font-size: 3rem; margin: 0; font-weight: 800; letter-spacing: -2px;
+            text-shadow: 0 0 40px rgba(255,255,255,0.6);
+            mix-blend-mode: overlay;
+        }
+        
+        .panel-toggle {
+            position: fixed !important; 
+            bottom: 2rem !important; 
+            right: 2rem !important; 
+            z-index: 10000 !important;
+            width: 50px; height: 50px; border-radius: 50%;
+            background: rgba(255,255,255,0.25); backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.5);
+            color: #fff; font-size: 24px; cursor: pointer;
+            display: flex !important; align-items: center; justify-content: center;
+            transition: all 0.3s; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            pointer-events: auto !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        .panel-toggle:hover { 
+            background: rgba(255,255,255,0.4); 
+            transform: scale(1.2); 
+            box-shadow: 0 6px 30px rgba(0,255,255,0.5);
+        }
+        
+        .controls {
+            pointer-events: auto; background: linear-gradient(135deg, rgba(10,10,15,0.95) 0%, rgba(5,5,10,0.95) 100%);
+            backdrop-filter: blur(20px); padding: 0; border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.15);
+            align-self: flex-end; width: 380px; max-height: 85vh;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+            transform: translateZ(0);
+            overflow: hidden; display: flex; flex-direction: column;
+            transition: transform 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .controls.hidden { 
+            transform: translateX(450px); 
+            opacity: 0; 
+            pointer-events: none; 
+            visibility: hidden;
+        }
+
+        .controls-header {
+            padding: 1.2rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.03);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .controls-title {
+            font-size: 14px; font-weight: 700; color: #fff;
+            letter-spacing: 1px; text-transform: uppercase;
+        }
+
+        .controls-content {
+            padding: 1.5rem; overflow-y: auto; flex: 1;
+        }
+        .controls-content::-webkit-scrollbar { width: 6px; }
+        .controls-content::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+        .controls-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+
+        .section {
+            margin-bottom: 1.5rem; padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+        .section-title {
+            font-size: 11px; font-weight: 600; color: #888;
+            letter-spacing: 1.5px; text-transform: uppercase;
+            margin-bottom: 1rem; display: flex; align-items: center;
+        }
+        .section-title::before {
+            content: ''; width: 3px; height: 12px; background: linear-gradient(180deg, #00ffff, #ff0055);
+            margin-right: 8px; border-radius: 2px;
+        }
+
+        .btn-group { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+        
+        button {
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+            color: #bbb; padding: 8px 14px; border-radius: 8px; cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600; font-size: 10px; text-transform: uppercase;
+            letter-spacing: 0.5px; flex: 1; min-width: 60px;
+        }
+        button:hover {
+            background: rgba(255,255,255,0.15); color: #fff;
+            border-color: rgba(255,255,255,0.3); transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        button.active {
+            background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7));
+            color: #000; box-shadow: 0 0 20px rgba(255,255,255,0.4);
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        .label {
+            font-size: 10px; color: #aaa; letter-spacing: 0.5px;
+            font-weight: 500; display: block; margin-bottom: 8px;
+        }
+        
+        .slider-container {
+            margin-top: 1rem; padding: 0.8rem; background: rgba(255,255,255,0.02);
+            border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);
+        }
+        .slider {
+            width: 100%; margin: 8px 0; height: 4px;
+            background: rgba(255,255,255,0.1); border-radius: 2px;
+            outline: none; -webkit-appearance: none; appearance: none;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px; height: 14px; border-radius: 50%;
+            background: linear-gradient(135deg, #00ffff, #ff0055);
+            cursor: pointer; box-shadow: 0 2px 8px rgba(0,255,255,0.4);
+            transition: all 0.2s;
+        }
+        .slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+        .slider::-moz-range-thumb {
+            width: 14px; height: 14px; border-radius: 50%;
+            background: linear-gradient(135deg, #00ffff, #ff0055);
+            cursor: pointer; border: none; box-shadow: 0 2px 8px rgba(0,255,255,0.4);
+            appearance: none; -moz-appearance: none;
+        }
+        .slider-value {
+            font-size: 11px; color: #888; margin-top: 6px;
+            font-weight: 500; display: flex; justify-content: space-between;
+        }
+        .slider-value span:last-child { color: #00ffff; font-weight: 600; }
+        
+        input[type="color"] {
+            width: 100%; height: 36px; border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px; cursor: pointer; background: rgba(255,255,255,0.05);
+            padding: 2px;
+        }
+        
+        .position-controls {
+            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px;
+        }
+        .position-input {
+            display: flex; flex-direction: column;
+        }
+        .position-input input {
+            width: 100%; padding: 6px 8px; background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;
+            color: #fff; font-size: 11px; margin-top: 4px;
+        }
+        .position-input label {
+            font-size: 9px; color: #888; text-transform: uppercase;
+            letter-spacing: 0.5px; font-weight: 600;
+        }
+        
+        .toggle-btn { margin-top: 1rem; }
+        .toggle-btn button { width: 100%; }
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+
+    <div class="ui-overlay">
+        <div class="header">
+            <h1>GRID LUMINOSO</h1>
+            <p style="color: #888; font-size: 0.8rem; margin-top: 0.5rem; letter-spacing: 2px;">EL CURSOR ES LA FUENTE DE LUZ</p>
+        </div>
+
+        <button class="panel-toggle" id="panel-toggle" onclick="togglePanel()">⚙️</button>
+
+        <div class="controls" id="controls-panel">
+            <div class="controls-header">
+                <div class="controls-title">Panel de Control</div>
+                <button onclick="togglePanel()" style="width: auto; padding: 4px 10px; font-size: 12px;">✕</button>
+            </div>
+            <div class="controls-content">
+                <!-- SECCIÓN: FORMA DEL GRID -->
+                <div class="section">
+                    <div class="section-title">Forma del Grid</div>
+                    <div class="btn-group" id="shape-group">
+                        <button onclick="setShape('hexagon')" class="active">HEX</button>
+                        <button onclick="setShape('box')">BOX</button>
+                        <button onclick="setShape('cone')">TRI</button>
+                        <button onclick="setShape('sphere')">SPH</button>
+                        <button onclick="setShape('torus')">TOR</button>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: COLOR DE LUZ -->
+                <div class="section">
+                    <div class="section-title">Color de Luz</div>
+                    <div class="btn-group" id="color-group">
+                        <button onclick="setColor('#00ffff')" class="active" style="border-bottom: 2px solid #00ffff">CIAN</button>
+                        <button onclick="setColor('#ff0055')" style="border-bottom: 2px solid #ff0055">NEÓN</button>
+                        <button onclick="setColor('#ff9900')" style="border-bottom: 2px solid #ff9900">ORO</button>
+                        <button onclick="setColor('#ffffff')" style="border-bottom: 2px solid #ffffff">PURO</button>
+                    </div>
+                    <div style="margin-top: 12px;">
+                        <label class="label">Color Personalizado</label>
+                        <input type="color" id="custom-color" value="#00ffff" onchange="setColor(this.value)">
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: ILUMINACIÓN -->
+                <div class="section">
+                    <div class="section-title">Iluminación</div>
+                    <div class="slider-container">
+                        <label class="label">Intensidad de Luz del Cursor</label>
+                        <input type="range" class="slider" id="light-intensity" min="50" max="500" value="150" oninput="updateLightIntensity(this.value)">
+                        <div class="slider-value">
+                            <span>Intensidad</span>
+                            <span id="intensity-value">150</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Luz Ambiental</label>
+                        <input type="range" class="slider" id="ambient-light" min="0" max="5" step="0.1" value="1.5" oninput="updateAmbientLight(this.value)">
+                        <div class="slider-value">
+                            <span>Brillo</span>
+                            <span id="ambient-value">1.5</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Intensidad Luces Laterales</label>
+                        <input type="range" class="slider" id="side-lights" min="500" max="10000" step="100" value="2000" oninput="updateSideLights(this.value)">
+                        <div class="slider-value">
+                            <span>Potencia</span>
+                            <span id="side-value">2000</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Intensidad Luces Sol</label>
+                        <input type="range" class="slider" id="sun-lights" min="500" max="10000" step="100" value="2500" oninput="updateSunLights(this.value)">
+                        <div class="slider-value">
+                            <span>Potencia</span>
+                            <span id="sun-value">2500</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: POSICIÓN DE ORBES -->
+                <div class="section">
+                    <div class="section-title">Posición de Orbes</div>
+                    <div class="slider-container">
+                        <label class="label">Orbes Laterales - Posición X</label>
+                        <input type="range" class="slider" id="orb-side-x" min="-80" max="80" step="5" value="-35" oninput="updateOrbPosition('side', 'x', this.value)">
+                        <div class="slider-value">
+                            <span>Eje X</span>
+                            <span id="orb-side-x-value">-35</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Orbes Laterales - Posición Y</label>
+                        <input type="range" class="slider" id="orb-side-y" min="0" max="100" step="5" value="30" oninput="updateOrbPosition('side', 'y', this.value)">
+                        <div class="slider-value">
+                            <span>Eje Y</span>
+                            <span id="orb-side-y-value">30</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Orbes Laterales - Posición Z</label>
+                        <input type="range" class="slider" id="orb-side-z" min="10" max="40" step="1" value="22" oninput="updateOrbPosition('side', 'z', this.value)">
+                        <div class="slider-value">
+                            <span>Eje Z</span>
+                            <span id="orb-side-z-value">22</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Orbes Sol - Posición X</label>
+                        <input type="range" class="slider" id="orb-sun-x" min="-80" max="80" step="5" value="-25" oninput="updateOrbPosition('sun', 'x', this.value)">
+                        <div class="slider-value">
+                            <span>Eje X</span>
+                            <span id="orb-sun-x-value">-25</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Orbes Sol - Posición Y</label>
+                        <input type="range" class="slider" id="orb-sun-y" min="0" max="100" step="5" value="35" oninput="updateOrbPosition('sun', 'y', this.value)">
+                        <div class="slider-value">
+                            <span>Eje Y</span>
+                            <span id="orb-sun-y-value">35</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Orbes Sol - Posición Z</label>
+                        <input type="range" class="slider" id="orb-sun-z" min="10" max="40" step="1" value="20" oninput="updateOrbPosition('sun', 'z', this.value)">
+                        <div class="slider-value">
+                            <span>Eje Z</span>
+                            <span id="orb-sun-z-value">20</span>
+                        </div>
+                    </div>
+                </div>
+            <div class="slider-container">
+                <span class="label">Light Intensity</span>
+                <input type="range" class="slider" id="light-intensity" min="50" max="500" value="150" oninput="updateLightIntensity(this.value)">
+                <span class="slider-value" id="intensity-value">150</span>
+            </div>
+                <!-- SECCIÓN: ANIMACIÓN -->
+                <div class="section">
+                    <div class="section-title">Animación</div>
+                    <div class="slider-container">
+                        <label class="label">Velocidad de Animación</label>
+                        <input type="range" class="slider" id="anim-speed" min="0.1" max="2.0" step="0.1" value="1.0" oninput="updateAnimSpeed(this.value)">
+                        <div class="slider-value">
+                            <span>Velocidad</span>
+                            <span id="speed-value">1.0x</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: AMBIENTE -->
+                <div class="section">
+                    <div class="section-title">Ambiente</div>
+                    <div class="slider-container">
+                        <label class="label">Densidad de Niebla</label>
+                        <input type="range" class="slider" id="fog-density" min="0" max="0.1" step="0.001" value="0.01" oninput="updateFogDensity(this.value)">
+                        <div class="slider-value">
+                            <span>Densidad</span>
+                            <span id="fog-value">0.01</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Exposición</label>
+                        <input type="range" class="slider" id="exposure" min="0.5" max="5" step="0.1" value="3.5" oninput="updateExposure(this.value)">
+                        <div class="slider-value">
+                            <span>Brillo</span>
+                            <span id="exposure-value">3.5</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Brillo Base del Color</label>
+                        <input type="range" class="slider" id="base-brightness" min="0" max="255" step="1" value="85" oninput="updateBaseBrightness(this.value)">
+                        <div class="slider-value">
+                            <span>Brillo</span>
+                            <span id="brightness-value">85</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: GRID -->
+                <div class="section">
+                    <div class="section-title">Grid</div>
+                    <div class="slider-container">
+                        <label class="label">Tamaño de Celda</label>
+                        <input type="range" class="slider" id="cell-size" min="0.8" max="2.0" step="0.1" value="1.1" oninput="updateCellSize(this.value)">
+                        <div class="slider-value">
+                            <span>Tamaño</span>
+                            <span id="cell-value">1.1</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Radio del Cursor</label>
+                        <input type="range" class="slider" id="cursor-radius" min="3" max="15" step="0.5" value="8" oninput="updateCursorRadius(this.value)">
+                        <div class="slider-value">
+                            <span>Radio</span>
+                            <span id="radius-value">8</span>
+                        </div>
+                    </div>
+                    <div class="toggle-btn">
+                        <button onclick="toggleWireframe()" id="wireframe-btn">WIREFRAME: OFF</button>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: EFECTOS -->
+                <div class="section">
+                    <div class="section-title">Efectos Visuales</div>
+                    <div class="slider-container">
+                        <label class="label">Fuerza del Bloom</label>
+                        <input type="range" class="slider" id="bloom-strength" min="0" max="3" step="0.1" value="1.8" oninput="updateBloomStrength(this.value)">
+                        <div class="slider-value">
+                            <span>Intensidad</span>
+                            <span id="bloom-value">1.8</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Umbral del Bloom</label>
+                        <input type="range" class="slider" id="bloom-threshold" min="0" max="1" step="0.01" value="0.0" oninput="updateConfig('bloomThreshold', this.value)">
+                        <div class="slider-value">
+                            <span>Umbral</span>
+                            <span id="bloom-threshold-value">0.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Radio del Bloom</label>
+                        <input type="range" class="slider" id="bloom-radius" min="0" max="2" step="0.1" value="0.5" oninput="updateConfig('bloomRadius', this.value)">
+                        <div class="slider-value">
+                            <span>Radio</span>
+                            <span id="bloom-radius-value">0.5</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Número de Orbes</label>
+                        <input type="range" class="slider" id="num-orbs" min="2" max="8" step="1" value="4" oninput="updateNumOrbs(this.value)">
+                        <div class="slider-value">
+                            <span>Cantidad</span>
+                            <span id="orbs-value">4</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: MATERIAL -->
+                <div class="section">
+                    <div class="section-title">Material</div>
+                    <div class="slider-container">
+                        <label class="label">Metalicidad</label>
+                        <input type="range" class="slider" id="metalness" min="0" max="1" step="0.01" value="1.0" oninput="updateConfig('metalness', this.value)">
+                        <div class="slider-value">
+                            <span>Valor</span>
+                            <span id="metalness-value">1.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Rugosidad</label>
+                        <input type="range" class="slider" id="roughness" min="0" max="1" step="0.01" value="0.05" oninput="updateConfig('roughness', this.value)">
+                        <div class="slider-value">
+                            <span>Valor</span>
+                            <span id="roughness-value">0.05</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Clearcoat</label>
+                        <input type="range" class="slider" id="clearcoat" min="0" max="1" step="0.01" value="1.0" oninput="updateConfig('clearcoat', this.value)">
+                        <div class="slider-value">
+                            <span>Valor</span>
+                            <span id="clearcoat-value">1.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Rugosidad Clearcoat</label>
+                        <input type="range" class="slider" id="clearcoat-roughness" min="0" max="1" step="0.01" value="0.05" oninput="updateConfig('clearcoatRoughness', this.value)">
+                        <div class="slider-value">
+                            <span>Valor</span>
+                            <span id="clearcoat-roughness-value">0.05</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Intensidad EnvMap</label>
+                        <input type="range" class="slider" id="envmap-intensity" min="0" max="5" step="0.1" value="3.0" oninput="updateConfig('envMapIntensity', this.value)">
+                        <div class="slider-value">
+                            <span>Intensidad</span>
+                            <span id="envmap-intensity-value">3.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Reflectividad</label>
+                        <input type="range" class="slider" id="reflectivity" min="0" max="1" step="0.01" value="1.0" oninput="updateConfig('reflectivity', this.value)">
+                        <div class="slider-value">
+                            <span>Valor</span>
+                            <span id="reflectivity-value">1.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Transmisión</label>
+                        <input type="range" class="slider" id="transmission" min="0" max="1" step="0.01" value="0.0" oninput="updateConfig('transmission', this.value)">
+                        <div class="slider-value">
+                            <span>Valor</span>
+                            <span id="transmission-value">0.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Espesor</label>
+                        <input type="range" class="slider" id="thickness" min="0" max="5" step="0.1" value="0.0" oninput="updateConfig('thickness', this.value)">
+                        <div class="slider-value">
+                            <span>Valor</span>
+                            <span id="thickness-value">0.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">IOR (Índice Refracción)</label>
+                        <input type="range" class="slider" id="ior" min="1" max="3" step="0.1" value="1.5" oninput="updateConfig('ior', this.value)">
+                        <div class="slider-value">
+                            <span>Valor</span>
+                            <span id="ior-value">1.5</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Sheen</label>
+                        <input type="range" class="slider" id="sheen" min="0" max="1" step="0.01" value="0.0" oninput="updateConfig('sheen', this.value)">
+                        <div class="slider-value">
+                            <span>Valor</span>
+                            <span id="sheen-value">0.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Rugosidad Sheen</label>
+                        <input type="range" class="slider" id="sheen-roughness" min="0" max="1" step="0.01" value="0.3" oninput="updateConfig('sheenRoughness', this.value)">
+                        <div class="slider-value">
+                            <span>Valor</span>
+                            <span id="sheen-roughness-value">0.3</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: COLORES AVANZADOS -->
+                <div class="section">
+                    <div class="section-title">Colores Avanzados</div>
+                    <div class="slider-container">
+                        <label class="label">Color Emisivo</label>
+                        <input type="color" id="emissive-color" value="#000000" onchange="updateColorConfig('emissiveColor', this.value)">
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Intensidad Emisiva</label>
+                        <input type="range" class="slider" id="emissive-intensity" min="0" max="5" step="0.1" value="0.0" oninput="updateConfig('emissiveIntensity', this.value)">
+                        <div class="slider-value">
+                            <span>Intensidad</span>
+                            <span id="emissive-intensity-value">0.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Color Especular</label>
+                        <input type="color" id="specular-color" value="#ffffff" onchange="updateColorConfig('specularColor', this.value)">
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Intensidad Especular</label>
+                        <input type="range" class="slider" id="specular-intensity" min="0" max="5" step="0.1" value="1.0" oninput="updateConfig('specularIntensity', this.value)">
+                        <div class="slider-value">
+                            <span>Intensidad</span>
+                            <span id="specular-intensity-value">1.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Color Sheen</label>
+                        <input type="color" id="sheen-color" value="#ffffff" onchange="updateColorConfig('sheenColor', this.value)">
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: CÁMARA -->
+                <div class="section">
+                    <div class="section-title">Cámara</div>
+                    <div class="slider-container">
+                        <label class="label">Posición X</label>
+                        <input type="range" class="slider" id="cam-x" min="-50" max="50" step="1" value="0" oninput="updateConfig('camX', this.value)">
+                        <div class="slider-value">
+                            <span>X</span>
+                            <span id="cam-x-value">0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Posición Y</label>
+                        <input type="range" class="slider" id="cam-y" min="-50" max="50" step="1" value="0" oninput="updateConfig('camY', this.value)">
+                        <div class="slider-value">
+                            <span>Y</span>
+                            <span id="cam-y-value">0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Posición Z</label>
+                        <input type="range" class="slider" id="cam-z" min="10" max="100" step="1" value="24" oninput="updateConfig('camZ', this.value)">
+                        <div class="slider-value">
+                            <span>Z</span>
+                            <span id="cam-z-value">24</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">FOV (Campo de Visión)</label>
+                        <input type="range" class="slider" id="cam-fov" min="10" max="120" step="1" value="50" oninput="updateConfig('camFOV', this.value)">
+                        <div class="slider-value">
+                            <span>Grados</span>
+                            <span id="cam-fov-value">50</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Rotación X</label>
+                        <input type="range" class="slider" id="cam-rot-x" min="-180" max="180" step="1" value="0" oninput="updateConfig('camRotationX', this.value)">
+                        <div class="slider-value">
+                            <span>Grados</span>
+                            <span id="cam-rot-x-value">0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Rotación Y</label>
+                        <input type="range" class="slider" id="cam-rot-y" min="-180" max="180" step="1" value="0" oninput="updateConfig('camRotationY', this.value)">
+                        <div class="slider-value">
+                            <span>Grados</span>
+                            <span id="cam-rot-y-value">0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Rotación Z</label>
+                        <input type="range" class="slider" id="cam-rot-z" min="-180" max="180" step="1" value="0" oninput="updateConfig('camRotationZ', this.value)">
+                        <div class="slider-value">
+                            <span>Grados</span>
+                            <span id="cam-rot-z-value">0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Plano Cercano</label>
+                        <input type="range" class="slider" id="cam-near" min="0.01" max="10" step="0.01" value="0.1" oninput="updateConfig('camNear', this.value)">
+                        <div class="slider-value">
+                            <span>Distancia</span>
+                            <span id="cam-near-value">0.1</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Plano Lejano</label>
+                        <input type="range" class="slider" id="cam-far" min="50" max="1000" step="10" value="150" oninput="updateConfig('camFar', this.value)">
+                        <div class="slider-value">
+                            <span>Distancia</span>
+                            <span id="cam-far-value">150</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: GRID AVANZADO -->
+                <div class="section">
+                    <div class="section-title">Grid Avanzado</div>
+                    <div class="slider-container">
+                        <label class="label">Espaciado del Grid</label>
+                        <input type="range" class="slider" id="grid-spacing" min="0.5" max="3" step="0.1" value="1.0" oninput="updateConfig('gridSpacing', this.value)">
+                        <div class="slider-value">
+                            <span>Espaciado</span>
+                            <span id="grid-spacing-value">1.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Rotación X del Grid</label>
+                        <input type="range" class="slider" id="grid-rot-x" min="-180" max="180" step="1" value="0" oninput="updateConfig('gridRotationX', this.value)">
+                        <div class="slider-value">
+                            <span>Grados</span>
+                            <span id="grid-rot-x-value">0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Rotación Y del Grid</label>
+                        <input type="range" class="slider" id="grid-rot-y" min="-180" max="180" step="1" value="0" oninput="updateConfig('gridRotationY', this.value)">
+                        <div class="slider-value">
+                            <span>Grados</span>
+                            <span id="grid-rot-y-value">0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Rotación Z del Grid</label>
+                        <input type="range" class="slider" id="grid-rot-z" min="-180" max="180" step="1" value="0" oninput="updateConfig('gridRotationZ', this.value)">
+                        <div class="slider-value">
+                            <span>Grados</span>
+                            <span id="grid-rot-z-value">0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Escala X del Grid</label>
+                        <input type="range" class="slider" id="grid-scale-x" min="0.1" max="3" step="0.1" value="1.0" oninput="updateConfig('gridScaleX', this.value)">
+                        <div class="slider-value">
+                            <span>Escala</span>
+                            <span id="grid-scale-x-value">1.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Escala Y del Grid</label>
+                        <input type="range" class="slider" id="grid-scale-y" min="0.1" max="3" step="0.1" value="1.0" oninput="updateConfig('gridScaleY', this.value)">
+                        <div class="slider-value">
+                            <span>Escala</span>
+                            <span id="grid-scale-y-value">1.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Escala Z del Grid</label>
+                        <input type="range" class="slider" id="grid-scale-z" min="0.1" max="3" step="0.1" value="1.0" oninput="updateConfig('gridScaleZ', this.value)">
+                        <div class="slider-value">
+                            <span>Escala</span>
+                            <span id="grid-scale-z-value">1.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Desplazamiento X</label>
+                        <input type="range" class="slider" id="grid-offset-x" min="-20" max="20" step="0.5" value="0" oninput="updateConfig('gridOffsetX', this.value)">
+                        <div class="slider-value">
+                            <span>Offset</span>
+                            <span id="grid-offset-x-value">0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Desplazamiento Y</label>
+                        <input type="range" class="slider" id="grid-offset-y" min="-20" max="20" step="0.5" value="0" oninput="updateConfig('gridOffsetY', this.value)">
+                        <div class="slider-value">
+                            <span>Offset</span>
+                            <span id="grid-offset-y-value">0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Desplazamiento Z</label>
+                        <input type="range" class="slider" id="grid-offset-z" min="-20" max="20" step="0.5" value="0" oninput="updateConfig('gridOffsetZ', this.value)">
+                        <div class="slider-value">
+                            <span>Offset</span>
+                            <span id="grid-offset-z-value">0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Aleatoriedad</label>
+                        <input type="range" class="slider" id="grid-randomness" min="0" max="1" step="0.01" value="0.0" oninput="updateConfig('gridRandomness', this.value)">
+                        <div class="slider-value">
+                            <span>Valor</span>
+                            <span id="grid-randomness-value">0.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Onda del Grid</label>
+                        <input type="range" class="slider" id="grid-wave" min="0" max="2" step="0.1" value="0.0" oninput="updateConfig('gridWave', this.value)">
+                        <div class="slider-value">
+                            <span>Amplitud</span>
+                            <span id="grid-wave-value">0.0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: ONDAS Y ANIMACIÓN -->
+                <div class="section">
+                    <div class="section-title">Ondas y Animación</div>
+                    <div class="slider-container">
+                        <label class="label">Amplitud de Onda</label>
+                        <input type="range" class="slider" id="wave-amplitude" min="0" max="2" step="0.1" value="0.3" oninput="updateConfig('waveAmplitude', this.value)">
+                        <div class="slider-value">
+                            <span>Amplitud</span>
+                            <span id="wave-amplitude-value">0.3</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Frecuencia X</label>
+                        <input type="range" class="slider" id="wave-freq-x" min="0" max="2" step="0.1" value="0.3" oninput="updateConfig('waveFrequencyX', this.value)">
+                        <div class="slider-value">
+                            <span>Frecuencia</span>
+                            <span id="wave-freq-x-value">0.3</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Frecuencia Y</label>
+                        <input type="range" class="slider" id="wave-freq-y" min="0" max="2" step="0.1" value="0.3" oninput="updateConfig('waveFrequencyY', this.value)">
+                        <div class="slider-value">
+                            <span>Frecuencia</span>
+                            <span id="wave-freq-y-value">0.3</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Velocidad de Onda</label>
+                        <input type="range" class="slider" id="wave-speed" min="0" max="3" step="0.1" value="1.0" oninput="updateConfig('waveSpeed', this.value)">
+                        <div class="slider-value">
+                            <span>Velocidad</span>
+                            <span id="wave-speed-value">1.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Fase de Onda</label>
+                        <input type="range" class="slider" id="wave-phase" min="0" max="6.28" step="0.1" value="0.0" oninput="updateConfig('wavePhase', this.value)">
+                        <div class="slider-value">
+                            <span>Fase</span>
+                            <span id="wave-phase-value">0.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Velocidad de Rotación</label>
+                        <input type="range" class="slider" id="rotation-speed" min="0" max="5" step="0.1" value="0.0" oninput="updateConfig('rotationSpeed', this.value)">
+                        <div class="slider-value">
+                            <span>Velocidad</span>
+                            <span id="rotation-speed-value">0.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Animación de Escala</label>
+                        <input type="range" class="slider" id="scale-animation" min="0" max="2" step="0.1" value="0.0" oninput="updateConfig('scaleAnimation', this.value)">
+                        <div class="slider-value">
+                            <span>Amplitud</span>
+                            <span id="scale-animation-value">0.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Velocidad Transición Color</label>
+                        <input type="range" class="slider" id="color-transition" min="0" max="1" step="0.01" value="0.1" oninput="updateConfig('colorTransitionSpeed', this.value)">
+                        <div class="slider-value">
+                            <span>Velocidad</span>
+                            <span id="color-transition-value">0.1</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: CURSOR AVANZADO -->
+                <div class="section">
+                    <div class="section-title">Cursor Avanzado</div>
+                    <div class="slider-container">
+                        <label class="label">Distancia de Luz</label>
+                        <input type="range" class="slider" id="light-distance" min="5" max="100" step="1" value="15" oninput="updateConfig('lightDistance', this.value)">
+                        <div class="slider-value">
+                            <span>Distancia</span>
+                            <span id="light-distance-value">15</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Decaimiento de Luz</label>
+                        <input type="range" class="slider" id="light-decay" min="0" max="5" step="0.1" value="2.0" oninput="updateConfig('lightDecay', this.value)">
+                        <div class="slider-value">
+                            <span>Decaimiento</span>
+                            <span id="light-decay-value">2.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Influencia del Cursor</label>
+                        <input type="range" class="slider" id="cursor-influence" min="0" max="2" step="0.1" value="1.0" oninput="updateConfig('cursorInfluence', this.value)">
+                        <div class="slider-value">
+                            <span>Influencia</span>
+                            <span id="cursor-influence-value">1.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Elevación del Cursor</label>
+                        <input type="range" class="slider" id="cursor-lift" min="0" max="10" step="0.1" value="4.0" oninput="updateConfig('cursorLift', this.value)">
+                        <div class="slider-value">
+                            <span>Altura</span>
+                            <span id="cursor-lift-value">4.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Escala del Cursor</label>
+                        <input type="range" class="slider" id="cursor-scale" min="0" max="2" step="0.1" value="0.4" oninput="updateConfig('cursorScale', this.value)">
+                        <div class="slider-value">
+                            <span>Escala</span>
+                            <span id="cursor-scale-value">0.4</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Rotación del Cursor</label>
+                        <input type="range" class="slider" id="cursor-rotation" min="0" max="1" step="0.01" value="0.2" oninput="updateConfig('cursorRotation', this.value)">
+                        <div class="slider-value">
+                            <span>Rotación</span>
+                            <span id="cursor-rotation-value">0.2</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: LUCES AVANZADAS -->
+                <div class="section">
+                    <div class="section-title">Luces Avanzadas</div>
+                    <div class="slider-container">
+                        <label class="label">Distancia Luces Laterales</label>
+                        <input type="range" class="slider" id="side-lights-distance" min="50" max="1000" step="10" value="300" oninput="updateConfig('sideLightsDistance', this.value)">
+                        <div class="slider-value">
+                            <span>Distancia</span>
+                            <span id="side-lights-distance-value">300</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Decaimiento Luces Laterales</label>
+                        <input type="range" class="slider" id="side-lights-decay" min="0" max="5" step="0.1" value="2.0" oninput="updateConfig('sideLightsDecay', this.value)">
+                        <div class="slider-value">
+                            <span>Decaimiento</span>
+                            <span id="side-lights-decay-value">2.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Distancia Luces Sol</label>
+                        <input type="range" class="slider" id="sun-lights-distance" min="50" max="1000" step="10" value="350" oninput="updateConfig('sunLightsDistance', this.value)">
+                        <div class="slider-value">
+                            <span>Distancia</span>
+                            <span id="sun-lights-distance-value">350</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Decaimiento Luces Sol</label>
+                        <input type="range" class="slider" id="sun-lights-decay" min="0" max="5" step="0.1" value="2.0" oninput="updateConfig('sunLightsDecay', this.value)">
+                        <div class="slider-value">
+                            <span>Decaimiento</span>
+                            <span id="sun-lights-decay-value">2.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Intensidad Luz Inferior</label>
+                        <input type="range" class="slider" id="bottom-light-intensity" min="0" max="10" step="0.1" value="2.5" oninput="updateConfig('bottomLightIntensity', this.value)">
+                        <div class="slider-value">
+                            <span>Intensidad</span>
+                            <span id="bottom-light-intensity-value">2.5</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Color Luz Inferior</label>
+                        <input type="color" id="bottom-light-color" value="#ffffff" onchange="updateColorConfig('bottomLightColor', this.value)">
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Color Luz Ambiental</label>
+                        <input type="color" id="ambient-color" value="#ffffff" onchange="updateColorConfig('ambientColor', this.value)">
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Velocidad Movimiento Orbes</label>
+                        <input type="range" class="slider" id="orb-movement-speed" min="0" max="1" step="0.01" value="0.15" oninput="updateConfig('orbMovementSpeed', this.value)">
+                        <div class="slider-value">
+                            <span>Velocidad</span>
+                            <span id="orb-movement-speed-value">0.15</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Rango Movimiento Orbes</label>
+                        <input type="range" class="slider" id="orb-movement-range" min="0" max="200" step="5" value="80" oninput="updateConfig('orbMovementRange', this.value)">
+                        <div class="slider-value">
+                            <span>Rango</span>
+                            <span id="orb-movement-range-value">80</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Variación Intensidad Orbes</label>
+                        <input type="range" class="slider" id="orb-intensity-variation" min="0" max="1" step="0.01" value="0.15" oninput="updateConfig('orbIntensityVariation', this.value)">
+                        <div class="slider-value">
+                            <span>Variación</span>
+                            <span id="orb-intensity-variation-value">0.15</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: POST-PROCESAMIENTO -->
+                <div class="section">
+                    <div class="section-title">Post-Procesamiento</div>
+                    <div class="slider-container">
+                        <label class="label">Contraste</label>
+                        <input type="range" class="slider" id="contrast" min="0" max="2" step="0.1" value="1.0" oninput="updateConfig('contrast', this.value)">
+                        <div class="slider-value">
+                            <span>Valor</span>
+                            <span id="contrast-value">1.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Saturación</label>
+                        <input type="range" class="slider" id="saturation" min="0" max="2" step="0.1" value="1.0" oninput="updateConfig('saturation', this.value)">
+                        <div class="slider-value">
+                            <span>Valor</span>
+                            <span id="saturation-value">1.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Brillo</label>
+                        <input type="range" class="slider" id="brightness" min="0" max="2" step="0.1" value="1.0" oninput="updateConfig('brightness', this.value)">
+                        <div class="slider-value">
+                            <span>Valor</span>
+                            <span id="brightness-value">1.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Gamma</label>
+                        <input type="range" class="slider" id="gamma" min="0.5" max="2.5" step="0.1" value="1.0" oninput="updateConfig('gamma', this.value)">
+                        <div class="slider-value">
+                            <span>Valor</span>
+                            <span id="gamma-value">1.0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: NIEBLA -->
+                <div class="section">
+                    <div class="section-title">Niebla</div>
+                    <div class="slider-container">
+                        <label class="label">Color de Niebla</label>
+                        <input type="color" id="fog-color" value="#000000" onchange="updateColorConfig('fogColor', this.value)">
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Distancia Cercana</label>
+                        <input type="range" class="slider" id="fog-near" min="0" max="50" step="1" value="1" oninput="updateConfig('fogNear', this.value)">
+                        <div class="slider-value">
+                            <span>Distancia</span>
+                            <span id="fog-near-value">1</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Distancia Lejana</label>
+                        <input type="range" class="slider" id="fog-far" min="10" max="200" step="5" value="100" oninput="updateConfig('fogFar', this.value)">
+                        <div class="slider-value">
+                            <span>Distancia</span>
+                            <span id="fog-far-value">100</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: WIREFRAME -->
+                <div class="section">
+                    <div class="section-title">Wireframe</div>
+                    <div class="toggle-btn">
+                        <button onclick="toggleWireframe()" id="wireframe-btn">WIREFRAME: OFF</button>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Ancho de Línea</label>
+                        <input type="range" class="slider" id="wireframe-linewidth" min="0.1" max="5" step="0.1" value="1.0" oninput="updateConfig('wireframeLinewidth', this.value)">
+                        <div class="slider-value">
+                            <span>Ancho</span>
+                            <span id="wireframe-linewidth-value">1.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Color Wireframe</label>
+                        <input type="color" id="wireframe-color" value="#ffffff" onchange="updateColorConfig('wireframeColor', this.value)">
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: FÍSICA -->
+                <div class="section">
+                    <div class="section-title">Física</div>
+                    <div class="slider-container">
+                        <label class="label">Gravedad</label>
+                        <input type="range" class="slider" id="gravity" min="-5" max="5" step="0.1" value="0.0" oninput="updateConfig('gravity', this.value)">
+                        <div class="slider-value">
+                            <span>Fuerza</span>
+                            <span id="gravity-value">0.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Elasticidad</label>
+                        <input type="range" class="slider" id="elasticity" min="0" max="2" step="0.1" value="0.0" oninput="updateConfig('elasticity', this.value)">
+                        <div class="slider-value">
+                            <span>Valor</span>
+                            <span id="elasticity-value">0.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Amortiguación</label>
+                        <input type="range" class="slider" id="damping" min="0" max="1" step="0.01" value="0.0" oninput="updateConfig('damping', this.value)">
+                        <div class="slider-value">
+                            <span>Valor</span>
+                            <span id="damping-value">0.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Masa</label>
+                        <input type="range" class="slider" id="mass" min="0.1" max="10" step="0.1" value="1.0" oninput="updateConfig('mass', this.value)">
+                        <div class="slider-value">
+                            <span>Masa</span>
+                            <span id="mass-value">1.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Fricción</label>
+                        <input type="range" class="slider" id="friction" min="0" max="1" step="0.01" value="0.0" oninput="updateConfig('friction', this.value)">
+                        <div class="slider-value">
+                            <span>Valor</span>
+                            <span id="friction-value">0.0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: PARTÍCULAS -->
+                <div class="section">
+                    <div class="section-title">Partículas</div>
+                    <div class="toggle-btn">
+                        <button onclick="toggleParticles()" id="particles-btn">PARTÍCULAS: OFF</button>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Cantidad de Partículas</label>
+                        <input type="range" class="slider" id="particles-count" min="100" max="10000" step="100" value="1000" oninput="updateConfig('particlesCount', this.value)">
+                        <div class="slider-value">
+                            <span>Cantidad</span>
+                            <span id="particles-count-value">1000</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Tamaño de Partículas</label>
+                        <input type="range" class="slider" id="particles-size" min="0.01" max="1" step="0.01" value="0.1" oninput="updateConfig('particlesSize', this.value)">
+                        <div class="slider-value">
+                            <span>Tamaño</span>
+                            <span id="particles-size-value">0.1</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Velocidad de Partículas</label>
+                        <input type="range" class="slider" id="particles-speed" min="0" max="5" step="0.1" value="1.0" oninput="updateConfig('particlesSpeed', this.value)">
+                        <div class="slider-value">
+                            <span>Velocidad</span>
+                            <span id="particles-speed-value">1.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Color de Partículas</label>
+                        <input type="color" id="particles-color" value="#ffffff" onchange="updateColorConfig('particlesColor', this.value)">
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: TRAILS -->
+                <div class="section">
+                    <div class="section-title">Estelas</div>
+                    <div class="toggle-btn">
+                        <button onclick="toggleTrails()" id="trails-btn">ESTELAS: OFF</button>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Longitud de Estela</label>
+                        <input type="range" class="slider" id="trails-length" min="5" max="100" step="1" value="10" oninput="updateConfig('trailsLength', this.value)">
+                        <div class="slider-value">
+                            <span>Longitud</span>
+                            <span id="trails-length-value">10</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Desvanecimiento</label>
+                        <input type="range" class="slider" id="trails-fade" min="0" max="1" step="0.01" value="0.9" oninput="updateConfig('trailsFade', this.value)">
+                        <div class="slider-value">
+                            <span>Fade</span>
+                            <span id="trails-fade-value">0.9</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: AUDIO REACTIVO -->
+                <div class="section">
+                    <div class="section-title">Audio Reactivo</div>
+                    <div class="toggle-btn">
+                        <button onclick="toggleAudioReactive()" id="audio-reactive-btn">AUDIO: OFF</button>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Sensibilidad</label>
+                        <input type="range" class="slider" id="audio-sensitivity" min="0" max="5" step="0.1" value="1.0" oninput="updateConfig('audioSensitivity', this.value)">
+                        <div class="slider-value">
+                            <span>Sensibilidad</span>
+                            <span id="audio-sensitivity-value">1.0</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Suavizado</label>
+                        <input type="range" class="slider" id="audio-smoothing" min="0" max="1" step="0.01" value="0.8" oninput="updateConfig('audioSmoothing', this.value)">
+                        <div class="slider-value">
+                            <span>Suavizado</span>
+                            <span id="audio-smoothing-value">0.8</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN: VISUALIZACIÓN -->
+                <div class="section">
+                    <div class="section-title">Visualización</div>
+                    <div class="toggle-btn">
+                        <button onclick="toggleStats()" id="stats-btn">ESTADÍSTICAS: OFF</button>
+                    </div>
+                    <div class="toggle-btn">
+                        <button onclick="toggleShowGrid()" id="show-grid-btn">MOSTRAR GRID: ON</button>
+                    </div>
+                    <div class="toggle-btn">
+                        <button onclick="toggleShowLights()" id="show-lights-btn">MOSTRAR LUCES: ON</button>
+                    </div>
+                    <div class="slider-container">
+                        <label class="label">Color de Fondo</label>
+                        <input type="color" id="background-color" value="#000000" onchange="updateColorConfig('backgroundColor', this.value)">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+        // --- CONFIGURACIÓN COMPLETA (100+ opciones) ---
+        const config = {
+            // Forma y Grid
+            shape: 'hexagon',
+            cellSize: 1.1,
+            gridSpacing: 1.0,
+            gridRotationX: 0,
+            gridRotationY: 0,
+            gridRotationZ: 0,
+            gridScaleX: 1.0,
+            gridScaleY: 1.0,
+            gridScaleZ: 1.0,
+            gridOffsetX: 0,
+            gridOffsetY: 0,
+            gridOffsetZ: 0,
+            gridCols: 0,
+            gridRows: 0,
+            
+            // Colores
+            activeColor: new THREE.Color('#00ffff'),
+            baseColor: new THREE.Color('#555555'),
+            baseBrightness: 85,
+            emissiveColor: new THREE.Color('#000000'),
+            emissiveIntensity: 0.0,
+            specularColor: new THREE.Color('#ffffff'),
+            specularIntensity: 1.0,
+            
+            // Material
+            metalness: 1.0,
+            roughness: 0.05,
+            clearcoat: 1.0,
+            clearcoatRoughness: 0.05,
+            envMapIntensity: 3.0,
+            reflectivity: 1.0,
+            transmission: 0.0,
+            thickness: 0.0,
+            ior: 1.5,
+            sheen: 0.0,
+            sheenRoughness: 0.3,
+            sheenColor: new THREE.Color('#ffffff'),
+            
+            // Cámara
+            camZ: 24,
+            camX: 0,
+            camY: 0,
+            camFOV: 50,
+            camRotationX: 0,
+            camRotationY: 0,
+            camRotationZ: 0,
+            camNear: 0.1,
+            camFar: 150,
+            
+            // Iluminación
+            isHovering: false,
+            lightIntensity: 150,
+            lightDistance: 15,
+            lightDecay: 2.0,
+            ambientIntensity: 1.5,
+            ambientColor: new THREE.Color('#ffffff'),
+            sideLightsIntensity: 2000,
+            sideLightsDistance: 300,
+            sideLightsDecay: 2.0,
+            sunLightsIntensity: 2500,
+            sunLightsDistance: 350,
+            sunLightsDecay: 2.0,
+            bottomLightIntensity: 2.5,
+            bottomLightColor: new THREE.Color('#ffffff'),
+            cursorRadius: 8,
+            cursorInfluence: 1.0,
+            cursorLift: 4.0,
+            cursorScale: 0.4,
+            cursorRotation: 0.2,
+            
+            // Orbes
+            numOrbs: 4,
+            orbSideX: -35,
+            orbSideY: 30,
+            orbSideZ: 22,
+            orbSunX: -25,
+            orbSunY: 35,
+            orbSunZ: 20,
+            orbMovementSpeed: 0.15,
+            orbMovementRange: 80,
+            orbIntensityVariation: 0.15,
+            
+            // Animación
+            animSpeed: 1.0,
+            waveAmplitude: 0.3,
+            waveFrequencyX: 0.3,
+            waveFrequencyY: 0.3,
+            waveSpeed: 1.0,
+            wavePhase: 0.0,
+            rotationSpeed: 0.0,
+            scaleAnimation: 0.0,
+            colorTransitionSpeed: 0.1,
+            
+            // Ambiente
+            fogDensity: 0.01,
+            fogColor: new THREE.Color('#000000'),
+            fogNear: 1,
+            fogFar: 100,
+            backgroundColor: new THREE.Color('#000000'),
+            
+            // Post-procesamiento
+            exposure: 3.5,
+            bloomStrength: 1.8,
+            bloomThreshold: 0.0,
+            bloomRadius: 0.5,
+            contrast: 1.0,
+            saturation: 1.0,
+            brightness: 1.0,
+            gamma: 1.0,
+            toneMapping: 'Reinhard',
+            
+            // Grid Avanzado
+            gridPattern: 'regular',
+            gridStagger: 0.0,
+            gridRandomness: 0.0,
+            gridWave: 0.0,
+            gridPulse: 0.0,
+            gridTwist: 0.0,
+            
+            // Física
+            gravity: 0.0,
+            elasticity: 0.0,
+            damping: 0.0,
+            mass: 1.0,
+            friction: 0.0,
+            
+            // Efectos
+            wireframe: false,
+            wireframeLinewidth: 1.0,
+            wireframeColor: new THREE.Color('#ffffff'),
+            particles: false,
+            particlesCount: 1000,
+            particlesSize: 0.1,
+            particlesSpeed: 1.0,
+            particlesColor: new THREE.Color('#ffffff'),
+            trails: false,
+            trailsLength: 10,
+            trailsFade: 0.9,
+            
+            // Audio Reactivo
+            audioReactive: false,
+            audioSensitivity: 1.0,
+            audioFrequency: 0,
+            audioSmoothing: 0.8,
+            
+            // UI
+            panelVisible: true,
+            showStats: false,
+            showGrid: true,
+            showLights: true,
+            
+            // Exportación
+            exportFormat: 'png',
+            exportQuality: 1.0,
+            exportResolution: 1.0
+        };
+
+        // Variables globales
+        let scene, camera, renderer, composer;
+        let gridMesh, raycaster, plane;
+        
+        // Luces
+        let cursorLight;
+        let ambientLight;
+        let sideLights = [];
+        let sunLights = [];
+        let bottomLight;
+        let bloomPass;
+
+        // Datos
+        const mouse = new THREE.Vector2(1000, 1000); // Fuera de pantalla inicio
+        const targetPoint = new THREE.Vector3(0,0,0);
+        const dummy = new THREE.Object3D();
+        const _color = new THREE.Color();
+        let instances = []; 
+
+        init();
+        animate();
+
+        function init() {
+            // 1. Escena
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color('#000000');
+            // Niebla muy ligera o eliminada para mejor visibilidad
+            scene.fog = new THREE.FogExp2(0x000000, config.fogDensity);
+
+            // 2. Cámara (con todas las configuraciones)
+            camera = new THREE.PerspectiveCamera(config.camFOV, window.innerWidth / window.innerHeight, config.camNear, config.camFar);
+            camera.position.set(config.camX, config.camY, config.camZ);
+            camera.rotation.set(
+                THREE.MathUtils.degToRad(config.camRotationX),
+                THREE.MathUtils.degToRad(config.camRotationY),
+                THREE.MathUtils.degToRad(config.camRotationZ)
+            );
+
+            // 3. Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance" });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.toneMapping = THREE.ReinhardToneMapping;
+            renderer.toneMappingExposure = config.exposure; // Exposición muy alta para más brillo
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // 4. BLOOM (Resplandor)
+            const renderScene = new RenderPass(scene, camera);
+            bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+            bloomPass.threshold = 0;   // Todo lo que tenga luz brilla
+            bloomPass.strength = config.bloomStrength;  // Intensidad muy alta
+            bloomPass.radius = 0.5;
+            
+            composer = new EffectComposer(renderer);
+            composer.addPass(renderScene);
+            composer.addPass(bloomPass);
+
+            // 5. LUCES (El toque secreto)
+            setupLights();
+
+            // 6. Grid
+            raycaster = new THREE.Raycaster();
+            plane = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshBasicMaterial({ visible: false }));
+            scene.add(plane);
+            
+            createGrid();
+
+            // 7. Eventos
+            window.addEventListener('resize', onWindowResize);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseleave', () => { config.isHovering = false; });
+        }
+
+        function setupLights() {
+            // A. Luz Ambiental (Muy brillante para iluminar todo el ambiente)
+            ambientLight = new THREE.AmbientLight(0xffffff, config.ambientIntensity);
+            scene.add(ambientLight);
+
+            // B. Luces Frontales Laterales (Golpean la cara principal desde el 3D)
+            // Posicionadas desde el frente (cerca de la cámara) pero con ángulos laterales y superiores
+            const colors = [0x0044ff, 0xff0055]; 
+            const frontLightPositions = [
+                { x: -35, y: 30, z: 22 },  // Izquierda, arriba, frente (cerca de cámara)
+                { x: 35, y: 30, z: 22 }    // Derecha, arriba, frente (cerca de cámara)
+            ];
+
+            frontLightPositions.forEach((pos, i) => {
+                const light = new THREE.PointLight(colors[i], config.sideLightsIntensity, config.sideLightsDistance);
+                light.decay = config.sideLightsDecay;
+                light.position.set(pos.x, pos.y, pos.z);
+                scene.add(light);
+                
+                // Helper para animación
+                const helper = new THREE.Group();
+                helper.position.set(pos.x, pos.y, pos.z);
+                helper.add(light);
+                scene.add(helper);
+                sideLights.push(helper);
+            });
+
+            // C. LUZ DEL CURSOR (La protagonista)
+            cursorLight = new THREE.PointLight(config.activeColor, 0, config.lightDistance); // Inicia apagada (intensidad 0)
+            cursorLight.decay = config.lightDecay;
+            cursorLight.castShadow = false;
+            scene.add(cursorLight);
+
+            // D. LUCES TIPO SOL (Desde el frente, colores cálidos)
+            const sunColors = [0xffaa00, 0xffcc44]; // Amarillo dorado y amarillo claro
+            const sunPositions = [
+                { x: -25, y: 35, z: 20 },  // Izquierda, arriba, frente
+                { x: 25, y: 35, z: 20 }    // Derecha, arriba, frente
+            ];
+
+            sunPositions.forEach((pos, i) => {
+                const sunLight = new THREE.PointLight(sunColors[i], config.sunLightsIntensity, config.sunLightsDistance);
+                sunLight.decay = config.sunLightsDecay;
+                sunLight.position.set(pos.x, pos.y, pos.z);
+                scene.add(sunLight);
+                
+                // Helper para animación
+                const sunHelper = new THREE.Group();
+                sunHelper.position.set(pos.x, pos.y, pos.z);
+                sunHelper.add(sunLight);
+                scene.add(sunHelper);
+                sunLights.push(sunHelper);
+            });
+        }
+
+        function createGrid() {
+            if (gridMesh) {
+                scene.remove(gridMesh);
+                gridMesh.geometry.dispose();
+                gridMesh.material.dispose();
+            }
+
+            // Geometría
+            let geometry;
+            switch(config.shape) {
+                case 'box': geometry = new THREE.BoxGeometry(0.9, 0.9, 0.2); break;
+                case 'cone': geometry = new THREE.ConeGeometry(0.5, 1, 4); geometry.rotateX(Math.PI/2); break;
+                case 'sphere': geometry = new THREE.SphereGeometry(0.5, 16, 16); break;
+                case 'torus': geometry = new THREE.TorusGeometry(0.4, 0.2, 8, 16); geometry.rotateX(Math.PI/2); break;
+                case 'hexagon': 
+                default: geometry = new THREE.CylinderGeometry(0.6, 0.6, 0.15, 6); geometry.rotateX(Math.PI/2); break;
+            }
+
+            // MATERIAL METÁLICO REFLEJANTE
+            // Crear environment map básico para reflejos usando CubeTextureLoader
+            const envMap = new THREE.CubeTextureLoader().load([
+                'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+                'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+                'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+                'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+                'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+                'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
+            ]);
+            envMap.mapping = THREE.CubeReflectionMapping;
+            scene.environment = envMap;
+            
+            // Material metálico altamente reflejante (con todas las configuraciones)
+            const material = new THREE.MeshPhysicalMaterial({
+                color: config.baseColor,
+                roughness: config.roughness,
+                metalness: config.metalness,
+                envMap: envMap,
+                envMapIntensity: config.envMapIntensity,
+                clearcoat: config.clearcoat,
+                clearcoatRoughness: config.clearcoatRoughness,
+                reflectivity: config.reflectivity,
+                transmission: config.transmission,
+                thickness: config.thickness,
+                ior: config.ior,
+                sheen: config.sheen,
+                sheenRoughness: config.sheenRoughness,
+                sheenColor: config.sheenColor,
+                emissive: config.emissiveColor,
+                emissiveIntensity: config.emissiveIntensity,
+                specularIntensity: config.specularIntensity,
+                wireframe: config.wireframe,
+                wireframeLinewidth: config.wireframeLinewidth
+            });
+
+            // Calcular grid para llenar pantalla
+            const vFOV = THREE.MathUtils.degToRad(camera.fov);
+            const visibleHeight = 2 * Math.tan(vFOV / 2) * config.camZ;
+            const visibleWidth = visibleHeight * camera.aspect;
+
+            const cols = Math.ceil((visibleWidth * 1.4) / config.cellSize);
+            const rows = Math.ceil((visibleHeight * 1.4) / config.cellSize);
+
+            gridMesh = new THREE.InstancedMesh(geometry, material, cols * rows);
+            gridMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+            
+            instances = [];
+            let i = 0;
+            const effectiveCellSize = config.cellSize * config.gridSpacing;
+            const startX = -((cols - 1) * effectiveCellSize) / 2 + config.gridOffsetX;
+            const startY = -((rows - 1) * effectiveCellSize) / 2 + config.gridOffsetY;
+
+            for(let x = 0; x < cols; x++) {
+                for(let y = 0; y < rows; y++) {
+                    let posX = startX + x * effectiveCellSize;
+                    let posY = startY + y * effectiveCellSize;
+                    
+                    // Aplicar aleatoriedad si está configurada
+                    if(config.gridRandomness > 0) {
+                        posX += (Math.random() - 0.5) * config.gridRandomness * effectiveCellSize;
+                        posY += (Math.random() - 0.5) * config.gridRandomness * effectiveCellSize;
+                    }
+
+                    if(config.shape === 'hexagon') {
+                        posY = startY + y * (effectiveCellSize * 0.866);
+                        if(y % 2 !== 0) posX += effectiveCellSize * 0.5;
+                    }
+
+                    dummy.position.set(posX, posY, config.gridOffsetZ);
+                    // Aplicar rotación del grid
+                    dummy.rotation.set(
+                        THREE.MathUtils.degToRad(config.gridRotationX),
+                        THREE.MathUtils.degToRad(config.gridRotationY),
+                        THREE.MathUtils.degToRad(config.gridRotationZ)
+                    );
+                    dummy.updateMatrix();
+                    gridMesh.setMatrixAt(i, dummy.matrix);
+                    gridMesh.setColorAt(i, config.baseColor);
+
+                    instances.push({
+                        id: i,
+                        ix: posX,
+                        iy: posY,
+                        phase: Math.random() * Math.PI * 2
+                    });
+                    i++;
+                }
+            }
+            scene.add(gridMesh);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = performance.now() * 0.001;
+
+            // 1. Manejo del Mouse y Luz Cursor
+            if (config.isHovering) {
+                // Raycasting
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObject(plane);
+                
+                if (intersects.length > 0) {
+                    // Mover luz hacia el mouse con inercia
+                    targetPoint.lerp(intersects[0].point, 0.15);
+                    
+                    // La luz flota un poco por encima del grid (Z=2)
+                    cursorLight.position.set(targetPoint.x, targetPoint.y, 2);
+                    cursorLight.intensity = THREE.MathUtils.lerp(cursorLight.intensity, config.lightIntensity, 0.1);
+                }
+            } else {
+                // Apagar luz si sale
+                cursorLight.intensity = THREE.MathUtils.lerp(cursorLight.intensity, 0, 0.05);
+            }
+
+            // 2. Animar luces frontales laterales (Pasan lentamente por encima de la cámara)
+            sideLights.forEach((helper, i) => {
+                // Posición base desde configuración
+                const baseX = config.orbSideX * (i === 0 ? 1 : -1);
+                const baseY = config.orbSideY + 25; // Offset para animación arriba
+                const baseZ = config.orbSideZ;
+                
+                // Movimiento horizontal lento pasando de izquierda a derecha
+                // Cada luz se mueve con un desfase para que pasen en secuencia
+                const offset = i * Math.PI; // Desfase entre las dos luces
+                const range = config.orbMovementRange; // Rango de movimiento horizontal configurable
+                helper.position.x = baseX + Math.sin(time * config.orbMovementSpeed * config.animSpeed + offset) * range; // Movimiento lento horizontal
+                helper.position.y = baseY; // Mantener arriba
+                helper.position.z = baseZ; // Enfrente, fuera de cámara
+                
+                // Variación de intensidad (muy brillante) con configuración
+                helper.children[0].intensity = config.sideLightsIntensity + Math.sin(time * 1.5 * config.animSpeed + i) * (config.sideLightsIntensity * config.orbIntensityVariation);
+            });
+
+            // 2.5. Animar luces tipo sol (Pasan lentamente por encima de la cámara)
+            sunLights.forEach((helper, i) => {
+                // Posición base desde configuración
+                const baseX = config.orbSunX * (i === 0 ? 1 : -1);
+                const baseY = config.orbSunY + 25; // Offset para animación arriba
+                const baseZ = config.orbSunZ;
+                
+                // Movimiento horizontal lento pasando de izquierda a derecha
+                // Cada luz se mueve con un desfase para que pasen en secuencia
+                const offset = i * Math.PI + Math.PI / 2; // Desfase diferente a las otras luces
+                const range = config.orbMovementRange * 0.875; // Rango de movimiento horizontal configurable (70% del rango base)
+                helper.position.x = baseX + Math.cos(time * config.orbMovementSpeed * config.animSpeed * 0.8 + offset) * range; // Movimiento lento horizontal (dirección opuesta)
+                helper.position.y = baseY; // Mantener arriba
+                helper.position.z = baseZ; // Enfrente, fuera de cámara
+                
+                // Variación de intensidad (muy brillante, como el sol) con configuración
+                helper.children[0].intensity = config.sunLightsIntensity + Math.sin(time * 1.5 * config.animSpeed + i) * (config.sunLightsIntensity * config.orbIntensityVariation);
+            });
+
+            // 3. Animar Grid
+            if (gridMesh) {
+                for (let i = 0; i < instances.length; i++) {
+                    const data = instances[i];
+                    
+                    // Distancia a la luz del cursor
+                    const dist = new THREE.Vector2(data.ix, data.iy).distanceTo(new THREE.Vector2(targetPoint.x, targetPoint.y));
+                    
+                    // Influencia (usando configuración)
+                    let influence = 0;
+                    if (dist < config.cursorRadius) { // Radio de luz configurable
+                        influence = 1 - (dist / config.cursorRadius);
+                        influence = influence * influence; // Ease in
+                        influence *= config.cursorInfluence; // Aplicar factor de influencia
+                    }
+
+                    // Onda ambiental (usando configuraciones avanzadas)
+                    const waveZ = Math.sin(data.ix * config.waveFrequencyX + time * config.animSpeed * config.waveSpeed + config.wavePhase) * 
+                                 Math.cos(data.iy * config.waveFrequencyY + time * config.animSpeed * config.waveSpeed * 0.5 + config.wavePhase) * 
+                                 config.waveAmplitude;
+                    
+                    // Altura Final (Z) con configuraciones
+                    const z = waveZ + (influence * config.cursorLift); // Se levanta según configuración
+
+                    dummy.position.set(data.ix, data.iy, z);
+                    
+                    // ROTACIÓN: El grid mira a la luz (con configuraciones)
+                    if (influence > 0.05) {
+                        const dx = targetPoint.x - data.ix;
+                        const dy = targetPoint.y - data.iy;
+                        // Inclinarse hacia la luz
+                        dummy.rotation.x = dy * influence * config.cursorRotation;
+                        dummy.rotation.y = -dx * influence * config.cursorRotation;
+                        // Rotación adicional si está configurada
+                        if(config.rotationSpeed > 0) {
+                            dummy.rotation.z += time * config.rotationSpeed * config.animSpeed;
+                        }
+                    } else {
+                        dummy.rotation.set(0, 0, config.rotationSpeed > 0 ? time * config.rotationSpeed * config.animSpeed : 0);
+                    }
+
+                    // Escala (con configuraciones)
+                    const baseScale = 1 + (influence * config.cursorScale);
+                    const animScale = config.scaleAnimation > 0 ? 1 + Math.sin(time * config.animSpeed * 2) * config.scaleAnimation : 1;
+                    const s = baseScale * animScale;
+                    dummy.scale.set(s * config.gridScaleX, s * config.gridScaleY, s * config.gridScaleZ);
+
+                    dummy.updateMatrix();
+                    gridMesh.setMatrixAt(i, dummy.matrix);
+
+                    // COLOR (con todas las configuraciones)
+                    // Base mucho más clara para mejor visibilidad
+                    _color.copy(config.baseColor);
+                    // Añadir un brillo base más fuerte a todas las celdas (basado en config)
+                    const brightnessColor = new THREE.Color(config.baseBrightness, config.baseBrightness, config.baseBrightness);
+                    brightnessColor.multiplyScalar(1/255);
+                    _color.lerp(brightnessColor, 0.5);
+                    
+                    // Si está cerca del mouse, se ilumina con el color activo
+                    if (influence > 0) {
+                        const targetColor = config.activeColor.clone();
+                        // Bloom Boost: Colores > 1.0 brillan más
+                        targetColor.multiplyScalar(influence * 2); 
+                        _color.lerp(targetColor, influence * config.cursorInfluence);
+                    }
+                    
+                    // Aplicar color emisivo si está configurado
+                    if(config.emissiveIntensity > 0) {
+                        _color.lerp(config.emissiveColor, config.emissiveIntensity * 0.2);
+                    }
+
+                    gridMesh.setColorAt(i, _color);
+                }
+                gridMesh.instanceMatrix.needsUpdate = true;
+                if(gridMesh.instanceColor) gridMesh.instanceColor.needsUpdate = true;
+            }
+
+            composer.render();
+        }
+
+        function onMouseMove(event) {
+            config.isHovering = true;
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
+            createGrid();
+        }
+
+        // --- FUNCIONES DEL PANEL ---
+        window.setColor = (hex) => {
+            config.activeColor.set(hex);
+            cursorLight.color.set(hex);
+            
+            // Actualizar botones UI
+            document.querySelectorAll('#color-group button').forEach(btn => {
+                btn.classList.remove('active');
+                if(btn.getAttribute('onclick').includes(hex)) btn.classList.add('active');
+            });
+        };
+
+        window.setShape = (shape) => {
+            config.shape = shape;
+            createGrid();
+            if(gridMesh && config.wireframe) {
+                gridMesh.material.wireframe = true;
+            }
+
+            // Actualizar botones UI
+            document.querySelectorAll('#shape-group button').forEach(btn => {
+                btn.classList.remove('active');
+                if(btn.getAttribute('onclick').includes(shape)) btn.classList.add('active');
+            });
+        };
+
+        window.updateLightIntensity = (value) => {
+            config.lightIntensity = parseFloat(value);
+            document.getElementById('intensity-value').textContent = value;
+        };
+
+        window.updateAnimSpeed = (value) => {
+            config.animSpeed = parseFloat(value);
+            document.getElementById('speed-value').textContent = value + 'x';
+        };
+
+        window.toggleWireframe = () => {
+            config.wireframe = !config.wireframe;
+            if(gridMesh) {
+                gridMesh.material.wireframe = config.wireframe;
+            }
+            document.getElementById('wireframe-btn').textContent = 'WIREFRAME: ' + (config.wireframe ? 'ON' : 'OFF');
+        };
+
+        window.updateAmbientLight = (value) => {
+            config.ambientIntensity = parseFloat(value);
+            if(ambientLight) ambientLight.intensity = config.ambientIntensity;
+            document.getElementById('ambient-value').textContent = value;
+        };
+
+        window.updateSideLights = (value) => {
+            config.sideLightsIntensity = parseFloat(value);
+            sideLights.forEach(helper => {
+                if(helper.children[0]) helper.children[0].intensity = config.sideLightsIntensity;
+            });
+            document.getElementById('side-value').textContent = value;
+        };
+
+        window.updateSunLights = (value) => {
+            config.sunLightsIntensity = parseFloat(value);
+            sunLights.forEach(helper => {
+                if(helper.children[0]) helper.children[0].intensity = config.sunLightsIntensity;
+            });
+            document.getElementById('sun-value').textContent = value;
+        };
+
+        window.updateNumOrbs = (value) => {
+            config.numOrbs = parseInt(value);
+            // Por ahora solo actualizamos el valor, la implementación completa requeriría recrear las luces
+            document.getElementById('orbs-value').textContent = value;
+        };
+
+        window.updateFogDensity = (value) => {
+            config.fogDensity = parseFloat(value);
+            if(scene.fog) scene.fog.density = config.fogDensity;
+            document.getElementById('fog-value').textContent = value;
+        };
+
+        window.updateExposure = (value) => {
+            config.exposure = parseFloat(value);
+            if(renderer) renderer.toneMappingExposure = config.exposure;
+            document.getElementById('exposure-value').textContent = value;
+        };
+
+        window.updateCellSize = (value) => {
+            config.cellSize = parseFloat(value);
+            createGrid();
+            document.getElementById('cell-value').textContent = value;
+        };
+
+        window.updateCursorRadius = (value) => {
+            config.cursorRadius = parseFloat(value);
+            document.getElementById('radius-value').textContent = value;
+        };
+
+        window.updateBloomStrength = (value) => {
+            config.bloomStrength = parseFloat(value);
+            if(bloomPass) bloomPass.strength = config.bloomStrength;
+            document.getElementById('bloom-value').textContent = value;
+        };
+
+        window.updateBaseBrightness = (value) => {
+            config.baseBrightness = parseInt(value);
+            const brightness = config.baseBrightness / 255;
+            config.baseColor.setRGB(brightness * 0.33, brightness * 0.33, brightness * 0.33);
+            createGrid();
+            document.getElementById('brightness-value').textContent = value;
+        };
+
+        window.togglePanel = () => {
+            config.panelVisible = !config.panelVisible;
+            const panel = document.getElementById('controls-panel');
+            const toggle = document.getElementById('panel-toggle');
+            
+            if(!panel || !toggle) {
+                console.error('No se encontraron los elementos del panel');
+                return;
+            }
+            
+            // Asegurar que el botón siempre sea visible
+            toggle.style.visibility = 'visible';
+            toggle.style.opacity = '1';
+            toggle.style.display = 'flex';
+            toggle.style.pointerEvents = 'auto';
+            
+            if(config.panelVisible) {
+                panel.classList.remove('hidden');
+                panel.style.visibility = 'visible';
+                panel.style.opacity = '1';
+                panel.style.transform = 'translateX(0)';
+                panel.style.pointerEvents = 'auto';
+            } else {
+                panel.classList.add('hidden');
+                panel.style.visibility = 'hidden';
+                panel.style.opacity = '0';
+                panel.style.transform = 'translateX(450px)';
+                panel.style.pointerEvents = 'none';
+            }
+        };
+
+        window.updateOrbPosition = (type, axis, value) => {
+            const numValue = parseFloat(value);
+            if(type === 'side') {
+                config['orbSide' + axis.toUpperCase()] = numValue;
+                document.getElementById(`orb-side-${axis}-value`).textContent = value;
+            } else if(type === 'sun') {
+                config['orbSun' + axis.toUpperCase()] = numValue;
+                document.getElementById(`orb-sun-${axis}-value`).textContent = value;
+            }
+        };
+
+        // Función genérica para actualizar configuraciones
+        window.updateConfig = (key, value) => {
+            const numValue = parseFloat(value);
+            config[key] = numValue;
+            
+            // Actualizar valor en UI
+            const valueElement = document.getElementById(`${key.toLowerCase().replace(/([A-Z])/g, '-$1').toLowerCase()}-value`);
+            if(valueElement) valueElement.textContent = value;
+            
+            // Aplicar cambios en tiempo real
+            applyConfigChanges(key, numValue);
+        };
+
+        // Función para actualizar colores
+        window.updateColorConfig = (key, value) => {
+            if(config[key]) {
+                config[key].set(value);
+            } else {
+                config[key] = new THREE.Color(value);
+            }
+            applyColorChanges(key, value);
+        };
+
+        // Aplicar cambios de configuración
+        function applyConfigChanges(key, value) {
+            if(key === 'metalness' || key === 'roughness' || key === 'clearcoat' || 
+               key === 'clearcoatRoughness' || key === 'envMapIntensity' || key === 'reflectivity' ||
+               key === 'transmission' || key === 'thickness' || key === 'ior' || 
+               key === 'sheen' || key === 'sheenRoughness') {
+                if(gridMesh && gridMesh.material) {
+                    gridMesh.material[key] = value;
+                }
+            }
+            
+            if(key === 'camX' || key === 'camY' || key === 'camZ') {
+                if(camera) {
+                    camera.position.set(config.camX, config.camY, config.camZ);
+                }
+            }
+            
+            if(key === 'camFOV') {
+                if(camera) {
+                    camera.fov = value;
+                    camera.updateProjectionMatrix();
+                }
+            }
+            
+            if(key === 'camRotationX' || key === 'camRotationY' || key === 'camRotationZ') {
+                if(camera) {
+                    camera.rotation.set(
+                        THREE.MathUtils.degToRad(config.camRotationX),
+                        THREE.MathUtils.degToRad(config.camRotationY),
+                        THREE.MathUtils.degToRad(config.camRotationZ)
+                    );
+                }
+            }
+            
+            if(key === 'camNear' || key === 'camFar') {
+                if(camera) {
+                    camera.near = config.camNear;
+                    camera.far = config.camFar;
+                    camera.updateProjectionMatrix();
+                }
+            }
+            
+            if(key === 'fogDensity') {
+                if(scene.fog) scene.fog.density = value;
+            }
+            
+            if(key === 'fogNear' || key === 'fogFar') {
+                if(scene.fog && scene.fog.near !== undefined) {
+                    scene.fog.near = config.fogNear;
+                    scene.fog.far = config.fogFar;
+                }
+            }
+            
+            if(key === 'bloomThreshold') {
+                if(bloomPass) bloomPass.threshold = value;
+            }
+            
+            if(key === 'bloomRadius') {
+                if(bloomPass) bloomPass.radius = value;
+            }
+            
+            if(key === 'lightDistance') {
+                if(cursorLight) cursorLight.distance = value;
+            }
+            
+            if(key === 'lightDecay') {
+                if(cursorLight) cursorLight.decay = value;
+            }
+            
+            if(key === 'sideLightsDistance') {
+                sideLights.forEach(helper => {
+                    if(helper.children[0]) helper.children[0].distance = value;
+                });
+            }
+            
+            if(key === 'sideLightsDecay') {
+                sideLights.forEach(helper => {
+                    if(helper.children[0]) helper.children[0].decay = value;
+                });
+            }
+            
+            if(key === 'sunLightsDistance') {
+                sunLights.forEach(helper => {
+                    if(helper.children[0]) helper.children[0].distance = value;
+                });
+            }
+            
+            if(key === 'sunLightsDecay') {
+                sunLights.forEach(helper => {
+                    if(helper.children[0]) helper.children[0].decay = value;
+                });
+            }
+            
+            if(key === 'bottomLightIntensity') {
+                if(bottomLight) bottomLight.intensity = value;
+            }
+            
+            if(key === 'emissiveIntensity') {
+                if(gridMesh && gridMesh.material) {
+                    gridMesh.material.emissiveIntensity = value;
+                }
+            }
+            
+            if(key === 'specularIntensity') {
+                if(gridMesh && gridMesh.material) {
+                    gridMesh.material.specularIntensity = value;
+                }
+            }
+            
+            if(key === 'wireframeLinewidth') {
+                if(gridMesh && gridMesh.material) {
+                    gridMesh.material.wireframeLinewidth = value;
+                }
+            }
+            
+            if(key === 'gridSpacing' || key === 'gridRotationX' || key === 'gridRotationY' || 
+               key === 'gridRotationZ' || key === 'gridScaleX' || key === 'gridScaleY' || 
+               key === 'gridScaleZ' || key === 'gridOffsetX' || key === 'gridOffsetY' || 
+               key === 'gridOffsetZ' || key === 'gridRandomness' || key === 'gridWave') {
+                createGrid();
+            }
+        }
+
+        // Aplicar cambios de color
+        function applyColorChanges(key, value) {
+            if(key === 'emissiveColor') {
+                if(gridMesh && gridMesh.material) {
+                    gridMesh.material.emissive.set(value);
+                }
+            }
+            
+            if(key === 'specularColor') {
+                if(gridMesh && gridMesh.material) {
+                    gridMesh.material.specularColor = new THREE.Color(value);
+                }
+            }
+            
+            if(key === 'sheenColor') {
+                if(gridMesh && gridMesh.material) {
+                    gridMesh.material.sheenColor = new THREE.Color(value);
+                }
+            }
+            
+            if(key === 'fogColor') {
+                if(scene.fog) scene.fog.color.set(value);
+            }
+            
+            if(key === 'backgroundColor') {
+                if(scene) scene.background.set(value);
+            }
+            
+            if(key === 'ambientColor') {
+                if(ambientLight) ambientLight.color.set(value);
+            }
+            
+            if(key === 'bottomLightColor') {
+                if(bottomLight) bottomLight.color.set(value);
+            }
+            
+            if(key === 'wireframeColor') {
+                if(gridMesh && gridMesh.material) {
+                    gridMesh.material.wireframeColor = new THREE.Color(value);
+                }
+            }
+        }
+
+        window.toggleParticles = () => {
+            config.particles = !config.particles;
+            document.getElementById('particles-btn').textContent = 'PARTÍCULAS: ' + (config.particles ? 'ON' : 'OFF');
+        };
+
+        window.toggleTrails = () => {
+            config.trails = !config.trails;
+            document.getElementById('trails-btn').textContent = 'ESTELAS: ' + (config.trails ? 'ON' : 'OFF');
+        };
+
+        window.toggleAudioReactive = () => {
+            config.audioReactive = !config.audioReactive;
+            document.getElementById('audio-reactive-btn').textContent = 'AUDIO: ' + (config.audioReactive ? 'ON' : 'OFF');
+        };
+
+        window.toggleStats = () => {
+            config.showStats = !config.showStats;
+            document.getElementById('stats-btn').textContent = 'ESTADÍSTICAS: ' + (config.showStats ? 'ON' : 'OFF');
+        };
+
+        window.toggleShowGrid = () => {
+            config.showGrid = !config.showGrid;
+            if(gridMesh) gridMesh.visible = config.showGrid;
+            document.getElementById('show-grid-btn').textContent = 'MOSTRAR GRID: ' + (config.showGrid ? 'ON' : 'OFF');
+        };
+
+        window.toggleShowLights = () => {
+            config.showLights = !config.showLights;
+            sideLights.forEach(helper => helper.visible = config.showLights);
+            sunLights.forEach(helper => helper.visible = config.showLights);
+            if(cursorLight) cursorLight.visible = config.showLights;
+            if(ambientLight) ambientLight.visible = config.showLights;
+            if(bottomLight) bottomLight.visible = config.showLights;
+            document.getElementById('show-lights-btn').textContent = 'MOSTRAR LUCES: ' + (config.showLights ? 'ON' : 'OFF');
+        };
+
+    </script>
+</body>
+</html>
