@@ -56,7 +56,7 @@
             color: var(--text-primary);
             font-family: var(--font-main);
             line-height: 1.6;
-            overflow-x: hidden;
+            overflow-x: hidden; /* Mantener overflow-x hidden, pero permitir scroll vertical */
         }
 
         /* 3D Canvas Background */
@@ -66,10 +66,19 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -1;
-            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            z-index: 0; /* Fondo más bajo */
+            background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a12 100%);
+            pointer-events: none; /* Dejar pasar clicks al contenido si es necesario, o 'auto' para interactuar */
         }
 
+        /* Wrapper para el contenido UI */
+        .ui-overlay {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            /* pointer-events: none; Quitamos esto para permitir interacción */
+        }
+        
         /* Typography */
         h1, h2, h3 { 
             font-weight: 700; 
@@ -571,40 +580,320 @@
             -webkit-backdrop-filter: blur(8px);
         }
 
-        /* Estilo para cada grupo (Frontend, Backend, etc.) */
-        .tech-register {
-            padding: 1.5rem 0;
-            border-bottom: 1px dashed var(--border-divider);
+        /* --- SOBRE MÍ MEJORADO --- */
+        .about-enhanced {
             position: relative;
+            overflow: hidden;
         }
 
-        .tech-register:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
+        .about-enhanced::before {
+            content: '';
+            position: absolute;
+            top: 0; right: 0;
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+            animation: pulseGlow 4s ease-in-out infinite;
         }
 
-        /* Título de cada grupo (FRONTEND, BACKEND) */
-        .tech-register h4 {
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.1); }
+        }
+
+        .about-quote {
             position: relative;
-            padding-left: 20px;
-            margin-bottom: 1.5rem;
-            font-size: 0.9rem;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
+            padding-left: 24px;
+            margin-bottom: 24px;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-primary);
         }
 
-        /* Simulación de un índice de registro */
-        .tech-register h4::before {
-            content: attr(data-index); /* Usamos un atributo para el número */
+        .about-quote::before {
+            content: '>';
             position: absolute;
             left: 0;
             top: 0;
             font-family: var(--font-mono);
-            color: var(--text-meta);
-            font-size: 0.8em;
+            color: var(--accent-primary);
+            font-size: 1.2rem;
+            font-weight: 700;
+            animation: cursorBlink 1.5s step-end infinite;
         }
 
-        /* Estilo de línea de datos (key: value) */
+        @keyframes cursorBlink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        .about-quote strong {
+            color: var(--accent-primary);
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+        }
+
+        .about-focus {
+            margin-top: 20px;
+            padding: 16px 20px;
+            background: rgba(139, 92, 246, 0.05);
+            border-left: 3px solid var(--accent-primary);
+            border-radius: 6px;
+            position: relative;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+        }
+
+        .about-focus::before {
+            content: '// FOCUS';
+            position: absolute;
+            top: -8px;
+            left: 20px;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--accent-primary);
+            background: var(--bg-body);
+            padding: 0 6px;
+        }
+
+        .about-focus .highlight {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* --- ARSENAL TECNOLÓGICO MEJORADO --- */
+        .arsenal-container {
+            position: relative;
+        }
+
+        .arsenal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .arsenal-grid {
+                display: flex;
+                flex-direction: row;
+                overflow-x: auto;
+                overflow-y: hidden;
+                scroll-snap-type: x mandatory;
+                scrollbar-width: none; /* Firefox */
+                -ms-overflow-style: none; /* IE/Edge */
+                gap: 16px;
+                margin-top: 1.5rem;
+                padding-bottom: 8px;
+                -webkit-overflow-scrolling: touch; /* Smooth scroll en iOS */
+            }
+            
+            .arsenal-grid::-webkit-scrollbar {
+                display: none; /* Chrome/Safari */
+            }
+            
+            .arsenal-grid .tech-card {
+                flex: 0 0 85vw;
+                max-width: 85vw;
+                min-width: 85vw;
+                scroll-snap-align: start;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .arsenal-grid .tech-card {
+                flex: 0 0 90vw;
+                max-width: 90vw;
+                min-width: 90vw;
+            }
+        }
+
+        /* Tarjeta de Tecnología Mejorada */
+        .tech-card {
+            background: rgba(15, 15, 20, 0.6);
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--accent-primary);
+            border-radius: 12px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .tech-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+
+        .tech-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: var(--accent-primary);
+            box-shadow: 0 20px 40px -10px rgba(139, 92, 246, 0.3);
+            background: rgba(20, 20, 25, 0.8);
+        }
+
+        .tech-card:hover::before {
+            opacity: 1;
+        }
+
+        /* Header de Tarjeta */
+        .tech-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .tech-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid var(--accent-primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--accent-primary);
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .tech-icon::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 8px;
+            padding: 2px;
+            background: linear-gradient(45deg, var(--accent-primary), transparent);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tech-card:hover .tech-icon::after {
+            opacity: 1;
+        }
+
+        .tech-title-group {
+            flex: 1;
+        }
+
+        .tech-index {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-meta);
+            margin-bottom: 4px;
+        }
+
+        .tech-title {
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--accent-primary);
+            font-weight: 700;
+            position: relative;
+        }
+
+        .tech-title::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-primary);
+            transition: width 0.4s;
+        }
+
+        .tech-card:hover .tech-title::after {
+            width: 100%;
+        }
+
+        /* Lista de Tecnologías Mejorada */
+        .tech-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .tech-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tech-item::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; width: 3px; height: 100%;
+            background: var(--accent-primary);
+            transform: scaleY(0);
+            transition: transform 0.3s;
+        }
+
+        .tech-item:hover {
+            background: rgba(139, 92, 246, 0.08);
+            border-color: rgba(139, 92, 246, 0.3);
+            transform: translateX(4px);
+        }
+
+        .tech-item:hover::before {
+            transform: scaleY(1);
+        }
+
+        .tech-label {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--accent-primary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .tech-value {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tech-value::after {
+            content: '→';
+            opacity: 0;
+            transform: translateX(-4px);
+            transition: all 0.3s;
+            color: var(--accent-primary);
+        }
+
+        .tech-item:hover .tech-value::after {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Estilo de línea de datos (key: value) - Mantenido para compatibilidad */
         .data-line {
             font-family: var(--font-mono);
             font-size: 0.9em;
@@ -679,6 +968,483 @@
             padding-bottom: 8px;
             font-size: 0.8rem;
             color: var(--text-meta);
+        }
+
+        /* --- CV TERMINAL MODULE --- */
+        .cv-terminal {
+            background: rgba(10, 10, 15, 0.75);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 28px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            animation: floatCard 6s ease-in-out infinite;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .cv-terminal::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+            opacity: 0.7;
+        }
+
+        @keyframes floatCard {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .cv-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        /* Profile Column */
+        .cv-profile {
+            text-align: center;
+            border-right: 1px dashed var(--border-divider);
+            padding-right: 24px;
+        }
+
+        .cv-avatar-frame {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 16px;
+            border: 2px solid var(--accent-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(139, 92, 246, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cv-avatar-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .cv-avatar-frame::after {
+            content: '';
+            position: absolute;
+            bottom: -6px; right: -6px;
+            width: 20px; height: 20px;
+            border-bottom: 2px solid var(--accent-primary);
+            border-right: 2px solid var(--accent-primary);
+        }
+
+        .cv-rank-badge {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 8px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        /* Profile Additional Data */
+        .cv-profile-data {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px dashed var(--border-divider);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .cv-data-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+        }
+
+        .cv-data-label {
+            color: var(--text-meta);
+            font-weight: 600;
+        }
+
+        .cv-data-value {
+            color: var(--accent-primary);
+            font-weight: 500;
+        }
+
+        /* Metrics Column */
+        .cv-metrics {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Metrics Grid (2 columns) */
+        .cv-metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .metric-item {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+        }
+
+        .metric-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+
+        .progress-bar {
+            height: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Stats Summary */
+        .cv-stats-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 8px;
+            padding: 12px;
+            background: rgba(139, 92, 246, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 8px;
+        }
+
+        .cv-stat-box {
+            text-align: center;
+            padding: 8px;
+        }
+
+        .cv-stat-value {
+            font-family: var(--font-mono);
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            line-height: 1.2;
+            margin-bottom: 4px;
+        }
+
+        .cv-stat-label {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: var(--text-meta);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-primary);
+            width: 0; /* Animado via JS o CSS keyframes */
+            position: relative;
+            box-shadow: 0 0 10px var(--accent-primary);
+            animation: fillProgress 1.5s ease-out forwards;
+        }
+
+        @keyframes fillProgress {
+            from { width: 0; }
+        }
+
+        /* Download Button Advanced */
+        .btn-decrypt {
+            margin-top: 12px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 12px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .btn-decrypt:hover {
+            border-color: #10b981;
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.05);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-decrypt .lock-icon {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+            transition: 0.3s;
+        }
+
+        .btn-decrypt:hover .lock-icon {
+            transform: scaleY(0.8); /* Simular apertura simple */
+        }
+
+        .btn-text-normal { display: inline; }
+        .btn-text-hover { display: none; }
+
+        .btn-decrypt:hover .btn-text-normal { display: none; }
+        .btn-decrypt:hover .btn-text-hover { display: inline; animation: text-flicker 0.3s infinite; }
+
+        @media (max-width: 768px) {
+            .cv-terminal {
+                padding: 20px;
+                border-radius: 12px;
+            }
+            
+            .cv-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .cv-profile {
+                border-right: none;
+                border-bottom: 1px dashed var(--border-divider);
+                padding-right: 0;
+                padding-bottom: 20px;
+            }
+            
+            .cv-avatar-frame {
+                width: 80px;
+                height: 80px;
+                margin-bottom: 12px;
+            }
+            
+            .cv-metrics {
+                gap: 14px;
+            }
+            
+            .cv-metrics-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .metric-item {
+                font-size: 0.7rem;
+            }
+            
+            .metric-label {
+                font-size: 0.7rem;
+                margin-bottom: 4px;
+            }
+            
+            .progress-bar {
+                height: 4px;
+            }
+            
+            .cv-stats-summary {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+                padding: 10px;
+            }
+            
+            .cv-stat-value {
+                font-size: 1.1rem;
+            }
+            
+            .cv-stat-label {
+                font-size: 0.55rem;
+            }
+            
+            .btn-decrypt {
+                min-height: 44px; /* Tamaño táctil mínimo recomendado */
+                padding: 14px;
+                font-size: 0.75rem;
+            }
+            
+            .cv-profile-data {
+                margin-top: 12px;
+                padding-top: 12px;
+                gap: 5px;
+            }
+            
+            .cv-data-row {
+                font-size: 0.65rem;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .cv-terminal {
+                padding: 16px;
+            }
+            
+            .cv-avatar-frame {
+                width: 70px;
+                height: 70px;
+            }
+            
+            .cv-stats-summary {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            .cv-stat-box {
+                padding: 6px;
+            }
+        }
+
+        /* --- ID CARD & SYSTEM LOGS (CV SECTION) --- */
+        .id-card-wrapper {
+            perspective: 1000px;
+            width: 100%;
+            max-width: 320px;
+            margin: 0 auto 30px;
+        }
+        
+        .id-card {
+            background: linear-gradient(135deg, rgba(20, 20, 25, 0.9) 0%, rgba(10, 10, 12, 0.95) 100%);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--accent-primary);
+            border-radius: 12px;
+            padding: 24px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+            cursor: pointer;
+            overflow: hidden;
+        }
+        
+        .id-card:hover {
+            transform: rotateY(5deg) rotateX(5deg) translateY(-5px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 20px 40px -5px rgba(139, 92, 246, 0.3);
+        }
+        
+        .id-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent 0px,
+                transparent 2px,
+                rgba(139, 92, 246, 0.03) 3px,
+                rgba(139, 92, 246, 0.03) 4px
+            );
+            pointer-events: none;
+        }
+
+        .id-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px dashed rgba(255,255,255,0.1);
+            padding-bottom: 10px;
+        }
+
+        .id-avatar {
+            width: 60px;
+            height: 60px;
+            background: var(--bg-body);
+            border: 1px solid var(--accent-primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--accent-primary);
+        }
+
+        /* System Logs Timeline */
+        .system-logs-container {
+            position: relative;
+            border-left: 2px solid rgba(255, 255, 255, 0.05);
+            margin-left: 16px;
+            padding-left: 24px;
+        }
+
+        .log-entry {
+            position: relative;
+            margin-bottom: 32px;
+        }
+
+        .log-entry::after {
+            content: '';
+            position: absolute;
+            left: -31px;
+            top: 6px;
+            width: 12px;
+            height: 12px;
+            background: var(--bg-body);
+            border: 2px solid var(--text-secondary);
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        .log-entry:hover::after {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 15px var(--accent-primary);
+        }
+
+        .log-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+        .log-card:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--accent-primary);
+        }
+
+        .log-meta {
+            display: flex;
+            justify-content: space-between;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-meta);
+            margin-bottom: 8px;
+        }
+
+        /* Radar Chart Container */
+        .radar-container {
+            width: 100%;
+            aspect-ratio: 1;
+            max-width: 300px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .radar-svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.2));
+        }
+        .radar-polygon {
+            fill: rgba(139, 92, 246, 0.15);
+            stroke: var(--accent-primary);
+            stroke-width: 1.5;
+            transition: all 1s ease;
+        }
+        .radar-container:hover .radar-polygon {
+            fill: rgba(139, 92, 246, 0.25);
         }
 
         /* ============================================
@@ -1044,6 +1810,230 @@
             }
         }
 
+        /* --- NEW CORE LAYOUT & STYLES --- */
+        .core-layout {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+            width: 100%;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Unified Card Style - Glassmorphism & Rounded */
+        .unified-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 2.5rem;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .unified-card:hover {
+            transform: translateY(-5px) scale(1.01);
+            border-color: var(--accent-primary);
+            background: rgba(30, 30, 35, 0.85);
+            box-shadow: 0 20px 50px -10px rgba(139, 92, 246, 0.2);
+        }
+
+        /* Hero Module */
+        .hero-module {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-top: 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-console-bg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            height: 80%;
+            background: 
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
+            mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+            z-index: -1;
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 40px;
+            pointer-events: none;
+        }
+
+        .hero-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-top: 4rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 2.5rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            padding: 2rem 1.5rem;
+            border-radius: 20px;
+            text-align: center;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+            opacity: 0;
+            transition: 0.3s;
+        }
+
+        .stat-card:hover {
+            background: rgba(139, 92, 246, 0.08);
+            border-color: var(--accent-primary);
+            transform: translateY(-3px);
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        /* Services Grid */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+        }
+
+        .service-card {
+            position: relative;
+        }
+        
+        .service-card h3 {
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+        }
+
+        /* Contact Section */
+        .contact-split {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 4rem;
+            align-items: center;
+            background: rgba(10, 10, 12, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 32px;
+            padding: 3rem;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 60px -20px rgba(0,0,0,0.5);
+        }
+
+        .contact-text {
+            text-align: left;
+        }
+
+        .contact-form-panel {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            padding: 2rem;
+            border-radius: 24px;
+        }
+
+        /* --- DASHBOARD LAYOUT (Combined Grid) --- */
+        .dashboard-section {
+            padding: 100px 0;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            align-items: start;
+        }
+
+        .dashboard-col {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        .module-header {
+            margin-bottom: 1.5rem;
+            font-size: 1.75rem;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .module-header::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: var(--accent-primary);
+            box-shadow: 0 0 10px var(--accent-primary);
+        }
+
+        /* Neon CTA Button */
+        .btn-neon {
+            background: var(--accent-primary);
+            color: white;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-weight: 700;
+            letter-spacing: 0.1em;
+        }
+        
+        .btn-neon:hover {
+            background: #7c3aed;
+            box-shadow: 0 0 40px rgba(139, 92, 246, 0.6);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 1024px) {
+            .hero-stats-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .contact-split {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+                padding: 1.5rem;
+                text-align: center;
+            }
+
+            .contact-text {
+                text-align: center;
+            }
+        }
+
+
         @media (max-width: 640px) {
             /* Tablets pequeñas */
             .stream-card {
@@ -1090,10 +2080,58 @@
             }
 
             h1 { 
-                font-size: 3rem; 
+                font-size: clamp(2rem, 8vw, 3.5rem);
+                line-height: 1.1;
             }
+            
+            h2 {
+                font-size: clamp(1.5rem, 6vw, 2rem);
+            }
+            
+            .module-header {
+                font-size: clamp(1.3rem, 5vw, 1.75rem);
+            }
+            
             .section { 
-                padding: 60px 0; 
+                padding: 40px 0; 
+            }
+            
+            .dashboard-section {
+                padding: 40px 0;
+            }
+            
+            .core-layout {
+                padding: 0 16px;
+            }
+            
+            .unified-card {
+                padding: 1.5rem;
+            }
+            
+            .hero-module {
+                min-height: 100dvh; /* Dynamic viewport height para móvil */
+                padding-top: 60px;
+                padding-bottom: 40px;
+            }
+            
+            .hero-stats-grid {
+                gap: 12px;
+                margin-top: 2.5rem;
+                padding-top: 1.5rem;
+            }
+            
+            .stat-card {
+                padding: 1rem 0.75rem;
+                border-radius: 12px;
+            }
+            
+            .stat-card h4 {
+                font-size: 1.5rem !important;
+                margin-bottom: 0.25rem !important;
+            }
+            
+            .stat-card p {
+                font-size: 0.65rem !important;
             }
             .footer-grid {
                 grid-template-columns: 1fr;
@@ -1116,6 +2154,76 @@
                 font-size: 1.2rem;
             }
         }
+        
+        @media (max-width: 400px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            h2 {
+                font-size: 1.3rem;
+            }
+            
+            .module-header {
+                font-size: 1.2rem;
+            }
+            
+            .section {
+                padding: 30px 0;
+            }
+            
+            .dashboard-section {
+                padding: 30px 0;
+            }
+            
+            .core-layout {
+                padding: 0 12px;
+            }
+            
+            .unified-card {
+                padding: 1.25rem;
+            }
+            
+            .hero-module {
+                padding-top: 50px;
+                padding-bottom: 30px;
+            }
+            
+            .hero-stats-grid {
+                gap: 10px;
+                margin-top: 2rem;
+                padding-top: 1.25rem;
+            }
+            
+            .stat-card {
+                padding: 0.875rem 0.625rem;
+                border-radius: 10px;
+            }
+            
+            .stat-card h4 {
+                font-size: 1.25rem !important;
+                margin-bottom: 0.2rem !important;
+            }
+            
+            .stat-card p {
+                font-size: 0.6rem !important;
+            }
+            
+            .tech-card {
+                padding: 18px;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.85rem;
+            }
+            
+            .btn-decrypt {
+                min-height: 44px;
+                padding: 12px;
+                font-size: 0.7rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1123,7 +2231,9 @@
     <!-- 3D Canvas -->
     <div id="canvas-container"></div>
 
-    <!-- UI Layer -->
+    <!-- UI Layer Wrapper -->
+    <div class="ui-overlay">
+
     <header>
         <div class="container nav-inner">
             <a href="#" class="logo">INMORTAL<span>_OS</span></a>
@@ -1131,7 +2241,7 @@
                 <a href="#sobre-mi" data-i18n="nav.sobreMi">Sobre Mí</a>
                 <a href="#experiencia" data-i18n="nav.experiencia">Experiencia</a>
                 <a href="#stack" data-i18n="nav.stack">Stack</a>
-                <a href="#proyectos" data-i18n="nav.proyectos">Proyectos</a>
+                <a href="public/proyectos.html" data-i18n="nav.proyectos">Proyectos</a>
                 <a href="#servicios" data-i18n="nav.servicios">Servicios</a>
                 <a href="#contacto" data-i18n="nav.contacto">Contacto</a>
                 <div class="lang-toggle">
@@ -1157,7 +2267,7 @@
                 <a href="#sobre-mi" class="system-menu-link" data-index="[01]" data-i18n="nav.sobreMi">Sobre Mí</a>
                 <a href="#experiencia" class="system-menu-link" data-index="[02]" data-i18n="nav.experiencia">Experiencia</a>
                 <a href="#stack" class="system-menu-link" data-index="[03]" data-i18n="nav.stack">Stack</a>
-                <a href="#proyectos" class="system-menu-link" data-index="[04]" data-i18n="nav.proyectos">Proyectos</a>
+                <a href="public/proyectos.html" class="system-menu-link" data-index="[04]" data-i18n="nav.proyectos">Proyectos</a>
                 <a href="#servicios" class="system-menu-link" data-index="[05]" data-i18n="nav.servicios">Servicios</a>
                 <a href="#contacto" class="system-menu-link" data-index="[06]" data-i18n="nav.contacto">Contacto</a>
                 <a href="#" class="system-menu-link" data-index="[07]" data-i18n="hero.btnCV">CV / Resume</a>
@@ -1174,159 +2284,360 @@
 
     <main>
         <!-- Hero -->
-        <section class="section reveal-section" id="hero" style="min-height: 100vh; display: flex; align-items: center; padding-top: 80px;">
-            <div class="container">
-                <p class="text-mono" data-i18n="hero.status">v3.0.0 // SYSTEM ONLINE</p>
-                <h1 data-i18n="hero.titulo">INGENIERO <br> <span style="opacity: 0.5;">FULL-STACK</span></h1>
-                <p style="font-size: 1.2rem; margin-bottom: 2rem;" data-i18n="hero.subtitulo">
+        <section class="section reveal-section hero-module" id="hero">
+            <div class="hero-console-bg"></div>
+            <div class="core-layout">
+                <p class="text-mono" data-i18n="hero.status" style="color: var(--accent-primary); margin-bottom: 16px;">v3.0.0 // SYSTEM ONLINE</p>
+                <h1 data-i18n="hero.titulo" style="max-width: 900px;">INGENIERO <br> <span style="opacity: 0.5;">FULL-STACK</span></h1>
+                <p style="font-size: 1.25rem; margin-bottom: 2.5rem; max-width: 600px;" data-i18n="hero.subtitulo">
                     Arquitecto de realidades digitales. Especializado en 
                     <span style="color:white">Web 3.0</span>, 
                     <span style="color:white">Inteligencia Artificial</span> y 
                     <span style="color:white">Web 3D</span>.
                 </p>
-                <div class="flex">
-                    <a href="#proyectos" class="btn btn-primary" data-i18n="hero.btnProyectos">Ver Proyectos</a>
+                <div class="flex" style="margin-bottom: 2rem;">
+                    <a href="public/proyectos.html" class="btn btn-primary" data-i18n="hero.btnProyectos">Ver Proyectos</a>
                     <a href="#" class="btn btn-outline" data-i18n="hero.btnCV">CV / Resume</a>
                 </div>
 
-                <div class="flex" style="margin-top: 4rem; gap: 4rem; border-top: 1px solid var(--border-color); padding-top: 2rem;">
-                    <div>
-                        <h4 style="font-size: 2rem;">+20</h4>
-                        <p style="margin:0; font-size: 0.8rem;" data-i18n="hero.stats.proyectos">PROYECTOS</p>
+                <div class="hero-stats-grid">
+                    <div class="stat-card">
+                        <h4 style="font-size: 2.5rem; margin-bottom: 0.5rem;">+20</h4>
+                        <p class="text-mono" style="margin:0; font-size: 0.8rem; color: var(--text-secondary);" data-i18n="hero.stats.proyectos">PROYECTOS</p>
                     </div>
-                    <div>
-                        <h4 style="font-size: 2rem;">+3</h4>
-                        <p style="margin:0; font-size: 0.8rem;" data-i18n="hero.stats.experiencia">AÑOS EXP.</p>
+                    <div class="stat-card">
+                        <h4 style="font-size: 2.5rem; margin-bottom: 0.5rem;">+3</h4>
+                        <p class="text-mono" style="margin:0; font-size: 0.8rem; color: var(--text-secondary);" data-i18n="hero.stats.experiencia">AÑOS EXP.</p>
                     </div>
-                    <div>
-                        <h4 style="font-size: 2rem;">100%</h4>
-                        <p style="margin:0; font-size: 0.8rem;" data-i18n="hero.stats.futurista">FUTURISTA</p>
+                    <div class="stat-card">
+                        <h4 style="font-size: 2.5rem; margin-bottom: 0.5rem;">100%</h4>
+                        <p class="text-mono" style="margin:0; font-size: 0.8rem; color: var(--text-secondary);" data-i18n="hero.stats.futurista">FUTURISTA</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- About -->
-        <section id="sobre-mi" class="section reveal-section">
-            <div class="container">
-                <h2 data-i18n="about.titulo">Sobre Mí</h2>
-                <div class="grid grid-2">
-                    <div class="card">
-                        <p data-i18n="about.descripcion">
-                            Más que escribir código, construyo ecosistemas. Mi pasión reside en la intersección entre el diseño minimalista y la ingeniería robusta.
-                        </p>
-                        <p data-i18n="about.descripcion2">
-                            Actualmente enfocado en escalar aplicaciones descentralizadas (dApps) y explorar interfaces neuronales mediante IA generativa.
-                        </p>
+        <!-- DASHBOARD CORE: About, Exp, Stack combined -->
+        <section class="dashboard-section reveal-section">
+            <div class="core-layout">
+                <div class="dashboard-grid">
+                    
+                    <!-- COL 1: Sobre Mí + Perfil -->
+                    <div class="dashboard-col">
+                        <!-- Module: About -->
+                        <div id="sobre-mi" class="unified-card about-enhanced">
+                            <h2 class="module-header" data-i18n="about.titulo">Sobre Mí</h2>
+                            
+                            <div class="about-quote" data-i18n="about.descripcion">
+                                Más que escribir <strong>código</strong>, construyo <strong>ecosistemas</strong>. Mi pasión reside en la intersección entre el <strong>diseño minimalista</strong> y la <strong>ingeniería robusta</strong>.
+                            </div>
+                            
+                            <div class="about-focus" data-i18n="about.descripcion2">
+                                Actualmente enfocado en desarrollar <span class="highlight">webs 3D interactivas</span> con <span class="highlight">Three.js</span>, <span class="highlight">Python</span> y tecnologías modernas para crear experiencias inmersivas.
+                            </div>
+                        </div>
+
+                        <!-- Module: System Profile -->
+                        <div class="unified-card" style="border-color: var(--accent-primary); box-shadow: 0 0 20px rgba(139, 92, 246, 0.1);">
+                            <h3 data-i18n="about.perfil" style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">Perfil del Sistema</h3>
+                            <div style="margin-top: 0;">
+                                <div class="text-mono" style="margin-bottom: 8px;">UID: INMORTAL_v3.0</div>
+                                <div class="text-mono" style="margin-bottom: 8px;">STATUS: <span style="color: var(--accent-primary);">ONLINE</span></div>
+                                <div class="text-mono" style="margin-bottom: 8px;" data-i18n="about.especialidades">Frontend | Backend | Web3 | IA</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card">
-                        <h3 data-i18n="about.perfil">Perfil del Sistema</h3>
-                        <div style="margin-top: 1rem;">
-                            <div class="text-mono">UID: INMORTAL_v3.0</div>
-                            <div class="text-mono" style="margin-top: 8px;">STATUS: <span style="color: var(--accent-primary);">ONLINE</span></div>
-                            <div class="text-mono" style="margin-top: 8px;" data-i18n="about.especialidades">Frontend | Backend | Web3 | IA</div>
+
+                    <!-- COL 2: Experiencia + Stack (REEMPLAZADO POR SYSTEM FILE) -->
+                    <div class="dashboard-col">
+                        
+                        <!-- Module: Experience (System Logs) -->
+                        <div id="experiencia">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:24px;">
+                                <h2 class="module-header" data-i18n="experience.titulo" style="margin-bottom:0;">Experiencia</h2>
+                                <span class="text-mono" style="font-size:0.7rem; color:var(--accent-primary);">// SYSTEM_LOGS</span>
+                            </div>
+
+                            <div class="system-logs-container">
+                                <!-- Log Entry 1 -->
+                                <div class="log-entry">
+                                    <div class="log-card">
+                                        <div class="log-meta">
+                                            <span data-i18n="experience.exp1.fecha">2023 - PRESENT</span>
+                                            <span style="color:#10b981;">● ACTIVE PROCESS</span>
+                                        </div>
+                                        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;" data-i18n="experience.exp1.titulo">Ingeniero Full-Stack Senior</h3>
+                                        <p class="text-mono" style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px;" data-i18n="experience.exp1.empresa">Consultoría Web3 & IA</p>
+                                        <p style="font-size: 0.9rem; line-height: 1.5;">
+                                            Liderando la arquitectura de microservicios para plataformas DeFi. Implementación de agentes autónomos con LLMs.
+                                        </p>
+                                        <div class="tech-chips-row" style="margin-top:12px;">
+                                            <span class="mini-chip">Solidity</span>
+                                            <span class="mini-chip">React</span>
+                                            <span class="mini-chip">AWS</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Log Entry 2 -->
+                                <div class="log-entry">
+                                    <div class="log-card">
+                                        <div class="log-meta">
+                                            <span data-i18n="experience.exp2.fecha">2021 - 2023</span>
+                                            <span style="color:#f59e0b;">● ARCHIVED</span>
+                                        </div>
+                                        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;" data-i18n="experience.exp2.titulo">Frontend Developer</h3>
+                                        <p class="text-mono" style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px;" data-i18n="experience.exp2.empresa">Creative Studio Agency</p>
+                                        <p style="font-size: 0.9rem; line-height: 1.5;">
+                                            Desarrollo de experiencias inmersivas premiadas en Awwwards. Optimización extrema de rendimiento WebGL.
+                                        </p>
+                                        <div class="tech-chips-row" style="margin-top:12px;">
+                                            <span class="mini-chip">Three.js</span>
+                                            <span class="mini-chip">GSAP</span>
+                                            <span class="mini-chip">Vue</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div> <!-- End Dashboard Grid -->
+                
+                <!-- NEW SECTION: PERSONNEL FILE (CV + SKILLS) -->
+                <div class="reveal-section" style="margin-top: 100px;">
+                    <h2 class="module-header" style="margin-bottom:10px;" data-i18n="cv.titulo">EXPEDIENTE DEL SISTEMA</h2>
+                    <p class="text-mono" style="margin-bottom: 40px; color: var(--text-meta);">// PERSONNEL_FILE_V3.enc</p>
+
+                    <div class="cv-terminal">
+                        <div class="cv-grid">
+                            
+                            <!-- Left: Profile Identity -->
+                            <div class="cv-profile">
+                                <div class="cv-avatar-frame">
+                                    <img src="img/personal.jpeg" alt="INMORTAL_OS">
+                                </div>
+                                <h3 style="font-size: 1.2rem; margin-bottom: 8px;">INMORTAL_OS</h3>
+                                <div class="text-mono" style="font-size: 0.75rem; color: var(--text-secondary); margin: 2px 0;">ID: 8492-X</div>
+                                <div class="cv-rank-badge" style="margin: 8px 0;">CLASS: ARCHITECT</div>
+                                <div class="text-mono" style="font-size: 0.7rem; color: var(--text-meta); margin: 8px 0;">STATUS: <span style="color: #10b981;">ONLINE</span></div>
+                                
+                                <!-- Additional Profile Data -->
+                                <div class="cv-profile-data">
+                                    <div class="cv-data-row">
+                                        <span class="cv-data-label">EXP:</span>
+                                        <span class="cv-data-value">+3 AÑOS</span>
+                                    </div>
+                                    <div class="cv-data-row">
+                                        <span class="cv-data-label">PROY:</span>
+                                        <span class="cv-data-value">+20 COMPLETADOS</span>
+                                    </div>
+                                    <div class="cv-data-row">
+                                        <span class="cv-data-label">IDIOMAS:</span>
+                                        <span class="cv-data-value">ES | EN</span>
+                                    </div>
+                                    <div class="cv-data-row">
+                                        <span class="cv-data-label">CERT:</span>
+                                        <span class="cv-data-value">AWS | WEB3</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Metrics & Action -->
+                            <div class="cv-metrics">
+                                <h4 class="text-mono" style="font-size: 0.85rem; margin-bottom: 16px; color: var(--accent-primary); border-bottom: 1px solid var(--border-divider); padding-bottom: 8px;" data-i18n="cv.metricas">MÉTRICAS DE RENDIMIENTO</h4>
+                                
+                                <!-- Metrics Grid (2 columns) -->
+                                <div class="cv-metrics-grid">
+                                    <!-- Metric 1 -->
+                                    <div class="metric-item">
+                                        <div class="metric-label">
+                                            <span data-i18n="cv.skills.sincronizacion">Sincronización Neural</span>
+                                            <span>98%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 98%;"></div>
+                                        </div>
+                                    </div>
+                                    <!-- Metric 2 -->
+                                    <div class="metric-item">
+                                        <div class="metric-label">
+                                            <span data-i18n="cv.skills.resolucion">Resolución de Conflictos</span>
+                                            <span>60%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 60%; animation-delay: 0.1s;"></div>
+                                        </div>
+                                    </div>
+                                    <!-- Metric 3 -->
+                                    <div class="metric-item">
+                                        <div class="metric-label">
+                                            <span data-i18n="cv.skills.adaptabilidad">Adaptabilidad de Entorno</span>
+                                            <span>95%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 95%; animation-delay: 0.2s;"></div>
+                                        </div>
+                                    </div>
+                                    <!-- Metric 4 -->
+                                    <div class="metric-item">
+                                        <div class="metric-label">
+                                            <span data-i18n="cv.skills.optimización">Optimización de Recursos</span>
+                                            <span>92%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 92%; animation-delay: 0.3s;"></div>
+                                        </div>
+                                    </div>
+                                    <!-- Metric 5 -->
+                                    <div class="metric-item">
+                                        <div class="metric-label">
+                                            <span data-i18n="cv.skills.comunicacion">Comunicación Técnica</span>
+                                            <span>70%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 70%; animation-delay: 0.4s;"></div>
+                                        </div>
+                                    </div>
+                                    <!-- Metric 6 -->
+                                    <div class="metric-item">
+                                        <div class="metric-label">
+                                            <span data-i18n="cv.skills.liderazgo">Liderazgo de Equipo</span>
+                                            <span>80%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 80%; animation-delay: 0.5s;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Stats Summary -->
+                                <div class="cv-stats-summary">
+                                    <div class="cv-stat-box">
+                                        <div class="cv-stat-value">+20</div>
+                                        <div class="cv-stat-label">PROYECTOS</div>
+                                    </div>
+                                    <div class="cv-stat-box">
+                                        <div class="cv-stat-value">+3</div>
+                                        <div class="cv-stat-label">AÑOS EXP.</div>
+                                    </div>
+                                    <div class="cv-stat-box">
+                                        <div class="cv-stat-value">100%</div>
+                                        <div class="cv-stat-label">SATISFACCIÓN</div>
+                                    </div>
+                                </div>
+
+                                <!-- Advanced Download Button -->
+                                <button class="btn-decrypt">
+                                    <svg class="lock-icon" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3 3.1-3s3.1 1.29 3.1 3v2z"/></svg>
+                                    <span class="btn-text-normal" data-i18n="cv.btn.normal">ACCEDER A ARCHIVO ENCRIPTADO [PDF]</span>
+                                    <span class="btn-text-hover" style="color: #10b981;" data-i18n="cv.btn.hover">DESENCRIPTANDO... DESCARGAR</span>
+                                </button>
+                            </div>
+
                         </div>
                     </div>
                 </div>
+
             </div>
         </section>
 
-        <!-- Experience -->
-        <section id="experiencia" class="section reveal-section">
-            <div class="container">
-                <h2 data-i18n="experience.titulo">Experiencia</h2>
-                <div class="grid grid-2">
-                    <div class="card">
-                        <div class="text-mono" data-i18n="experience.exp1.fecha">2023 - PRESENTE</div>
-                        <h3 style="font-size: 1.2rem; margin-top: 8px;" data-i18n="experience.exp1.titulo">Ingeniero Full-Stack Senior</h3>
-                        <p style="font-size: 0.9rem; margin:0;" data-i18n="experience.exp1.empresa">Consultoría Web3 & IA</p>
-                    </div>
-                    <div class="card">
-                        <div class="text-mono" data-i18n="experience.exp2.fecha">2021 - 2023</div>
-                        <h3 style="font-size: 1.2rem; margin-top: 8px;" data-i18n="experience.exp2.titulo">Frontend Developer</h3>
-                        <p style="font-size: 0.9rem; margin:0;" data-i18n="experience.exp2.empresa">Creative Studio Agency</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Stack -->
-        <section id="stack" class="section reveal-section">
-            <div class="container">
-                <h2 data-i18n="stack.titulo">Arsenal Tecnológico</h2>
-                <!-- Nuevo contenedor para el efecto Base de Datos/Registro -->
-                <div class="data-registry-container" style="margin-top: 1rem;">
-                    <div class="grid grid-3">
-                        <!-- FRONTEND Register -->
-                        <div class="tech-register">
-                            <h4 data-index="[01]" style="color: var(--accent-primary);" data-i18n="stack.frontend">FRONTEND</h4>
-                            <div class="data-line">
-                                <span class="data-key">CORE</span>
-                                <span class="data-value">React / Next.js</span>
+        <!-- Module: Stack (Mantenemos fuera o integramos? El usuario no pidio cambios aqui pero es parte del dashboard) -->
+        <!-- Stack se mantiene en su lugar original o se puede mover si el usuario lo pide. 
+             Lo dejaremos visualmente donde estaba pero con el nuevo markup de experiencia. -->
+        <!-- Ups, removí el div de stack al reemplazar dashboard-col 2. Lo agregaré de nuevo abajo para no perderlo. -->
+        
+        <!-- Stack Section Re-Insert -->
+        <section id="stack" class="section reveal-section" style="padding-top:0;">
+             <div class="core-layout">
+                 <div class="arsenal-container">
+                    <h2 class="module-header" data-i18n="stack.titulo">Arsenal Tecnológico</h2>
+                    <p class="text-mono" style="color: var(--text-meta); font-size: 0.8rem; margin-bottom: 2rem;">// TECH_STACK_V3.0 // LOADED</p>
+                    
+                    <div class="arsenal-grid">
+                        <!-- FRONTEND Card -->
+                        <div class="tech-card">
+                            <div class="tech-card-header">
+                                <div class="tech-icon">⚛</div>
+                                <div class="tech-title-group">
+                                    <div class="tech-index">[01]</div>
+                                    <h4 class="tech-title" data-i18n="stack.frontend">FRONTEND</h4>
+                                </div>
                             </div>
-                            <div class="data-line">
-                                <span class="data-key">3D-ENGINE</span>
-                                <span class="data-value">Three.js / R3F</span>
-                            </div>
-                            <div class="data-line">
-                                <span class="data-key">STYLING</span>
-                                <span class="data-value">Tailwind CSS / SCSS</span>
-                            </div>
-                            <div class="data-line">
-                                <span class="data-key">LANG</span>
-                                <span class="data-value">TypeScript</span>
+                            <div class="tech-list">
+                                <div class="tech-item">
+                                    <span class="tech-label">CORE</span>
+                                    <span class="tech-value">React / Next.js</span>
+                                </div>
+                                <div class="tech-item">
+                                    <span class="tech-label">3D</span>
+                                    <span class="tech-value">Three.js / R3F</span>
+                                </div>
+                                <div class="tech-item">
+                                    <span class="tech-label">STYLE</span>
+                                    <span class="tech-value">Tailwind / SCSS</span>
+                                </div>
                             </div>
                         </div>
                         
-                        <!-- BACKEND Register -->
-                        <div class="tech-register">
-                            <h4 data-index="[02]" style="color: var(--accent-primary);" data-i18n="stack.backend">BACKEND</h4>
-                            <div class="data-line">
-                                <span class="data-key">RUN-TIME</span>
-                                <span class="data-value">Node.js / Express</span>
+                        <!-- BACKEND Card -->
+                        <div class="tech-card">
+                            <div class="tech-card-header">
+                                <div class="tech-icon">⚙</div>
+                                <div class="tech-title-group">
+                                    <div class="tech-index">[02]</div>
+                                    <h4 class="tech-title" data-i18n="stack.backend">BACKEND</h4>
+                                </div>
                             </div>
-                            <div class="data-line">
-                                <span class="data-key">API-CORE</span>
-                                <span class="data-value">Python / FastAPI</span>
-                            </div>
-                            <div class="data-line">
-                                <span class="data-key">DB-MAIN</span>
-                                <span class="data-value">PostgreSQL / MongoDB</span>
-                            </div>
-                            <div class="data-line">
-                                <span class="data-key">OPS</span>
-                                <span class="data-value">Redis / Docker / AWS</span>
+                            <div class="tech-list">
+                                <div class="tech-item">
+                                    <span class="tech-label">RUNTIME</span>
+                                    <span class="tech-value">Node.js</span>
+                                </div>
+                                <div class="tech-item">
+                                    <span class="tech-label">API</span>
+                                    <span class="tech-value">FastAPI / Express</span>
+                                </div>
+                                <div class="tech-item">
+                                    <span class="tech-label">DATA</span>
+                                    <span class="tech-value">PostgreSQL / Mongo</span>
+                                </div>
                             </div>
                         </div>
                         
-                        <!-- WEB3 & AI Register -->
-                        <div class="tech-register">
-                            <h4 data-index="[03]" style="color: var(--accent-primary);" data-i18n="stack.web3">WEB3 & AI</h4>
-                            <div class="data-line">
-                                <span class="data-key">CONTRACTS</span>
-                                <span class="data-value">Solidity / Hardhat</span>
+                        <!-- WEB3 & AI Card -->
+                        <div class="tech-card">
+                            <div class="tech-card-header">
+                                <div class="tech-icon">🔗</div>
+                                <div class="tech-title-group">
+                                    <div class="tech-index">[03]</div>
+                                    <h4 class="tech-title" data-i18n="stack.web3">WEB3 & AI</h4>
+                                </div>
                             </div>
-                            <div class="data-line">
-                                <span class="data-key">AI-MODEL</span>
-                                <span class="data-value">OpenAI API / Llama</span>
-                            </div>
-                            <div class="data-line">
-                                <span class="data-key">STORAGE</span>
-                                <span class="data-value">IPFS / Arweave</span>
-                            </div>
-                            <div class="data-line">
-                                <span class="data-key">3D-AI</span>
-                                <span class="data-value">TensorFlow.js</span>
+                            <div class="tech-list">
+                                <div class="tech-item">
+                                    <span class="tech-label">SMART</span>
+                                    <span class="tech-value">Solidity / Hardhat</span>
+                                </div>
+                                <div class="tech-item">
+                                    <span class="tech-label">AI</span>
+                                    <span class="tech-value">OpenAI / LangChain</span>
+                                </div>
+                                <div class="tech-item">
+                                    <span class="tech-label">BLOCKCHAIN</span>
+                                    <span class="tech-value">Ethereum / Polygon</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
+                 </div>
+             </div>
         </section>
 
         <!-- Projects -->
         <section id="proyectos" class="section reveal-section" style="overflow: hidden;">
-            <div class="container" style="margin-bottom: 40px;">
+            <div class="core-layout" style="margin-bottom: 40px;">
                 <h2 data-i18n="projects.titulo">Proyectos Destacados</h2>
                 <p class="text-mono" style="color: var(--accent-primary); font-size: 0.8rem;">
                     // HOVER TO INSPECT DATA
@@ -1337,7 +2648,7 @@
                     
                     <article class="stream-card">
                         <video class="card-video" autoplay muted loop playsinline>
-                            <source src="public/mp4/three.js-3.mp4" type="video/mp4">
+                            <source src="src/assets/media/fondo2.mp4" type="video/mp4">
                         </video>
                         <div class="card-overlay">
                             <div class="overlay-header">
@@ -1358,7 +2669,7 @@
                     </article>
                     <article class="stream-card">
                         <video class="card-video" autoplay muted loop playsinline>
-                            <source src="public/mp4/three.js-3.mp4" type="video/mp4">
+                            <source src="src/assets/media/fondo2.mp4" type="video/mp4">
                         </video>
                         <div class="card-overlay">
                             <div class="overlay-header">
@@ -1379,7 +2690,7 @@
                     </article>
                     <article class="stream-card">
                         <video class="card-video" autoplay muted loop playsinline>
-                            <source src="public/mp4/three.js-3.mp4" type="video/mp4">
+                            <source src="src/assets/media/fondo2.mp4" type="video/mp4">
                         </video>
                         <div class="card-overlay">
                             <div class="overlay-header">
@@ -1400,7 +2711,7 @@
                     </article>
                     <article class="stream-card">
                         <video class="card-video" autoplay muted loop playsinline>
-                            <source src="public/mp4/three.js-3.mp4" type="video/mp4">
+                            <source src="src/assets/media/fondo2.mp4" type="video/mp4">
                         </video>
                         <div class="card-overlay">
                             <div class="overlay-header">
@@ -1421,7 +2732,7 @@
                     </article>
                     <article class="stream-card">
                         <video class="card-video" autoplay muted loop playsinline>
-                            <source src="public/mp4/three.js-3.mp4" type="video/mp4">
+                            <source src="src/assets/media/fondo2.mp4" type="video/mp4">
                         </video>
                         <div class="card-overlay">
                             <div class="overlay-header">
@@ -1442,7 +2753,7 @@
                     </article>
                     <article class="stream-card">
                         <video class="card-video" autoplay muted loop playsinline>
-                            <source src="public/mp4/three.js-3.mp4" type="video/mp4">
+                            <source src="src/assets/media/fondo2.mp4" type="video/mp4">
                         </video>
                         <div class="card-overlay">
                             <div class="overlay-header">
@@ -1467,18 +2778,18 @@
 
         <!-- Services -->
         <section id="servicios" class="section reveal-section">
-            <div class="container">
+            <div class="core-layout">
                 <h2 data-i18n="services.titulo">Servicios</h2>
-                <div class="grid grid-3">
-                    <div class="card">
+                <div class="services-grid">
+                    <div class="unified-card service-card">
                         <h3 data-i18n="services.serv1.titulo">Desarrollo Web3</h3>
                         <p data-i18n="services.serv1.descripcion">Construcción de dApps, smart contracts y ecosistemas descentralizados.</p>
                     </div>
-                    <div class="card">
+                    <div class="unified-card service-card">
                         <h3 data-i18n="services.serv2.titulo">IA Generativa</h3>
                         <p data-i18n="services.serv2.descripcion">Integración de modelos de IA para automatización y generación de contenido.</p>
                     </div>
-                    <div class="card">
+                    <div class="unified-card service-card">
                         <h3 data-i18n="services.serv3.titulo">Experiencias 3D</h3>
                         <p data-i18n="services.serv3.descripcion">Desarrollo de interfaces inmersivas con Three.js y WebGL.</p>
                     </div>
@@ -1488,24 +2799,28 @@
 
         <!-- Contact -->
         <section id="contacto" class="section reveal-section">
-            <div class="container" style="max-width: 800px;">
-                <div class="card" style="text-align: center;">
-                    <p class="text-mono" data-i18n="contact.subtitulo">INICIAR PROTOCOLO DE CONEXIÓN</p>
-                    <h2 style="margin-bottom: 1rem;" data-i18n="contact.titulo">Trabajemos Juntos</h2>
-                    <p style="margin: 0 auto 2rem auto;" data-i18n="contact.descripcion">¿Tienes un proyecto visionario? Estoy listo para construir el futuro contigo.</p>
+            <div class="core-layout">
+                <div class="contact-split">
+                    <div class="contact-text">
+                        <p class="text-mono" data-i18n="contact.subtitulo" style="color: var(--accent-primary); margin-bottom: 1rem;">INICIAR PROTOCOLO DE CONEXIÓN</p>
+                        <h2 style="margin-bottom: 1.5rem; font-size: 2.5rem; line-height: 1.1;" data-i18n="contact.titulo">Trabajemos Juntos</h2>
+                        <p style="font-size: 1.1rem; opacity: 0.8;" data-i18n="contact.descripcion">¿Tienes un proyecto visionario? Estoy listo para construir el futuro contigo.</p>
+                    </div>
                     
-                    <form id="contactForm" style="text-align: left; max-width: 500px; margin: 0 auto;">
-                        <div class="form-group">
-                            <input type="text" name="nombre" class="form-input" data-i18n-placeholder="contact.form.nombre" placeholder="Nombre / Entidad" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="email" name="email" class="form-input" data-i18n-placeholder="contact.form.email" placeholder="Email de Contacto" required>
-                        </div>
-                        <div class="form-group">
-                            <textarea name="mensaje" class="form-input" rows="4" data-i18n-placeholder="contact.form.mensaje" placeholder="Detalles de la Misión" required></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary" style="width: 100%;" data-i18n="contact.form.enviar">Enviar Transmisión</button>
-                    </form>
+                    <div class="contact-form-panel">
+                        <form id="contactForm">
+                            <div class="form-group">
+                                <input type="text" name="nombre" class="form-input" data-i18n-placeholder="contact.form.nombre" placeholder="Nombre / Entidad" required style="background: rgba(0,0,0,0.5);">
+                            </div>
+                            <div class="form-group">
+                                <input type="email" name="email" class="form-input" data-i18n-placeholder="contact.form.email" placeholder="Email de Contacto" required style="background: rgba(0,0,0,0.5);">
+                            </div>
+                            <div class="form-group">
+                                <textarea name="mensaje" class="form-input" rows="4" data-i18n-placeholder="contact.form.mensaje" placeholder="Detalles de la Misión" required style="background: rgba(0,0,0,0.5);"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-neon" style="width: 100%; margin-top: 1rem; padding: 16px;" data-i18n="contact.form.enviar">INICIAR PROTOCOLO DE CONEXIÓN</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1533,7 +2848,7 @@
                     <li><a href="#sobre-mi" class="footer-link" data-i18n="footer.nav.sobreMi">Sobre Mí</a></li>
                     <li><a href="#experiencia" class="footer-link" data-i18n="footer.nav.experiencia">Experiencia</a></li>
                     <li><a href="#stack" class="footer-link" data-i18n="footer.nav.stack">Stack Tecnológico</a></li>
-                    <li><a href="#proyectos" class="footer-link" data-i18n="footer.nav.proyectos">Proyectos Destacados</a></li>
+                    <li><a href="public/proyectos.html" class="footer-link" data-i18n="footer.nav.proyectos">Proyectos Destacados</a></li>
                     <li><a href="#servicios" class="footer-link" data-i18n="footer.nav.servicios">Servicios</a></li>
                     <li><a href="#contacto" class="footer-link" data-i18n="footer.nav.contacto">Contacto / Iniciar Conexión</a></li>
                 </ul>
@@ -1590,158 +2905,575 @@
         </div>
     </footer>
 
+    </div><!-- End of .ui-overlay -->
+
     <!-- Three.js Logic -->
     <script type="module">
         import * as THREE from 'three';
 
-        // Configuración
+        // --- CONFIGURACIÓN DINÁMICA ---
         const config = {
-            gridSize: 40,
-            cubeSize: 0.15,
-            spacing: 0.8,
-            waveSpeed: 0.8,
-            colorBase: new THREE.Color('#1a1a1a'),
-            colorActive: new THREE.Color('#8b5cf6')
+            // Apariencia
+            colorBase: '#202228',   // Gris metálico oscuro ajustado
+            colorActive: '#ffffff', // Brillo blanco en interacción directa
+            backgroundColor: '#0a0a12', // Fondo más claro para ver mejor los orbes
+            
+            // Grid Continuo (Gap Mínimo)
+            gridSize: 60,
+            gap: 0.04,              // Separación milimétrica
+            
+            // Animación
+            waveSpeed: 0.2,         // Muy lento, casi imperceptible
+            waveFrequency: 0.15,    // Frecuencia ancha
+            waveAmp: 0.08,          // Amplitud mínima
+            
+            // Luces Interactivas
+            redLightColor: 0xff1a55,
+            purpleLightColor: 0x8b5cf6,
+            
+            // Cámara
+            fov: 30,                // Más plano aún
+            camZ: 24                
         };
 
-        // Escena
-        const scene = new THREE.Scene();
-        scene.fog = new THREE.Fog('#050505', 5, 25);
-
-        // Cámara
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
-        camera.position.set(0, 8, 15);
-        camera.lookAt(0, 0, 0);
-
-        // Renderer
-        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        document.getElementById('canvas-container').appendChild(renderer.domElement);
-
-        // Geometría Instanciada
-        const geometry = new THREE.BoxGeometry(config.cubeSize, config.cubeSize, config.cubeSize);
-        const material = new THREE.MeshStandardMaterial({
-            color: config.colorBase,
-            roughness: 0.4,
-            metalness: 0.8
-        });
-
-        const totalCubes = config.gridSize * config.gridSize;
-        const mesh = new THREE.InstancedMesh(geometry, material, totalCubes);
-        scene.add(mesh);
-
-        // Variables para animación
-        const dummy = new THREE.Object3D();
-        const positions = [];
-
-        // Crear Grid centrado
-        const offset = (config.gridSize * config.spacing) / 2;
+        // --- VARIABLES GLOBALES ---
+        let scene, camera, renderer;
+        let mesh, meshBg; // Dos capas de grid
+        let redLight, purpleLight, mainLight;
+        let orbs = []; 
+        let dummy = new THREE.Object3D(); 
         
-        let i = 0;
-        for (let x = 0; x < config.gridSize; x++) {
-            for (let z = 0; z < config.gridSize; z++) {
-                const posX = (x * config.spacing) - offset;
-                const posZ = (z * config.spacing) - offset;
+        // Pulsos
+        let pulses = []; // {x, y, age, speed}
+        
+        // Colores Helper
+        const colorHelper = new THREE.Color();
+        const baseCol = new THREE.Color();
+        const activeCol = new THREE.Color();
+        const pulseCol = new THREE.Color(0x00ffff); // Color del pulso (Cian)
+
+        // Estado
+        const mouse = new THREE.Vector2(0, 0); 
+        const targetMouse = new THREE.Vector2(0, 0);
+        let instancesData = []; 
+        const clock = new THREE.Clock();
+        
+        // --- ANIMACIÓN AUTÓNOMA MÓVIL ---
+        let autoBursts = []; // {x, y, age, maxAge, intensity}
+        let lastBurstTime = 0;
+        let autoLightAngle = 0; // Ángulo para la trayectoria de la luz automática
+        let hasMouseMoved = false; // Detectar si hay interacción con mouse
+        let mouseInactiveTime = 0; // Tiempo sin movimiento del mouse
+
+        // Inicializar
+        init();
+        animate();
+
+        function init() {
+            // Detectar móvil una sola vez
+            const isMobile = window.innerWidth < 768;
+            
+            // 1. ESCENA
+            const container = document.getElementById('canvas-container');
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(config.backgroundColor);
+            // Niebla más ligera para ver mejor los orbes
+            scene.fog = new THREE.FogExp2(config.backgroundColor, 0.015);
+
+            // 2. CÁMARA
+            camera = new THREE.PerspectiveCamera(config.fov, window.innerWidth / window.innerHeight, 0.1, 100);
+            camera.position.z = config.camZ;
+
+            // 3. RENDERER - Optimizado para móvil
+            renderer = new THREE.WebGLRenderer({ 
+                alpha: true, 
+                antialias: !isMobile // Desactivar antialiasing en móvil para mejor rendimiento
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            // Reducir pixelRatio en móvil para mejor rendimiento
+            renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio, 2));
+            
+            // Tone Mapping Cinematográfico (más exposición para ver mejor los orbes)
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.6;
+            
+            container.innerHTML = ''; 
+            container.appendChild(renderer.domElement);
+
+            // 4. LUCES (Setup CROMADO CIBERPUNK)
+            
+            // Ambiental Hemisférica para volumen base (más intensa)
+            const hemiLight = new THREE.HemisphereLight(0x505070, 0x101020, 0.8);
+            scene.add(hemiLight);
+
+            // Ambiental suave de relleno (más intensa)
+            const ambientFill = new THREE.AmbientLight(0x404050, 0.6);
+            scene.add(ambientFill);
+
+            // Luz Roja (Izquierda) - Fija y Lejana (más intensa y MUY ARRIBA del grid)
+            redLight = new THREE.PointLight(config.redLightColor, 7.0, 150);
+            redLight.position.set(-25, 20, 28); // z=28, muy por encima del grid
+            scene.add(redLight);
+
+            // Luz Púrpura (Derecha) - Fija y Lejana (más intensa y MUY ARRIBA del grid)
+            purpleLight = new THREE.PointLight(config.purpleLightColor, 7.0, 150);
+            purpleLight.position.set(25, 20, 28); // z=28, muy por encima del grid
+            scene.add(purpleLight);
+
+            // Luz Cursor (Púrpura Intenso, fuera de cámara, ARRIBA del grid)
+            mainLight = new THREE.PointLight(0x8b5cf6, 7.0, 100); // Color púrpura, intensidad aumentada, distancia aumentada
+            mainLight.position.set(0, 0, 25); // z=25, por encima del grid (grid está en z≈0)
+            scene.add(mainLight);
+            window.cursorLight = mainLight; // Exponer para depuración si es necesario
+
+            // --- ORBES DE ENERGÍA (Estacionarios y Potentes) ---
+            // Luces fijas fuera de cámara para teñir el ambiente
+            // Optimizado para móvil: menos orbes
+            
+            const orbConfigs = isMobile ? [
+                // Solo 2 orbes en móvil para mejor rendimiento - Posicionados MUY ARRIBA del grid
+                { color: 0x00ffff, x: -30, y: 25, z: 30 },  // Cian Arriba Izquierda (z=30, muy por encima)
+                { color: 0xff00ff, x: 30, y: 25, z: 30 }   // Magenta Arriba Derecha (z=30, muy por encima)
+            ] : [
+                // 4 orbes en desktop - Posicionados MUY ARRIBA del grid para iluminar desde arriba
+                { color: 0x00ffff, x: -30, y: 25, z: 30 },  // Cian Arriba Izquierda (z=30, muy por encima)
+                { color: 0xff00ff, x: 30, y: 25, z: 30 },   // Magenta Arriba Derecha (z=30, muy por encima)
+                { color: 0x8b5cf6, x: 0, y: 30, z: 32 },    // Violeta Arriba Centro (z=32, muy por encima)
+                { color: 0x3b82f6, x: 0, y: 20, z: 30 }    // Azul Arriba Centro-Bajo (z=30, muy por encima)
+            ];
+            
+            orbConfigs.forEach((conf, index) => {
+                const orbLight = new THREE.PointLight(
+                    conf.color, 
+                    isMobile ? 8.0 : 9.0,  // Intensidad muy alta para que se vean claramente
+                    isMobile ? 150 : 180  // Distancia muy grande para iluminar todo el grid desde arriba
+                );
+                orbLight.position.set(conf.x, conf.y, conf.z);
+                scene.add(orbLight);
                 
-                dummy.position.set(posX, 0, posZ);
+                // Guardamos para movimiento muy sutil (deriva) con propiedades de animación
+                const distance = Math.sqrt(conf.x * conf.x + conf.y * conf.y);
+                orbs.push({
+                    light: orbLight,
+                    baseX: conf.x,
+                    baseY: conf.y,
+                    baseZ: conf.z,
+                    timeOffset: Math.random() * 100,
+                    // Propiedades para animación orbital
+                    angle: (index * Math.PI * 2) / orbConfigs.length, // Ángulo inicial distribuido
+                    radius: distance, // Radio desde el centro
+                    speed: 0.3 + Math.random() * 0.2, // Velocidad orbital (0.3-0.5)
+                    zBase: conf.z, // Z base
+                    zSpeed: 0.2 + Math.random() * 0.1 // Velocidad de oscilación Z (0.2-0.3)
+                });
+            });
+
+            // 5. GRIDS (Doble Capa)
+            createGrid();
+            createBgGrid(); // Capa de fondo para profundidad
+
+            // 6. EVENTOS
+            window.addEventListener('resize', onWindowResize);
+            window.addEventListener('mousemove', onMouseMove);
+            
+            // Pulsos periódicos automáticos
+            setInterval(triggerPulse, 4000);
+        }
+
+        function triggerPulse() {
+            // Emitir pulso desde el centro o mouse
+            pulses.push({
+                x: targetMouse.x * 20, // Aproximado al mundo
+                y: targetMouse.y * 15,
+                age: 0,
+                speed: 15, // Velocidad expansión
+                maxAge: 3.0 // Duración
+            });
+        }
+
+        function createBgGrid() {
+            // Grid trasero: más grande, más oscuro, más lejos
+            const geometry = new THREE.BoxGeometry(3, 3, 0.1);
+            const material = new THREE.MeshStandardMaterial({
+                color: 0x050505,
+                roughness: 0.4,
+                metalness: 0.5,
+                transparent: true,
+                opacity: 0.3
+            });
+            
+            // Grid muy grande y disperso
+            const count = 200;
+            meshBg = new THREE.InstancedMesh(geometry, material, count);
+            meshBg.position.z = -10; // Detrás del principal
+            
+            let i = 0;
+            const spread = 60;
+            for(let x=0; x<20; x++) {
+                for(let y=0; y<10; y++) {
+                    dummy.position.set(
+                        (x - 10) * 4 + (Math.random()-0.5)*2, 
+                        (y - 5) * 4 + (Math.random()-0.5)*2, 
+                        -5
+                    );
+                    dummy.rotation.set(Math.random()*0.2, Math.random()*0.2, Math.random()*0.2);
+                    dummy.scale.set(1,1,1);
+                    dummy.updateMatrix();
+                    meshBg.setMatrixAt(i++, dummy.matrix);
+                }
+            }
+            scene.add(meshBg);
+        }
+
+        function createGrid() {
+            if (mesh) {
+                scene.remove(mesh);
+                mesh.geometry.dispose();
+                mesh.material.dispose();
+            }
+
+            // Geometría base de tamaño 1x1, escalaremos en el loop
+            const geometry = new THREE.BoxGeometry(1, 1, 0.15);
+            
+            // Material Cromado: Metalness ALTO, Roughness BAJO
+            const material = new THREE.MeshStandardMaterial({
+                color: config.colorBase,
+                roughness: 0.1,     // Ajustado para mejor respuesta de luz
+                metalness: 1.0,     // Metal puro
+                flatShading: false
+            });
+
+            const aspect = window.innerWidth / window.innerHeight;
+            const vFOV = THREE.MathUtils.degToRad(camera.fov);
+            const height = 2 * Math.tan(vFOV / 2) * config.camZ;
+            const width = height * aspect;
+
+            // Calculamos tamaño de celda para cubrir exacto
+            // Optimizado para móvil: menos columnas
+            const isMobile = window.innerWidth < 768;
+            const cols = isMobile ? 25 : 40; // Menos columnas en móvil para mejor rendimiento
+            const cellSize = (width * 1.2) / cols; // *1.2 para margen extra
+            const rows = Math.ceil(height / cellSize) + (isMobile ? 2 : 4);
+            
+            const total = cols * rows;
+            mesh = new THREE.InstancedMesh(geometry, material, total);
+            
+            instancesData = [];
+            let i = 0;
+
+            // Offsets
+            const totalW = cols * cellSize;
+            const totalH = rows * cellSize;
+            const startX = -totalW / 2;
+            const startY = totalH / 2;
+
+            const baseColor = new THREE.Color(config.colorBase);
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    let x = startX + c * cellSize + (cellSize/2);
+                    let y = startY - r * cellSize - (cellSize/2);
+                    
+                    dummy.position.set(x, y, 0);
+                    dummy.rotation.set(0, 0, 0); 
+                    
+                    // Escala inicial: cellSize menos el gap
+                    // Esto crea la separación visual
+                    const scale = cellSize - config.gap;
+                    dummy.scale.set(scale, scale, 1);
+                    
+                    dummy.updateMatrix();
+                    mesh.setMatrixAt(i, dummy.matrix);
+                    mesh.setColorAt(i, baseColor);
+                    
+                    instancesData.push({ 
+                        x, y, 
+                        scaleBase: scale,
+                        id: i 
+                    });
+                    i++;
+                }
+            }
+
+            scene.add(mesh);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const time = clock.getElapsedTime();
+            const isMobile = window.innerWidth < 768;
+            const deltaTime = clock.getDelta();
+            
+            // Detectar si el mouse está inactivo
+            if (hasMouseMoved) {
+                mouseInactiveTime += deltaTime * 1000; // Convertir a ms
+            }
+
+            // 1. Movimiento Mouse Suavizado (solo si hay actividad)
+            if (hasMouseMoved && (!isMobile || mouseInactiveTime < 5000)) {
+                targetMouse.x += (mouse.x - targetMouse.x) * 0.05;
+                targetMouse.y += (mouse.y - targetMouse.y) * 0.05;
+            }
+
+            // 2. ANIMACIÓN DE LUCES
+            // Modo autónomo en móvil o cuando no hay mouse activo
+            if (isMobile || !hasMouseMoved || mouseInactiveTime > 5000) {
+                // Modo autónomo: luz viajera en figura de 8
+                autoLightAngle += deltaTime * 0.3; // Velocidad de la trayectoria
+                const radiusX = 10;
+                const radiusY = 6;
+                const worldLightX = Math.sin(autoLightAngle) * radiusX;
+                const worldLightY = Math.sin(autoLightAngle * 2) * radiusY; // Figura de 8
+                
+                mainLight.position.x = THREE.MathUtils.lerp(mainLight.position.x, worldLightX, 0.1);
+                mainLight.position.y = THREE.MathUtils.lerp(mainLight.position.y, worldLightY, 0.1);
+                mainLight.position.z = 25; // Por encima del grid
+                
+                // Generar brotes automáticos cada 2-3 segundos
+                if (time - lastBurstTime > 2.5 + Math.random() * 1.0) {
+                    createAutoBurst();
+                    lastBurstTime = time;
+                }
+            } else {
+                // Modo interactivo: seguir mouse
+                // Luz Roja se mueve opuesta al mouse en X
+                redLight.position.x = THREE.MathUtils.lerp(redLight.position.x, -8 + (targetMouse.x * 6), 0.05);
+                redLight.position.y = THREE.MathUtils.lerp(redLight.position.y, 2 + (targetMouse.y * 4), 0.05);
+                
+                // Luz Cursor (Seguimiento "Fuera de Cámara")
+                const worldLightX = mouse.x * 12;
+                const worldLightY = mouse.y * 8;
+
+                mainLight.position.x = THREE.MathUtils.lerp(mainLight.position.x, worldLightX, 0.15);
+                mainLight.position.y = THREE.MathUtils.lerp(mainLight.position.y, worldLightY, 0.15);
+                mainLight.position.z = 25; // Por encima del grid
+            } 
+
+            // Animación de ORBES
+            orbs.forEach(orb => {
+                // Movimiento orbital lento alrededor de su posición base (no del centro)
+                orb.angle += orb.speed * 0.005; // Velocidad muy baja
+                
+                // Orbitar alrededor de la posición base con radio pequeño
+                const orbitRadius = 3.0; // Radio pequeño de órbita
+                orb.light.position.x = orb.baseX + Math.cos(orb.angle) * orbitRadius;
+                orb.light.position.y = orb.baseY + Math.sin(orb.angle) * orbitRadius;
+                
+                // Oscilación en Z: más rango para notar el cambio (siempre por encima del grid)
+                const t = time * orb.zSpeed;
+                orb.light.position.z = orb.zBase + Math.sin(t) * 2; // Oscilación reducida para mantener por encima
+                // Asegurar que nunca baje de z=25 (muy por encima del grid en z≈0)
+                if (orb.light.position.z < 25) orb.light.position.z = 25;
+            });
+
+            // Parallax muy sutil cámara (solo en modo interactivo)
+            if (hasMouseMoved && (!isMobile || mouseInactiveTime < 5000)) {
+                camera.position.x += (targetMouse.x * 0.2 - camera.position.x) * 0.02;
+                camera.position.y += (targetMouse.y * 0.2 - camera.position.y) * 0.02;
+            }
+            camera.lookAt(0, 0, 0);
+
+            if (!mesh) return;
+
+            // 3. LOOP INSTANCIAS PRINCIPAL
+            const worldMouseX = targetMouse.x * (config.camZ * 0.6);
+            const worldMouseY = targetMouse.y * (config.camZ * 0.4);
+
+            // Parámetros del "pico" alrededor del cursor
+            const liftRadius = 3.5;        // radio donde empieza a actuar fuerte
+            const maxLift = 2.5;           // qué tanto se levantan (z) - MÁS FUERTE
+            const maxScaleBoost = 0.3;     // cuánto crecen - MODERADO
+            const hoverColorBoost = 1.0;   // mezcla de color
+            
+            baseCol.set(config.colorBase);
+            activeCol.set(config.colorActive);
+            
+            // Actualizar Pulsos
+            for(let p=pulses.length-1; p>=0; p--) {
+                pulses[p].age += deltaTime;
+                if(pulses[p].age > pulses[p].maxAge) pulses.splice(p, 1);
+            }
+            
+            // Actualizar Brotes Automáticos
+            for(let b=autoBursts.length-1; b>=0; b--) {
+                autoBursts[b].age += deltaTime;
+                if(autoBursts[b].age > autoBursts[b].maxAge) autoBursts.splice(b, 1);
+            }
+
+            for (let i = 0; i < instancesData.length; i++) {
+                const data = instancesData[i];
+                
+                const dx = data.x - worldMouseX;
+                const dy = data.y - worldMouseY;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+
+                // === RESPIRACIÓN GLOBAL (Modo Autónomo) ===
+                // Onda base lenta y suave (siempre presente)
+                let baseWaveZ = Math.sin(data.x * config.waveFrequency + time * config.waveSpeed) * 
+                               Math.cos(data.y * config.waveFrequency + time * config.waveSpeed * 0.8) * config.waveAmp;
+                
+                // Respiración profunda adicional en modo autónomo
+                let breathingZ = 0;
+                if (isMobile || !hasMouseMoved || mouseInactiveTime > 5000) {
+                    // Simulación de ruido con múltiples ondas senoidales combinadas
+                    const breathSpeed = 0.15; // Más lento que la onda base
+                    const breathAmp = 0.4; // Amplitud de respiración
+                    
+                    // Múltiples frecuencias para crear efecto de "ruido" orgánico
+                    breathingZ = (
+                        Math.sin(data.x * 0.1 + time * breathSpeed) * 
+                        Math.cos(data.y * 0.12 + time * breathSpeed * 0.7) * 
+                        Math.sin(data.x * 0.08 + data.y * 0.15 + time * breathSpeed * 1.3)
+                    ) * breathAmp;
+                }
+
+                // Influencia Mouse (Campana) - Solo en modo interactivo
+                let liftInfluence = 0.0;
+                if ((hasMouseMoved && (!isMobile || mouseInactiveTime < 5000)) && dist < liftRadius) {
+                    let nd = dist / liftRadius;
+                    liftInfluence = 1.0 - nd;
+                    liftInfluence = Math.pow(liftInfluence, 3); 
+                }
+                
+                // === BROTES AUTOMÁTICOS (Modo Autónomo) ===
+                let burstInfluence = 0;
+                if (isMobile || !hasMouseMoved || mouseInactiveTime > 5000) {
+                    autoBursts.forEach(burst => {
+                        const bdx = data.x - burst.x;
+                        const bdy = data.y - burst.y;
+                        const bdist = Math.sqrt(bdx*bdx + bdy*bdy);
+                        const burstRadius = burst.radius;
+                        
+                        if (bdist < burstRadius) {
+                            // Decaimiento exponencial desde el centro
+                            let nd = bdist / burstRadius;
+                            let inf = (1.0 - nd) * burst.intensity;
+                            // Decae con la edad del brote
+                            inf *= (1.0 - (burst.age / burst.maxAge));
+                            // Curva suave
+                            inf = Math.pow(inf, 2);
+                            burstInfluence += inf;
+                        }
+                    });
+                }
+                
+                // Influencia Pulsos Radiales
+                let pulseInfluence = 0;
+                pulses.forEach(p => {
+                    const pdx = data.x - p.x;
+                    const pdy = data.y - p.y;
+                    const pdist = Math.sqrt(pdx*pdx + pdy*pdy);
+                    const currentRadius = p.age * p.speed;
+                    
+                    // Anillo del pulso
+                    if (Math.abs(pdist - currentRadius) < 2.0) {
+                        let inf = 1.0 - (Math.abs(pdist - currentRadius) / 2.0);
+                        inf *= (1.0 - (p.age / p.maxAge)); // Decae con el tiempo
+                        pulseInfluence += inf;
+                    }
+                });
+
+                // Altura combinada: onda base + respiración + mouse + brotes + pulsos
+                const z = baseWaveZ + breathingZ + (liftInfluence * maxLift) + (burstInfluence * 2.0) + (pulseInfluence * 1.5);
+                
+                // Curvatura "Pared Cóncava" (Efecto túnel sutil)
+                const curveY = Math.pow(data.x * 0.05, 2) * 0.5; // Curva en X eleva extremos
+                
+                // Escala (incluye brotes automáticos)
+                const s = data.scaleBase * (1.0 + liftInfluence * maxScaleBoost + burstInfluence * 0.4 + pulseInfluence * 0.2);
+
+                // Tilt
+                const tiltX = liftInfluence * (dy * 0.05); 
+                const tiltY = liftInfluence * (-dx * 0.05);
+
+                dummy.position.set(data.x, data.y, z + curveY); // Añadir curvatura
+                dummy.scale.set(s, s, 1);
+                dummy.rotation.set(tiltX, tiltY, 0); 
+
                 dummy.updateMatrix();
                 mesh.setMatrixAt(i, dummy.matrix);
                 
-                positions.push({ x: posX, z: posZ, id: i });
-                i++;
-            }
-        }
-
-        // Iluminación
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-        scene.add(ambientLight);
-
-        const pointLight = new THREE.PointLight(config.colorActive, 2, 20);
-        pointLight.position.set(0, 5, 0);
-        scene.add(pointLight);
-
-        // Interacción Mouse
-        const mouse = new THREE.Vector2();
-        const raycaster = new THREE.Raycaster();
-        const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-
-        window.addEventListener('mousemove', (e) => {
-            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-        });
-
-        // Loop Animación
-        const clock = new THREE.Clock();
-        
-        function animate() {
-            requestAnimationFrame(animate);
-            const time = clock.getElapsedTime();
-
-            // Intersección del mouse con el plano
-            raycaster.setFromCamera(mouse, camera);
-            const target = new THREE.Vector3();
-            raycaster.ray.intersectPlane(plane, target);
-
-            // Mover luz hacia el mouse
-            if (target) {
-                pointLight.position.x += (target.x - pointLight.position.x) * 0.1;
-                pointLight.position.z += (target.z - pointLight.position.z) * 0.1;
-            }
-
-            // Actualizar instancias
-            let idx = 0;
-            for (let x = 0; x < config.gridSize; x++) {
-                for (let z = 0; z < config.gridSize; z++) {
-                    const data = positions[idx];
-                    
-                    const dist = Math.sqrt(
-                        Math.pow(data.x - pointLight.position.x, 2) + 
-                        Math.pow(data.z - pointLight.position.z, 2)
-                    );
-
-                    let y = Math.sin((data.x * 0.3) + time * config.waveSpeed) * Math.cos((data.z * 0.3) + time * config.waveSpeed) * 0.5;
-
-                    const influence = Math.max(0, 1 - dist / 6);
-                    y += influence * 2;
-                    const scale = 1 + influence;
-
-                    dummy.position.set(data.x, y, data.z);
-                    dummy.scale.set(scale, scale, scale);
-                    dummy.rotation.x = y * 0.2;
-                    dummy.rotation.z = y * 0.2;
-
-                    dummy.updateMatrix();
-                    mesh.setMatrixAt(idx, dummy.matrix);
-
-                    const color = new THREE.Color();
-                    color.copy(config.colorBase);
-                    color.lerp(config.colorActive, influence * 0.8);
-                    mesh.setColorAt(idx, color);
-
-                    idx++;
+                // Color Mixing
+                // Base -> Mouse -> Brotes -> Orbes -> Pulsos
+                
+                // 1. Base
+                colorHelper.copy(baseCol);
+                
+                // 2. Mouse (solo en modo interactivo)
+                if (liftInfluence > 0.01) {
+                    colorHelper.lerp(activeCol, liftInfluence * hoverColorBoost);
                 }
+                
+                // 2b. Brotes Automáticos (brillo intenso)
+                if (burstInfluence > 0.01) {
+                    // Aumentar brillo con color cian/magenta
+                    const burstColor = new THREE.Color(0x00ffff);
+                    colorHelper.lerp(burstColor, burstInfluence * 0.6);
+                    // Aumentar luminosidad
+                    colorHelper.r = Math.min(1, colorHelper.r + burstInfluence * 0.3);
+                    colorHelper.g = Math.min(1, colorHelper.g + burstInfluence * 0.3);
+                    colorHelper.b = Math.min(1, colorHelper.b + burstInfluence * 0.4);
+                }
+                
+                // 3. Orbes (Tintado ambiental por zona)
+                // Izquierda: Rojo, Derecha: Púrpura/Azul
+                // Simple gradiente basado en posición X
+                if (data.x < 0) {
+                    colorHelper.r += Math.max(0, -data.x / 40) * 0.2; // Tinte rojo izquierda
+                } else {
+                    colorHelper.b += Math.max(0, data.x / 40) * 0.3; // Tinte azul derecha
+                }
+                
+                // 4. Pulso (Cian)
+                if (pulseInfluence > 0.01) {
+                    colorHelper.lerp(pulseCol, pulseInfluence * 0.8);
+                }
+
+                mesh.setColorAt(i, colorHelper);
             }
-            
+
             mesh.instanceMatrix.needsUpdate = true;
-            if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-
-            camera.position.x += (mouse.x * 2 - camera.position.x) * 0.05;
-            camera.position.y += (-mouse.y * 2 + 8 - camera.position.y) * 0.05;
-            camera.lookAt(0, 0, 0);
-
             renderer.render(scene, camera);
         }
 
-        animate();
-
-        // Resize
-        window.addEventListener('resize', () => {
+        function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+            createGrid();
+        }
+
+        function onMouseMove(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            hasMouseMoved = true;
+            mouseInactiveTime = 0;
+        }
+        
+        // Función para generar brotes automáticos
+        function createAutoBurst() {
+            const isMobile = window.innerWidth < 768;
+            if (!isMobile && hasMouseMoved && mouseInactiveTime < 5000) return; // Solo en móvil o si no hay mouse activo
+            
+            // Posición aleatoria en el grid
+            const rangeX = 15;
+            const rangeY = 10;
+            const burstX = (Math.random() - 0.5) * rangeX * 2;
+            const burstY = (Math.random() - 0.5) * rangeY * 2;
+            
+            autoBursts.push({
+                x: burstX,
+                y: burstY,
+                age: 0,
+                maxAge: 2.5, // Duración del brote
+                intensity: 0.8 + Math.random() * 0.4, // Intensidad variable
+                radius: 2.5 + Math.random() * 1.5 // Radio variable
+            });
+        }
     </script>
+
+    </div><!-- End of .ui-overlay -->
 
     <!-- Sistema de Idioma -->
     <script>
@@ -1774,7 +3506,7 @@
                 about: {
                     titulo: "Sobre Mí",
                     descripcion: "Más que escribir código, construyo ecosistemas. Mi pasión reside en la intersección entre el diseño minimalista y la ingeniería robusta.",
-                    descripcion2: "Actualmente enfocado en escalar aplicaciones descentralizadas (dApps) y explorar interfaces neuronales mediante IA generativa.",
+                    descripcion2: "Actualmente enfocado en desarrollar webs 3D interactivas con Three.js, Python y tecnologías modernas para crear experiencias inmersivas.",
                     perfil: "Perfil del Sistema",
                     especialidades: "Frontend | Backend | Web3 | IA"
                 },
@@ -1841,6 +3573,23 @@
                         enviar: "Enviar Transmisión"
                     }
                 },
+                cv: {
+                    acceso: "ACCESO A ARCHIVO",
+                    descargar: "DESCARGAR DATOS (PDF)",
+                    metricas: "MÉTRICAS DE RENDIMIENTO",
+                    btn: {
+                        normal: "ACCEDER A ARCHIVO ENCRIPTADO [PDF]",
+                        hover: "DESENCRIPTANDO... DESCARGAR"
+                    },
+                    skills: {
+                        sincronizacion: "Sincronización Neural",
+                        resolucion: "Resolución de Conflictos",
+                        adaptabilidad: "Adaptabilidad de Entorno",
+                        optimización: "Optimización de Recursos",
+                        comunicacion: "Comunicación Técnica",
+                        liderazgo: "Liderazgo de Equipo"
+                    }
+                },
                 footer: {
                     tagline: "Full‑Stack Engineering • Web 3.0 • IA",
                     status: "v3.0.0 // SYSTEM ONLINE",
@@ -1898,7 +3647,7 @@
                 about: {
                     titulo: "About Me",
                     descripcion: "More than writing code, I build ecosystems. My passion lies at the intersection of minimalist design and robust engineering.",
-                    descripcion2: "Currently focused on scaling decentralized applications (dApps) and exploring neural interfaces through generative AI.",
+                    descripcion2: "Currently focused on developing interactive 3D web experiences with Three.js, Python and modern technologies to create immersive experiences.",
                     perfil: "System Profile",
                     especialidades: "Frontend | Backend | Web3 | AI"
                 },
@@ -1963,6 +3712,23 @@
                         email: "Contact Email",
                         mensaje: "Mission Details",
                         enviar: "Send Transmission"
+                    }
+                },
+                cv: {
+                    acceso: "ACCESS FILE",
+                    descargar: "DOWNLOAD DATA (PDF)",
+                    metricas: "PERFORMANCE METRICS",
+                    btn: {
+                        normal: "ACCESS ENCRYPTED FILE [PDF]",
+                        hover: "DECRYPTING... DOWNLOAD"
+                    },
+                    skills: {
+                        sincronizacion: "Neural Synchronization",
+                        resolucion: "Conflict Resolution",
+                        adaptabilidad: "Environment Adaptability",
+                        optimización: "Resource Optimization",
+                        comunicacion: "Technical Communication",
+                        liderazgo: "Team Leadership"
                     }
                 },
                 footer: {
@@ -2233,3 +3999,4 @@
     </script>
 </body>
 </html>
+
