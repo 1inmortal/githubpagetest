@@ -1756,10 +1756,13 @@ const video = document.getElementById("mainVideo");
     video.load();
   }
   
-  function onVideoError() {
+  function onVideoError(e) {
     isLoading = false;
+    const failedPath = videoPaths[currentPathIndex];
+    console.warn(`❌ Error al cargar desde: ${failedPath}`);
+    console.warn(`   URL completa: ${new URL(failedPath, window.location.href).href}`);
+    console.warn(`   Error code: ${video.error ? video.error.code : 'unknown'}`);
     currentPathIndex++;
-    console.warn(`Error al cargar desde: ${videoPaths[currentPathIndex - 1]}`);
     setTimeout(() => {
       tryLoadVideo();
     }, 100);
@@ -1767,8 +1770,18 @@ const video = document.getElementById("mainVideo");
   
   function onVideoLoaded() {
     isLoading = false;
-    console.log('✓ Video cargado exitosamente desde:', video.src);
+    const successfulPath = video.src;
+    console.log('✓ Video cargado exitosamente desde:', successfulPath);
+    console.log('  URL completa:', new URL(successfulPath, window.location.href).href);
   }
+  
+  // Mostrar información de depuración
+  console.log('🔍 Iniciando carga de video. Rutas a probar:');
+  videoPaths.forEach((path, index) => {
+    console.log(`   ${index + 1}. ${path}`);
+  });
+  console.log(`📍 URL actual: ${window.location.href}`);
+  console.log(`📂 Directorio actual: ${currentDir}`);
   
   // Intentar cargar con la primera ruta
   tryLoadVideo();
