@@ -1273,7 +1273,7 @@ button.secondary:hover {
   <!-- PANEL VIDEO -->
   <div class="video-panel">
     <div class="video-wrapper">
-      <video id="mainVideo" src="./mp4/analyzed_output_optimized.mp4" preload="metadata"></video>
+      <video id="mainVideo" preload="metadata"></video>
     </div>
     
     <div class="video-controls">
@@ -1688,6 +1688,39 @@ let isPausedByCheckpoint = false;
 let markers = [];
 
 const video = document.getElementById("mainVideo");
+
+// Detectar ruta base automáticamente para el video
+(function() {
+  const currentPath = window.location.pathname;
+  let basePath = '';
+  
+  // Si estamos en GitHub Pages con subdirectorio
+  if (currentPath.includes('/githubpagetest/')) {
+    basePath = '/githubpagetest';
+  }
+  
+  // Determinar ruta del video basándose en la ubicación del panel
+  // panel.html está en public/gsap/PR/, así que mp4 está en public/gsap/PR/mp4/
+  const videoPath = basePath + '/public/gsap/PR/mp4/analyzed_output_optimized.mp4';
+  
+  // Intentar cargar el video, si falla, probar rutas alternativas
+  video.src = videoPath;
+  
+  video.addEventListener('error', function() {
+    // Si falla, probar ruta relativa
+    video.src = 'mp4/analyzed_output_optimized.mp4';
+    
+    video.addEventListener('error', function() {
+      // Si también falla, probar ruta absoluta sin base
+      video.src = '/public/gsap/PR/mp4/analyzed_output_optimized.mp4';
+      
+      video.addEventListener('error', function() {
+        console.error('No se pudo cargar el video desde ninguna ruta');
+      }, { once: true });
+    }, { once: true });
+  }, { once: true });
+})();
+
 const info = document.getElementById("infoContent");
 const nextBtn = document.getElementById("nextBtn");
 const replayBtn = document.getElementById("replayBtn");
