@@ -6,6 +6,10 @@
     <title>INMORTAL_OS | Web 3.0 & 3D Engineer</title>
     <meta name="description" content="Ingeniero Full-Stack especializado en Web 3.0, IA y experiencias 3D.">
     
+    <!-- Content Security Policy Meta Tag (complementa _headers) -->
+    <!-- Nota: frame-ancestors solo funciona en headers HTTP, no en meta tags -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cpwebassets.codepen.io https://*.codepen.io https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cpwebassets.codepen.io; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net https://r2cdn.perplexity.ai https:; img-src 'self' data: https: blob:; media-src 'self' https: blob:; connect-src 'self' https://*.codepen.io https://cpwebassets.codepen.io https://cdn.jsdelivr.net; frame-src 'self' https://codepen.io https://*.codepen.io">
+    
     <!-- Three.js Import Map -->
     <script type="importmap">
         {
@@ -1688,14 +1692,25 @@
             transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             flex-shrink: 0;
             cursor: pointer;
+            /* Optimizaciones de rendimiento */
+            contain: layout style paint;
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* Efecto Hover en la tarjeta */
+        /* Efecto Hover en la tarjeta - Optimizado con GPU */
         .stream-card:hover {
-            transform: scale(1.05) translateY(-5px);
+            transform: translate3d(0, -5px, 0) scale(1.05);
             border-color: var(--accent-primary);
             box-shadow: 0 20px 50px rgba(139, 92, 246, 0.25);
             z-index: 10; /* Que se superponga a las de al lado */
+            will-change: transform;
+        }
+        
+        /* Optimización: remover will-change después del hover */
+        .stream-card:not(:hover) {
+            will-change: auto;
         }
 
         /* --- VIDEO --- */
@@ -1712,6 +1727,86 @@
         .stream-card:hover .card-video {
             opacity: 1; /* Video a full color y brillo */
             filter: grayscale(0%) contrast(1);
+        }
+
+        /* --- IMAGEN (Para el panel) --- */
+        .stream-card-image {
+            position: relative;
+        }
+
+        .card-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.6;
+            transition: all 0.5s ease;
+            filter: grayscale(80%) contrast(1.1);
+        }
+
+        .stream-card-image:hover .card-image {
+            opacity: 1;
+            filter: grayscale(0%) contrast(1);
+            transform: scale(1.05);
+        }
+
+        /* --- BOTÓN GLASS --- */
+        .btn-glass-panel {
+            margin-top: 16px;
+            padding: 14px 28px;
+            background: rgba(139, 92, 246, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1.5px solid rgba(139, 92, 246, 0.6);
+            border-radius: 8px;
+            color: var(--accent-primary);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(139, 92, 246, 0.2);
+            z-index: 10;
+        }
+
+        .btn-glass-panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .btn-glass-panel:hover {
+            background: rgba(139, 92, 246, 0.35);
+            border-color: var(--accent-primary);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(139, 92, 246, 0.4);
+            color: var(--accent-hover);
+        }
+
+        .btn-glass-panel:hover::before {
+            opacity: 1;
+        }
+
+        .btn-glass-panel svg {
+            transition: transform 0.3s;
+        }
+
+        .btn-glass-panel:hover svg {
+            transform: translateX(4px);
+        }
+
+        .btn-glass-panel span {
+            position: relative;
+            z-index: 1;
         }
 
         /* --- OVERLAY --- */
@@ -1740,6 +1835,197 @@
 
         .stream-card:hover .card-overlay {
             opacity: 1;
+        }
+
+        /* Asegurar que el overlay se muestre en cards con imagen - Sin fondo gris, solo texto */
+        .stream-card-image .card-overlay {
+            opacity: 1; /* Visible por defecto en cards con imagen para mostrar el botón */
+            background: transparent; /* Sin fondo gris */
+        }
+
+        .stream-card-image:hover .card-overlay {
+            opacity: 1;
+            background: transparent; /* Mantener transparente en hover también */
+        }
+
+        /* Eliminar todos los fondos grises del card con imagen */
+        .stream-card-image .overlay-content {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Eliminar fondo del type-badge en el card con imagen */
+        .stream-card-image .type-badge {
+            background: transparent !important;
+            border: none !important;
+        }
+
+        /* Asegurar que el texto sea legible sobre la imagen */
+        .stream-card-image .overlay-content h3,
+        .stream-card-image .overlay-content p,
+        .stream-card-image .overlay-content .type-badge {
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8), 0 0 16px rgba(0, 0, 0, 0.6);
+        }
+
+        .stream-card-image .overlay-header {
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+            border-bottom: none !important; /* Eliminar borde inferior del header */
+        }
+
+        /* Eliminar fondo de las pills en el card con imagen */
+        .stream-card-image .pill {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            backdrop-filter: blur(4px);
+        }
+
+        /* Card clickeable con animación */
+        .panel-clickable {
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .panel-clickable:hover {
+            transform: translate3d(0, -8px, 0) scale(1.05);
+            will-change: transform;
+        }
+        
+        .panel-clickable:not(:hover) {
+            will-change: auto;
+        }
+
+        .panel-clickable:active {
+            transform: scale(0.98);
+        }
+
+        /* Indicador de click */
+        .panel-click-indicator {
+            margin-top: 20px;
+            padding: 12px 24px;
+            background: rgba(139, 92, 246, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1.5px solid rgba(139, 92, 246, 0.5);
+            border-radius: 8px;
+            color: var(--accent-primary);
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 4px 16px rgba(139, 92, 246, 0.2);
+        }
+
+        .panel-clickable:hover .panel-click-indicator {
+            background: rgba(139, 92, 246, 0.3);
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+        }
+
+        .panel-click-indicator svg {
+            transition: transform 0.3s;
+        }
+
+        .panel-clickable:hover .panel-click-indicator svg {
+            transform: translateX(4px);
+        }
+
+        /* Animación de salida antes de navegar - Optimizada con GPU */
+        .panel-clickable.navigating {
+            animation: panelExitAnimation 0.5s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
+            pointer-events: none;
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+            transform-style: preserve-3d;
+        }
+
+        @keyframes panelExitAnimation {
+            0% {
+                transform: translate3d(0, 0, 0) scale(1);
+                opacity: 1;
+                filter: brightness(1);
+            }
+            30% {
+                transform: translate3d(0, -5px, 0) scale(1.05);
+                opacity: 0.9;
+                filter: brightness(1.1);
+            }
+            60% {
+                transform: translate3d(0, 10px, 0) scale(0.95);
+                opacity: 0.6;
+                filter: brightness(0.9);
+            }
+            100% {
+                transform: translate3d(0, 20px, 0) scale(0.85);
+                opacity: 0;
+                filter: brightness(0.7) blur(2px);
+            }
+        }
+        
+        /* Optimización: remover will-change después de la animación */
+        .panel-clickable.navigating::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        /* Overlay de transición para toda la página - Optimizado */
+        .page-transition-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: var(--bg-body);
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            will-change: opacity;
+            /* GPU acceleration */
+            transform: translateZ(0);
+            backface-visibility: hidden;
+        }
+
+        .page-transition-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        /* Efecto de expansión desde el panel */
+        .page-transition-overlay::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                        height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+        
+        .page-transition-overlay.active::before {
+            width: 200vw;
+            height: 200vh;
+        }
+
+        /* Asegurar que el botón sea siempre visible en el card con imagen */
+        .stream-card-image .btn-glass-panel {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
         }
 
         /* --- TEXTOS Y DATOS --- */
@@ -2600,6 +2886,121 @@
                 height: 300px;
             }
         }
+
+        /* ============================================
+           MODAL PANEL (VIDEO SYNC PANEL)
+           ============================================ */
+        .panel-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .panel-modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .panel-modal-container {
+            position: relative;
+            width: 95%;
+            max-width: 1600px;
+            height: 90vh;
+            max-height: 900px;
+            background: var(--bg-glass);
+            border: 1px solid var(--accent-primary);
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(139, 92, 246, 0.3);
+            transform: scale(0.8);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .panel-modal-overlay.active .panel-modal-container {
+            transform: scale(1);
+        }
+
+        .panel-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            background: rgba(15, 15, 15, 0.9);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1001;
+            transition: all 0.3s ease;
+            color: var(--text-primary);
+        }
+
+        .panel-modal-close:hover {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: var(--accent-primary);
+            transform: rotate(90deg);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .panel-modal-close svg {
+            width: 20px;
+            height: 20px;
+            stroke: var(--accent-primary);
+        }
+
+        .panel-modal-iframe-wrapper {
+            width: 100%;
+            height: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #000;
+            position: relative;
+        }
+
+        .panel-modal-iframe-wrapper iframe {
+            width: 100%;
+            height: 100%;
+            border: 0;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .panel-modal-container {
+                width: 100%;
+                height: 100vh;
+                max-height: 100vh;
+                border-radius: 0;
+                padding: 10px;
+            }
+
+            .panel-modal-close {
+                top: 10px;
+                right: 10px;
+                width: 40px;
+                height: 40px;
+            }
+
+            .panel-modal-close svg {
+                width: 18px;
+                height: 18px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -3041,7 +3442,7 @@
             <div class="stream-slider">
                 <div class="stream-track">
                     
-                    <article class="stream-card">
+                    <article class="stream-card panel-clickable" data-panel-url="#">
                         <video class="card-video" autoplay muted loop playsinline>
                             <source src="src/assets/media/fondo2.mp4" type="video/mp4">
                         </video>
@@ -3059,10 +3460,16 @@
                                     <span class="pill">React</span>
                                     <span class="pill">Ethers.js</span>
                                 </div>
+                                <div class="panel-click-indicator">
+                                    <span>CLICK PARA ABRIR</span>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                                    </svg>
+                                </div>
                             </div>
                         </div>
                     </article>
-                    <article class="stream-card">
+                    <article class="stream-card panel-clickable" data-panel-url="#">
                         <video class="card-video" autoplay muted loop playsinline>
                             <source src="src/assets/media/fondo2.mp4" type="video/mp4">
                         </video>
@@ -3080,10 +3487,16 @@
                                     <span class="pill">FastAPI</span>
                                     <span class="pill">Next.js</span>
                                 </div>
+                                <div class="panel-click-indicator">
+                                    <span>CLICK PARA ABRIR</span>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                                    </svg>
+                                </div>
                             </div>
                         </div>
                     </article>
-                    <article class="stream-card">
+                    <article class="stream-card panel-clickable" data-panel-url="#">
                         <video class="card-video" autoplay muted loop playsinline>
                             <source src="src/assets/media/fondo2.mp4" type="video/mp4">
                         </video>
@@ -3101,10 +3514,42 @@
                                     <span class="pill">WebGL</span>
                                     <span class="pill">Socket.io</span>
                                 </div>
+                                <div class="panel-click-indicator">
+                                    <span>CLICK PARA ABRIR</span>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                                    </svg>
+                                </div>
                             </div>
                         </div>
                     </article>
-                    <article class="stream-card">
+                    <!-- Nuevo Panel: Video Sync Panel -->
+                    <article class="stream-card stream-card-image panel-clickable" id="panel-project-card" data-panel-url="public/gsap/PR/panel.html">
+                        <img class="card-image" src="public/gsap/PR/portada.png" alt="Video Sync Panel">
+                        <div class="card-overlay">
+                            <div class="overlay-header">
+                                <span class="pid">PID: 004</span>
+                                <span class="status-ok">● INTERACTIVE</span>
+                            </div>
+                            <div class="overlay-content">
+                                <div class="text-mono type-badge">TYPE: CV / VIDEO SYNC</div>
+                                <h3>Video Sync Panel</h3>
+                                <p>Sistema interactivo de análisis de video con checkpoints y seguimiento en tiempo real.</p>
+                                <div class="tech-row">
+                                    <span class="pill">JavaScript</span>
+                                    <span class="pill">HTML5</span>
+                                    <span class="pill">Video API</span>
+                                </div>
+                                <div class="panel-click-indicator">
+                                    <span>CLICK PARA ABRIR</span>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                    <article class="stream-card panel-clickable" data-panel-url="#">
                         <video class="card-video" autoplay muted loop playsinline>
                             <source src="src/assets/media/fondo2.mp4" type="video/mp4">
                         </video>
@@ -3122,10 +3567,16 @@
                                     <span class="pill">React</span>
                                     <span class="pill">Ethers.js</span>
                                 </div>
+                                <div class="panel-click-indicator">
+                                    <span>CLICK PARA ABRIR</span>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                                    </svg>
+                                </div>
                             </div>
                         </div>
                     </article>
-                    <article class="stream-card">
+                    <article class="stream-card panel-clickable" data-panel-url="#">
                         <video class="card-video" autoplay muted loop playsinline>
                             <source src="src/assets/media/fondo2.mp4" type="video/mp4">
                         </video>
@@ -3143,10 +3594,16 @@
                                     <span class="pill">FastAPI</span>
                                     <span class="pill">Next.js</span>
                                 </div>
+                                <div class="panel-click-indicator">
+                                    <span>CLICK PARA ABRIR</span>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                                    </svg>
+                                </div>
                             </div>
                         </div>
                     </article>
-                    <article class="stream-card">
+                    <article class="stream-card panel-clickable" data-panel-url="#">
                         <video class="card-video" autoplay muted loop playsinline>
                             <source src="src/assets/media/fondo2.mp4" type="video/mp4">
                         </video>
@@ -3163,6 +3620,12 @@
                                     <span class="pill">Three.js</span>
                                     <span class="pill">WebGL</span>
                                     <span class="pill">Socket.io</span>
+                                </div>
+                                <div class="panel-click-indicator">
+                                    <span>CLICK PARA ABRIR</span>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                                    </svg>
                                 </div>
                             </div>
                         </div>
@@ -3186,6 +3649,8 @@
                         scrolling="no" 
                         allowfullscreen="true"
                         loading="lazy"
+                        allow="camera; microphone; geolocation; encrypted-media; payment; accelerometer; gyroscope; serial; xr-spatial-tracking; clipboard-read; clipboard-write; web-share; display-capture; bluetooth; local-network-access"
+                        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation"
                         src="https://codepen.io/INM0RTAl/embed/preview/GgZYWby?default-tab=result">
                     </iframe>
                     <div class="codepen-preview-footer">
@@ -3206,7 +3671,31 @@
                         scrolling="yes" 
                         allowfullscreen="true"
                         loading="lazy"
+                        allow="camera; microphone; geolocation; encrypted-media; payment; accelerometer; gyroscope; serial; xr-spatial-tracking; clipboard-read; clipboard-write; web-share; display-capture; bluetooth; local-network-access"
+                        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation"
                         src="https://codepen.io/INM0RTAl/embed/GgZYWby?default-tab=result">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel Modal (Video Sync Panel) -->
+        <div class="panel-modal-overlay" id="panel-modal-overlay">
+            <div class="panel-modal-container">
+                <button class="panel-modal-close" id="panel-modal-close" aria-label="Cerrar Panel">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+                <div class="panel-modal-iframe-wrapper">
+                    <iframe 
+                        id="panel-iframe"
+                        height="100%" 
+                        style="width: 100%; border: 0;" 
+                        scrolling="yes" 
+                        allowfullscreen="true"
+                        loading="lazy"
+                        src="public/gsap/PR/panel.html">
                     </iframe>
                 </div>
             </div>
@@ -4546,8 +5035,68 @@
                 });
             }
 
+            // Sistema de Navegación al Panel (Todos los paneles)
+            const panelCards = document.querySelectorAll('.panel-clickable');
+            
+            // Crear overlay de transición (compartido para todos)
+            const transitionOverlay = document.createElement('div');
+            transitionOverlay.className = 'page-transition-overlay';
+            document.body.appendChild(transitionOverlay);
+
+            panelCards.forEach(panelCard => {
+                // Optimización: usar passive listener donde sea posible
+                panelCard.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    const panelUrl = panelCard.getAttribute('data-panel-url');
+                    
+                    // Si no hay URL, no hacer nada
+                    if (!panelUrl || panelUrl === '#') return;
+                    
+                    // Obtener posición del card en la pantalla para la animación
+                    const rect = panelCard.getBoundingClientRect();
+                    const cardCenterX = rect.left + rect.width / 2;
+                    const cardCenterY = rect.top + rect.height / 2;
+                    
+                    // Guardar posición en el overlay para la animación de entrada en panel.html
+                    sessionStorage.setItem('panelOrigin', JSON.stringify({
+                        x: cardCenterX,
+                        y: cardCenterY,
+                        width: rect.width,
+                        height: rect.height
+                    }));
+                    
+                    // Usar requestAnimationFrame para mejor sincronización
+                    requestAnimationFrame(() => {
+                        // Añadir clase de animación al card
+                        panelCard.classList.add('navigating');
+                        
+                        // Activar overlay de transición en el siguiente frame
+                        requestAnimationFrame(() => {
+                            transitionOverlay.classList.add('active');
+                            
+                            // Pre-cargar el recurso si es posible
+                            if (panelUrl.endsWith('.html')) {
+                                const link = document.createElement('link');
+                                link.rel = 'prefetch';
+                                link.href = panelUrl;
+                                document.head.appendChild(link);
+                            }
+                            
+                            // Navegar después de la animación
+                            setTimeout(() => {
+                                // Limpiar will-change para mejor rendimiento
+                                panelCard.style.willChange = 'auto';
+                                window.location.href = panelUrl;
+                            }, 500);
+                        });
+                    });
+                }, { passive: false });
+            });
+
         });
     </script>
 </body>
 </html>
+
 
