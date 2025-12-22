@@ -18,6 +18,19 @@ Este directorio contiene scripts consolidados para la gestión integral del proy
 - **`setup-secrets.sh`** - Configuración de secretos
 - **`generate-updated-report.py`** - Generación de reportes
 
+### **Scripts de Utilidades**
+- **`run.sh`** - Ejecuta resolver-prs-comentarios.sh
+- **`ejecutar.sh`** - Configura PATH para GitHub CLI
+- **`resolver-prs-comentarios.sh`** - Resuelve PRs de Dependabot automáticamente
+- **`verificar-prs.sh`** - Lista y verifica PRs abiertos
+- **`update-security-deps.sh`** - Actualiza dependencias de seguridad
+- **`push-changes.ps1`** - Script PowerShell para push de cambios
+- **`update-security-deps.ps1`** - Actualiza dependencias de seguridad (PowerShell)
+- **`FFmpeg_Launcher.ps1`** - Launcher GUI para FFmpeg
+- **`fix-video-for-github-pages.ps1`** - Soluciona problemas de video en GitHub Pages
+- **`setup-git-lfs-video.ps1`** - Configura Git LFS para videos
+- **`verify-video.js`** - Verifica que el video existe y está listo
+
 ## 🚀 Uso Rápido
 
 ### **Pipeline Completo**
