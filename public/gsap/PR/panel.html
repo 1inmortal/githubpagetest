@@ -1633,28 +1633,31 @@ button.secondary:hover {
         }
         
         setTimeout(() => {
-          // Limpiar estado antes de navegar
-          body.classList.remove('page-exiting');
-          backdrop.style.opacity = '0';
-          if (module) {
-            module.style.willChange = 'auto';
-          }
+          // Calcular la URL del index
+          const origin = window.location.origin;
+          const pathname = window.location.pathname;
           
-          // Intentar volver atrás, si no funciona, ir al index
-          if (window.history.length > 1) {
-            window.history.back();
+          // Detectar si estamos en GitHub Pages con subdirectorio
+          let basePath = '';
+          if (pathname.includes('/githubpagetest/')) {
+            basePath = '/githubpagetest';
           } else {
-            // Calcular ruta relativa al index
-            const currentPath = window.location.pathname;
-            const depth = (currentPath.match(/\//g) || []).length - 1;
-            const backPath = '../'.repeat(depth) + 'index.html';
-            window.location.href = backPath;
+            // Extraer el nombre del repositorio si está en la URL
+            // La ruta es: /reponame/public/gsap/PR/panel.html
+            const pathParts = pathname.split('/').filter(p => p && p !== 'public' && p !== 'gsap' && p !== 'PR' && p !== 'panel.html');
+            if (pathParts.length > 0) {
+              basePath = '/' + pathParts[0];
+            }
           }
           
-          // Restaurar pointer events después de un breve delay
-          setTimeout(() => {
-            document.body.style.pointerEvents = '';
-          }, 100);
+          // Construir URL del index (siempre incluir /index.html)
+          const indexUrl = origin + basePath + '/index.html';
+          
+          // Limpiar estado antes de navegar
+          cleanupPageState();
+          
+          // Navegar al index - usar replace para no dejar historial
+          window.location.replace(indexUrl);
         }, 600);
       });
     });
