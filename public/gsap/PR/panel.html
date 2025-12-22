@@ -1459,6 +1459,9 @@ button.secondary:hover {
     }
   }
   
+  // Limpiar cualquier estado residual al cargar
+  cleanupPageState();
+  
   // Inicializar cuando el DOM esté listo
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initAnimation);
@@ -1466,22 +1469,35 @@ button.secondary:hover {
     initAnimation();
   }
   
-  // Detectar cuando se va a salir de la página - Optimizado
-  window.addEventListener('beforeunload', () => {
-    if (module && panelOriginData) {
-      requestAnimationFrame(() => {
-        backdrop.style.opacity = '1';
-        body.classList.add('page-exiting');
-        if (module) {
-          module.style.willChange = 'transform, opacity, filter';
-        }
-      });
+  // Limpiar estado cuando la página se oculta (pestaña cambia, etc.)
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      cleanupPageState();
     }
   }, { passive: true });
   
+  // Función para limpiar el estado de la página
+  function cleanupPageState() {
+    body.classList.remove('page-exiting', 'page-entering', 'page-entering-no-origin');
+    backdrop.style.opacity = '0';
+    document.body.style.pointerEvents = '';
+    if (module) {
+      module.style.willChange = 'auto';
+    }
+  }
+  
+  // Detectar cuando se va a salir de la página - Optimizado
+  window.addEventListener('beforeunload', () => {
+    // Limpiar estado antes de cerrar para evitar que quede bloqueado
+    cleanupPageState();
+  }, { passive: true });
+  
   // También detectar navegación hacia atrás
-  window.addEventListener('popstate', () => {
+  let isNavigating = false;
+  window.addEventListener('popstate', (e) => {
+    if (isNavigating) return; // Evitar loops
     if (module && panelOriginData) {
+      isNavigating = true;
       requestAnimationFrame(() => {
         backdrop.style.opacity = '1';
         body.classList.add('page-exiting');
@@ -1489,13 +1505,15 @@ button.secondary:hover {
           module.style.willChange = 'transform, opacity, filter';
         }
         
+        // No hacer history.back() aquí porque ya se ejecutó el popstate
+        // Solo limpiar después de un tiempo
         setTimeout(() => {
-          if (module) {
-            module.style.willChange = 'auto';
-          }
-          window.history.back();
+          cleanupPageState();
+          isNavigating = false;
         }, 600);
       });
+    } else {
+      cleanupPageState();
     }
   }, { passive: true });
   
@@ -1598,6 +1616,9 @@ button.secondary:hover {
       const body = document.body;
       const module = document.querySelector('.video-sync-module');
       
+      // Prevenir múltiples clicks
+      if (body.classList.contains('page-exiting')) return;
+      
       // Activar backdrop y animación de salida
       requestAnimationFrame(() => {
         backdrop.style.opacity = '1';
@@ -1612,7 +1633,9 @@ button.secondary:hover {
         }
         
         setTimeout(() => {
-          // Limpiar will-change
+          // Limpiar estado antes de navegar
+          body.classList.remove('page-exiting');
+          backdrop.style.opacity = '0';
           if (module) {
             module.style.willChange = 'auto';
           }
@@ -1627,6 +1650,11 @@ button.secondary:hover {
             const backPath = '../'.repeat(depth) + 'index.html';
             window.location.href = backPath;
           }
+          
+          // Restaurar pointer events después de un breve delay
+          setTimeout(() => {
+            document.body.style.pointerEvents = '';
+          }, 100);
         }, 600);
       });
     });
