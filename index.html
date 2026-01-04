@@ -1258,6 +1258,152 @@
         .btn-decrypt:hover .btn-text-normal { display: none; }
         .btn-decrypt:hover .btn-text-hover { display: inline; animation: text-flicker 0.3s infinite; }
 
+        /* Advanced Certificates Button Styles */
+        .certificates-button-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .btn-certificates {
+            position: relative;
+            display: block;
+            width: 100%;
+            padding: 16px 24px;
+            background: rgba(15, 15, 20, 0.8);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            text-decoration: none;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .btn-certificates:hover {
+            border-color: rgba(139, 92, 246, 0.8);
+            background: rgba(20, 20, 30, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-canvas-3d {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.3;
+            z-index: 1;
+        }
+
+        .btn-certificates:hover .btn-canvas-3d {
+            opacity: 0.6;
+        }
+
+        .btn-certificates-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 24px;
+        }
+
+        .btn-cert-text-normal {
+            display: inline-block;
+            color: var(--text-primary);
+            letter-spacing: 0.05em;
+            transition: opacity 0.3s;
+        }
+
+        .btn-cert-text-hover {
+            display: none;
+            color: #00d9ff;
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
+        }
+
+        .btn-certificates:hover .btn-cert-text-normal {
+            display: none;
+        }
+
+        .btn-certificates:hover .btn-cert-text-hover {
+            display: inline-block;
+        }
+
+        .btn-cert-glitch-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                rgba(0, 217, 255, 0.1) 50%,
+                transparent 100%
+            );
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        .btn-certificates:hover .btn-cert-glitch-overlay {
+            transform: translateX(100%);
+        }
+
+        .btn-cert-border-glow {
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 8px;
+            background: linear-gradient(
+                45deg,
+                rgba(139, 92, 246, 0.5),
+                rgba(0, 217, 255, 0.5),
+                rgba(139, 92, 246, 0.5)
+            );
+            background-size: 200% 200%;
+            opacity: 0;
+            z-index: 0;
+            filter: blur(8px);
+            transition: opacity 0.4s;
+            animation: borderGlow 3s ease-in-out infinite;
+        }
+
+        .btn-certificates:hover .btn-cert-border-glow {
+            opacity: 0.6;
+        }
+
+        @keyframes borderGlow {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .btn-certificates {
+                padding: 14px 20px;
+                font-size: 0.75rem;
+            }
+
+            .btn-cert-text-normal,
+            .btn-cert-text-hover {
+                font-size: 0.75rem;
+            }
+        }
+
         @media (max-width: 768px) {
             .cv-terminal {
                 padding: 20px;
@@ -3330,6 +3476,19 @@
                                     <span class="btn-text-normal" data-i18n="cv.btn.normal">ACCEDER A ARCHIVO ENCRIPTADO [PDF]</span>
                                     <span class="btn-text-hover" style="color: #10b981;" data-i18n="cv.btn.hover">DESENCRIPTANDO... DESCARGAR</span>
                                 </button>
+
+                                <!-- Advanced Certificates Button with Three.js & Anime.js -->
+                                <div class="certificates-button-wrapper" style="margin-top: 20px;">
+                                    <a href="./pruebas/certificados/index.html" class="btn-certificates" id="btnCertificates">
+                                        <canvas class="btn-canvas-3d" id="certificatesCanvas3d"></canvas>
+                                        <div class="btn-certificates-content">
+                                            <span class="btn-cert-text-normal">ACCEDER A CERTIFICADOS</span>
+                                            <span class="btn-cert-text-hover">ACCESS_CERTIFICATES.DAT</span>
+                                            <div class="btn-cert-glitch-overlay"></div>
+                                        </div>
+                                        <div class="btn-cert-border-glow"></div>
+                                    </a>
+                                </div>
                             </div>
 
                         </div>
@@ -5181,6 +5340,266 @@
                 }, { passive: false });
             });
 
+        });
+    </script>
+
+    <!-- Anime.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <!-- Advanced Certificates Button Script -->
+    <script type="module">
+        import * as THREE from 'three';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnCertificates = document.getElementById('btnCertificates');
+            const canvas3d = document.getElementById('certificatesCanvas3d');
+            
+            if (!btnCertificates || !canvas3d) return;
+
+            // Three.js Scene Setup
+            let scene, camera, renderer;
+            let particles;
+            let mouse = { x: 0, y: 0 };
+            let targetMouse = { x: 0, y: 0 };
+
+            const initThreeJS = () => {
+                const rect = btnCertificates.getBoundingClientRect();
+                const width = rect.width;
+                const height = rect.height;
+
+                // Scene
+                scene = new THREE.Scene();
+
+                // Camera
+                camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+                camera.position.z = 5;
+
+                // Renderer
+                renderer = new THREE.WebGLRenderer({
+                    canvas: canvas3d,
+                    alpha: true,
+                    antialias: true
+                });
+                renderer.setSize(width, height);
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+                // Particles System
+                const particleCount = 80;
+                const geometry = new THREE.BufferGeometry();
+                const positions = new Float32Array(particleCount * 3);
+                const colors = new Float32Array(particleCount * 3);
+
+                const color1 = new THREE.Color(0x8b5cf6); // Purple
+                const color2 = new THREE.Color(0x00d9ff); // Cyan
+
+                for (let i = 0; i < particleCount; i++) {
+                    const i3 = i * 3;
+                    positions[i3] = (Math.random() - 0.5) * 10;
+                    positions[i3 + 1] = (Math.random() - 0.5) * 10;
+                    positions[i3 + 2] = (Math.random() - 0.5) * 10;
+
+                    const color = Math.random() > 0.5 ? color1 : color2;
+                    colors[i3] = color.r;
+                    colors[i3 + 1] = color.g;
+                    colors[i3 + 2] = color.b;
+                }
+
+                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+                const material = new THREE.PointsMaterial({
+                    size: 0.15,
+                    vertexColors: true,
+                    transparent: true,
+                    opacity: 0.6,
+                    blending: THREE.AdditiveBlending
+                });
+
+                particles = new THREE.Points(geometry, material);
+                scene.add(particles);
+
+                // Wireframe Grid (subtle)
+                const gridHelper = new THREE.GridHelper(8, 8, 0x8b5cf6, 0x8b5cf6);
+                gridHelper.material.opacity = 0.1;
+                gridHelper.material.transparent = true;
+                scene.add(gridHelper);
+
+                // Animation loop
+                const animate = () => {
+                    requestAnimationFrame(animate);
+
+                    // Mouse interaction
+                    targetMouse.x += (mouse.x - targetMouse.x) * 0.05;
+                    targetMouse.y += (mouse.y - targetMouse.y) * 0.05;
+
+                    // Rotate particles
+                    particles.rotation.x += 0.001;
+                    particles.rotation.y += 0.002;
+
+                    // Move particles based on mouse
+                    const positions = particles.geometry.attributes.position.array;
+                    for (let i = 0; i < positions.length; i += 3) {
+                        positions[i] += Math.sin(i * 0.01 + Date.now() * 0.001) * 0.002;
+                        positions[i + 1] += Math.cos(i * 0.01 + Date.now() * 0.001) * 0.002;
+                    }
+                    particles.geometry.attributes.position.needsUpdate = true;
+
+                    // Rotate grid
+                    gridHelper.rotation.y += 0.001;
+
+                    // Camera movement based on mouse
+                    camera.position.x += (targetMouse.x * 0.5 - camera.position.x) * 0.05;
+                    camera.position.y += (-targetMouse.y * 0.5 - camera.position.y) * 0.05;
+                    camera.lookAt(scene.position);
+
+                    renderer.render(scene, camera);
+                };
+
+                animate();
+
+                // Handle resize
+                const resizeObserver = new ResizeObserver(() => {
+                    const rect = btnCertificates.getBoundingClientRect();
+                    const width = rect.width;
+                    const height = rect.height;
+                    camera.aspect = width / height;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(width, height);
+                });
+
+                resizeObserver.observe(btnCertificates);
+            };
+
+            // Mouse tracking
+            btnCertificates.addEventListener('mousemove', (e) => {
+                const rect = btnCertificates.getBoundingClientRect();
+                mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+            });
+
+            btnCertificates.addEventListener('mouseleave', () => {
+                targetMouse.x = 0;
+                targetMouse.y = 0;
+            });
+
+            // Anime.js Text Glitch Effect
+            const textNormal = btnCertificates.querySelector('.btn-cert-text-normal');
+            const textHover = btnCertificates.querySelector('.btn-cert-text-hover');
+
+            const glitchChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+
+            const createGlitchEffect = (element) => {
+                if (!element) return;
+                
+                const originalText = element.textContent;
+                const chars = originalText.split('');
+
+                anime({
+                    targets: chars,
+                    duration: 50,
+                    delay: anime.stagger(20),
+                    update: function(anim) {
+                        const progress = anim.progress / 100;
+                        const glitched = chars.map((char, i) => {
+                            if (char === ' ') return ' ';
+                            if (Math.random() < progress * 0.3) {
+                                return glitchChars[Math.floor(Math.random() * glitchChars.length)];
+                            }
+                            return char;
+                        });
+                        element.textContent = glitched.join('');
+                    },
+                    complete: function() {
+                        element.textContent = originalText;
+                    }
+                });
+            };
+
+            // Hover animations with Anime.js
+            btnCertificates.addEventListener('mouseenter', () => {
+                // Scale animation
+                anime({
+                    targets: btnCertificates,
+                    scale: [1, 1.02],
+                    duration: 400,
+                    easing: 'easeOutElastic(1, .6)'
+                });
+
+                // Glitch text effect
+                if (textHover) {
+                    createGlitchEffect(textHover);
+                }
+
+                // Border glow pulse
+                const borderGlow = btnCertificates.querySelector('.btn-cert-border-glow');
+                if (borderGlow) {
+                    anime({
+                        targets: borderGlow,
+                        opacity: [0, 0.8, 0.6],
+                        duration: 2000,
+                        easing: 'easeInOutSine',
+                        loop: true
+                    });
+                }
+            });
+
+            btnCertificates.addEventListener('mouseleave', () => {
+                anime({
+                    targets: btnCertificates,
+                    scale: 1,
+                    duration: 300,
+                    easing: 'easeOutQuad'
+                });
+
+                const borderGlow = btnCertificates.querySelector('.btn-cert-border-glow');
+                if (borderGlow) {
+                    anime({
+                        targets: borderGlow,
+                        opacity: 0,
+                        duration: 300
+                    });
+                }
+            });
+
+            // Click animation
+            btnCertificates.addEventListener('click', (e) => {
+                // Ripple effect
+                const ripple = document.createElement('div');
+                ripple.style.cssText = `
+                    position: absolute;
+                    border-radius: 50%;
+                    background: rgba(0, 217, 255, 0.5);
+                    width: 10px;
+                    height: 10px;
+                    left: ${e.offsetX}px;
+                    top: ${e.offsetY}px;
+                    pointer-events: none;
+                    z-index: 10;
+                    transform: translate(-50%, -50%);
+                `;
+                btnCertificates.appendChild(ripple);
+
+                anime({
+                    targets: ripple,
+                    width: 300,
+                    height: 300,
+                    opacity: [0.5, 0],
+                    duration: 600,
+                    easing: 'easeOutQuad',
+                    complete: () => ripple.remove()
+                });
+
+                // Button pulse
+                anime({
+                    targets: btnCertificates,
+                    scale: [1, 0.98, 1],
+                    duration: 300,
+                    easing: 'easeOutQuad'
+                });
+            });
+
+            // Initialize Three.js after a short delay to ensure DOM is ready
+            setTimeout(initThreeJS, 100);
         });
     </script>
 </body>

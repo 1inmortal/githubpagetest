@@ -31,12 +31,28 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  /* Usar dvh (dynamic viewport height) para móvil, fallback a vh */
+  height: 100dvh;
+  height: 100vh; /* Fallback para navegadores que no soportan dvh */
   width: 100vw;
   padding: 16px;
+  padding-top: max(16px, env(safe-area-inset-top));
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
   overflow: hidden;
   box-sizing: border-box;
   position: relative;
+}
+
+/* Soporte para safe areas en iOS */
+@supports (padding: max(0px)) {
+  body {
+    padding-top: max(16px, env(safe-area-inset-top));
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
 }
 
 /* Overlay de fondo para transición suave */
@@ -209,12 +225,17 @@ body.page-entering-no-origin .video-sync-module {
   box-sizing: border-box;
   overflow: hidden;
   margin: auto;
-  /* Asegurar que el contenido quepa en la pantalla */
-  max-height: calc(100vh - 32px);
-  height: calc(100vh - 32px);
+  /* Asegurar que el contenido quepa en la pantalla con safe areas */
+  max-height: calc(100dvh - 32px);
+  max-height: calc(100vh - 32px); /* Fallback */
+  height: calc(100dvh - 32px);
+  height: calc(100vh - 32px); /* Fallback */
   align-content: start;
   overflow-y: auto; /* Permitir scroll interno si es necesario */
   overflow-x: hidden;
+  /* Mejorar scroll en móvil */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   transform-origin: center center;
   position: relative;
   z-index: 1;
@@ -497,10 +518,20 @@ video {
   pointer-events: none;
   transition: opacity 0.2s ease;
   border: 1px solid rgba(154, 255, 0, 0.3);
+  z-index: 3;
 }
 
-.timeline-marker:hover .marker-tooltip {
+.timeline-marker:hover .marker-tooltip,
+.timeline-marker.tooltip-visible .marker-tooltip {
   opacity: 1;
+}
+
+/* En móvil, mostrar tooltip siempre que el marcador esté activo */
+@media (max-width: 768px) {
+  .timeline-marker.active .marker-tooltip,
+  .timeline-marker.completed .marker-tooltip {
+    opacity: 1;
+  }
 }
 
 /* ------------ PANEL INFO MEJORADO ------------ */
@@ -792,9 +823,9 @@ video {
 /* ------------ SISTEMA DE LOGROS ------------ */
 .achievements-container {
   position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 2000;
+  top: max(20px, env(safe-area-inset-top));
+  right: max(20px, env(safe-area-inset-right));
+  z-index: 9997;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -1263,6 +1294,654 @@ button.secondary:hover {
   }
 }
 
+/* ------------ NUEVAS FUNCIONALIDADES AVANZADAS ------------ */
+
+/* Instant Preview en marcadores */
+.marker-preview-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.3);
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.marker-preview-backdrop.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.marker-preview-card {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #1a1a1f, #0f0f12);
+  border: 2px solid rgba(154, 255, 0, 0.4);
+  border-radius: 12px;
+  padding: 16px;
+  min-width: 280px;
+  max-width: 320px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(154, 255, 0, 0.2);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+.marker-preview-card.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(-4px);
+}
+
+.marker-preview-card h4 {
+  font-size: 14px;
+  color: #9AFF00;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.marker-preview-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: rgba(255,255,255,0.85);
+}
+
+.marker-preview-card ul li {
+  padding-left: 16px;
+  position: relative;
+  margin-bottom: 4px;
+}
+
+.marker-preview-card ul li::before {
+  content: "▸";
+  position: absolute;
+  left: 0;
+  color: #9AFF00;
+  font-size: 10px;
+}
+
+.marker-preview-card .preview-action {
+  background: rgba(154, 255, 0, 0.15);
+  color: #9AFF00;
+  border: 1px solid rgba(154, 255, 0, 0.3);
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.marker-preview-card .preview-action:hover {
+  background: rgba(154, 255, 0, 0.25);
+  transform: translateY(-1px);
+}
+
+/* Command Palette */
+.command-palette {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, #1a1a1f, #0f0f12);
+  border: 2px solid rgba(154, 255, 0, 0.4);
+  border-radius: 16px;
+  padding: 24px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 70vh;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+  z-index: 10001;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(20px);
+}
+
+.command-palette.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.command-palette-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.7);
+  z-index: 10000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.command-palette-backdrop.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.command-palette-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 10002;
+}
+
+.command-palette-close:hover {
+  background: rgba(154, 255, 0, 0.2);
+  border-color: #9AFF00;
+  color: #9AFF00;
+}
+
+/* Botón para abrir Command Palette en móvil */
+.command-palette-trigger {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #9AFF00, #7FE000);
+  color: #111;
+  border: none;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(154, 255, 0, 0.4);
+  z-index: 9998;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.command-palette-trigger:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 30px rgba(154, 255, 0, 0.6);
+}
+
+@media (max-width: 768px) {
+  .command-palette-trigger {
+    display: flex;
+  }
+}
+
+.command-palette input {
+  width: 100%;
+  background: rgba(0,0,0,0.4);
+  border: 2px solid rgba(154, 255, 0, 0.3);
+  border-radius: 8px;
+  padding: 14px 18px;
+  color: #fff;
+  font-size: 16px;
+  margin-bottom: 16px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.command-palette input:focus {
+  border-color: #9AFF00;
+  box-shadow: 0 0 0 3px rgba(154, 255, 0, 0.2);
+}
+
+.command-palette-results {
+  max-height: calc(70vh - 120px);
+  overflow-y: auto;
+}
+
+.command-palette-item {
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.command-palette-item:hover,
+.command-palette-item.selected {
+  background: rgba(154, 255, 0, 0.15);
+  transform: translateX(4px);
+}
+
+.command-palette-item-title {
+  font-weight: 600;
+  color: #9AFF00;
+  font-size: 14px;
+}
+
+.command-palette-item-time {
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+  margin-left: auto;
+}
+
+/* Cards apilables */
+.checkpoint-cards-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.checkpoint-card {
+  background: linear-gradient(135deg, rgba(154, 255, 0, 0.1), rgba(127, 224, 0, 0.05));
+  border: 2px solid rgba(154, 255, 0, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.checkpoint-card:not(.active) {
+  opacity: 0.6;
+  transform: scale(0.95);
+  max-height: 80px;
+  padding: 12px;
+}
+
+.checkpoint-card.active {
+  opacity: 1;
+  transform: scale(1);
+  max-height: none;
+  border-color: rgba(154, 255, 0, 0.5);
+  box-shadow: 0 4px 20px rgba(154, 255, 0, 0.2);
+}
+
+.checkpoint-card:not(.active):hover {
+  opacity: 0.8;
+  transform: scale(0.98);
+}
+
+.checkpoint-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.checkpoint-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #9AFF00;
+}
+
+.checkpoint-card-time {
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+}
+
+.checkpoint-card-content {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(255,255,255,0.9);
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.checkpoint-card:not(.active) .checkpoint-card-content {
+  max-height: 0;
+  opacity: 0;
+}
+
+/* Lectura por capas */
+.content-layers {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.layer-btn {
+  background: rgba(154, 255, 0, 0.1);
+  border: 1px solid rgba(154, 255, 0, 0.3);
+  color: #9AFF00;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.layer-btn.active {
+  background: rgba(154, 255, 0, 0.25);
+  border-color: #9AFF00;
+}
+
+.layer-btn:hover {
+  background: rgba(154, 255, 0, 0.2);
+}
+
+.content-layer {
+  display: none;
+  margin-top: 12px;
+}
+
+.content-layer.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Quick Actions */
+.quick-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.quick-action-btn {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.quick-action-btn:hover {
+  background: rgba(154, 255, 0, 0.15);
+  border-color: rgba(154, 255, 0, 0.4);
+  color: #9AFF00;
+  transform: translateY(-1px);
+}
+
+/* Modo Presentador */
+body.presenter-mode .video-sync-module {
+  max-width: 100%;
+  padding: 24px;
+}
+
+body.presenter-mode #infoContent h2 {
+  font-size: 32px;
+  margin-bottom: 20px;
+}
+
+body.presenter-mode #infoContent p {
+  font-size: 20px;
+  line-height: 1.8;
+}
+
+body.presenter-mode .video-controls {
+  padding: 12px 16px;
+}
+
+body.presenter-mode .control-btn {
+  padding: 16px 24px;
+  font-size: 18px;
+}
+
+body.presenter-mode .autoplay-controls,
+body.presenter-mode .stats-panel,
+body.presenter-mode .tips-panel {
+  display: none;
+}
+
+/* Mapa de calor en timeline */
+.timeline-heatmap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  border-radius: 5px;
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.timeline-heatmap-segment {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(154, 255, 0, 0.1), rgba(127, 224, 0, 0.2));
+  border-radius: 5px;
+  transition: opacity 0.3s ease;
+}
+
+/* Scrub inteligente */
+.timeline-scrub-preview {
+  position: absolute;
+  bottom: calc(100% + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.95);
+  border: 2px solid rgba(154, 255, 0, 0.5);
+  border-radius: 8px;
+  padding: 12px;
+  min-width: 200px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+.timeline-scrub-preview.show {
+  opacity: 1;
+}
+
+.timeline-scrub-preview-time {
+  font-size: 14px;
+  font-weight: 700;
+  color: #9AFF00;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.timeline-scrub-preview-checkpoint {
+  font-size: 12px;
+  color: rgba(255,255,255,0.8);
+  text-align: center;
+}
+
+/* Highlights Mode */
+.highlights-mode-indicator {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: linear-gradient(135deg, #9AFF00, #7FE000);
+  color: #111;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  z-index: 2000;
+  box-shadow: 0 4px 20px rgba(154, 255, 0, 0.4);
+  display: none;
+  align-items: center;
+  gap: 8px;
+}
+
+.highlights-mode-indicator.active {
+  display: none; /* Oculto permanentemente */
+}
+
+/* Comparación A/B */
+.comparison-ab {
+  margin-top: 16px;
+  padding: 16px;
+  background: rgba(154, 255, 0, 0.05);
+  border: 1px solid rgba(154, 255, 0, 0.2);
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.comparison-item {
+  text-align: center;
+}
+
+.comparison-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.6);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.comparison-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #9AFF00;
+}
+
+.comparison-change {
+  font-size: 12px;
+  margin-top: 4px;
+  color: rgba(255,255,255,0.7);
+}
+
+.comparison-change.positive {
+  color: #7FE000;
+}
+
+.comparison-change.negative {
+  color: #ff6b6b;
+}
+
+/* Píldoras contextuales clicables */
+.contextual-pill {
+  display: inline-block;
+  background: rgba(154, 255, 0, 0.15);
+  border: 1px solid rgba(154, 255, 0, 0.3);
+  color: #9AFF00;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  margin: 4px;
+  transition: all 0.2s ease;
+}
+
+.contextual-pill:hover {
+  background: rgba(154, 255, 0, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(154, 255, 0, 0.3);
+}
+
+/* Gestos táctiles */
+.touch-gesture-hint {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 12px;
+  z-index: 3000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.touch-gesture-hint.show {
+  opacity: 1;
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
+}
+
+/* Responsive mejorado para nuevas funcionalidades */
+@media(max-width: 768px) {
+  .marker-preview-card {
+    min-width: 240px;
+    max-width: 280px;
+    padding: 12px;
+  }
+  
+  .command-palette {
+    width: 95%;
+    padding: 16px;
+    max-height: calc(100dvh - 40px);
+    max-height: calc(100vh - 40px); /* Fallback */
+  }
+  
+  .command-palette-results {
+    max-height: calc(100dvh - 180px);
+    max-height: calc(100vh - 180px); /* Fallback */
+  }
+  
+  /* Ajustar botón trigger para safe areas */
+  .command-palette-trigger {
+    bottom: max(20px, env(safe-area-inset-bottom));
+    right: max(20px, env(safe-area-inset-right));
+  }
+  
+  .checkpoint-card {
+    padding: 12px;
+  }
+  
+  .quick-actions {
+    flex-direction: column;
+  }
+  
+  .quick-action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  body.presenter-mode #infoContent h2 {
+    font-size: 24px;
+  }
+  
+  body.presenter-mode #infoContent p {
+    font-size: 16px;
+  }
+}
+
 </style>
 </head>
 
@@ -1320,6 +1999,9 @@ button.secondary:hover {
       <div class="loading">Cargando video...</div>
     </div>
     
+    <!-- Cards apilables para historial -->
+    <div id="checkpointCardsStack" class="checkpoint-cards-stack hidden"></div>
+    
     <!-- Panel "Próximamente" - Se muestra mientras se reproduce -->
     <div id="upcomingPanel" class="upcoming-panel hidden">
       <div class="upcoming-header">
@@ -1371,6 +2053,28 @@ button.secondary:hover {
   </div>
 
 </section>
+
+<!-- Command Palette -->
+<div id="commandPaletteBackdrop" class="command-palette-backdrop"></div>
+<div id="commandPalette" class="command-palette" role="dialog" aria-label="Buscador de checkpoints" aria-modal="true">
+  <button class="command-palette-close" aria-label="Cerrar búsqueda" id="commandPaletteClose">✕</button>
+  <input type="text" id="commandPaletteInput" placeholder="Buscar checkpoint... (ej: Oclusión, Iluminación)" autocomplete="off">
+  <div id="commandPaletteResults" class="command-palette-results"></div>
+</div>
+
+<!-- Botón para abrir Command Palette en móvil -->
+<button id="commandPaletteTrigger" class="command-palette-trigger" aria-label="Buscar checkpoint" title="Buscar checkpoint (Ctrl+K)">
+  🔍
+</button>
+
+<!-- Highlights Mode Indicator -->
+<div id="highlightsModeIndicator" class="highlights-mode-indicator">
+  <span>⚡</span>
+  <span>Modo Highlights Activo</span>
+</div>
+
+<!-- Touch Gesture Hint -->
+<div id="touchGestureHint" class="touch-gesture-hint"></div>
 
 
 <script>
@@ -1553,19 +2257,27 @@ button.secondary:hover {
     closeBtn.id = 'panel-close-btn';
     closeBtn.innerHTML = '✕';
     closeBtn.setAttribute('aria-label', 'Cerrar panel');
+    // Calcular posición respetando safe areas
+    const safeTop = CSS.supports('padding', 'env(safe-area-inset-top)') ? 
+      `calc(20px + env(safe-area-inset-top))` : '20px';
+    const safeRight = CSS.supports('padding', 'env(safe-area-inset-right)') ? 
+      `calc(20px + env(safe-area-inset-right))` : '20px';
+    
     closeBtn.style.cssText = `
       position: fixed;
-      top: 20px;
-      right: 20px;
+      top: ${safeTop};
+      right: ${safeRight};
       width: 44px;
       height: 44px;
+      min-width: 44px;
+      min-height: 44px;
       background: rgba(15, 15, 15, 0.9);
       border: 1px solid rgba(255,255,255,0.1);
       border-radius: 8px;
       color: #9AFF00;
       font-size: 24px;
       cursor: pointer;
-      z-index: 2000;
+      z-index: 10002;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1573,6 +2285,7 @@ button.secondary:hover {
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       font-family: Arial, sans-serif;
       line-height: 1;
+      touch-action: manipulation;
     `;
     
     // Optimización: usar transform3d para mejor rendimiento
@@ -2545,13 +3258,34 @@ function createTimelineMarkers() {
     marker.style.left = (cp.time / video.duration * 100) + "%";
     marker.setAttribute("data-index", index);
     marker.setAttribute("aria-label", `Checkpoint: ${cp.title} en ${formatTime(cp.time)}`);
+    marker.setAttribute("role", "button");
+    marker.setAttribute("tabindex", "0");
     
     const tooltip = document.createElement("div");
     tooltip.classList.add("marker-tooltip");
     tooltip.textContent = `${cp.title} (${formatTime(cp.time)})`;
+    tooltip.setAttribute("role", "tooltip");
     marker.appendChild(tooltip);
     
+    // Mostrar tooltip en móvil al hacer tap
+    let tooltipTimeout;
+    marker.addEventListener("touchstart", () => {
+      marker.classList.add("tooltip-visible");
+      clearTimeout(tooltipTimeout);
+      tooltipTimeout = setTimeout(() => {
+        marker.classList.remove("tooltip-visible");
+      }, 3000);
+    }, { passive: true });
+    
     marker.addEventListener("click", () => jumpToCheckpoint(index));
+    
+    // Soporte de teclado
+    marker.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        jumpToCheckpoint(index);
+      }
+    });
     
     timeline.appendChild(marker);
     markers.push({ element: marker, checkpoint: cp, index });
@@ -2750,14 +3484,45 @@ function showContent(cp, index) {
   const nextCp = index < checkpoints.length - 1 ? checkpoints[index + 1] : null;
   const nextTime = nextCp ? formatTime(nextCp.time) : "Final";
   
-  info.innerHTML = `
+  // Obtener contenido por capas
+  const layers = createContentLayers(cp, index);
+  const currentLayerContent = layers[currentLayer] || layers.detail;
+  
+  // Construir HTML con nuevas funcionalidades
+  let contentHTML = `
     <h2>${cp.title}</h2>
-    <p>${cp.text}</p>
+    <p>${currentLayerContent}</p>
     <div class="checkpoint-counter">${counter}</div>
-    ${nextCp ? `<div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(154, 255, 0, 0.2); font-size: 12px; opacity: 0.7;">
-      <strong>Próximo:</strong> ${nextCp.title} (${nextTime})
-    </div>` : ''}
   `;
+  
+  // Agregar lectura por capas
+  contentHTML += `
+    <div class="content-layers">
+      <button class="layer-btn ${currentLayer === 'summary' ? 'active' : ''}" data-layer="summary">Resumen</button>
+      <button class="layer-btn ${currentLayer === 'detail' ? 'active' : ''}" data-layer="detail">Detalle</button>
+      <button class="layer-btn ${currentLayer === 'technical' ? 'active' : ''}" data-layer="technical">Técnico</button>
+    </div>
+    <div class="content-layer ${currentLayer === 'summary' ? 'active' : ''}" data-layer="summary">${layers.summary}</div>
+    <div class="content-layer ${currentLayer === 'detail' ? 'active' : ''}" data-layer="detail">${layers.detail}</div>
+    <div class="content-layer ${currentLayer === 'technical' ? 'active' : ''}" data-layer="technical">${layers.technical}</div>
+  `;
+  
+  // Agregar comparación A/B si no es el primer checkpoint
+  if (index > 0) {
+    contentHTML += createComparisonAB(index);
+  }
+  
+  // Agregar quick actions
+  contentHTML += createQuickActions(cp, index);
+  
+  // Agregar próximo checkpoint
+  if (nextCp) {
+    contentHTML += `<div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(154, 255, 0, 0.2); font-size: 12px; opacity: 0.7;">
+      <strong>Próximo:</strong> ${nextCp.title} (${nextTime})
+    </div>`;
+  }
+  
+  info.innerHTML = contentHTML;
 
   // Remover clase contextual y agregar active
   info.classList.remove("contextual");
@@ -2774,12 +3539,41 @@ function showContent(cp, index) {
   
   playPauseBtn.textContent = "▶ Reproducir";
   
-  // Iniciar auto-skip si está habilitado
-  if (autoplayEnabled && autoSkipTime > 0) {
-    startAutoSkip();
-  } else {
-    cancelAutoSkip();
-  }
+  // Configurar listeners para capas
+  setTimeout(() => {
+    document.querySelectorAll('.layer-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const layer = e.target.dataset.layer;
+        currentLayer = layer;
+        
+        // Actualizar botones
+        document.querySelectorAll('.layer-btn').forEach(b => {
+          b.classList.toggle('active', b.dataset.layer === layer);
+        });
+        
+        // Mostrar capa correspondiente
+        document.querySelectorAll('.content-layer').forEach(l => {
+          l.classList.toggle('active', l.dataset.layer === layer);
+        });
+        
+        // Actualizar contenido principal
+        const layerContent = layers[layer];
+        const mainP = info.querySelector('p');
+        if (mainP) {
+          mainP.textContent = layerContent;
+        }
+        
+        saveUserPreferences();
+      });
+    });
+  }, 100);
+  
+  // Agregar al historial
+  addCheckpointToHistory(cp, index);
+  
+  // Iniciar auto-skip si está habilitado y estamos en checkpoint pause
+  // Usar función de verificación para evitar conflictos
+  checkAndRestartAutoSkip();
   
   // Verificar logros
   checkAchievements();
@@ -2792,6 +3586,16 @@ function showContent(cp, index) {
   statsPanel.classList.remove("show");
   tipsPanel.classList.remove("show");
   stopCountdown();
+  
+  // Anuncio ARIA para accesibilidad
+  const announcement = document.createElement('div');
+  announcement.setAttribute('role', 'status');
+  announcement.setAttribute('aria-live', 'polite');
+  announcement.className = 'sr-only';
+  announcement.style.cssText = 'position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0;';
+  announcement.textContent = `Checkpoint ${index + 1}: ${cp.title}`;
+  document.body.appendChild(announcement);
+  setTimeout(() => announcement.remove(), 1000);
 }
 
 
@@ -2823,7 +3627,7 @@ function jumpToCheckpoint(index) {
    BOTÓN "SIGUIENTE"
    ---------------------------------------------------- */
 nextBtn.addEventListener("click", () => {
-  // Cancelar auto-skip si se hace clic manualmente
+  // Cancelar auto-skip cuando el usuario hace clic manualmente
   cancelAutoSkip();
   
   currentCheckpoint++;
@@ -2839,6 +3643,7 @@ nextBtn.addEventListener("click", () => {
     `;
     info.classList.add("active");
     isPausedByCheckpoint = false;
+    cancelAutoSkip(); // Asegurar que está cancelado
     video.play();
     playPauseBtn.textContent = "⏸ Pausar";
     return;
@@ -2848,6 +3653,7 @@ nextBtn.addEventListener("click", () => {
   // No ocultar la información inmediatamente, permitir que se actualice con info contextual
   // La información se mantendrá visible hasta el próximo checkpoint
   nextBtn.classList.add("hidden");
+  cancelAutoSkip(); // Asegurar que está cancelado antes de reproducir
   video.play();
   playPauseBtn.textContent = "⏸ Pausar";
   updateMarkerStates();
@@ -2873,9 +3679,12 @@ replayBtn.addEventListener("click", () => {
 playPauseBtn.addEventListener("click", () => {
   if (video.paused) {
     if (isPausedByCheckpoint) {
-      // Si está pausado por checkpoint, avanzar al siguiente
+      // Si está pausado por checkpoint, cancelar auto-skip y avanzar al siguiente
+      cancelAutoSkip();
       nextBtn.click();
     } else {
+      // Si se reproduce manualmente (no desde checkpoint), cancelar auto-skip
+      cancelAutoSkip();
       video.play();
       playPauseBtn.textContent = "⏸ Pausar";
       // Mantener información visible con contexto
@@ -2884,6 +3693,8 @@ playPauseBtn.addEventListener("click", () => {
       }, 300);
     }
   } else {
+    // Pausar manualmente cancela auto-skip
+    cancelAutoSkip();
     video.pause();
     playPauseBtn.textContent = "▶ Reproducir";
   }
@@ -2955,32 +3766,47 @@ autoplayToggle.addEventListener("change", (e) => {
 
 autoSkipTimeInput.addEventListener("change", (e) => {
   autoSkipTime = parseInt(e.target.value) || 5;
-  // Si hay un timer activo, reiniciarlo con el nuevo tiempo
-  if (autoSkipTimer) {
+  // Si hay un timer activo y estamos en checkpoint pause, reiniciarlo con el nuevo tiempo
+  if (autoSkipTimer && isPausedByCheckpoint && autoplayEnabled) {
+    checkAndRestartAutoSkip();
+  } else {
     cancelAutoSkip();
-    if (isPausedByCheckpoint && autoplayEnabled) {
-      startAutoSkip();
-    }
   }
 });
 
 function startAutoSkip() {
-  if (!autoplayEnabled || autoSkipTime <= 0) return;
+  // Verificar condiciones: debe estar habilitado, tener tiempo válido, y estar en checkpoint pause
+  if (!autoplayEnabled || autoSkipTime <= 0 || !isPausedByCheckpoint) {
+    cancelAutoSkip();
+    return;
+  }
   
-  cancelAutoSkip(); // Cancelar cualquier timer existente
+  // Verificar que realmente hay un botón "Siguiente" visible
+  if (!nextBtn || nextBtn.classList.contains("hidden")) {
+    cancelAutoSkip();
+    return;
+  }
+  
+  cancelAutoSkip(); // Cancelar cualquier timer existente para evitar duplicados
   
   // Mostrar contador visual
   updateAutoSkipDisplay(autoSkipTime);
   
   let remaining = autoSkipTime;
   autoSkipTimer = setInterval(() => {
+    // Verificar estado en cada iteración para evitar timers fantasma
+    if (!autoplayEnabled || !isPausedByCheckpoint || !nextBtn || nextBtn.classList.contains("hidden")) {
+      cancelAutoSkip();
+      return;
+    }
+    
     remaining--;
     updateAutoSkipDisplay(remaining);
     
     if (remaining <= 0) {
       cancelAutoSkip();
-      // Avanzar automáticamente al siguiente checkpoint
-      if (nextBtn && !nextBtn.classList.contains("hidden")) {
+      // Avanzar automáticamente al siguiente checkpoint solo si las condiciones se cumplen
+      if (nextBtn && !nextBtn.classList.contains("hidden") && isPausedByCheckpoint) {
         nextBtn.click();
       }
     }
@@ -2988,14 +3814,31 @@ function startAutoSkip() {
 }
 
 function cancelAutoSkip() {
+  // Limpiar timer
   if (autoSkipTimer) {
     clearInterval(autoSkipTimer);
     autoSkipTimer = null;
   }
-  // Ocultar contador visual
+  
+  // Ocultar contador visual de forma segura
   const skipDisplay = document.getElementById("autoSkipDisplay");
-  if (skipDisplay) {
+  if (skipDisplay && skipDisplay.parentNode) {
     skipDisplay.remove();
+  }
+}
+
+// Función para verificar y reiniciar auto-skip si es necesario
+function checkAndRestartAutoSkip() {
+  // Solo reiniciar si está en checkpoint pause y autoplay está habilitado
+  if (isPausedByCheckpoint && autoplayEnabled && autoSkipTime > 0) {
+    // Pequeño delay para asegurar que el estado se haya actualizado
+    setTimeout(() => {
+      if (isPausedByCheckpoint && autoplayEnabled) {
+        startAutoSkip();
+      }
+    }, 100);
+  } else {
+    cancelAutoSkip();
   }
 }
 
@@ -3024,6 +3867,9 @@ function updateAutoSkipDisplay(seconds) {
    ---------------------------------------------------- */
 timeline.addEventListener("click", (e) => {
   if (e.target === timeline || e.target === timelineProgress) {
+    // Cancelar auto-skip cuando el usuario interactúa con la timeline
+    cancelAutoSkip();
+    
     const rect = timeline.getBoundingClientRect();
     const percent = (e.clientX - rect.left) / rect.width;
     const targetTime = percent * video.duration;
@@ -3063,17 +3909,60 @@ video.addEventListener("play", () => {
   startStatsUpdates();
   updateUpcomingPanel();
   startTipsRotation();
+  
+  // Si se hace play pero NO está en checkpoint pause, cancelar auto-skip
+  // (porque el usuario está reproduciendo manualmente)
+  if (!isPausedByCheckpoint) {
+    cancelAutoSkip();
+  }
 });
 
 video.addEventListener("pause", () => {
   if (!isPausedByCheckpoint) {
     playPauseBtn.textContent = "▶ Reproducir";
-    // Cancelar auto-skip si se pausa manualmente
+    // Cancelar auto-skip si se pausa manualmente (no por checkpoint)
     cancelAutoSkip();
     stopStatsUpdates();
     stopCountdown();
+  } else {
+    // Si está pausado por checkpoint, verificar y reiniciar auto-skip si es necesario
+    checkAndRestartAutoSkip();
   }
 });
+
+// Detectar cambios manuales en el tiempo del video (arrastre, teclado, etc.)
+let lastKnownTime = 0;
+video.addEventListener("timeupdate", () => {
+  const currentTime = video.currentTime;
+  const timeDiff = Math.abs(currentTime - lastKnownTime);
+  
+  // Si el cambio de tiempo es muy grande (>2 segundos), probablemente fue manual
+  if (timeDiff > 2 && !video.paused) {
+    // Cancelar auto-skip si el usuario saltó manualmente
+    cancelAutoSkip();
+  }
+  
+  lastKnownTime = currentTime;
+}, { passive: true });
+
+// Detectar cambios directos en currentTime (arrastre de timeline, etc.)
+let seekingTimeout = null;
+video.addEventListener("seeking", () => {
+  // Cancelar auto-skip cuando el usuario busca manualmente
+  cancelAutoSkip();
+  
+  // Limpiar timeout anterior
+  if (seekingTimeout) {
+    clearTimeout(seekingTimeout);
+  }
+  
+  // Después de buscar, verificar si debería reiniciar auto-skip
+  seekingTimeout = setTimeout(() => {
+    if (video.paused && isPausedByCheckpoint) {
+      checkAndRestartAutoSkip();
+    }
+  }, 500);
+}, { passive: true });
 
 video.addEventListener("ended", () => {
   playPauseBtn.textContent = "▶ Reproducir";
@@ -3105,6 +3994,858 @@ setInterval(() => {
     saveProgress();
   }
 }, 30000);
+
+
+/* ----------------------------------------------------
+   NUEVAS FUNCIONALIDADES AVANZADAS
+   ---------------------------------------------------- */
+
+// Variables globales para nuevas funcionalidades
+let highlightsMode = false;
+let presenterMode = false;
+let checkpointHistory = [];
+let currentLayer = 'summary'; // summary, detail, technical
+let scrubPreviewTimeout = null;
+let touchStartX = 0;
+let touchStartY = 0;
+
+/* ----------------------------------------------------
+   INSTANT PREVIEW EN MARCADORES
+   ---------------------------------------------------- */
+function setupInstantPreview() {
+  // Crear backdrop global para previews (se reutiliza)
+  let previewBackdrop = document.getElementById('markerPreviewBackdrop');
+  if (!previewBackdrop) {
+    previewBackdrop = document.createElement('div');
+    previewBackdrop.id = 'markerPreviewBackdrop';
+    previewBackdrop.className = 'marker-preview-backdrop';
+    document.body.appendChild(previewBackdrop);
+    
+    // Cerrar preview al hacer clic en backdrop
+    previewBackdrop.addEventListener('click', () => {
+      closeAllPreviews();
+    });
+  }
+  
+  let activePreviewCard = null;
+  
+  function closeAllPreviews() {
+    document.querySelectorAll('.marker-preview-card.show').forEach(card => {
+      card.classList.remove('show');
+    });
+    previewBackdrop.classList.remove('show');
+    activePreviewCard = null;
+  }
+  
+  markers.forEach((markerData, index) => {
+    const marker = markerData.element;
+    const cp = markerData.checkpoint;
+    
+    // Crear card de preview
+    const previewCard = document.createElement('div');
+    previewCard.className = 'marker-preview-card';
+    
+    // Extraer bullets del texto (primeras 2 líneas o puntos clave)
+    const bullets = cp.text.split('.').slice(0, 2).filter(b => b.trim().length > 0);
+    
+    previewCard.innerHTML = `
+      <h4>${cp.title}</h4>
+      <ul>
+        ${bullets.map(b => `<li>${b.trim()}</li>`).join('')}
+      </ul>
+      <button class="preview-action" data-index="${index}">Ver momento clave</button>
+    `;
+    
+    marker.appendChild(previewCard);
+    
+    function showPreview() {
+      // Cerrar cualquier preview abierto
+      closeAllPreviews();
+      
+      // Mostrar este preview
+      previewCard.classList.add('show');
+      previewBackdrop.classList.add('show');
+      activePreviewCard = previewCard;
+    }
+    
+    function hidePreview() {
+      previewCard.classList.remove('show');
+      if (activePreviewCard === previewCard) {
+        previewBackdrop.classList.remove('show');
+        activePreviewCard = null;
+      }
+    }
+    
+    // Mostrar preview al hover (desktop)
+    let showTimeout;
+    marker.addEventListener('mouseenter', () => {
+      showTimeout = setTimeout(() => {
+        showPreview();
+      }, 200);
+    });
+    
+    marker.addEventListener('mouseleave', () => {
+      clearTimeout(showTimeout);
+      hidePreview();
+    });
+    
+    // Soporte táctil: tap para abrir/cerrar
+    marker.addEventListener('touchstart', (e) => {
+      e.stopPropagation();
+      if (previewCard.classList.contains('show')) {
+        hidePreview();
+      } else {
+        showPreview();
+      }
+    }, { passive: true });
+    
+    // Botón de acción
+    previewCard.querySelector('.preview-action').addEventListener('click', (e) => {
+      e.stopPropagation();
+      jumpToCheckpoint(index);
+      closeAllPreviews();
+    });
+    
+    // Prevenir que el click en la card cierre el preview
+    previewCard.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+  });
+  
+  // Cerrar previews al hacer scroll o interactuar con timeline
+  timeline.addEventListener('click', closeAllPreviews);
+  document.addEventListener('scroll', closeAllPreviews, { passive: true });
+}
+
+/* ----------------------------------------------------
+   COMMAND PALETTE (Ctrl+K)
+   ---------------------------------------------------- */
+const commandPalette = document.getElementById('commandPalette');
+const commandPaletteBackdrop = document.getElementById('commandPaletteBackdrop');
+const commandPaletteInput = document.getElementById('commandPaletteInput');
+const commandPaletteResults = document.getElementById('commandPaletteResults');
+const commandPaletteClose = document.getElementById('commandPaletteClose');
+const commandPaletteTrigger = document.getElementById('commandPaletteTrigger');
+let selectedCommandIndex = -1;
+
+function openCommandPalette() {
+  commandPalette.classList.add('show');
+  commandPaletteBackdrop.classList.add('show');
+  commandPaletteInput.value = '';
+  commandPaletteInput.focus();
+  updateCommandPaletteResults('');
+  selectedCommandIndex = -1;
+  
+  // Prevenir scroll del body cuando está abierto
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCommandPalette() {
+  commandPalette.classList.remove('show');
+  commandPaletteBackdrop.classList.remove('show');
+  commandPaletteInput.blur();
+  selectedCommandIndex = -1;
+  
+  // Restaurar scroll del body
+  document.body.style.overflow = '';
+}
+
+function updateCommandPaletteResults(query) {
+  const searchTerm = query.toLowerCase().trim();
+  commandPaletteResults.innerHTML = '';
+  
+  if (searchTerm === '') {
+    // Mostrar todos los checkpoints
+    checkpoints.forEach((cp, index) => {
+      const item = createCommandPaletteItem(cp, index);
+      commandPaletteResults.appendChild(item);
+    });
+  } else {
+    // Filtrar por búsqueda
+    checkpoints.forEach((cp, index) => {
+      if (cp.title.toLowerCase().includes(searchTerm) || 
+          cp.text.toLowerCase().includes(searchTerm)) {
+        const item = createCommandPaletteItem(cp, index);
+        commandPaletteResults.appendChild(item);
+      }
+    });
+  }
+  
+  selectedCommandIndex = -1;
+}
+
+function createCommandPaletteItem(cp, index) {
+  const item = document.createElement('div');
+  item.className = 'command-palette-item';
+  item.innerHTML = `
+    <div class="command-palette-item-title">${cp.title}</div>
+    <div class="command-palette-item-time">${formatTime(cp.time)}</div>
+  `;
+  
+  item.addEventListener('click', () => {
+    jumpToCheckpoint(index);
+    closeCommandPalette();
+  });
+  
+  return item;
+}
+
+// Atajo de teclado Ctrl+K o Cmd+K
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    if (commandPalette.classList.contains('show')) {
+      closeCommandPalette();
+    } else {
+      openCommandPalette();
+    }
+  }
+  
+  // Navegación en command palette
+  if (commandPalette.classList.contains('show')) {
+    const items = commandPaletteResults.querySelectorAll('.command-palette-item');
+    
+    if (e.key === 'Escape') {
+      closeCommandPalette();
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      selectedCommandIndex = Math.min(selectedCommandIndex + 1, items.length - 1);
+      updateSelectedCommandItem(items);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      selectedCommandIndex = Math.max(selectedCommandIndex - 1, -1);
+      updateSelectedCommandItem(items);
+    } else if (e.key === 'Enter' && selectedCommandIndex >= 0) {
+      e.preventDefault();
+      items[selectedCommandIndex].click();
+    }
+  }
+});
+
+function updateSelectedCommandItem(items) {
+  items.forEach((item, index) => {
+    if (index === selectedCommandIndex) {
+      item.classList.add('selected');
+      item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    } else {
+      item.classList.remove('selected');
+    }
+  });
+}
+
+commandPaletteInput.addEventListener('input', (e) => {
+  updateCommandPaletteResults(e.target.value);
+});
+
+commandPaletteBackdrop.addEventListener('click', closeCommandPalette);
+
+// Botón de cerrar
+if (commandPaletteClose) {
+  commandPaletteClose.addEventListener('click', closeCommandPalette);
+}
+
+// Botón trigger para móvil
+if (commandPaletteTrigger) {
+  commandPaletteTrigger.addEventListener('click', () => {
+    openCommandPalette();
+  });
+}
+
+/* ----------------------------------------------------
+   HIGHLIGHTS MODE
+   ---------------------------------------------------- */
+const highlightsModeIndicator = document.getElementById('highlightsModeIndicator');
+
+function toggleHighlightsMode() {
+  highlightsMode = !highlightsMode;
+  
+  if (highlightsMode) {
+    highlightsModeIndicator.classList.add('active');
+    startHighlightsMode();
+  } else {
+    highlightsModeIndicator.classList.remove('active');
+    stopHighlightsMode();
+  }
+  
+  // Guardar preferencia
+  saveUserPreferences();
+}
+
+function startHighlightsMode() {
+  // Calcular segmentos importantes (alrededor de checkpoints)
+  const segments = [];
+  checkpoints.forEach((cp, index) => {
+    const startTime = Math.max(0, cp.time - 5); // 5 segundos antes
+    const endTime = Math.min(video.duration, cp.time + 10); // 10 segundos después
+    segments.push({ start: startTime, end: endTime, checkpoint: index });
+  });
+  
+  // Reproducir solo segmentos importantes
+  let currentSegmentIndex = 0;
+  
+  function playNextSegment() {
+    if (!highlightsMode || currentSegmentIndex >= segments.length) {
+      highlightsMode = false;
+      highlightsModeIndicator.classList.remove('active');
+      return;
+    }
+    
+    const segment = segments[currentSegmentIndex];
+    video.currentTime = segment.start;
+    video.play();
+    
+    const checkSegment = () => {
+      if (video.currentTime >= segment.end) {
+        video.pause();
+        // Mostrar checkpoint
+        jumpToCheckpoint(segment.checkpoint);
+        currentSegmentIndex++;
+        
+        // Auto-continuar después de 3 segundos
+        setTimeout(() => {
+          if (highlightsMode) {
+            playNextSegment();
+          }
+        }, 3000);
+      } else if (!video.paused) {
+        requestAnimationFrame(checkSegment);
+      }
+    };
+    
+    checkSegment();
+  }
+  
+  // Iniciar desde el principio o desde el checkpoint actual
+  const currentTime = video.currentTime;
+  for (let i = 0; i < segments.length; i++) {
+    if (currentTime < segments[i].end) {
+      currentSegmentIndex = i;
+      break;
+    }
+  }
+  
+  playNextSegment();
+}
+
+function stopHighlightsMode() {
+  // El modo se detiene automáticamente cuando se pausa o cambia manualmente
+}
+
+// Agregar botón para activar highlights mode
+function addHighlightsModeButton() {
+  const controls = document.querySelector('.video-controls');
+  if (!controls) return;
+  
+  const highlightsBtn = document.createElement('button');
+  highlightsBtn.className = 'control-btn secondary';
+  highlightsBtn.id = 'highlightsModeBtn';
+  highlightsBtn.innerHTML = '⚡ Highlights';
+  highlightsBtn.title = 'Reproducir solo segmentos importantes';
+  highlightsBtn.addEventListener('click', toggleHighlightsMode);
+  
+  controls.insertBefore(highlightsBtn, controls.firstChild);
+}
+
+/* ----------------------------------------------------
+   SCRUB INTELIGENTE EN TIMELINE
+   ---------------------------------------------------- */
+const timelineScrubPreview = document.createElement('div');
+timelineScrubPreview.className = 'timeline-scrub-preview';
+timeline.appendChild(timelineScrubPreview);
+
+let isScrubbing = false;
+
+timeline.addEventListener('mousedown', (e) => {
+  if (e.target === timeline || e.target.classList.contains('timeline-progress') || 
+      e.target.classList.contains('timeline-checkpoints-progress')) {
+    isScrubbing = true;
+    updateScrubPreview(e);
+  }
+});
+
+timeline.addEventListener('mousemove', (e) => {
+  if (isScrubbing) {
+    updateScrubPreview(e);
+  }
+});
+
+document.addEventListener('mouseup', () => {
+  isScrubbing = false;
+  timelineScrubPreview.classList.remove('show');
+});
+
+function updateScrubPreview(e) {
+  const rect = timeline.getBoundingClientRect();
+  const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  const targetTime = percent * video.duration;
+  
+  // Encontrar checkpoint más cercano
+  let nearestCp = null;
+  let minDiff = Infinity;
+  checkpoints.forEach(cp => {
+    const diff = Math.abs(cp.time - targetTime);
+    if (diff < minDiff) {
+      minDiff = diff;
+      nearestCp = cp;
+    }
+  });
+  
+  timelineScrubPreview.innerHTML = `
+    <div class="timeline-scrub-preview-time">${formatTime(targetTime)}</div>
+    ${nearestCp ? `<div class="timeline-scrub-preview-checkpoint">${nearestCp.title}</div>` : ''}
+  `;
+  
+  timelineScrubPreview.style.left = percent * 100 + '%';
+  timelineScrubPreview.classList.add('show');
+}
+
+/* ----------------------------------------------------
+   CARDS APILABLES (HISTORIAL)
+   ---------------------------------------------------- */
+const checkpointCardsStack = document.getElementById('checkpointCardsStack');
+
+function addCheckpointToHistory(cp, index) {
+  checkpointHistory.push({ checkpoint: cp, index, timestamp: Date.now() });
+  
+  // Mantener solo últimos 5
+  if (checkpointHistory.length > 5) {
+    checkpointHistory.shift();
+  }
+  
+  updateCheckpointCards();
+}
+
+function updateCheckpointCards() {
+  if (checkpointHistory.length === 0) {
+    checkpointCardsStack.classList.add('hidden');
+    return;
+  }
+  
+  checkpointCardsStack.classList.remove('hidden');
+  checkpointCardsStack.innerHTML = '';
+  
+  // Mostrar en orden inverso (más reciente primero)
+  const reversed = [...checkpointHistory].reverse();
+  
+  reversed.forEach((item, stackIndex) => {
+    const card = document.createElement('div');
+    card.className = 'checkpoint-card';
+    if (stackIndex === 0) {
+      card.classList.add('active');
+    }
+    
+    card.innerHTML = `
+      <div class="checkpoint-card-header">
+        <div class="checkpoint-card-title">${item.checkpoint.title}</div>
+        <div class="checkpoint-card-time">${formatTime(item.checkpoint.time)}</div>
+      </div>
+      <div class="checkpoint-card-content">${item.checkpoint.text}</div>
+    `;
+    
+    card.addEventListener('click', () => {
+      // Hacer esta card activa
+      checkpointCardsStack.querySelectorAll('.checkpoint-card').forEach(c => {
+        c.classList.remove('active');
+      });
+      card.classList.add('active');
+      jumpToCheckpoint(item.index);
+    });
+    
+    checkpointCardsStack.appendChild(card);
+  });
+}
+
+/* ----------------------------------------------------
+   LECTURA POR CAPAS (RESUMEN/DETALLE/TÉCNICO)
+   ---------------------------------------------------- */
+function createContentLayers(cp, index) {
+  // Dividir contenido en capas
+  const summary = cp.title + '. ' + cp.text.split('.')[0] + '.';
+  const detail = cp.text;
+  const technical = `Checkpoint ${index + 1}/${checkpoints.length} | Timestamp: ${formatTime(cp.time)} | ` +
+    `Duración estimada: ${index < checkpoints.length - 1 ? formatTime(checkpoints[index + 1].time - cp.time) : 'Final'}`;
+  
+  return {
+    summary,
+    detail,
+    technical
+  };
+}
+
+/* ----------------------------------------------------
+   QUICK ACTIONS
+   ---------------------------------------------------- */
+function createQuickActions(cp, index) {
+  const actionsHTML = `
+    <div class="quick-actions">
+      <button class="quick-action-btn" data-action="repeat-5s" title="Repetir 5 segundos antes">
+        ↺ Repetir 5s antes
+      </button>
+      <button class="quick-action-btn" data-action="slow-motion" title="Ver en cámara lenta">
+        🐌 0.5x
+      </button>
+      <button class="quick-action-btn" data-action="share-link" title="Copiar link al timestamp">
+        🔗 Compartir
+      </button>
+      <button class="quick-action-btn" data-action="favorite" title="Marcar como favorito">
+        ⭐ Favorito
+      </button>
+    </div>
+  `;
+  
+  // Agregar listeners después de insertar HTML
+  setTimeout(() => {
+    document.querySelectorAll('.quick-action-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const action = e.target.closest('.quick-action-btn').dataset.action;
+        handleQuickAction(action, cp, index);
+      });
+    });
+  }, 100);
+  
+  return actionsHTML;
+}
+
+function handleQuickAction(action, cp, index) {
+  switch(action) {
+    case 'repeat-5s':
+      video.currentTime = Math.max(0, cp.time - 5);
+      video.play();
+      break;
+    case 'slow-motion':
+      video.playbackRate = 0.5;
+      speedSelect.value = '0.5';
+      break;
+    case 'share-link':
+      const url = window.location.href.split('#')[0] + `#t=${cp.time}`;
+      navigator.clipboard.writeText(url).then(() => {
+        showTemporaryMessage('Link copiado al portapapeles');
+      });
+      break;
+    case 'favorite':
+      const favorites = JSON.parse(localStorage.getItem('checkpointFavorites') || '[]');
+      if (!favorites.includes(index)) {
+        favorites.push(index);
+        localStorage.setItem('checkpointFavorites', JSON.stringify(favorites));
+        showTemporaryMessage('Checkpoint marcado como favorito');
+      } else {
+        showTemporaryMessage('Ya está en favoritos');
+      }
+      break;
+  }
+}
+
+function showTemporaryMessage(message) {
+  const msg = document.createElement('div');
+  msg.style.cssText = `
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(154, 255, 0, 0.9);
+    color: #111;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    z-index: 10000;
+    animation: slideDown 0.3s ease;
+  `;
+  msg.textContent = message;
+  document.body.appendChild(msg);
+  
+  setTimeout(() => {
+    msg.style.animation = 'slideUp 0.3s ease';
+    setTimeout(() => msg.remove(), 300);
+  }, 2000);
+}
+
+/* ----------------------------------------------------
+   MODO PRESENTADOR
+   ---------------------------------------------------- */
+function togglePresenterMode() {
+  presenterMode = !presenterMode;
+  document.body.classList.toggle('presenter-mode', presenterMode);
+  saveUserPreferences();
+  
+  if (presenterMode) {
+    showTemporaryMessage('Modo Presentador activado');
+  } else {
+    showTemporaryMessage('Modo Presentador desactivado');
+  }
+}
+
+// Agregar botón para modo presentador
+function addPresenterModeButton() {
+  const controls = document.querySelector('.video-controls');
+  if (!controls) return;
+  
+  const presenterBtn = document.createElement('button');
+  presenterBtn.className = 'control-btn secondary';
+  presenterBtn.id = 'presenterModeBtn';
+  presenterBtn.innerHTML = '📺 Presentador';
+  presenterBtn.title = 'Modo presentación (tipografía grande, controles mínimos)';
+  presenterBtn.addEventListener('click', togglePresenterMode);
+  
+  controls.appendChild(presenterBtn);
+}
+
+/* ----------------------------------------------------
+   MAPA DE CALOR EN TIMELINE
+   ---------------------------------------------------- */
+function createTimelineHeatmap() {
+  const heatmap = document.createElement('div');
+  heatmap.className = 'timeline-heatmap';
+  heatmap.id = 'timelineHeatmap';
+  
+  // Crear segmentos de calor basados en densidad de checkpoints
+  checkpoints.forEach((cp, index) => {
+    const segment = document.createElement('div');
+    segment.className = 'timeline-heatmap-segment';
+    
+    const startPercent = index > 0 ? (checkpoints[index - 1].time / video.duration * 100) : 0;
+    const endPercent = (cp.time / video.duration * 100);
+    
+    segment.style.left = startPercent + '%';
+    segment.style.width = (endPercent - startPercent) + '%';
+    
+    // Intensidad basada en proximidad a checkpoints
+    const intensity = 0.3 + (index % 3) * 0.1;
+    segment.style.opacity = intensity;
+    
+    heatmap.appendChild(segment);
+  });
+  
+  timeline.insertBefore(heatmap, timeline.firstChild);
+}
+
+/* ----------------------------------------------------
+   GESTOS TÁCTILES MEJORADOS
+   ---------------------------------------------------- */
+const touchGestureHint = document.getElementById('touchGestureHint');
+
+function setupTouchGestures() {
+  const videoWrapper = document.querySelector('.video-wrapper');
+  if (!videoWrapper) return;
+  
+  let touchStartTime = 0;
+  let touchStartX = 0;
+  let touchStartY = 0;
+  
+  videoWrapper.addEventListener('touchstart', (e) => {
+    touchStartTime = Date.now();
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+  
+  videoWrapper.addEventListener('touchend', (e) => {
+    const touchDuration = Date.now() - touchStartTime;
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+    
+    const deltaX = touchEndX - touchStartX;
+    const deltaY = touchEndY - touchStartY;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    
+    // Swipe horizontal (más de 50px)
+    if (distance > 50 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      if (deltaX > 0) {
+        // Swipe derecho: checkpoint anterior
+        if (currentCheckpoint > 0) {
+          jumpToCheckpoint(currentCheckpoint - 1);
+          showTouchHint('← Checkpoint anterior');
+        }
+      } else {
+        // Swipe izquierdo: siguiente checkpoint
+        if (currentCheckpoint < checkpoints.length - 1) {
+          jumpToCheckpoint(currentCheckpoint + 1);
+          showTouchHint('→ Siguiente checkpoint');
+        }
+      }
+    }
+  }, { passive: true });
+}
+
+function showTouchHint(message) {
+  touchGestureHint.textContent = message;
+  touchGestureHint.classList.add('show');
+  
+  setTimeout(() => {
+    touchGestureHint.classList.remove('show');
+  }, 2000);
+}
+
+/* ----------------------------------------------------
+   COMPARACIÓN A/B (ANTES/DESPUÉS)
+   ---------------------------------------------------- */
+function createComparisonAB(currentIndex) {
+  if (currentIndex === 0) return ''; // No hay anterior para comparar
+  
+  const current = checkpoints[currentIndex];
+  const previous = checkpoints[currentIndex - 1];
+  
+  // Simular métricas (en producción vendrían de datos reales)
+  const metrics = {
+    density: Math.floor(Math.random() * 20) + 10,
+    fps: 58 + Math.random() * 2,
+    classes: Math.floor(Math.random() * 5) + 3,
+    occlusion: Math.random() * 100
+  };
+  
+  const prevMetrics = {
+    density: metrics.density - Math.floor(Math.random() * 5),
+    fps: metrics.fps - Math.random(),
+    classes: metrics.classes - 1,
+    occlusion: metrics.occlusion - Math.random() * 20
+  };
+  
+  const comparisonHTML = `
+    <div class="comparison-ab">
+      <div class="comparison-item">
+        <div class="comparison-label">Densidad</div>
+        <div class="comparison-value">${metrics.density}</div>
+        <div class="comparison-change ${metrics.density > prevMetrics.density ? 'positive' : 'negative'}">
+          ${metrics.density > prevMetrics.density ? '+' : ''}${(metrics.density - prevMetrics.density).toFixed(0)}
+        </div>
+      </div>
+      <div class="comparison-item">
+        <div class="comparison-label">FPS</div>
+        <div class="comparison-value">${metrics.fps.toFixed(1)}</div>
+        <div class="comparison-change ${metrics.fps > prevMetrics.fps ? 'positive' : 'negative'}">
+          ${metrics.fps > prevMetrics.fps ? '+' : ''}${(metrics.fps - prevMetrics.fps).toFixed(1)}
+        </div>
+      </div>
+      <div class="comparison-item">
+        <div class="comparison-label">Clases</div>
+        <div class="comparison-value">${metrics.classes}</div>
+        <div class="comparison-change ${metrics.classes > prevMetrics.classes ? 'positive' : 'negative'}">
+          ${metrics.classes > prevMetrics.classes ? '+' : ''}${metrics.classes - prevMetrics.classes}
+        </div>
+      </div>
+      <div class="comparison-item">
+        <div class="comparison-label">Oclusión</div>
+        <div class="comparison-value">${metrics.occlusion.toFixed(0)}%</div>
+        <div class="comparison-change ${metrics.occlusion < prevMetrics.occlusion ? 'positive' : 'negative'}">
+          ${metrics.occlusion < prevMetrics.occlusion ? '-' : '+'}${Math.abs(metrics.occlusion - prevMetrics.occlusion).toFixed(0)}%
+        </div>
+      </div>
+    </div>
+  `;
+  
+  return comparisonHTML;
+}
+
+/* ----------------------------------------------------
+   PÍLDORAS CONTEXTUALES CLICABLES
+   ---------------------------------------------------- */
+function createContextualPills(currentTime) {
+  const pills = [];
+  
+  // Crear píldoras basadas en el tiempo actual
+  if (currentTime >= 10 && currentTime < 45) {
+    pills.push({ text: 'Ver detección de oclusión', time: 45 });
+  }
+  if (currentTime >= 45 && currentTime < 90) {
+    pills.push({ text: 'Ver seguimiento de tráfico pesado', time: 60 });
+  }
+  if (currentTime >= 90 && currentTime < 135) {
+    pills.push({ text: 'Ver robustez ante iluminación', time: 90 });
+  }
+  
+  if (pills.length === 0) return '';
+  
+  const pillsHTML = pills.map(pill => 
+    `<span class="contextual-pill" data-time="${pill.time}">${pill.text}</span>`
+  ).join('');
+  
+  // Agregar listeners después de insertar
+  setTimeout(() => {
+    document.querySelectorAll('.contextual-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        const time = parseFloat(pill.dataset.time);
+        video.currentTime = time;
+        video.play();
+      });
+    });
+  }, 100);
+  
+  return `<div style="margin-top: 12px;">${pillsHTML}</div>`;
+}
+
+/* ----------------------------------------------------
+   GUARDAR/CARGAR PREFERENCIAS DE USUARIO
+   ---------------------------------------------------- */
+function saveUserPreferences() {
+  try {
+    const preferences = {
+      highlightsMode,
+      presenterMode,
+      autoplayEnabled,
+      playbackSpeed: video.playbackRate,
+      currentLayer,
+      lastUpdate: Date.now()
+    };
+    localStorage.setItem('videoSyncPreferences', JSON.stringify(preferences));
+  } catch (e) {
+    console.warn('No se pudieron guardar las preferencias:', e);
+  }
+}
+
+function loadUserPreferences() {
+  try {
+    const saved = localStorage.getItem('videoSyncPreferences');
+    if (!saved) return;
+    
+    const preferences = JSON.parse(saved);
+    
+    if (preferences.highlightsMode) {
+      highlightsMode = true;
+      highlightsModeIndicator.classList.add('active');
+    }
+    
+    if (preferences.presenterMode) {
+      presenterMode = true;
+      document.body.classList.add('presenter-mode');
+    }
+    
+    if (preferences.currentLayer) {
+      currentLayer = preferences.currentLayer;
+    }
+    
+    if (preferences.playbackSpeed) {
+      video.playbackRate = preferences.playbackSpeed;
+      speedSelect.value = preferences.playbackSpeed.toString();
+    }
+  } catch (e) {
+    console.warn('No se pudieron cargar las preferencias:', e);
+  }
+}
+
+/* ----------------------------------------------------
+   INTEGRACIÓN CON FUNCIONES EXISTENTES
+   ---------------------------------------------------- */
+
+// Modificar createTimelineMarkers para agregar preview y heatmap
+const originalCreateTimelineMarkers = createTimelineMarkers;
+createTimelineMarkers = function() {
+  originalCreateTimelineMarkers();
+  setupInstantPreview();
+  createTimelineHeatmap();
+};
+
+// Inicializar cuando el video esté listo
+video.addEventListener('loadedmetadata', () => {
+  addHighlightsModeButton();
+  addPresenterModeButton();
+  setupTouchGestures();
+  loadUserPreferences();
+  
+  // Guardar preferencias cuando cambien
+  video.addEventListener('ratechange', saveUserPreferences);
+  autoplayToggle.addEventListener('change', saveUserPreferences);
+});
+
+// Guardar preferencias antes de cerrar
+window.addEventListener('beforeunload', saveUserPreferences);
 
 </script>
 

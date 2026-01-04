@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TouchDesigner Style Hand Tracking OS v5.0 PRO (Radial Circuit Elite)</title>
+    <!-- MediaPipe Hands CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #050505;
+            overflow: hidden;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+        }
+
+        #videoInput { display: none; }
+
+        #glCanvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: scaleX(-1); /* Espejo horizontal */
+        }
+
+        #hudCanvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 2;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+
+        #status {
+            position: absolute;
+            z-index: 10;
+            color: #444;
+            font-size: 14px;
+            bottom: 30px; left: 30px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-left: 3px solid #444;
+            padding-left: 10px;
+            transition: all 0.3s;
+        }
+
+        .hotzone-indicator {
+            position: absolute;
+            pointer-events: none;
+            border: 1px solid rgba(0, 255, 100, 0.2);
+            background: rgba(0, 255, 100, 0.02);
+            font-size: 10px;
+            color: rgba(0, 255, 100, 0.5);
+            padding: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            letter-spacing: 1px;
+            backdrop-filter: blur(2px);
+        }
+
+        .active { opacity: 1 !important; }
+        
+        #status.active-status {
+            border-color: #0f0;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(0,255,0,0.5);
+        }
+    </style>
+</head>
+<body>
+
+<div id="container">
+    <video id="videoInput" autoplay playsinline></video>
+    <canvas id="glCanvas"></canvas>
+    <canvas id="hudCanvas"></canvas>
+    <div id="status">SYSTEM OFFLINE // AWAITING NEURAL LINK [PRESS N]</div>
+    
+    <!-- Hot Zones Indicators -->
+    <div class="hotzone-indicator" id="zoneA" style="top: 30px; left: 30px; width: 180px; height: 120px;">
+        <span style="font-weight:bold;">SECTOR A [PRESET]</span><br/>
+        <span style="font-size:9px; opacity:0.7;">> INTERFACE_MODULATION</span>
+    </div>
+    <div class="hotzone-indicator" id="zoneB" style="bottom: 80px; right: 30px; width: 180px; height: 120px;">
+        <span style="font-weight:bold;">SECTOR B [DENSITY]</span><br/>
+        <span style="font-size:9px; opacity:0.7;">> PARTICLE_EMITTER_GAIN</span>
+    </div>
+</div>
+
+<!-- SHADERS GLSL (Igual que v4.0) -->
+<script id="vs" type="x-shader/x-vertex">
+    attribute vec2 position;
+    varying vec2 vUv;
+    void main() {
+        vUv = position * 0.5 + 0.5;
+        vUv.y = 1.0 - vUv.y; 
+        gl_Position = vec4(position, 0.0, 1.0);
+    }
+</script>
+
+<script id="fs" type="x-shader/x-fragment">
+    precision mediump float;
+    uniform sampler2D uTexture;
+    uniform float uTime;
+    uniform float uVelocity;
+    varying vec2 vUv;
+
+    void main() {
+        vec2 uv = vUv;
+        
+        // Sin distorsión, solo textura directa
+        vec4 texColor = texture2D(uTexture, uv);
+        vec3 color = texColor.rgb;
+
+        // Estética (scanline, vignette, desaturación)
+        float scanline = sin(uv.y * 800.0 + uTime * 2.0) * 0.02;
+        color -= scanline;
+        float vignette = smoothstep(0.8, 0.3, length(vUv - 0.5));
+        color *= vignette;
+        vec3 gray = vec3(dot(color, vec3(0.299, 0.587, 0.114)));
+        color = mix(color, gray, 0.3);
+        color = pow(color, vec3(1.1));
+
+        gl_FragColor = vec4(color, 1.0);
+    }
+</script>
+
+<script>
+/**
+ * SISTEMA DE RASTREO TÁCTICO V5.0 PRO (RADIAL CIRCUIT ELITE)
+ * -----------------------------------------------------------
+ * Ingeniería Creativa Avanzada:
+ * 
+ * NUEVAS CARACTERÍSTICAS V5.0 PRO:
+ * ✓ Panel Radial tipo circuito con 8 capas visuales
+ * ✓ Física de rotación suave con unwrap angular (sin saltos π/-π)
+ * ✓ Rotación por orientación de mano con smoothing avanzado
+ * ✓ Cierre con puño (FIST) + debounce (3 frames)
+ * ✓ Inercia con fricción adaptativa + spring snapping fino
+ * ✓ Hysteresis para cambio de sección (55% threshold)
+ * ✓ Circuit traces con L-shapes y data pulses animados
+ * ✓ 12 POIs por sección con hover + tooltips
+ * ✓ Datos vivos basados en rotationPhase
+ * ✓ Valores estables con hash pseudo-random (no random por frame)
+ * ✓ Animaciones de apertura/cierre con easing exponencial
+ * ✓ Stagger en colapso (traces → rings)
+ * ✓ Burst particles en cierre
+ * ✓ Glow controlado con composite operation
+ * ✓ Selector visual estático + conexión al cursor
+ * ✓ Sin pérdida de FPS (optimizado)
+ */
+
+// ============ CONFIGURACIÓN ============
+const CONFIG = {
+    pinchThreshold: 0.06,
+    minConfidence: 0.65,
+    handSmoothing: 0.2, 
+    scanEmissionRate: 0.98,
+    maxScanPoints: 80,
+    scanThreshold: 110,
+    openHandThreshold: 0.12,
+    fistThreshold: 0.07,
+    swipeVelocityThreshold: 20
+};
+
+// Configuración del Panel Radial (MEJORADO V5.0)
+const PANEL_CONFIG = {
+    maxRadius: 160,
+    expandSpeed: 0.075,
+    collapseSpeed: 0.11,
+    friction: 0.93,
+    frictionFast: 0.88,       // Fricción cuando velocidad es alta
+    snapThreshold: 0.012,     // Velocidad mínima para iniciar snap
+    snapSpring: 0.14,         // Fuerza del snap
+    snapDamping: 0.85,        // Damping del snap
+    rotationSmoothing: 0.25,  // Suavizado de rotación manual
+    maxAngularVel: 0.18,      // Velocidad angular máxima
+    sections: 8,
+    poiCount: 12,             // Puntos de interés
+    traceCount: 24,           // Trazas de circuito
+    glowIntensity: 0.6,
+    ringThickness: 2,
+    closeDebounceMs: 200,     // Debounce para FIST
+    color: "#00ffaa"
+};
+
+// Hysteresis para cambio de sección
+const SECTION_HYSTERESIS = 0.55; // 55% del sector
+
+const video = document.getElementById('videoInput');
+const glCanvas = document.getElementById('glCanvas');
+const hudCanvas = document.getElementById('hudCanvas');
+const statusDiv = document.getElementById('status');
+const zoneA = document.getElementById('zoneA');
+const zoneB = document.getElementById('zoneB');
+const ctx = hudCanvas.getContext('2d');
+let gl;
+
+// Estado del sistema
+let systemActive = false;
+let globalTime = 0;
+
+// Rastreo
+let lightPos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+let targetPos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+let velocityMag = 0;
+
+// Partículas y Efectos
+const scanPoints = []; 
+const burstParticles = [];
+const trails = [];
+const MAX_TRAIL_LENGTH = 15;
+const dataStream = [];
+
+// MediaPipe
+let hands = null;
+let camera = null;
+let detectedHands = [];
+let handLockActive = false;
+let currentGesture = "NONE";
+let previousIndexPos = null;
+let previousGesture = "NONE";
+
+// Hot Zones
+const hotZones = [
+    { x: 30, y: 30, w: 180, h: 120, name: "ZONE_A", element: zoneA },
+    { x: window.innerWidth - 210, y: window.innerHeight - 200, w: 180, h: 120, name: "ZONE_B", element: zoneB }
+];
+let hudPreset = 0; 
+let scanIntensity = 1;
+
+// === NUEVO: OBJETO PANEL RADIAL (MEJORADO) ===
+let panel = {
+    active: false,
+    state: 'IDLE', // IDLE, EXPANDING, ACTIVE, COLLAPSING
+    progress: 0, // 0 a 1 (animación de apertura)
+    center: { x: 0, y: 0 },
+    rotation: 0,
+    rotationVel: 0,
+    prevRotation: 0,
+    grabbed: false,
+    baseHandAngle: 0,
+    basePanelRotation: 0,
+    currentSection: 0,
+    prevSection: 0,
+    rotationPhase: 0,       // 0-1 fase normalizada
+    pulseTime: 0,
+    sectionsData: [],
+    pois: [],               // Puntos de interés
+    traces: [],             // Trazas de circuito
+    dataPulses: [],         // Pulsos animados en las trazas
+    fistDebounceCount: 0,   // Contador para debounce de FIST
+    collapseBurst: false    // Flag para animación de cierre
+};
+
+// Generar datos Mock para las secciones
+const SECTIONS_LABELS = ["BIO-SCAN", "NETWORK", "TARGET", "MEMORY", "SECURITY", "DEBUG", "POWER", "SYSTEM"];
+panel.sectionsData = SECTIONS_LABELS.map((label, i) => ({
+    label: label,
+    val: Math.floor(Math.random() * 100),
+    id: `0x${(i+10).toString(16).toUpperCase()}`,
+    color: `hsl(${i * 45}, 80%, 60%)`,
+    baseValue: 50 + Math.random() * 50,
+    seed: i * 123.456  // Seed para valores estables
+}));
+
+// Canvas temporal
+const hiddenCanvas = document.createElement('canvas');
+hiddenCanvas.width = 80; hiddenCanvas.height = 60;
+const hCtx = hiddenCanvas.getContext('2d');
+
+// Glosario Tech
+const techWords = ["ID_404", "BUFFER", "SYNC", "LUM", "MESH", "ERR", "VEC3", "PROXY"];
+
+// WebGL Vars
+let program, positionBuffer, texture;
+
+// ============ UTILITIES ============
+
+// Unwrap angle para evitar saltos de -π a π
+function unwrapAngle(prevAngle, newAngle) {
+    const diff = newAngle - prevAngle;
+    if (diff > Math.PI) {
+        return newAngle - Math.PI * 2;
+    } else if (diff < -Math.PI) {
+        return newAngle + Math.PI * 2;
+    }
+    return newAngle;
+}
+
+// Lerp angular (interpolación de ángulos)
+function lerpAngle(a, b, t) {
+    const diff = b - a;
+    const wrappedDiff = ((diff + Math.PI) % (Math.PI * 2)) - Math.PI;
+    return a + wrappedDiff * t;
+}
+
+// Clamp
+function clamp(val, min, max) {
+    return Math.max(min, Math.min(max, val));
+}
+
+// Smooth step
+function smoothstep(edge0, edge1, x) {
+    const t = clamp((x - edge0) / (edge1 - edge0), 0, 1);
+    return t * t * (3 - 2 * t);
+}
+
+// Easing functions
+function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+}
+
+function easeInCubic(t) {
+    return t * t * t;
+}
+
+function easeOutExpo(t) {
+    return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+}
+
+function easeInExpo(t) {
+    return t === 0 ? 0 : Math.pow(2, 10 * (t - 1));
+}
+
+// Hash pseudo-random estable (para datos por sección)
+function hashFloat(seed) {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+}
+
+function resize() {
+    hudCanvas.width = window.innerWidth;
+    hudCanvas.height = window.innerHeight;
+    glCanvas.width = window.innerWidth;
+    glCanvas.height = window.innerHeight;
+    hotZones[1].x = window.innerWidth - 210;
+    hotZones[1].y = window.innerHeight - 200;
+    if(gl) gl.viewport(0, 0, glCanvas.width, glCanvas.height);
+}
+
+// ============ INICIALIZACIÓN ============
+async function init() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { width: { ideal: 1280 }, height: { ideal: 720 } } 
+        });
+        video.srcObject = stream;
+        await video.play();
+
+        resize();
+        window.addEventListener('resize', resize);
+        
+        initWebGL();
+        await initHandTracking();
+        initDataStream();
+        
+        loop();
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 'n') toggleSystem();
+        });
+
+    } catch (err) {
+        statusDiv.innerText = "CRITICAL ERROR: SENSOR FAILURE";
+        statusDiv.style.color = "#ff3333";
+    }
+}
+
+// ============ MEDIAPIPE ============
+async function initHandTracking() {
+    hands = new Hands({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+    });
+    hands.setOptions({
+        maxNumHands: 1, // Enfocado en 1 mano para mejor control del panel
+        modelComplexity: 1,
+        minDetectionConfidence: 0.6,
+        minTrackingConfidence: 0.5
+    });
+    hands.onResults(onHandsResults);
+    
+    camera = new Camera(video, {
+        onFrame: async () => { if (systemActive) await hands.send({ image: video }); },
+        width: 1280, height: 720
+    });
+    camera.start();
+}
+
+function onHandsResults(results) {
+    detectedHands = [];
+    if (results.multiHandLandmarks) {
+        for (let i = 0; i < results.multiHandLandmarks.length; i++) {
+            detectedHands.push({
+                landmarks: results.multiHandLandmarks[i],
+                handedness: results.multiHandedness[i].label,
+                confidence: results.multiHandedness[i].score
+            });
+        }
+    }
+    
+    if (detectedHands.length > 0) processHandTracking();
+    else {
+        handLockActive = false;
+        currentGesture = "NONE";
+        // Si pierdes la mano, soltar el panel suavemente
+        if (panel.grabbed) {
+            panel.grabbed = false;
+        }
+    }
+}
+
+function processHandTracking() {
+    const hand = detectedHands[0];
+    handLockActive = true;
+    const indexTip = hand.landmarks[8];
+    
+    // Invertir X
+    const rawX = hudCanvas.width - (indexTip.x * hudCanvas.width);
+    const rawY = indexTip.y * hudCanvas.height;
+    
+    // Lerp
+    targetPos.x += (rawX - targetPos.x) * CONFIG.handSmoothing;
+    targetPos.y += (rawY - targetPos.y) * CONFIG.handSmoothing;
+    
+    // Velocidad
+    if (previousIndexPos) {
+        const dx = rawX - previousIndexPos.x;
+        const dy = rawY - previousIndexPos.y;
+        velocityMag = Math.sqrt(dx*dx + dy*dy);
+    }
+    previousIndexPos = { x: rawX, y: rawY };
+
+    detectGestures(hand);
+    
+    if (currentGesture === "OPEN_HAND") emitHandScanPoints(hand);
+}
+
+// ============ LÓGICA DE PANEL Y GESTOS ============
+
+function calculateHandAngle(hand) {
+    // Calcula el ángulo de la muñeca (0) al nudillo del índice (5)
+    // Esto da un vector de orientación de la mano
+    const wrist = hand.landmarks[0];
+    const indexMCP = hand.landmarks[5];
+    
+    // Coordenadas pantalla (recuerda espejo en X)
+    const wx = hudCanvas.width - (wrist.x * hudCanvas.width);
+    const wy = wrist.y * hudCanvas.height;
+    const ix = hudCanvas.width - (indexMCP.x * hudCanvas.width);
+    const iy = indexMCP.y * hudCanvas.height;
+    
+    return Math.atan2(iy - wy, ix - wx);
+}
+
+function detectGestures(hand) {
+    const lm = hand.landmarks;
+    const pinchDist = Math.hypot(lm[4].x - lm[8].x, lm[4].y - lm[8].y);
+    
+    if (pinchDist < CONFIG.pinchThreshold) {
+        // --- PINCH DETECTADO ---
+        if (previousGesture !== "PINCH") {
+            // Evento ON PINCH START
+            triggerBurst(lightPos.x, lightPos.y, "cyan", 15);
+            onPinchStart(hand);
+        }
+        currentGesture = "PINCH";
+        
+        // Reset FIST debounce
+        panel.fistDebounceCount = 0;
+        
+        // Lógica Continua de Rotación (Grab & Rotate) - MEJORADO
+        if (panel.grabbed) {
+            const currentAngle = calculateHandAngle(hand);
+            
+            // Unwrap para evitar saltos de -π a π
+            const unwrappedAngle = unwrapAngle(panel.prevRotation || currentAngle, currentAngle);
+            
+            // Delta desde el inicio del agarre
+            let delta = unwrappedAngle - panel.baseHandAngle;
+            
+            // Aplicar rotación con suavizado
+            const targetRot = panel.basePanelRotation + delta;
+            panel.prevRotation = panel.rotation;
+            panel.rotation = lerpAngle(panel.rotation, targetRot, PANEL_CONFIG.rotationSmoothing);
+            
+            // Calcular velocidad angular para inercia (con clamp)
+            let vel = panel.rotation - panel.prevRotation;
+            panel.rotationVel = clamp(vel, -PANEL_CONFIG.maxAngularVel, PANEL_CONFIG.maxAngularVel);
+        }
+
+    } else {
+        // --- PINCH LIBERADO ---
+        if (previousGesture === "PINCH") {
+            onPinchEnd();
+        }
+
+        // Detección OPEN vs FIST con DEBOUNCE
+        const tips = [8, 12, 16, 20];
+        const mcps = [5, 9, 13, 17];
+        let extended = 0, closed = 0;
+        for (let i=0; i<4; i++) {
+            if (Math.abs(lm[tips[i]].y - lm[mcps[i]].y) > CONFIG.openHandThreshold) extended++;
+            if (Math.abs(lm[tips[i]].y - lm[mcps[i]].y) < CONFIG.fistThreshold) closed++;
+        }
+        
+        if (extended >= 3) {
+            currentGesture = "OPEN_HAND";
+            panel.fistDebounceCount = 0;
+        }
+        else if (closed >= 3) {
+            // FIST detectado - aplicar debounce
+            panel.fistDebounceCount++;
+            
+            // Requerir 3 frames consecutivos (aprox 100-150ms a 30fps)
+            if (panel.fistDebounceCount >= 3) {
+                if (previousGesture !== "FIST") {
+                    triggerBurst(lightPos.x, lightPos.y, "red", 25);
+                    onFistClosePanel(); // NUEVA FUNCIÓN
+                }
+                currentGesture = "FIST";
+            } else {
+                currentGesture = "TRACKING";
+            }
+        } else {
+            currentGesture = "TRACKING";
+            panel.fistDebounceCount = 0;
+        }
+    }
+    previousGesture = currentGesture;
+}
+
+function onPinchStart(hand) {
+    // 1. Verificar si el pinch ocurre DENTRO de la caja de tracking (mx-50, my-50, 100, 100)
+    // Usamos lightPos como referencia del cursor
+    const mx = lightPos.x;
+    const my = lightPos.y;
+    
+    // Suponemos que la posición del "Pinch" es lightPos (o targetPos)
+    // Si el panel NO está activo, lo activamos centrado en el pinch
+    if (!panel.active) {
+        panel.active = true;
+        panel.state = 'EXPANDING';
+        panel.center = { x: mx, y: my };
+        panel.progress = 0;
+        panel.rotationVel = 0;
+        panel.pulseTime = 0;
+        
+        // Generar POIs y traces
+        generatePanelPOIs();
+        
+        // Iniciar modo Grab
+        panel.grabbed = true;
+        panel.baseHandAngle = calculateHandAngle(hand);
+        panel.basePanelRotation = panel.rotation;
+        panel.prevRotation = panel.rotation;
+    } 
+    // Si ya está activo, verificamos si estamos cerca del centro para hacer "re-grab"
+    else {
+        const distToCenter = Math.hypot(mx - panel.center.x, my - panel.center.y);
+        if (distToCenter < PANEL_CONFIG.maxRadius * 1.2) {
+            panel.grabbed = true;
+            panel.baseHandAngle = calculateHandAngle(hand);
+            panel.basePanelRotation = panel.rotation;
+            panel.prevRotation = panel.rotation;
+        } else {
+            // Si pinchamos fuera, tal vez queremos cerrar el panel o interactuar con otra cosa
+            // Por ahora, solo interactuar con zonas hot
+            checkHotZones(mx, my);
+        }
+    }
+}
+
+function onPinchEnd() {
+    panel.grabbed = false;
+    // El panel sigue activo, pero ahora obedece a la inercia (updatePanelPhysics)
+}
+
+// Nueva función: Cerrar panel con FIST
+function onFistClosePanel() {
+    if (panel.active && panel.state !== 'COLLAPSING') {
+        panel.state = 'COLLAPSING';
+        panel.grabbed = false;
+        panel.collapseBurst = true;
+        
+        // Burst sutil de cierre
+        const cx = panel.center.x;
+        const cy = panel.center.y;
+        for (let i = 0; i < 20; i++) {
+            const angle = (Math.PI * 2 / 20) * i;
+            const dist = PANEL_CONFIG.maxRadius * 0.8;
+            burstParticles.push({
+                x: cx + Math.cos(angle) * dist,
+                y: cy + Math.sin(angle) * dist,
+                vx: Math.cos(angle) * 2,
+                vy: Math.sin(angle) * 2,
+                life: 1,
+                decay: 0.02,
+                color: "#ff4444",
+                size: 3
+            });
+        }
+    }
+}
+
+function checkHotZones(px, py) {
+    hotZones[1].x = window.innerWidth - 210;
+    hotZones[1].y = window.innerHeight - 200;
+    for (let z of hotZones) {
+        if (px >= z.x && px <= z.x + z.w && py >= z.y && py <= z.y + z.h) {
+            triggerBurst(px, py, "#0f0", 30);
+            if (z.name === "ZONE_A") hudPreset = (hudPreset + 1) % 3;
+            if (z.name === "ZONE_B") scanIntensity = scanIntensity === 1 ? 2.0 : 1;
+            flashZone(z.element);
+        }
+    }
+}
+
+// ============ FÍSICA DEL PANEL (MEJORADO) ============
+function updatePanelPhysics() {
+    if (!panel.active) return;
+
+    // 1. Expansión / Colapso con easing mejorado
+    if (panel.state === 'EXPANDING') {
+        panel.progress += PANEL_CONFIG.expandSpeed;
+        if (panel.progress >= 1) {
+            panel.progress = 1;
+            panel.state = 'ACTIVE';
+            panel.collapseBurst = false;
+        }
+    } else if (panel.state === 'COLLAPSING') {
+        panel.progress -= PANEL_CONFIG.collapseSpeed;
+        if (panel.progress <= 0) {
+            panel.progress = 0;
+            panel.active = false;
+            panel.state = 'IDLE';
+            panel.collapseBurst = false;
+            panel.pois = [];
+            panel.traces = [];
+            panel.dataPulses = [];
+        }
+    }
+
+    // 2. Inercia y Snapping FINO (Solo si no está agarrado)
+    if (!panel.grabbed && panel.state !== 'IDLE') {
+        // Aplicar rotación por inercia
+        panel.rotation += panel.rotationVel;
+        
+        // Fricción adaptativa (rápida cuando velocidad es alta)
+        const abVel = Math.abs(panel.rotationVel);
+        const friction = abVel > 0.05 ? PANEL_CONFIG.frictionFast : PANEL_CONFIG.friction;
+        panel.rotationVel *= friction;
+
+        // Snapping con spring cuando velocidad es baja
+        if (abVel < PANEL_CONFIG.snapThreshold) {
+            const secSize = (Math.PI * 2) / PANEL_CONFIG.sections;
+            let normalizedRot = ((panel.rotation % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
+            
+            // Encontrar sección más cercana
+            const targetIdx = Math.round(normalizedRot / secSize) % PANEL_CONFIG.sections;
+            const targetAngle = targetIdx * secSize;
+            
+            // Spring hacia el target
+            let diff = targetAngle - normalizedRot;
+            // Wrap diff
+            if (diff > Math.PI) diff -= Math.PI * 2;
+            if (diff < -Math.PI) diff += Math.PI * 2;
+            
+            // Aplicar spring
+            panel.rotationVel += diff * PANEL_CONFIG.snapSpring;
+            panel.rotationVel *= PANEL_CONFIG.snapDamping;
+            
+            // Si ya estamos muy cerca, fijar
+            if (Math.abs(diff) < 0.01 && abVel < 0.002) {
+                panel.rotation = targetAngle;
+                panel.rotationVel = 0;
+            }
+        }
+    }
+
+    // 3. Actualizar sección actual con HYSTERESIS
+    const secSize = (Math.PI * 2) / PANEL_CONFIG.sections;
+    let normalizedRot = ((panel.rotation % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
+    panel.rotationPhase = normalizedRot / (Math.PI * 2);
+    
+    // Calcular sección con hysteresis
+    const rawSection = normalizedRot / secSize;
+    const fractional = rawSection - Math.floor(rawSection);
+    
+    // Solo cambiar si pasamos el umbral de hysteresis
+    if (fractional > SECTION_HYSTERESIS || fractional < (1 - SECTION_HYSTERESIS)) {
+        const newSection = Math.floor(rawSection + 0.5) % PANEL_CONFIG.sections;
+        if (newSection !== panel.currentSection) {
+            panel.prevSection = panel.currentSection;
+            panel.currentSection = newSection;
+            // Regenerar POIs al cambiar de sección
+            if (panel.state === 'ACTIVE') {
+                generatePanelPOIs();
+            }
+        }
+    }
+    
+    // 4. Actualizar pulso de tiempo
+    panel.pulseTime += 0.03;
+    
+    // 5. Actualizar data pulses en las trazas
+    updateDataPulses();
+}
+
+// ============ GENERACIÓN DE PANEL DETALLADO ============
+function generatePanelPOIs() {
+    panel.pois = [];
+    const section = panel.sectionsData[panel.currentSection];
+    
+    for (let i = 0; i < PANEL_CONFIG.poiCount; i++) {
+        const angle = (Math.PI * 2 / PANEL_CONFIG.poiCount) * i + hashFloat(section.seed + i) * 0.5;
+        const radiusFactor = 0.5 + hashFloat(section.seed + i + 100) * 0.4;
+        
+        panel.pois.push({
+            angle: angle,
+            radiusFactor: radiusFactor,
+            id: `N${i.toString().padStart(2, '0')}`,
+            label: techWords[Math.floor(hashFloat(section.seed + i + 200) * techWords.length)],
+            value: Math.floor(hashFloat(section.seed + i + 300) * 999),
+            priority: Math.floor(hashFloat(section.seed + i + 400) * 3),
+            blinkPhase: hashFloat(section.seed + i + 500) * Math.PI * 2
+        });
+    }
+    
+    // Generar circuit traces
+    generateCircuitTraces();
+}
+
+function generateCircuitTraces() {
+    panel.traces = [];
+    const section = panel.sectionsData[panel.currentSection];
+    
+    for (let i = 0; i < PANEL_CONFIG.traceCount; i++) {
+        const angle = (Math.PI * 2 / PANEL_CONFIG.traceCount) * i;
+        const r1 = 0.3 + hashFloat(section.seed + i + 600) * 0.2;
+        const r2 = 0.65 + hashFloat(section.seed + i + 700) * 0.2;
+        const bendAngle = angle + (hashFloat(section.seed + i + 800) - 0.5) * 0.3;
+        
+        panel.traces.push({
+            angle: angle,
+            r1: r1,
+            r2: r2,
+            bendAngle: bendAngle,
+            hasPulse: hashFloat(section.seed + i + 900) > 0.6
+        });
+    }
+    
+    // Inicializar data pulses
+    panel.dataPulses = [];
+    for (let trace of panel.traces) {
+        if (trace.hasPulse) {
+            panel.dataPulses.push({
+                traceIndex: panel.traces.indexOf(trace),
+                progress: Math.random(),
+                speed: 0.008 + Math.random() * 0.012
+            });
+        }
+    }
+}
+
+function updateDataPulses() {
+    for (let pulse of panel.dataPulses) {
+        pulse.progress += pulse.speed;
+        if (pulse.progress > 1) {
+            pulse.progress = 0;
+        }
+    }
+}
+
+// ============ EFECTOS VISUALES AVANZADOS ============
+function triggerBurst(x, y, color, count) {
+    for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 5 + 2;
+        burstParticles.push({
+            x: x, y: y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            life: 1.0,
+            decay: 0.03 + Math.random() * 0.02,
+            color: color === "cyan" ? [0, 255, 255] : (color === "red" ? [255, 50, 50] : [0, 255, 100])
+        });
+    }
+}
+
+function updateTrails(x, y) {
+    trails.push({ x, y, life: 1.0 });
+    if (trails.length > MAX_TRAIL_LENGTH) trails.shift();
+    for (let t of trails) t.life -= 0.05;
+}
+
+function initDataStream() {
+    for(let i=0; i<15; i++) {
+        dataStream.push({
+            x: window.innerWidth - 40,
+            y: Math.random() * window.innerHeight,
+            speed: 2 + Math.random() * 3,
+            text: generateHex()
+        });
+    }
+}
+function generateHex() { return "0x" + Math.floor(Math.random()*16777215).toString(16).toUpperCase().substring(0,4); }
+
+// ============ RENDER LOOP ============
+function loop(timestamp) {
+    requestAnimationFrame(loop);
+    globalTime = timestamp;
+
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        if (!handLockActive) {
+            processBrightness(timestamp);
+            lightPos.x += (targetPos.x - lightPos.x) * CONFIG.handSmoothing;
+            lightPos.y += (targetPos.y - lightPos.y) * CONFIG.handSmoothing;
+        } else {
+            lightPos.x = targetPos.x;
+            lightPos.y = targetPos.y;
+        }
+
+        updateTrails(lightPos.x, lightPos.y);
+        updatePanelPhysics();
+
+        // WebGL
+        if (systemActive) {
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
+            gl.uniform1f(gl.getUniformLocation(program, "uTime"), timestamp * 0.001);
+            gl.uniform1f(gl.getUniformLocation(program, "uVelocity"), velocityMag);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        }
+
+        // HUD
+        ctx.clearRect(0, 0, hudCanvas.width, hudCanvas.height);
+        
+        if (systemActive) {
+            drawGrid(timestamp);
+            drawParticles();
+            drawHandVis(); 
+            
+            // NUEVO: Dibujar Panel Radial si está activo
+            if (panel.active || panel.progress > 0.01) {
+                drawRadialPanel(timestamp);
+            }
+            
+            drawHUDOverlay(timestamp);
+        }
+    }
+}
+
+// ============ DIBUJO DEL PANEL RADIAL (NUEVO) ============
+// ============ DIBUJO DEL PANEL RADIAL (ULTRA MEJORADO V5.0) ============
+function drawRadialPanel(time) {
+    if (panel.progress <= 0) return;
+    
+    const cx = panel.center.x;
+    const cy = panel.center.y;
+    
+    // Easing mejorado (sin bounce excesivo)
+    const easedProgress = panel.state === 'COLLAPSING' ? 
+        easeInExpo(panel.progress) : 
+        easeOutExpo(panel.progress);
+    
+    const r = PANEL_CONFIG.maxRadius * easedProgress;
+    const alpha = easedProgress;
+    const section = panel.sectionsData[panel.currentSection];
+    
+    // Alphas por capa para stagger en colapso
+    const tracesAlpha = panel.state === 'COLLAPSING' ? 
+        smoothstep(0.8, 0.2, panel.progress) : alpha;
+    const ringAlpha = panel.state === 'COLLAPSING' ?
+        smoothstep(1.0, 0.0, panel.progress) : alpha;
+    
+    ctx.save();
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    
+    // ====== CAPA 1: CIRCUIT TRACES ======
+    if (panel.traces.length > 0 && tracesAlpha > 0.05) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(panel.rotation);
+        
+        for (let trace of panel.traces) {
+            const r1 = r * trace.r1;
+            const r2 = r * trace.r2;
+            const x1 = Math.cos(trace.angle) * r1;
+            const y1 = Math.sin(trace.angle) * r1;
+            const x2 = Math.cos(trace.angle) * r2;
+            const y2 = Math.sin(trace.angle) * r2;
+            
+            // Punto de bend (90 grados)
+            const xBend = Math.cos(trace.bendAngle) * ((r1 + r2) / 2);
+            const yBend = Math.sin(trace.bendAngle) * ((r1 + r2) / 2);
+            
+            ctx.strokeStyle = `rgba(0, 255, 170, ${tracesAlpha * 0.2})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(xBend, y1);
+            ctx.lineTo(xBend, y2);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+            
+            // Data pulse en la traza
+            const pulseIdx = panel.dataPulses.findIndex(p => p.traceIndex === panel.traces.indexOf(trace));
+            if (pulseIdx !== -1 && tracesAlpha > 0.3) {
+                const pulse = panel.dataPulses[pulseIdx];
+                let px, py;
+                if (pulse.progress < 0.33) {
+                    const t = pulse.progress / 0.33;
+                    px = x1 + (xBend - x1) * t;
+                    py = y1;
+                } else if (pulse.progress < 0.66) {
+                    const t = (pulse.progress - 0.33) / 0.33;
+                    px = xBend;
+                    py = y1 + (y2 - y1) * t;
+                } else {
+                    const t = (pulse.progress - 0.66) / 0.34;
+                    px = xBend + (x2 - xBend) * t;
+                    py = y2;
+                }
+                
+                ctx.fillStyle = `rgba(0, 255, 255, ${tracesAlpha})`;
+                ctx.beginPath();
+                ctx.arc(px, py, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        ctx.restore();
+    }
+    
+    // ====== CAPA 2: ANILLOS BASE ======
+    ctx.lineWidth = PANEL_CONFIG.ringThickness;
+    
+    // Anillo exterior
+    ctx.strokeStyle = `rgba(0, 255, 170, ${ringAlpha * 0.7})`;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    // Anillo intermedio con pulso
+    const pulseScale = 1 + Math.sin(panel.pulseTime) * 0.03;
+    ctx.strokeStyle = `rgba(0, 255, 170, ${ringAlpha * 0.4})`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 0.7 * pulseScale, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    // Anillo interior
+    ctx.strokeStyle = `rgba(0, 255, 170, ${ringAlpha * 0.25})`;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 0.4, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    // ====== CAPA 3: TICKS Y DIVISIONES ======
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(panel.rotation);
+    
+    const secSize = (Math.PI * 2) / PANEL_CONFIG.sections;
+    for (let i = 0; i < PANEL_CONFIG.sections; i++) {
+        const ang = i * secSize;
+        const isCurrent = (i === panel.currentSection);
+        
+        // Ticks con jitter sutil
+        const jitter = Math.sin(time * 0.001 + i) * 1;
+        const x1 = Math.cos(ang) * (r - 12 + jitter);
+        const y1 = Math.sin(ang) * (r - 12 + jitter);
+        const x2 = Math.cos(ang) * (r + 6);
+        const y2 = Math.sin(ang) * (r + 6);
+        
+        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * (isCurrent ? 0.9 : 0.3)})`;
+        ctx.lineWidth = isCurrent ? 2 : 1;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        
+        // Nodos en los ticks
+        if (isCurrent) {
+            ctx.fillStyle = section.color;
+            ctx.beginPath();
+            ctx.arc(x2, y2, 4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Glow
+            ctx.globalCompositeOperation = "lighter";
+            ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.5})`;
+            ctx.beginPath();
+            ctx.arc(x2, y2, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalCompositeOperation = "source-over";
+        }
+    }
+    
+    ctx.restore();
+    
+    // ====== CAPA 4: POIs (NODOS) ======
+    if (panel.pois.length > 0 && alpha > 0.5) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(panel.rotation);
+        
+        for (let poi of panel.pois) {
+            const px = Math.cos(poi.angle) * (r * poi.radiusFactor);
+            const py = Math.sin(poi.angle) * (r * poi.radiusFactor);
+            
+            // Blink phase
+            const blinkAlpha = 0.7 + Math.sin(panel.pulseTime + poi.blinkPhase) * 0.3;
+            
+            // Nodo principal
+            ctx.fillStyle = `rgba(0, 255, 170, ${alpha * blinkAlpha})`;
+            ctx.beginPath();
+            ctx.arc(px, py, 4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Cross
+            ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.6})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(px - 6, py);
+            ctx.lineTo(px + 6, py);
+            ctx.moveTo(px, py - 6);
+            ctx.lineTo(px, py + 6);
+            ctx.stroke();
+            
+            // Anillo exterior
+            ctx.strokeStyle = `rgba(0, 255, 170, ${alpha * 0.4})`;
+            ctx.beginPath();
+            ctx.arc(px, py, 8, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Label (contra-rotado)
+            ctx.save();
+            ctx.translate(px, py);
+            ctx.rotate(-panel.rotation);
+            ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.8})`;
+            ctx.font = "8px Courier New";
+            ctx.textAlign = "center";
+            ctx.fillText(poi.id, 0, -12);
+            ctx.restore();
+            
+            // Hover detection
+            const worldX = cx + Math.cos(poi.angle + panel.rotation) * (r * poi.radiusFactor);
+            const worldY = cy + Math.sin(poi.angle + panel.rotation) * (r * poi.radiusFactor);
+            const distToCursor = Math.hypot(lightPos.x - worldX, lightPos.y - worldY);
+            
+            if (distToCursor < 25 && alpha > 0.9) {
+                // Highlight
+                ctx.strokeStyle = `rgba(255, 255, 0, ${alpha * 0.9})`;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(px, py, 12, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // Tooltip (en coordenadas globales)
+                ctx.save();
+                ctx.translate(px, py);
+                ctx.rotate(-panel.rotation);
+                drawPOITooltip(poi, alpha, 0, 0);
+                ctx.restore();
+            }
+        }
+        
+        ctx.restore();
+    }
+    
+    // ====== CAPA 5: CENTRO Y DATOS ======
+    if (alpha > 0.7) {
+        ctx.fillStyle = section.color;
+        ctx.font = "bold 14px 'Courier New'";
+        ctx.textAlign = "center";
+        ctx.fillText(section.label, cx, cy - 5);
+        
+        // Valores vivos basados en rotationPhase
+        const liveValue = Math.floor(section.baseValue + Math.sin(panel.rotationPhase * Math.PI * 4 + section.seed) * 30);
+        ctx.font = "11px 'Courier New'";
+        ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.9})`;
+        ctx.fillText(`VAL: ${liveValue}`, cx, cy + 10);
+        ctx.fillText(section.id, cx, cy + 24);
+        
+        // Microtexto estable (usando hash)
+        ctx.font = "8px 'Courier New'";
+        ctx.fillStyle = `rgba(0, 255, 170, ${alpha * 0.6})`;
+        const microText = `SIG:${Math.floor(hashFloat(section.seed + 1000) * 100)}`;
+        ctx.fillText(microText, cx, cy + 36);
+    }
+    
+    // ====== CAPA 6: INDICADOR DE GRAB ======
+    if (panel.grabbed && alpha > 0.9) {
+        ctx.strokeStyle = `rgba(255, 255, 0, ${alpha * 0.7})`;
+        ctx.lineWidth = 3;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.arc(cx, cy, r + 18, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        ctx.fillStyle = `rgba(255, 255, 0, ${alpha * 0.9})`;
+        ctx.font = "11px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("⟳ ROTATE ACTIVE", cx, cy + r + 42);
+    }
+    
+    // ====== CAPA 7: SELECTOR ESTÁTICO (no rota) ======
+    if (alpha > 0.9 && !panel.grabbed) {
+        // Línea desde arriba apuntando al sector activo
+        const selectorAngle = -Math.PI / 2; // Apunta arriba
+        const sx = cx + Math.cos(selectorAngle) * (r + 25);
+        const sy = cy + Math.sin(selectorAngle) * (r + 25);
+        
+        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.6})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - r - 15);
+        ctx.lineTo(cx, cy - r - 30);
+        ctx.stroke();
+        
+        // Triángulo
+        ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.8})`;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - r - 12);
+        ctx.lineTo(cx - 5, cy - r - 18);
+        ctx.lineTo(cx + 5, cy - r - 18);
+        ctx.closePath();
+        ctx.fill();
+    }
+    
+    // ====== CAPA 8: CONEXIÓN AL CURSOR ======
+    if (!panel.grabbed && panel.progress >= 1 && alpha > 0.8) {
+        const distToCursor = Math.hypot(lightPos.x - cx, lightPos.y - cy);
+        if (distToCursor > 40 && distToCursor < 400) {
+            ctx.strokeStyle = `rgba(0, 255, 170, ${alpha * 0.15})`;
+            ctx.lineWidth = 1;
+            ctx.setLineDash([3, 6]);
+            ctx.beginPath();
+            ctx.moveTo(lightPos.x, lightPos.y);
+            ctx.lineTo(cx, cy);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+    }
+    
+    ctx.restore();
+}
+
+function drawPOITooltip(poi, alpha, offsetX, offsetY) {
+    const w = 140;
+    const h = 50;
+    const x = offsetX + 20;
+    const y = offsetY - h / 2;
+    
+    // Fondo
+    ctx.fillStyle = `rgba(0, 0, 0, ${alpha * 0.85})`;
+    ctx.fillRect(x, y, w, h);
+    
+    // Borde
+    ctx.strokeStyle = `rgba(0, 255, 170, ${alpha * 0.9})`;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x, y, w, h);
+    
+    // Contenido
+    ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+    ctx.font = "bold 10px 'Courier New'";
+    ctx.textAlign = "left";
+    ctx.fillText(`${poi.id} - ${poi.label}`, x + 6, y + 15);
+    
+    ctx.font = "9px 'Courier New'";
+    ctx.fillStyle = `rgba(0, 255, 170, ${alpha * 0.9})`;
+    ctx.fillText(`VALUE: ${poi.value}`, x + 6, y + 28);
+    ctx.fillText(`PRIORITY: ${poi.priority}`, x + 6, y + 40);
+}
+
+// ============ FUNCIONES DE DIBUJO (EXISTENTES) ============
+
+function drawGrid(time) {
+    ctx.strokeStyle = "rgba(0, 255, 100, 0.1)";
+    ctx.lineWidth = 1;
+    const paraX = (lightPos.x - hudCanvas.width/2) * 0.1;
+    const paraY = (lightPos.y - hudCanvas.height/2) * 0.1;
+    const gridSize = 100;
+    const cols = Math.ceil(hudCanvas.width / gridSize) + 2;
+    const rows = Math.ceil(hudCanvas.height / gridSize) + 2;
+    for(let i=0; i<cols; i++) {
+        const x = (i * gridSize + (time*0.02) % gridSize) - 50 - paraX;
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, hudCanvas.height); ctx.stroke();
+    }
+    for(let i=0; i<rows; i++) {
+        const y = (i * gridSize + (time*0.02) % gridSize) - 50 - paraY;
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(hudCanvas.width, y); ctx.stroke();
+    }
+}
+
+function drawHandVis() {
+    // Si el panel está activo y expandido, ocultamos el crosshair complejo para no saturar
+    if (panel.active && panel.progress > 0.8) return;
+
+    ctx.beginPath();
+    if(trails.length > 1) {
+        ctx.moveTo(trails[0].x, trails[0].y);
+        for(let i=1; i<trails.length; i++) ctx.lineTo(trails[i].x, trails[i].y);
+        ctx.strokeStyle = "rgba(0, 255, 200, 0.3)";
+        ctx.lineWidth = 4;
+        ctx.lineJoin = "round";
+        ctx.stroke();
+    }
+    if (handLockActive && detectedHands.length > 0) drawSkeleton(detectedHands[0]);
+
+    const mx = lightPos.x; const my = lightPos.y;
+    const time = globalTime * 0.002;
+    ctx.strokeStyle = handLockActive ? "#00ffaa" : "#ffffff";
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = handLockActive ? "#00ffaa" : "#ffffff";
+    ctx.beginPath(); ctx.arc(mx, my, 25, time * 2, time * 2 + Math.PI); ctx.lineWidth = 2; ctx.stroke();
+    ctx.beginPath(); ctx.arc(mx, my, 35, -time, -time + Math.PI * 1.5); ctx.lineWidth = 1; ctx.strokeStyle = "rgba(255,255,255,0.5)"; ctx.stroke();
+    ctx.fillStyle = handLockActive ? "#0f0" : "#fff";
+    ctx.beginPath(); ctx.arc(mx, my, 3, 0, Math.PI*2); ctx.fill();
+    ctx.shadowBlur = 0;
+    
+    // Caja de tracking (Original) - Solo visible si no hay panel
+    if (!panel.active) {
+        ctx.strokeStyle = "rgba(0, 255, 100, 0.3)";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(mx - 50, my - 50, 100, 100);
+    }
+}
+
+function drawParticles() {
+    for (let i = burstParticles.length - 1; i >= 0; i--) {
+        let p = burstParticles[i];
+        p.x += p.vx; p.y += p.vy; p.life -= p.decay;
+        if (p.life <= 0) { burstParticles.splice(i, 1); continue; }
+        ctx.fillStyle = `rgba(${p.color[0]}, ${p.color[1]}, ${p.color[2]}, ${p.life})`;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 2 * p.life, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.lineWidth = 0.5;
+    for (let i = scanPoints.length - 1; i >= 0; i--) {
+        let p = scanPoints[i];
+        p.life -= p.decay;
+        if (p.life <= 0) { scanPoints.splice(i, 1); continue; }
+        const alpha = p.life * scanIntensity;
+        ctx.fillStyle = `rgba(200, 255, 255, ${alpha})`;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI * 2); ctx.fill();
+        const connectDist = hudPreset === 1 ? 150 : 80;
+        for (let j = i - 1; j >= 0; j--) {
+            let p2 = scanPoints[j];
+            let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+            if (dist < connectDist) {
+                ctx.strokeStyle = `rgba(200, 255, 255, ${alpha * 0.3})`;
+                ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+            }
+        }
+    }
+}
+
+function drawHUDOverlay(time) {
+    ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+    ctx.font = "12px 'Courier New'";
+    ctx.textAlign = "left";
+    dataStream.forEach(d => {
+        d.y += d.speed;
+        if(d.y > hudCanvas.height) { d.y = 0; d.text = generateHex(); }
+        if(Math.random() > 0.95) d.text = generateHex();
+        ctx.fillStyle = `rgba(0, 255, 100, ${Math.random() * 0.5 + 0.2})`;
+        ctx.fillText(d.text, d.x, d.y);
+    });
+
+    const mx = lightPos.x; const my = lightPos.y;
+    // Ocultar info flotante si el panel está encima
+    if (!panel.active) {
+        const infoX = mx + 50;
+        ctx.fillStyle = "white";
+        ctx.fillText(`TRK_ID: ${handLockActive ? "HAND_01" : "LUM_SRC"}`, infoX, my);
+        ctx.fillText(`VEL: ${velocityMag.toFixed(2)} m/s`, infoX, my + 15);
+        if (handLockActive) {
+            ctx.fillStyle = currentGesture === "PINCH" ? "#0ff" : (currentGesture === "FIST" ? "#f00" : "#0f0");
+            ctx.fillText(`GST: ${currentGesture}`, infoX, my + 30);
+        }
+    }
+    drawCornerUI();
+    updateHotZoneIndicators();
+}
+
+function drawCornerUI() {
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(20, 100); ctx.lineTo(20, 20); ctx.lineTo(100, 20); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(hudCanvas.width-20, hudCanvas.height-100); ctx.lineTo(hudCanvas.width-20, hudCanvas.height-20); ctx.lineTo(hudCanvas.width-100, hudCanvas.height-20); ctx.stroke();
+}
+
+function drawSkeleton(hand) {
+    const lm = hand.landmarks;
+    const connections = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[0,9],[9,10],[10,11],[11,12],[0,13],[13,14],[14,15],[15,16],[0,17],[17,18],[18,19],[19,20],[5,9],[9,13],[13,17]];
+    ctx.strokeStyle = "rgba(0, 255, 200, 0.3)";
+    ctx.lineWidth = 1;
+    for(let c of connections) {
+        const p1 = lm[c[0]], p2 = lm[c[1]];
+        ctx.beginPath(); ctx.moveTo(hudCanvas.width - p1.x*hudCanvas.width, p1.y*hudCanvas.height); ctx.lineTo(hudCanvas.width - p2.x*hudCanvas.width, p2.y*hudCanvas.height); ctx.stroke();
+    }
+    for(let p of lm) {
+        const x = hudCanvas.width - p.x*hudCanvas.width; const y = p.y*hudCanvas.height;
+        ctx.fillStyle = "rgba(0, 255, 200, 0.5)"; ctx.beginPath(); ctx.arc(x, y, 2, 0, Math.PI*2); ctx.fill();
+    }
+}
+
+function processBrightness() {
+    hCtx.drawImage(video, 0, 0, 80, 60);
+    const data = hCtx.getImageData(0,0,80,60).data;
+    let sx=0, sy=0, count=0;
+    for(let i=0; i<data.length; i+=4) {
+        const val = (data[i]+data[i+1]+data[i+2])/3;
+        if(val > CONFIG.scanThreshold) {
+            const idx = i/4; const x = idx%80; const y = Math.floor(idx/80);
+            if(val > CONFIG.scanThreshold + 30) { sx += x; sy += y; count++; }
+            if(Math.random() > CONFIG.scanEmissionRate) addScanPoint(hudCanvas.width - (x/80)*hudCanvas.width, (y/60)*hudCanvas.height);
+        }
+    }
+    if(count>0) { targetPos.x = hudCanvas.width - (sx/count/80)*hudCanvas.width; targetPos.y = (sy/count/60)*hudCanvas.height; }
+}
+
+function emitHandScanPoints(hand) {
+    const indices = [0, 4, 8, 12, 16, 20];
+    for(let i of indices) {
+        if(Math.random() > 0.9) {
+            const p = hand.landmarks[i];
+            addScanPoint(hudCanvas.width - p.x*hudCanvas.width, p.y*hudCanvas.height);
+        }
+    }
+}
+
+function addScanPoint(x, y) {
+    if(scanPoints.length >= CONFIG.maxScanPoints * scanIntensity) scanPoints.shift();
+    scanPoints.push({ x, y, life: 1.0, decay: 0.01 + Math.random()*0.02 });
+}
+
+function updateHotZoneIndicators() {
+    const px = lightPos.x, py = lightPos.y;
+    for(let z of hotZones) {
+        const hit = px>=z.x && px<=z.x+z.w && py>=z.y && py<=z.y+z.h;
+        z.element.style.borderColor = hit ? "rgba(0,255,100,0.8)" : "rgba(0,255,100,0.2)";
+        z.element.style.background = hit ? "rgba(0,255,100,0.1)" : "rgba(0,255,100,0.02)";
+    }
+}
+
+function flashZone(el) {
+    el.style.backgroundColor = "rgba(0, 255, 100, 0.3)";
+    setTimeout(() => el.style.backgroundColor = "rgba(0, 255, 100, 0.02)", 200);
+}
+
+function toggleSystem() {
+    systemActive = !systemActive;
+    statusDiv.classList.toggle('active-status');
+    if(systemActive) {
+        glCanvas.classList.add('active'); hudCanvas.classList.add('active');
+        statusDiv.innerText = "SYSTEM ONLINE // NEURAL HANDSHAKE ESTABLISHED";
+    } else {
+        glCanvas.classList.remove('active'); hudCanvas.classList.remove('active');
+        statusDiv.innerText = "SYSTEM OFFLINE // AWAITING INPUT [PRESS N]";
+    }
+}
+
+function initWebGL() {
+    gl = glCanvas.getContext('webgl');
+    const vsS = document.getElementById('vs').textContent;
+    const fsS = document.getElementById('fs').textContent;
+    const vs = createShader(gl, gl.VERTEX_SHADER, vsS);
+    const fs = createShader(gl, gl.FRAGMENT_SHADER, fsS);
+    program = createProgram(gl, vs, fs);
+    gl.useProgram(program);
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(program, "position");
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+}
+function createShader(gl,t,s){const h=gl.createShader(t);gl.shaderSource(h,s);gl.compileShader(h);return h;}
+function createProgram(gl,v,f){const p=gl.createProgram();gl.attachShader(p,v);gl.attachShader(p,f);gl.linkProgram(p);return p;}
+
+const lerpFactor = 0.2; 
+init();
+
+</script>
+</body>
+</html>
