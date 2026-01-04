@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0" />
+  <title>Portafolio Profesional | Jose Armando</title>
+  <meta name="description" content="Showcase profesional de certificaciones en Desarrollo Full Stack, Ciberseguridad e IA." />
+  
+  <style>
+    :root {
+      /* Colores */
+      --bg-deep: #050505;
+      --accent: #64ffda;
+      --accent-secondary: #bd34fe;
+      --text-main: #e6f1ff;
+      --text-muted: #8892b0;
+      
+      /* Superficies (Glassmorphism) */
+      --glass-panel: rgba(10, 15, 30, 0.75);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --glass-highlight: rgba(255, 255, 255, 0.05);
+      
+      /* Layout */
+      --container-width: 1400px;
+      --header-height: 80px;
+      --radius: 12px;
+    }
+
+    /* === BASE === */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      background-color: var(--bg-deep);
+      color: var(--text-main);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* Bloqueo de scroll cuando el modal está abierto */
+    body.locked { overflow: hidden; }
+
+    /* === FONDO WEBGL === */
+    #canvas-bg {
+      position: fixed;
+      inset: 0;
+      width: 100%; height: 100%;
+      z-index: -1;
+    }
+    .grain {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.05;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+    }
+
+    /* === HEADER === */
+    header {
+      position: fixed;
+      top: 0; width: 100%;
+      height: var(--header-height);
+      z-index: 50;
+      background: rgba(5, 5, 5, 0.6);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .nav {
+      width: 90%; max-width: var(--container-width);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+
+    .brand {
+      font-weight: 800; font-size: 1.2rem; letter-spacing: -0.5px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .brand span { color: var(--accent); }
+
+    /* === GRID GALERÍA === */
+    main {
+      padding: calc(var(--header-height) + 40px) 5% 80px;
+      max-width: var(--container-width);
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+      transition: opacity 0.5s ease, filter 0.5s ease;
+    }
+    
+    /* Cuando el viewer está activo, el fondo se desenfoca */
+    main.blurred {
+      filter: blur(8px) brightness(0.5);
+      pointer-events: none;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 30px;
+    }
+
+    .card {
+      background: var(--glass-panel);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.3s;
+      aspect-ratio: 4/3;
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+      border-color: var(--accent);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+    }
+
+    .card img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+      filter: grayscale(20%);
+    }
+    .card:hover img { transform: scale(1.05); filter: grayscale(0%); }
+
+    .card-meta {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 15px;
+      background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+    }
+    .card:hover .card-meta { transform: translateY(0); }
+    
+    /* En móvil siempre visible */
+    @media (hover: none) {
+      .card-meta { transform: translateY(0); }
+    }
+
+    .card-title {
+      font-size: 0.9rem; font-weight: 600; color: #fff;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    /* === VIEWER (EL NUEVO MODAL PRO) === */
+    .viewer {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none; /* Controlado por JS */
+      opacity: 0;
+      background: rgba(0,0,0,0.4); /* Fondo semi-transparente */
+    }
+    
+    .viewer.active { display: flex; opacity: 1; }
+
+    /* Contenedor Flotante Central */
+    .viewer-content {
+      position: absolute;
+      inset: 40px; /* Margen global */
+      background: rgba(12, 18, 32, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      box-shadow: 0 50px 100px rgba(0,0,0,0.8);
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr; /* Layout: Imagen grande | Info */
+      overflow: hidden;
+    }
+
+    /* Columna Izquierda: Imagen */
+    .view-left {
+      position: relative;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      overflow: hidden;
+    }
+    
+    .view-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      opacity: 0; /* Animado */
+      transform: scale(0.9);
+    }
+
+    /* Columna Derecha: Información */
+    .view-right {
+      padding: 50px;
+      overflow-y: auto;
+      border-left: 1px solid var(--glass-border);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      opacity: 0;
+      transform: translateX(30px);
+    }
+
+    .v-chip {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 50px;
+      background: rgba(100, 255, 218, 0.1);
+      color: var(--accent);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      align-self: flex-start;
+    }
+
+    .v-title {
+      font-size: 2.2rem;
+      line-height: 1.1;
+      font-weight: 700;
+      background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .v-desc {
+      color: var(--text-muted);
+      line-height: 1.7;
+      font-size: 1.05rem;
+    }
+
+    .v-meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--glass-border);
+    }
+    .meta-item h4 { color: var(--text-main); font-size: 0.9rem; margin-bottom: 5px; }
+    .meta-item p { color: var(--text-muted); font-size: 0.9rem; }
+
+    .v-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .tag {
+      padding: 4px 10px;
+      border: 1px solid var(--glass-border);
+      border-radius: 4px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Botón Cerrar */
+    .close-btn {
+      position: absolute;
+      top: 20px; right: 20px;
+      z-index: 10;
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid var(--glass-border);
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .close-btn:hover { background: var(--accent); color: #000; }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 968px) {
+      .viewer-content {
+        inset: 0; /* Pantalla completa en tablets/móvil */
+        border-radius: 0;
+        grid-template-columns: 1fr; /* Una columna */
+        grid-template-rows: 45vh 1fr; /* Imagen arriba, texto abajo */
+      }
+      
+      .view-left { padding: 20px; background: rgba(0,0,0,0.3); }
+      .view-right { padding: 30px 20px 80px; /* Padding bottom extra para scroll */ border-left: none; border-top: 1px solid var(--glass-border); }
+      .v-title { font-size: 1.5rem; }
+      .close-btn { top: 15px; right: 15px; background: rgba(0,0,0,0.5); }
+    }
+
+    @media (max-width: 480px) {
+      main { padding-left: 20px; padding-right: 20px; }
+      .card-meta { transform: translateY(0); padding: 10px; }
+      .viewer-content { grid-template-rows: 35vh 1fr; }
+    }
+
+    /* === OPTIMIZACIÓN MÓVIL (max-width: 768px) === */
+    @media (max-width: 768px) {
+      /* 1. REDUCCIÓN DE PADDING LATERAL: Gana espacio horizontal */
+      main {
+        padding-left: 15px;
+        padding-right: 15px;
+      }
+
+      /* 2. GRID COMPACTO: 2 columnas con tarjetas más pequeñas */
+      .gallery-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px; /* Gap reducido para aprovechar mejor el espacio */
+      }
+
+      /* 3. ASPECT RATIO COMPACTO: Reduce altura de las tarjetas */
+      .card {
+        aspect-ratio: 16/10; /* Más compacto que 4/3, evita scroll excesivo */
+        border-radius: 8px; /* Bordes más pequeños en móvil */
+      }
+
+      /* 4. OPTIMIZACIÓN DE IMÁGENES: Mejor rendimiento visual */
+      .card img {
+        filter: grayscale(10%); /* Menos filtro para mejor visibilidad en pantallas pequeñas */
+      }
+
+      /* 5. META DE TARJETAS: Texto más compacto y siempre visible */
+      .card-meta {
+        padding: 8px 10px;
+        background: linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.4));
+      }
+
+      .card-title {
+        font-size: clamp(0.75rem, 2.5vw, 0.85rem); /* Tipografía responsive */
+        font-weight: 500;
+      }
+
+      /* 6. VIEWER OPTIMIZADO: Pantalla completa sin bordes */
+      .viewer-content {
+        inset: 0; /* 100% del viewport */
+        border-radius: 0; /* Sin bordes redondeados */
+        grid-template-columns: 1fr; /* Layout vertical */
+        grid-template-rows: minmax(40vh, auto) 1fr; /* Imagen arriba, texto abajo con scroll fluido */
+        border: none; /* Sin borde para aprovechar todo el espacio */
+      }
+
+      /* 7. COLUMNA IZQUIERDA (IMAGEN): Optimizada para móvil */
+      .view-left {
+        padding: 15px;
+        background: rgba(0, 0, 0, 0.4);
+        min-height: 40vh; /* Altura mínima garantizada */
+        max-height: 50vh; /* Evita que ocupe toda la pantalla */
+      }
+
+      .view-img {
+        max-height: 100%;
+        width: auto;
+      }
+
+      /* 8. COLUMNA DERECHA (TEXTO): Scroll vertical fluido */
+      .view-right {
+        padding: 20px 15px 30px;
+        border-left: none;
+        border-top: 1px solid var(--glass-border);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
+      }
+
+      /* 9. TIPOGRAFÍA RESPONSIVE: Tamaños ajustados con clamp */
+      .v-chip {
+        font-size: clamp(0.7rem, 2vw, 0.75rem);
+        padding: 5px 10px;
+      }
+
+      .v-title {
+        font-size: clamp(1.3rem, 5vw, 1.6rem); /* Escala entre 1.3rem y 1.6rem */
+        line-height: 1.2;
+        margin-bottom: 8px;
+      }
+
+      .v-desc {
+        font-size: clamp(0.9rem, 3vw, 1rem);
+        line-height: 1.6;
+        margin-bottom: 12px;
+      }
+
+      /* 10. META GRID: Una columna en móvil para mejor legibilidad */
+      .v-meta-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        margin-top: 15px;
+        padding-top: 15px;
+      }
+
+      .meta-item h4 {
+        font-size: clamp(0.85rem, 2.5vw, 0.9rem);
+      }
+
+      .meta-item p {
+        font-size: clamp(0.8rem, 2.5vw, 0.85rem);
+      }
+
+      /* 11. TAGS: Más compactos */
+      .tag {
+        font-size: clamp(0.7rem, 2vw, 0.75rem);
+        padding: 3px 8px;
+      }
+
+      /* 12. BOTÓN DE CIERRE: Más accesible y visible */
+      .close-btn {
+        position: fixed; /* Fixed para que siempre esté visible */
+        top: 10px;
+        right: 10px;
+        width: 40px;
+        height: 40px;
+        background: rgba(0, 0, 0, 0.7);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        font-size: 22px;
+        z-index: 101; /* Por encima del viewer-content */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      }
+
+      .close-btn:active {
+        transform: scale(0.95); /* Feedback táctil */
+        background: var(--accent);
+      }
+
+      /* 13. HEADER: Ajuste de altura en móvil */
+      header {
+        height: 60px;
+      }
+
+      .brand {
+        font-size: clamp(0.9rem, 3vw, 1rem);
+      }
+
+      /* 14. MAIN PADDING TOP: Ajuste por header más pequeño */
+      main {
+        padding-top: calc(60px + 20px);
+        padding-bottom: 40px;
+      }
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- WebGL Canvas -->
+  <canvas id="canvas-bg"></canvas>
+  <div class="grain"></div>
+
+  <header>
+    <div class="nav">
+      <div class="brand"><span>//</span> JOSE ARMANDO</div>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <div class="gallery-grid" id="grid">
+      <!-- Cards generadas por JS -->
+    </div>
+  </main>
+
+  <!-- Viewer Profesional -->
+  <div class="viewer" id="viewer" role="dialog" aria-hidden="true">
+    <div class="viewer-content">
+      <button class="close-btn" id="close-btn">&times;</button>
+      
+      <div class="view-left">
+        <img src="" class="view-img" id="v-img" alt="Certificado Full">
+      </div>
+      
+      <div class="view-right">
+        <span class="v-chip">Certificación Oficial</span>
+        <h2 class="v-title" id="v-title">Titulo del Certificado</h2>
+        <p class="v-desc" id="v-desc">
+          Descripción detallada generada dinámicamente sobre lo que representa este certificado.
+        </p>
+        
+        <div class="v-meta-grid">
+          <div class="meta-item">
+            <h4>Plataforma / Institución</h4>
+            <p id="v-org">Coursera / Google / IBM</p>
+          </div>
+          <div class="meta-item">
+            <h4>Fecha de Emisión</h4>
+            <p id="v-date">2024 - 2025</p>
+          </div>
+        </div>
+
+        <div class="meta-item" style="margin-top:20px;">
+          <h4>Habilidades Adquiridas</h4>
+          <div class="v-tags" id="v-tags">
+            <!-- Tags generados -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Librerías de Animación -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <script>
+    // --- CONFIG ---
+    const GITHUB_USER = "1inmortal";
+    const REPO_NAME = "githubpagetest";
+    const BASE_URL = `https://${GITHUB_USER}.github.io/${REPO_NAME}/src/assets/img/Certificados/`;
+    
+    const FILES = [
+      "Defensa de la red.jpeg", "Foundations of Cybersecurity.jpg", "Full Stack Software Developer Assessment.jpg",
+      "Generative Al_ Elevate your Software Development Career.jpg", "Getting Started with Git and GitHub.jpg",
+      "Introduction to HTML, CSS, & JavaScript.jpg", "Introduction to Modern Al.jpeg",
+      "Introduction to Software Engineering.jpg", "Play It Safe_ Manage Security Risks.jpg",
+      "Python for Data Science, Al & Development.jpg", "marketing.jpg"
+    ];
+
+    // --- GENERADOR DE INFORMACIÓN (Simula una base de datos) ---
+    function getCertInfo(filename) {
+      const clean = filename.replace(/\.(jpeg|jpg|png|webp)/i, "").replace(/_/g, " ");
+      let desc = "Este curso cubre fundamentos esenciales y prácticas avanzadas en la materia, validando competencias técnicas clave para el entorno profesional actual.";
+      let skills = ["Technology", "Learning", "Development"];
+      let org = "Online Certification";
+
+      // Lógica simple para personalizar según palabras clave
+      if(clean.includes("Cyber") || clean.includes("Security") || clean.includes("Safe") || clean.includes("Defensa")) {
+        desc = "Formación especializada en ciberseguridad, abarcando gestión de riesgos, defensa de redes y protocolos de seguridad informática para proteger infraestructuras críticas.";
+        skills = ["Network Security", "Risk Management", "InfoSec", "Threat Analysis"];
+        org = "Google / Coursera";
+      } else if(clean.includes("Full Stack") || clean.includes("HTML") || clean.includes("Software")) {
+        desc = "Certificación integral en desarrollo de software, cubriendo desde frontend (HTML, CSS, JS) hasta arquitecturas de backend y principios de ingeniería de software.";
+        skills = ["React", "Node.js", "Web Architecture", "Frontend", "Backend"];
+        org = "IBM / Meta";
+      } else if(clean.includes("Al") || clean.includes("Python") || clean.includes("Generative")) {
+        desc = "Inmersión en Inteligencia Artificial y Ciencia de Datos. Incluye entrenamiento de modelos, uso de Python para análisis de datos y aplicación de IA Generativa.";
+        skills = ["Python", "Machine Learning", "Data Science", "GenAI", "LLMs"];
+        org = "IBM / DeepLearning.AI";
+      } else if(clean.includes("Git")) {
+        desc = "Dominio de control de versiones y colaboración en desarrollo de software utilizando Git y GitHub, fundamental para flujos de trabajo DevOps.";
+        skills = ["Git", "GitHub", "Version Control", "CI/CD"];
+      }
+
+      return { title: clean, desc, skills, org };
+    }
+
+    // --- DOM ---
+    const grid = document.getElementById('grid');
+    const mainContent = document.getElementById('main-content');
+    const viewer = document.getElementById('viewer');
+    const closeBtn = document.getElementById('close-btn');
+    
+    // Elementos del Viewer
+    const vImg = document.getElementById('v-img');
+    const vTitle = document.getElementById('v-title');
+    const vDesc = document.getElementById('v-desc');
+    const vOrg = document.getElementById('v-org');
+    const vTags = document.getElementById('v-tags');
+
+    // --- RENDER ---
+    FILES.forEach((file, index) => {
+      const info = getCertInfo(file);
+      const url = BASE_URL + encodeURIComponent(file);
+      
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <img src="${url}" alt="${info.title}" loading="lazy">
+        <div class="card-meta">
+          <div class="card-title">${info.title}</div>
+        </div>
+      `;
+
+      card.onclick = () => openViewer(url, info);
+      grid.appendChild(card);
+    });
+
+    // --- ANIMACIONES GSAP (INTERACCIÓN COMPLEJA) ---
+    function openViewer(url, info) {
+      // 1. Preparar datos
+      vImg.src = url;
+      vTitle.textContent = info.title;
+      vDesc.textContent = info.desc;
+      vOrg.textContent = info.org;
+      vTags.innerHTML = info.skills.map(s => `<span class="tag">${s}</span>`).join('');
+
+      // 2. Mostrar contenedor
+      viewer.classList.add('active');
+      document.body.classList.add('locked');
+      mainContent.classList.add('blurred');
+
+      // 3. Timeline de apertura
+      const tl = gsap.timeline();
+      
+      // Fondo fade in
+      tl.to(viewer, { opacity: 1, duration: 0.3 })
+        .fromTo('.viewer-content', 
+          { scale: 0.9, y: 30, opacity: 0 },
+          { scale: 1, y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.1)" }, "-=0.2"
+        )
+        // Imagen entra desde el centro/abajo
+        .fromTo(vImg, 
+          { scale: 0.8, opacity: 0, x: 20 },
+          { scale: 1, opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, "-=0.3"
+        )
+        // Texto entra desde la derecha
+        .fromTo('.view-right',
+          { x: 50, opacity: 0 },
+          { x: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, "-=0.4"
+        );
+    }
+
+    function closeViewer() {
+      const tl = gsap.timeline({
+        onComplete: () => {
+          viewer.classList.remove('active');
+          document.body.classList.remove('locked');
+          mainContent.classList.remove('blurred');
+          vImg.src = ""; // Limpiar imagen
+        }
+      });
+
+      tl.to('.viewer-content', { scale: 0.95, opacity: 0, duration: 0.3 })
+        .to(viewer, { opacity: 0, duration: 0.2 }, "-=0.2");
+    }
+
+    closeBtn.onclick = closeViewer;
+    viewer.onclick = (e) => { if(e.target === viewer) closeViewer(); };
+    window.onkeydown = (e) => { if(e.key === 'Escape') closeViewer(); };
+
+    // --- WEBGL SHADER (FLOW FIELD AZUL/MAGENTA) ---
+    const canvas = document.getElementById('canvas-bg');
+    const gl = canvas.getContext('webgl', { alpha: false });
+
+    const vs = `attribute vec2 p; void main(){gl_Position=vec4(p,0,1);}`;
+    const fs = `
+      precision highp float;
+      uniform float t;
+      uniform vec2 r;
+      
+      // Hash simple
+      float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+      
+      // Noise
+      float n(vec2 p){
+        vec2 i = floor(p); vec2 f = fract(p);
+        float a = h(i); float b = h(i + vec2(1, 0));
+        float c = h(i + vec2(0, 1)); float d = h(i + vec2(1, 1));
+        vec2 u = f*f*(3.0-2.0*f);
+        return mix(a, b, u.x) + (c - a)*u.y*(1.0-u.x) + (d - b)*u.x*u.y;
+      }
+
+      void main(){
+        vec2 uv = gl_FragCoord.xy/r.xy;
+        vec2 p = (uv - 0.5) * vec2(r.x/r.y, 1.0);
+        float time = t * 0.15;
+        
+        // Flow Field
+        float n1 = n(p * 2.5 + time);
+        float n2 = n(p * 4.0 - time * 0.5);
+        float flow = n1 * 0.6 + n2 * 0.4;
+        
+        // Colors: Deep Blue -> Cyan -> Magenta
+        vec3 c1 = vec3(0.02, 0.05, 0.15); // Dark
+        vec3 c2 = vec3(0.0, 0.4, 0.8);    // Blue
+        vec3 c3 = vec3(0.8, 0.1, 0.6);    // Magenta
+        
+        float wave = sin(p.x * 3.0 + flow * 4.0 + time) * 0.5 + 0.5;
+        
+        vec3 col = mix(c1, c2, flow);
+        col = mix(col, c3, wave * 0.6 * n1);
+        
+        // Vignette
+        col *= smoothstep(1.5, 0.5, length(p));
+        
+        gl_FragColor = vec4(col, 1.0);
+      }
+    `;
+
+    function createShader(gl, type, src) {
+      const s = gl.createShader(type);
+      gl.shaderSource(s, src);
+      gl.compileShader(s);
+      return s;
+    }
+
+    if(gl) {
+      const prog = gl.createProgram();
+      gl.attachShader(prog, createShader(gl, gl.VERTEX_SHADER, vs));
+      gl.attachShader(prog, createShader(gl, gl.FRAGMENT_SHADER, fs));
+      gl.linkProgram(prog);
+      gl.useProgram(prog);
+      
+      gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
+      
+      const loc = gl.getAttribLocation(prog, "p");
+      gl.enableVertexAttribArray(loc);
+      gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+      
+      const uT = gl.getUniformLocation(prog, "t");
+      const uR = gl.getUniformLocation(prog, "r");
+      
+      const start = performance.now();
+      function loop() {
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        gl.uniform1f(uT, (performance.now() - start) / 1000);
+        gl.uniform2f(uR, canvas.width, canvas.height);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        requestAnimationFrame(loop);
+      }
+      
+      window.onresize = () => {
+        canvas.width = innerWidth; canvas.height = innerHeight;
+      };
+      window.onresize();
+      loop();
+    }
+  </script>
+</body>
+</html>
