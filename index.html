@@ -8,6 +8,7 @@
     
     <!-- Content Security Policy Meta Tag (complementa _headers) -->
     <!-- Nota: frame-ancestors solo funciona en headers HTTP, no en meta tags -->
+    <!-- OPTIMIZACIÓN: unsafe-eval puede ser necesario para algunos scripts dinámicos, pero se recomienda eliminarlo si es posible -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://cdn.jsdelivr.net https://cpwebassets.codepen.io https://*.codepen.io https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cpwebassets.codepen.io; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net https://r2cdn.perplexity.ai https:; img-src 'self' data: https: blob:; media-src 'self' https: blob:; connect-src 'self' https://*.codepen.io https://cpwebassets.codepen.io https://cdn.jsdelivr.net; frame-src 'self' https://codepen.io https://*.codepen.io">
     
     <!-- Three.js Import Map -->
@@ -6000,6 +6001,18 @@
 
         // Inicializar
         document.addEventListener('DOMContentLoaded', () => {
+            // Filtrar errores de Origin Trial de CodePen (inofensivos, provienen del contenido del iframe)
+            const originalError = console.error;
+            console.error = function(...args) {
+                const message = args.join(' ');
+                // Suprimir errores de Origin Trial de CodePen
+                if (message.includes('Origin trial controlled feature not enabled') && 
+                    (message.includes('language-model') || message.includes('rewriter') || message.includes('writer'))) {
+                    return; // No mostrar estos errores inofensivos
+                }
+                originalError.apply(console, args);
+            };
+
             // Cargar idioma guardado o usar español por defecto
             const savedLang = localStorage.getItem('preferredLanguage') || 'es';
             setLanguage(savedLang);
@@ -6104,8 +6117,11 @@
                 } catch (error) {
                     // Si es error de conexión (backend no disponible), usar modo simulación
                     if (error.name === 'AbortError' || error.message.includes('Failed to fetch') || error.message.includes('ERR_CONNECTION_REFUSED')) {
-                        console.log('🔧 Backend no disponible - Modo simulación activado');
-                        console.log('📝 Datos del formulario:', { nombre, email, mensaje });
+                        // Modo desarrollo: descomentar para debug
+                        // if (window.location.hostname === 'localhost') {
+                        //     console.log('🔧 Backend no disponible - Modo simulación activado');
+                        //     console.log('📝 Datos del formulario:', { nombre, email, mensaje });
+                        // }
                         
                         // Simular envío exitoso
                         setTimeout(() => {
@@ -6122,8 +6138,10 @@
                             }, 2000);
                         }, 1500);
                     } else {
-                        // Otro tipo de error
-                        console.error('Error enviando formulario:', error);
+                        // Otro tipo de error - Solo log en desarrollo
+                        if (window.location.hostname === 'localhost') {
+                            console.error('Error enviando formulario:', error);
+                        }
                         btn.innerText = langData.contact.form.errorConexion;
                         btn.style.backgroundColor = "#ef4444";
                         btn.style.color = "#fff";
@@ -6138,77 +6156,81 @@
                 }
             });
             
-            // Detectar scroll en el carrusel de Servicios
+            // Detectar scroll en el carrusel de Servicios (optimizado - handler único)
             const servicesGrid = document.getElementById('services-grid');
             if (servicesGrid) {
                 let hasScrolled = false;
+                const serviciosSection = document.getElementById('servicios');
+                const swipeIndicator = document.querySelector('.services-swipe-indicator');
                 
+                // Handler único que maneja ambas lógicas
                 const handleServicesScroll = () => {
+                    // Detectar primer scroll
                     if (!hasScrolled && servicesGrid.scrollLeft > 10) {
                         hasScrolled = true;
                         servicesGrid.classList.add('scrolled');
                         
                         // Ocultar el indicador de deslizamiento
-                        const swipeIndicator = document.querySelector('.services-swipe-indicator');
                         if (swipeIndicator) {
                             swipeIndicator.style.opacity = '0';
                             swipeIndicator.style.transition = 'opacity 0.5s ease';
                         }
-                        
-                        // Ocultar el gradiente del borde
-                        const serviciosSection = document.getElementById('servicios');
-                        if (serviciosSection) {
-                            serviciosSection.classList.add('scrolled');
-                        }
                     }
-                };
-                
-                servicesGrid.addEventListener('scroll', handleServicesScroll, { passive: true });
-                
-                // También detectar cuando se llega al final del scroll
-                servicesGrid.addEventListener('scroll', () => {
+                    
+                    // Detectar cuando se llega al final del scroll
                     const isAtEnd = servicesGrid.scrollLeft + servicesGrid.clientWidth >= servicesGrid.scrollWidth - 10;
-                    const serviciosSection = document.getElementById('servicios');
                     if (serviciosSection && isAtEnd) {
                         serviciosSection.classList.add('scrolled');
                     }
+                };
+                
+                // Un solo event listener con throttling
+                let scrollTimeout;
+                servicesGrid.addEventListener('scroll', () => {
+                    if (scrollTimeout) return;
+                    scrollTimeout = requestAnimationFrame(() => {
+                        handleServicesScroll();
+                        scrollTimeout = null;
+                    });
                 }, { passive: true });
             }
             
-            // Detectar scroll en el carrusel de Resultados Medibles
+            // Detectar scroll en el carrusel de Resultados Medibles (optimizado - handler único)
             const resultsGrid = document.getElementById('results-grid');
             if (resultsGrid) {
                 let hasScrolledResults = false;
+                const resultsSection = document.querySelector('.results-section');
+                const swipeIndicator = document.querySelector('.results-swipe-indicator');
                 
+                // Handler único que maneja ambas lógicas
                 const handleResultsScroll = () => {
+                    // Detectar primer scroll
                     if (!hasScrolledResults && resultsGrid.scrollLeft > 10) {
                         hasScrolledResults = true;
                         resultsGrid.classList.add('scrolled');
                         
                         // Ocultar el indicador de deslizamiento
-                        const swipeIndicator = document.querySelector('.results-swipe-indicator');
                         if (swipeIndicator) {
                             swipeIndicator.style.opacity = '0';
                             swipeIndicator.style.transition = 'opacity 0.5s ease';
                         }
-                        
-                        // Ocultar el gradiente del borde
-                        const resultsSection = document.querySelector('.results-section');
-                        if (resultsSection) {
-                            resultsSection.classList.add('scrolled');
-                        }
                     }
-                };
-                
-                resultsGrid.addEventListener('scroll', handleResultsScroll, { passive: true });
-                
-                // También detectar cuando se llega al final del scroll
-                resultsGrid.addEventListener('scroll', () => {
+                    
+                    // Detectar cuando se llega al final del scroll
                     const isAtEnd = resultsGrid.scrollLeft + resultsGrid.clientWidth >= resultsGrid.scrollWidth - 10;
-                    const resultsSection = document.querySelector('.results-section');
                     if (resultsSection && isAtEnd) {
                         resultsSection.classList.add('scrolled');
                     }
+                };
+                
+                // Un solo event listener con throttling
+                let scrollTimeout;
+                resultsGrid.addEventListener('scroll', () => {
+                    if (scrollTimeout) return;
+                    scrollTimeout = requestAnimationFrame(() => {
+                        handleResultsScroll();
+                        scrollTimeout = null;
+                    });
                 }, { passive: true });
             }
 
@@ -6329,8 +6351,8 @@
         });
     </script>
 
-    <!-- Anime.js CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <!-- Anime.js CDN - Lazy loaded para mejor rendimiento -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" defer></script>
 
     <!-- Advanced Certificates Button Script -->
     <script type="module">
@@ -6342,11 +6364,13 @@
             
             if (!btnCertificates || !canvas3d) return;
 
-            // Three.js Scene Setup
+            // Three.js Scene Setup (optimizado con limpieza)
             let scene, camera, renderer;
-            let particles;
+            let particles, gridHelper;
             let mouse = { x: 0, y: 0 };
             let targetMouse = { x: 0, y: 0 };
+            let animationId = null;
+            let resizeObserver = null;
 
             const initThreeJS = () => {
                 const rect = btnCertificates.getBoundingClientRect();
@@ -6405,14 +6429,14 @@
                 scene.add(particles);
 
                 // Wireframe Grid (subtle)
-                const gridHelper = new THREE.GridHelper(8, 8, 0x8b5cf6, 0x8b5cf6);
+                gridHelper = new THREE.GridHelper(8, 8, 0x8b5cf6, 0x8b5cf6);
                 gridHelper.material.opacity = 0.1;
                 gridHelper.material.transparent = true;
                 scene.add(gridHelper);
 
-                // Animation loop
+                // Animation loop (con control de limpieza)
                 const animate = () => {
-                    requestAnimationFrame(animate);
+                    animationId = requestAnimationFrame(animate);
 
                     // Mouse interaction
                     targetMouse.x += (mouse.x - targetMouse.x) * 0.05;
@@ -6443,8 +6467,8 @@
 
                 animate();
 
-                // Handle resize
-                const resizeObserver = new ResizeObserver(() => {
+                // Handle resize (con limpieza)
+                resizeObserver = new ResizeObserver(() => {
                     const rect = btnCertificates.getBoundingClientRect();
                     const width = rect.width;
                     const height = rect.height;
@@ -6454,6 +6478,33 @@
                 });
 
                 resizeObserver.observe(btnCertificates);
+            };
+
+            // Función de limpieza para evitar memory leaks
+            const cleanupThreeJS = () => {
+                if (animationId !== null) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+                if (resizeObserver) {
+                    resizeObserver.disconnect();
+                    resizeObserver = null;
+                }
+                if (renderer) {
+                    renderer.dispose();
+                    if (scene) {
+                        scene.traverse((object) => {
+                            if (object.geometry) object.geometry.dispose();
+                            if (object.material) {
+                                if (Array.isArray(object.material)) {
+                                    object.material.forEach(m => m.dispose());
+                                } else {
+                                    object.material.dispose();
+                                }
+                            }
+                        });
+                    }
+                }
             };
 
             // Mouse tracking
@@ -6586,6 +6637,43 @@
 
             // Initialize Three.js after a short delay to ensure DOM is ready
             setTimeout(initThreeJS, 100);
+
+            // Limpieza automática cuando el elemento no es visible o la página se descarga
+            const handleVisibilityChange = () => {
+                if (document.hidden && animationId !== null) {
+                    // Pausar animación cuando la pestaña no es visible
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                } else if (!document.hidden && animationId === null && renderer) {
+                    // Reanudar animación cuando la pestaña vuelve a ser visible
+                    const animate = () => {
+                        animationId = requestAnimationFrame(animate);
+                        if (particles && gridHelper && camera && scene) {
+                            targetMouse.x += (mouse.x - targetMouse.x) * 0.05;
+                            targetMouse.y += (mouse.y - targetMouse.y) * 0.05;
+                            particles.rotation.x += 0.001;
+                            particles.rotation.y += 0.002;
+                            const positions = particles.geometry.attributes.position.array;
+                            for (let i = 0; i < positions.length; i += 3) {
+                                positions[i] += Math.sin(i * 0.01 + Date.now() * 0.001) * 0.002;
+                                positions[i + 1] += Math.cos(i * 0.01 + Date.now() * 0.001) * 0.002;
+                            }
+                            particles.geometry.attributes.position.needsUpdate = true;
+                            gridHelper.rotation.y += 0.001;
+                            camera.position.x += (targetMouse.x * 0.5 - camera.position.x) * 0.05;
+                            camera.position.y += (-targetMouse.y * 0.5 - camera.position.y) * 0.05;
+                            camera.lookAt(scene.position);
+                            renderer.render(scene, camera);
+                        }
+                    };
+                    animate();
+                }
+            };
+
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+
+            // Limpieza al descargar la página
+            window.addEventListener('beforeunload', cleanupThreeJS);
         });
     </script>
 </body>
