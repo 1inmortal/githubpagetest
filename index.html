@@ -2087,24 +2087,24 @@
             background: var(--accent-primary);
         }
 
-        /* 2. El Overlay de Pantalla Completa (El menú único) */
+        /* 2. El Overlay de Pantalla Completa (El menú único) - Mejorado y Minimalista */
         .system-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: rgba(2, 2, 4, 0.98);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
             z-index: 150;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.4s ease-out;
+            transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 24px;
+            padding: 20px;
         }
 
         body.menu-open .system-overlay {
@@ -2114,101 +2114,330 @@
 
         .overlay-content {
             width: 100%;
-            max-width: 600px;
-            padding: 40px 20px;
-            border: 1px solid var(--accent-primary);
-            background: rgba(15, 15, 15, 0.8);
-            box-shadow: 0 0 40px rgba(139, 92, 246, 0.2);
-            border-radius: var(--radius-md);
+            max-width: 580px;
+            max-height: 88vh;
+            padding: 0;
+            border: 1px solid rgba(139, 92, 246, 0.15);
+            background: rgba(10, 10, 12, 0.95);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 
+                        0 0 0 1px rgba(139, 92, 246, 0.1) inset,
+                        0 0 60px rgba(139, 92, 246, 0.08);
+            border-radius: 16px;
             display: flex;
             flex-direction: column;
-            gap: 30px;
+            overflow: hidden;
+            -webkit-overflow-scrolling: touch;
+            transform: scale(0.96);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body.menu-open .overlay-content {
+            transform: scale(1);
+        }
+
+        /* Header del overlay */
+        .overlay-header {
+            padding: 24px 28px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(139, 92, 246, 0.02);
         }
 
         .overlay-status {
-            color: var(--text-meta);
-            font-size: 0.8rem;
-            padding-bottom: 10px;
-            border-bottom: 1px dashed var(--border-divider);
+            color: var(--accent-primary);
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        /* 3. Estilo de los Enlaces como Comandos Indexados */
+        .overlay-status::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            box-shadow: 0 0 8px rgba(139, 92, 246, 0.6);
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.9); }
+        }
+
+        /* 3. Estilo de los Enlaces como Comandos Indexados - Refinado y Minimalista */
         .menu-link-list {
             display: flex;
             flex-direction: column;
-            gap: 0; /* Elimina el gap entre comandos */
+            gap: 0;
+            padding: 8px 0;
+            overflow-y: auto;
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* Grupo de menú para contener elementos principales y submenús */
+        .menu-item-group {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Separador visual sutil entre grupos */
+        .menu-item-group:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 28px;
+            right: 28px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
         }
 
         .system-menu-link {
             font-family: var(--font-mono);
-            font-size: 1.2rem;
+            font-size: 1.05rem;
             color: var(--text-primary);
-            padding: 15px 0;
-            display: block;
+            padding: 14px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             position: relative;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-            transition: all 0.2s;
-            overflow: hidden; /* Para contener la animación del borde */
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            text-decoration: none;
+            background: transparent;
         }
 
+        .system-menu-link > span:first-child {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Efecto de fondo sutil al hover */
         .system-menu-link::before {
-            content: attr(data-index) ' > ';
+            content: attr(data-index);
             color: var(--accent-primary);
-            padding-right: 15px;
-            transition: 0.2s;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 16px;
+            opacity: 0.7;
+            min-width: 45px;
+            transition: opacity 0.25s ease;
         }
 
+        .system-menu-link:hover::before {
+            opacity: 1;
+        }
+
+        /* Efecto de fondo al hover */
         .system-menu-link::after {
-            content: ' // ACCESS COMMAND';
-            font-size: 0.8em;
-            color: var(--text-meta);
+            content: '';
             position: absolute;
-            right: 0;
-            opacity: 0;
-            transition: 0.3s;
-        }
-
-        .system-menu-link:hover {
-            color: white;
-            background: rgba(139, 92, 246, 0.05);
-            border-bottom-color: var(--accent-primary);
-            padding-left: 10px;
-            text-shadow: 0 0 8px rgba(139, 92, 246, 0.5);
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 0;
+            background: linear-gradient(90deg, rgba(139, 92, 246, 0.08), transparent);
+            transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: -1;
         }
 
         .system-menu-link:hover::after {
-            opacity: 1;
-            right: 15px;
+            width: 100%;
         }
 
-        /* Submenús en menú móvil */
+        .system-menu-link:active {
+            transform: scale(0.98);
+        }
+
+        /* Enlaces con submenús - Indicador de flecha mejorado */
+        .system-menu-link.has-submenu {
+            padding-right: 50px;
+        }
+
+        .system-menu-link.has-submenu .submenu-indicator {
+            position: absolute;
+            right: 28px;
+            top: 50%;
+            transform: translateY(-50%) rotate(0deg);
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-primary);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0.6;
+        }
+
+        .system-menu-link.has-submenu:hover .submenu-indicator {
+            opacity: 1;
+        }
+
+        .system-menu-link.has-submenu.expanded .submenu-indicator {
+            transform: translateY(-50%) rotate(180deg);
+            opacity: 1;
+        }
+
+        .submenu-indicator svg {
+            width: 100%;
+            height: 100%;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        /* Contenedor de submenús - Colapsable con animación suave */
+        .submenu-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), 
+                        opacity 0.25s ease-out,
+                        margin-top 0.25s ease-out;
+            opacity: 0;
+            margin-top: 0;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .submenu-container.expanded {
+            max-height: 400px;
+            opacity: 1;
+            margin-top: 0;
+        }
+
+        /* Submenús en menú móvil - Diseño refinado */
         .submenu-link {
-            font-size: 1rem !important;
-            padding-left: 30px !important;
-            color: var(--text-meta) !important;
-            opacity: 0.8;
+            font-size: 0.95rem !important;
+            padding: 11px 28px 11px 60px !important;
+            color: var(--text-secondary) !important;
+            display: flex;
+            align-items: center;
+            position: relative;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
         }
         
+        /* Indicador visual de submenú */
         .submenu-link::before {
-            color: var(--text-meta) !important;
-            font-size: 0.9em;
+            content: '';
+            position: absolute;
+            left: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            opacity: 0.4;
+            transition: all 0.2s ease;
+        }
+
+        .submenu-link::after {
+            content: attr(data-index);
+            color: var(--accent-primary);
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-right: 12px;
+            opacity: 0.5;
+            min-width: 40px;
         }
         
         .submenu-link:hover {
-            color: var(--text-secondary) !important;
-            opacity: 1;
-            background: rgba(139, 92, 246, 0.03);
+            color: var(--text-primary) !important;
+            background: rgba(139, 92, 246, 0.05);
+            padding-left: 65px !important;
         }
 
-        /* 4. Footer del Overlay */
+        .submenu-link:hover::before {
+            opacity: 1;
+            transform: translateY(-50%) scale(1.2);
+            box-shadow: 0 0 6px rgba(139, 92, 246, 0.5);
+        }
+
+        .submenu-link:hover::after {
+            opacity: 0.8;
+        }
+
+        .submenu-link:active {
+            transform: translateX(2px);
+        }
+
+        /* Mejora de accesibilidad - Focus states */
+        .system-menu-link:focus-visible,
+        .submenu-link:focus-visible {
+            outline: 2px solid var(--accent-primary);
+            outline-offset: -2px;
+            border-radius: 4px;
+        }
+
+        /* Scrollbar personalizado para el contenedor */
+        .overlay-content {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(139, 92, 246, 0.3) transparent;
+        }
+
+        .overlay-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .overlay-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .overlay-content::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.3);
+            border-radius: 3px;
+        }
+
+        .overlay-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 92, 246, 0.5);
+        }
+
+        /* 4. Footer del Overlay - Refinado */
         .overlay-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-top: 1px dashed var(--border-divider);
-            padding-top: 10px;
-            font-size: 0.75rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 20px 28px;
+            font-size: 0.7rem;
             color: var(--text-meta);
+            background: rgba(0, 0, 0, 0.2);
+            font-family: var(--font-mono);
+        }
+
+        .overlay-footer .lang-toggle {
+            display: flex;
+            gap: 6px;
+        }
+
+        .overlay-footer .lang-toggle span {
+            padding: 4px 10px;
+            font-size: 0.7rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-meta);
+        }
+
+        .overlay-footer .lang-toggle span:hover {
+            border-color: var(--accent-primary);
+            color: var(--text-secondary);
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        .overlay-footer .lang-toggle span.active-lang {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            background: rgba(139, 92, 246, 0.1);
         }
 
         /* ============================================
@@ -3640,6 +3869,113 @@
                 display: none; /* Ocultar en móvil ya que está en el overlay */
             }
 
+            /* Optimización del overlay en móvil - Refinado */
+            .system-overlay {
+                padding: 12px;
+            }
+
+            .overlay-content {
+                max-width: 100%;
+                max-height: 92vh;
+                border-radius: 12px;
+                border-width: 1px;
+            }
+
+            .overlay-header {
+                padding: 20px 20px 16px;
+            }
+
+            .overlay-status {
+                font-size: 0.7rem;
+            }
+
+            .overlay-status::before {
+                width: 6px;
+                height: 6px;
+            }
+
+            .menu-link-list {
+                padding: 4px 0;
+            }
+
+            .system-menu-link {
+                font-size: 0.95rem;
+                padding: 13px 20px;
+            }
+
+            .system-menu-link::before {
+                font-size: 0.7rem;
+                min-width: 40px;
+                margin-right: 12px;
+            }
+
+            .system-menu-link.has-submenu {
+                padding-right: 45px;
+            }
+
+            .system-menu-link.has-submenu .submenu-indicator {
+                right: 20px;
+                width: 14px;
+                height: 14px;
+            }
+
+            .submenu-link {
+                font-size: 0.88rem !important;
+                padding: 10px 20px 10px 55px !important;
+            }
+
+            .submenu-link::before {
+                left: 35px;
+                width: 3px;
+                height: 3px;
+            }
+
+            .submenu-link::after {
+                font-size: 0.65rem;
+                min-width: 35px;
+                margin-right: 10px;
+            }
+
+            .submenu-link:hover {
+                padding-left: 60px !important;
+            }
+
+            .overlay-footer {
+                padding: 16px 20px;
+                font-size: 0.65rem;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+
+            .overlay-footer .lang-toggle span {
+                padding: 3px 8px;
+                font-size: 0.65rem;
+            }
+
+            /* Mejora de scroll en móvil */
+            .menu-link-list {
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: thin;
+                scrollbar-color: rgba(139, 92, 246, 0.3) transparent;
+            }
+
+            .menu-link-list::-webkit-scrollbar {
+                width: 4px;
+            }
+
+            .menu-link-list::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            .menu-link-list::-webkit-scrollbar-thumb {
+                background: rgba(139, 92, 246, 0.3);
+                border-radius: 2px;
+            }
+
+            .menu-link-list::-webkit-scrollbar-thumb:hover {
+                background: rgba(139, 92, 246, 0.5);
+            }
+
             h1 { 
                 font-size: clamp(2rem, 8vw, 3.5rem);
                 line-height: 1.1;
@@ -4167,24 +4503,53 @@
         </div>
     </header>
 
-    <!-- NUEVO: Estructura del Menú Overlay - Colócalo justo después de la etiqueta </header> -->
+    <!-- NUEVO: Estructura del Menú Overlay - Mejorado y Minimalista -->
     <nav id="mobile-menu-overlay" role="navigation" class="system-overlay">
         <div class="overlay-content">
-            <p class="text-mono overlay-status" data-i18n="menu.status">SYSTEM MENU: ONLINE</p>
+            <!-- Header del Overlay -->
+            <div class="overlay-header">
+                <p class="overlay-status text-mono" data-i18n="menu.status">SYSTEM MENU: ONLINE</p>
+            </div>
+            
+            <!-- Lista de Enlaces -->
             <div class="menu-link-list">
                 <!-- Los enlaces se replican aquí con una nueva estructura de comando -->
-                <a href="#sobre-mi" class="system-menu-link" data-index="[01]" data-i18n="nav.sobreMi">Sobre Mí</a>
-                <a href="pruebas/certificados/index.html" class="system-menu-link submenu-link" data-index="[01.1]" data-i18n="nav.sobreMi.sub1">  └─ Certificaciones</a>
-                <a href="pruebas/certificados/cv/cv.html" class="system-menu-link submenu-link" data-index="[01.2]" data-i18n="nav.sobreMi.sub2">  └─ CV / Resume</a>
-                <a href="#experiencia" class="system-menu-link" data-index="[02]" data-i18n="nav.experiencia">Experiencia</a>
-                <a href="public/proyectos.html" class="system-menu-link submenu-link" data-index="[02.1]" data-i18n="nav.experiencia.sub1">  └─ Proyectos</a>
-                <a href="#stack" class="system-menu-link submenu-link" data-index="[02.2]" data-i18n="nav.experiencia.sub2">  └─ Stack Tecnológico</a>
+                <div class="menu-item-group">
+                    <a href="#sobre-mi" class="system-menu-link has-submenu" data-index="[01]" data-i18n="nav.sobreMi" data-submenu="submenu-01">
+                        <span data-i18n="nav.sobreMi">Sobre Mí</span>
+                        <span class="submenu-indicator">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                    </a>
+                    <div class="submenu-container" id="submenu-01">
+                        <a href="pruebas/certificados/index.html" class="system-menu-link submenu-link" data-index="[01.1]" data-i18n="nav.sobreMi.sub1">Certificaciones</a>
+                        <a href="pruebas/certificados/cv/cv.html" class="system-menu-link submenu-link" data-index="[01.2]" data-i18n="nav.sobreMi.sub2">CV / Resume</a>
+                    </div>
+                </div>
+                <div class="menu-item-group">
+                    <a href="#experiencia" class="system-menu-link has-submenu" data-index="[02]" data-i18n="nav.experiencia" data-submenu="submenu-02">
+                        <span data-i18n="nav.experiencia">Experiencia</span>
+                        <span class="submenu-indicator">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                    </a>
+                    <div class="submenu-container" id="submenu-02">
+                        <a href="public/proyectos.html" class="system-menu-link submenu-link" data-index="[02.1]" data-i18n="nav.experiencia.sub1">Proyectos</a>
+                        <a href="#stack" class="system-menu-link submenu-link" data-index="[02.2]" data-i18n="nav.experiencia.sub2">Stack Tecnológico</a>
+                    </div>
+                </div>
                 <a href="#stack" class="system-menu-link" data-index="[03]" data-i18n="nav.stack">Stack</a>
                 <a href="public/proyectos.html" class="system-menu-link" data-index="[04]" data-i18n="nav.proyectos">Proyectos</a>
                 <a href="#servicios" class="system-menu-link" data-index="[05]" data-i18n="nav.servicios">Servicios</a>
                 <a href="#contacto" class="system-menu-link" data-index="[06]" data-i18n="nav.contacto">Contacto</a>
             </div>
-            <div class="overlay-footer text-mono">
+            
+            <!-- Footer del Overlay -->
+            <div class="overlay-footer">
                 <span data-i18n="footer.copyright-short">© 2026 INMORTAL_OS</span>
                 <span class="lang-toggle">
                     <span class="active-lang" onclick="toggleLanguage('es')">ES</span>
@@ -6385,10 +6750,81 @@
                 menuToggle.addEventListener('click', toggleMenu);
             }
 
-            // Cerrar al hacer click en cualquier enlace del menú
+            // Sistema de submenús colapsables
             if (mobileMenu) {
-                mobileMenu.querySelectorAll('.system-menu-link').forEach(link => {
-                    link.addEventListener('click', toggleMenu);
+                // Manejar clics en enlaces con submenús
+                mobileMenu.querySelectorAll('.system-menu-link.has-submenu').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        const submenuId = link.getAttribute('data-submenu');
+                        const submenu = document.getElementById(submenuId);
+                        
+                        if (submenu) {
+                            // Toggle del submenú
+                            const isExpanded = submenu.classList.contains('expanded');
+                            
+                            // Si el submenú ya está expandido, permitir navegación normal
+                            if (isExpanded) {
+                                // Navegar normalmente y cerrar el menú
+                                setTimeout(() => {
+                                    toggleMenu();
+                                    // Cerrar todos los submenús al cerrar el menú
+                                    mobileMenu.querySelectorAll('.submenu-container').forEach(menu => {
+                                        menu.classList.remove('expanded');
+                                    });
+                                    mobileMenu.querySelectorAll('.system-menu-link.has-submenu').forEach(menuLink => {
+                                        menuLink.classList.remove('expanded');
+                                    });
+                                }, 100);
+                                return; // Permitir navegación normal
+                            }
+                            
+                            // Si el submenú está cerrado, prevenir navegación y expandir
+                            e.preventDefault();
+                            
+                            // Cerrar todos los submenús primero
+                            mobileMenu.querySelectorAll('.submenu-container').forEach(menu => {
+                                menu.classList.remove('expanded');
+                            });
+                            mobileMenu.querySelectorAll('.system-menu-link.has-submenu').forEach(menuLink => {
+                                menuLink.classList.remove('expanded');
+                            });
+                            
+                            // Abrir el submenú seleccionado
+                            submenu.classList.add('expanded');
+                            link.classList.add('expanded');
+                        }
+                    });
+                });
+
+                // Cerrar menú al hacer click en enlaces sin submenús o en submenús
+                mobileMenu.querySelectorAll('.system-menu-link:not(.has-submenu), .submenu-link').forEach(link => {
+                    link.addEventListener('click', () => {
+                        // Pequeño delay para permitir la navegación antes de cerrar
+                        setTimeout(() => {
+                            toggleMenu();
+                            // Cerrar todos los submenús al cerrar el menú
+                            mobileMenu.querySelectorAll('.submenu-container').forEach(menu => {
+                                menu.classList.remove('expanded');
+                            });
+                            mobileMenu.querySelectorAll('.system-menu-link.has-submenu').forEach(menuLink => {
+                                menuLink.classList.remove('expanded');
+                            });
+                        }, 100);
+                    });
+                });
+
+                // Cerrar al hacer click fuera del overlay
+                mobileMenu.addEventListener('click', (e) => {
+                    if (e.target === mobileMenu) {
+                        toggleMenu();
+                        // Cerrar todos los submenús
+                        mobileMenu.querySelectorAll('.submenu-container').forEach(menu => {
+                            menu.classList.remove('expanded');
+                        });
+                        mobileMenu.querySelectorAll('.system-menu-link.has-submenu').forEach(menuLink => {
+                            menuLink.classList.remove('expanded');
+                        });
+                    }
                 });
             }
 

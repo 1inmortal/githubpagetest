@@ -2433,110 +2433,90 @@ let markers = [];
 
 const video = document.getElementById("mainVideo");
 
-// Detectar ruta base automáticamente para el video
+// Detectar ruta base automáticamente para el video - Optimizado
 (function() {
+  const DEBUG = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   const currentPath = window.location.pathname;
   const videoFileName = 'captura.mp4';
   
-  // Lista de rutas a probar en orden de prioridad
-  const videoPaths = [];
+  // Detectar entorno y construir rutas prioritarias
+  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const isGitHubPages = window.location.hostname.includes('github.io');
+  const currentDir = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
   
-  // 1. Ruta relativa (más confiable - panel.html y mp4/ están en el mismo directorio)
-  videoPaths.push('mp4/' + videoFileName);
-  
-  // 2. Ruta relativa con ./ explícito
-  videoPaths.push('./mp4/' + videoFileName);
-  
-  // 3. Construir ruta basada en la URL actual
-  const currentUrl = new URL(window.location.href);
-  const currentDir = currentUrl.pathname.substring(0, currentUrl.pathname.lastIndexOf('/') + 1);
-  videoPaths.push(currentDir + 'mp4/' + videoFileName);
-  
-  // 4. Detectar si estamos en GitHub Pages con subdirectorio
+  // Detectar basePath para GitHub Pages
   let basePath = '';
-  const hostname = window.location.hostname;
-  
-  // Detectar GitHub Pages (puede ser username.github.io o custom domain)
-  if (hostname.includes('github.io')) {
-    // Extraer el nombre del repositorio de la URL
+  if (isGitHubPages) {
     const pathParts = currentPath.split('/').filter(p => p);
     if (pathParts.length > 0 && pathParts[0] !== 'public' && pathParts[0] !== 'gsap') {
       basePath = '/' + pathParts[0];
     }
+    if (currentPath.includes('/githubpagetest/')) {
+      basePath = '/githubpagetest';
+    }
   }
   
-  // También verificar si la ruta contiene el nombre del repo
-  if (currentPath.includes('/githubpagetest/')) {
-    basePath = '/githubpagetest';
-  }
+  // Construir lista de rutas optimizada (orden de prioridad)
+  const videoPaths = [];
   
-  // 5. Ruta absoluta con basePath (GitHub Pages)
+  // 1. Rutas relativas (más rápidas y confiables)
+  videoPaths.push('mp4/' + videoFileName);
+  videoPaths.push('./mp4/' + videoFileName);
+  videoPaths.push(currentDir + 'mp4/' + videoFileName);
+  
+  // 2. Rutas absolutas según entorno
   if (basePath) {
     videoPaths.push(basePath + '/public/gsap/PR/mp4/' + videoFileName);
-    // También probar sin /public si el repo está en la raíz
-    videoPaths.push(basePath + '/gsap/PR/mp4/' + videoFileName);
   }
-  
-  // 6. Ruta absoluta sin basePath (desarrollo local o dominio custom)
   videoPaths.push('/public/gsap/PR/mp4/' + videoFileName);
-  videoPaths.push('/gsap/PR/mp4/' + videoFileName);
   
-  // 7. Ruta relativa desde la raíz del sitio
-  videoPaths.push('public/gsap/PR/mp4/' + videoFileName);
-  videoPaths.push('../mp4/' + videoFileName);
-  
-  // 8. Ruta usando window.location.origin (más robusta)
-  const origin = window.location.origin;
-  if (basePath) {
-    videoPaths.push(origin + basePath + '/public/gsap/PR/mp4/' + videoFileName);
+  // 3. Rutas con origin completo (solo si es necesario)
+  if (!isLocalhost && basePath) {
+    videoPaths.push(window.location.origin + basePath + '/public/gsap/PR/mp4/' + videoFileName);
   }
-  videoPaths.push(origin + '/public/gsap/PR/mp4/' + videoFileName);
   
-  // Función para intentar cargar el video
+  // Variables de estado
   let currentPathIndex = 0;
   let isLoading = false;
   
+  // Función para logging condicional
+  function debugLog(...args) {
+    if (DEBUG) console.log(...args);
+  }
+  
+  function debugWarn(...args) {
+    if (DEBUG) console.warn(...args);
+  }
+  
   function tryLoadVideo() {
     if (currentPathIndex >= videoPaths.length) {
-      console.error('❌ No se pudo cargar el video desde ninguna ruta.');
-      console.error('📋 Rutas probadas:');
-      videoPaths.forEach((path, idx) => {
-        const fullUrl = new URL(path, window.location.href).href;
-        console.error(`   ${idx + 1}. ${path} → ${fullUrl}`);
-      });
-      console.error('🔍 Diagnóstico:');
-      console.error(`   - URL actual: ${window.location.href}`);
-      console.error(`   - Hostname: ${window.location.hostname}`);
-      console.error(`   - Pathname: ${window.location.pathname}`);
-      console.error(`   - BasePath detectado: ${basePath || 'ninguno'}`);
-      console.error('💡 Soluciones posibles:');
-      console.error('   1. Verifica que el archivo captura.mp4 existe en public/gsap/PR/mp4/');
-      console.error('   2. Verifica que el archivo fue incluido en el commit de Git');
-      console.error('   3. Verifica que el archivo no excede 100MB (límite de GitHub)');
-      console.error('   4. ⚠️  PROBLEMA COMÚN: GitHub Pages puede no servir archivos grandes (>50MB)');
-      console.error('      Solución A: Usar Git LFS para archivos grandes:');
-      console.error('        git lfs install');
-      console.error('        git lfs track "*.mp4"');
-      console.error('        git add .gitattributes public/gsap/PR/mp4/captura.mp4');
-      console.error('        git commit -m "Usar Git LFS para video"');
-      console.error('        git push origin main');
-      console.error('      Solución B: Usar un CDN externo (Cloudinary, AWS S3, etc.)');
-      console.error('   5. Verifica que GitHub Pages está configurado correctamente');
-      console.error('   6. Espera 5-10 minutos después del push para que GitHub Pages se actualice');
+      // Error: no se pudo cargar desde ninguna ruta
+      const errorDetails = {
+        rutas: videoPaths.map((p, i) => `${i + 1}. ${p}`).join('\n'),
+        url: window.location.href,
+        hostname: window.location.hostname,
+        pathname: window.location.pathname,
+        basePath: basePath || 'ninguno'
+      };
       
+      console.error('❌ No se pudo cargar el video desde ninguna ruta.');
+      if (DEBUG) {
+        console.error('📋 Rutas probadas:', '\n' + errorDetails.rutas);
+        console.error('🔍 Diagnóstico:', errorDetails);
+      }
+      
+      // Mostrar error al usuario
       if (typeof showError === 'function') {
-        showError('No se pudo cargar el video. Abre la consola del navegador (F12) para ver detalles. Verifica que el archivo existe en: public/gsap/PR/mp4/captura.mp4');
+        showError('No se pudo cargar el video. Verifica que el archivo existe en: public/gsap/PR/mp4/captura.mp4');
       } else {
-        // Mostrar error en el DOM si showError no está disponible
         const errorDiv = document.createElement('div');
-        errorDiv.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #ff6b6b; color: white; padding: 20px; border-radius: 8px; z-index: 10000; max-width: 90%; text-align: center;';
+        errorDiv.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #ff6b6b; color: white; padding: 20px; border-radius: 8px; z-index: 10000; max-width: 90%; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
         errorDiv.innerHTML = `
           <strong>Error al cargar el video</strong><br>
-          <small>Verifica que el archivo existe en: public/gsap/PR/mp4/captura.mp4<br>
-          Abre la consola (F12) para más detalles.</small>
+          <small>Verifica que el archivo existe en: public/gsap/PR/mp4/captura.mp4</small>
         `;
         document.body.appendChild(errorDiv);
-        setTimeout(() => errorDiv.remove(), 10000);
+        setTimeout(() => errorDiv.remove(), 8000);
       }
       return;
     }
@@ -2545,13 +2525,11 @@ const video = document.getElementById("mainVideo");
     isLoading = true;
     
     const pathToTry = videoPaths[currentPathIndex];
-    console.log(`Intentando cargar video desde: ${pathToTry}`);
+    debugLog(`Intentando cargar video desde: ${pathToTry}`);
     
-    // Remover listeners anteriores
+    // Configurar listeners
     video.removeEventListener('error', onVideoError);
     video.removeEventListener('loadeddata', onVideoLoaded);
-    
-    // Agregar listeners para este intento
     video.addEventListener('error', onVideoError, { once: true });
     video.addEventListener('loadeddata', onVideoLoaded, { once: true });
     
@@ -2562,55 +2540,33 @@ const video = document.getElementById("mainVideo");
   function onVideoError(e) {
     isLoading = false;
     const failedPath = videoPaths[currentPathIndex];
-    const fullUrl = new URL(failedPath, window.location.href).href;
     const errorCode = video.error ? video.error.code : 'unknown';
     
-    console.warn(`❌ Error al cargar desde: ${failedPath}`);
-    console.warn(`   URL completa: ${fullUrl}`);
-    console.warn(`   Error code: ${errorCode}`);
-    
-    // Mensajes más descriptivos según el código de error
-    let errorMessage = '';
-    switch(errorCode) {
-      case 1: // MEDIA_ERR_ABORTED
-        errorMessage = 'Carga abortada por el usuario';
-        break;
-      case 2: // MEDIA_ERR_NETWORK
-        errorMessage = 'Error de red al intentar cargar el video';
-        break;
-      case 3: // MEDIA_ERR_DECODE
-        errorMessage = 'Error al decodificar el video (formato no soportado)';
-        break;
-      case 4: // MEDIA_ERR_SRC_NOT_SUPPORTED
-        errorMessage = 'Archivo no encontrado o formato no soportado';
-        break;
-      default:
-        errorMessage = 'Error desconocido al cargar el video';
-    }
-    console.warn(`   Mensaje: ${errorMessage}`);
+    debugWarn(`❌ Error al cargar desde: ${failedPath} (código: ${errorCode})`);
     
     currentPathIndex++;
     setTimeout(() => {
       tryLoadVideo();
-    }, 100);
+    }, 50); // Reducido de 100ms a 50ms para carga más rápida
   }
   
   function onVideoLoaded() {
     isLoading = false;
     const successfulPath = video.src;
-    console.log('✓ Video cargado exitosamente desde:', successfulPath);
-    console.log('  URL completa:', new URL(successfulPath, window.location.href).href);
+    debugLog('✓ Video cargado exitosamente desde:', successfulPath);
+    
+    // Limpiar listeners después de carga exitosa
+    video.removeEventListener('error', onVideoError);
+    video.removeEventListener('loadeddata', onVideoLoaded);
   }
   
-  // Mostrar información de depuración
-  console.log('🔍 Iniciando carga de video. Rutas a probar:');
-  videoPaths.forEach((path, index) => {
-    console.log(`   ${index + 1}. ${path}`);
-  });
-  console.log(`📍 URL actual: ${window.location.href}`);
-  console.log(`📂 Directorio actual: ${currentDir}`);
+  // Iniciar carga
+  if (DEBUG) {
+    debugLog('🔍 Iniciando carga de video. Rutas a probar:', videoPaths.length);
+    debugLog(`📍 URL actual: ${window.location.href}`);
+    debugLog(`📂 Directorio actual: ${currentDir}`);
+  }
   
-  // Intentar cargar con la primera ruta
   tryLoadVideo();
 })();
 
