@@ -164,14 +164,39 @@
             font-family: var(--font-main);
         }
 
+        /* --- Z-INDEX TOKENS (Unified Hierarchy) --- */
+        :root {
+            /* Base layers */
+            --z-base: 1;
+            --z-canvas2d: 2;
+            --z-canvas3d: 3;
+            
+            /* UI layers */
+            --z-ui: 10;
+            --z-panels: 15;
+            --z-telemetry: 20;
+            --z-maps: 25;
+            --z-overlays: 30;
+            --z-filters: 45;
+            --z-decorative: 50;
+            
+            /* Control layers */
+            --z-controls: 99;
+            --z-modal: 100;
+            --z-touchbar: 100;
+            --z-topbar: 100;
+            --z-toggle: 101;
+            --z-censorship: 9999;
+        }
+        
         /* --- LAYERS (Z-INDEX HIERARCHY) --- */
         /* 
-         * Z-INDEX STRUCTURE:
-         * 1-5: Base layers (video, canvas)
-         * 10-19: HUD panels
-         * 20-29: Telemetry/mini-maps
-         * 50-59: Decorative overlays
-         * 100+: Interactive controls (buttons, touch bar)
+         * Z-INDEX STRUCTURE (using CSS tokens):
+         * Base: --z-base (1), --z-canvas2d (2), --z-canvas3d (3)
+         * UI: --z-ui (10), --z-panels (15), --z-telemetry (20), --z-maps (25)
+         * Overlays: --z-overlays (30), --z-filters (45), --z-decorative (50)
+         * Controls: --z-controls (99), --z-modal (100), --z-touchbar (100), --z-topbar (100), --z-toggle (101)
+         * Special: --z-censorship (9999)
          */
         #container { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
         
@@ -181,7 +206,7 @@
             width: 100%; height: 100%;
             object-fit: cover;
             transform: scaleX(-1); /* Espejo */
-            z-index: 1;
+            z-index: var(--z-base);
             display: none; /* Hide raw video, draw to canvas */
             /* High-quality video rendering */
             image-rendering: -webkit-optimize-contrast;
@@ -193,7 +218,7 @@
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            z-index: 1;
+            z-index: var(--z-base);
             /* High-quality canvas rendering */
             image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
@@ -201,18 +226,18 @@
         }
 
         #main-canvas {
-            z-index: 2; /* 2D HUD & Video Render */
+            z-index: var(--z-canvas2d); /* 2D HUD & Video Render */
             /* Enhanced sharpness for main rendering canvas */
             image-rendering: pixelated; /* For cyber aesthetic, or use auto for smoother */
         }
-        #three-canvas { z-index: 3; pointer-events: none; } /* 3D Overlay */
+        #three-canvas { z-index: var(--z-canvas3d); pointer-events: none; } /* 3D Overlay */
         
         /* --- UI OVERLAYS --- */
         #ui-layer {
-            position: absolute;
+            position: fixed; /* Changed from absolute to fixed for consistent positioning */
             top: 0; left: 0;
             width: 100%; height: 100%;
-            z-index: 10;
+            z-index: var(--z-ui);
             pointer-events: none;
         }
         
@@ -225,7 +250,7 @@
             right: 0;
             height: 50px;
             background: linear-gradient(180deg, rgba(0,10,15,0.95) 0%, rgba(0,10,15,0.8) 80%, transparent 100%);
-            z-index: 100;
+            z-index: var(--z-modal);
             padding: 5px 10px;
             box-sizing: border-box;
         }
@@ -318,7 +343,7 @@
         }
 
         .panel {
-            position: absolute;
+            position: fixed; /* Changed from absolute to fixed for consistent HUD positioning */
             background: var(--glass);
             backdrop-filter: blur(8px);
             border: var(--glass-border);
@@ -327,6 +352,7 @@
             color: #fff;
             transition: opacity 0.3s ease;
             pointer-events: auto;
+            z-index: var(--z-panels);
         }
 
         .panel h3 {
@@ -377,7 +403,7 @@
             font-size: 12px;
             box-shadow: 0 2px 8px rgba(0, 255, 255, 0.3);
             transition: all 0.3s ease;
-            z-index: 25;
+            z-index: var(--z-maps);
         }
 
         .panel-tab:hover {
@@ -426,7 +452,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 100;
+            z-index: var(--z-modal);
         }
         
         .loader-text { font-size: 24px; animation: blink 1s infinite; color: var(--primary); }
@@ -439,8 +465,8 @@
             background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
             background-size: 100% 4px;
             pointer-events: none; /* Don't block clicks */
-            z-index: 50; /* Below controls */
-            z-index: 20; pointer-events: none; opacity: 0.3;
+            z-index: var(--z-decorative); /* Below controls */
+            z-index: var(--z-telemetry); pointer-events: none; opacity: 0.3;
         }
 
         .glitch-active { animation: glitch-anim 0.2s infinite; }
@@ -480,7 +506,7 @@
                 2px -2px 0px #000,
                 -2px 2px 0px #000,
                 0px 0px 10px #FF0055;
-            z-index: 9999;
+            z-index: var(--z-censorship);
             pointer-events: none;
             animation: censorship-text 0.2s ease-in-out infinite alternate;
             font-family: 'Share Tech Mono', monospace;
@@ -969,7 +995,7 @@
                 inset 0 0 50px rgba(0, 255, 255, 0.1);
             color: #fff;
             overflow: hidden;
-            z-index: 25;
+            z-index: var(--z-maps);
             animation: panel-enter 0.8s ease-out;
             cursor: grab;
             pointer-events: auto;
@@ -1198,7 +1224,7 @@
             border: 1px solid rgba(0, 255, 136, 0.5);
             border-radius: 8px;
             font-family: 'Share Tech Mono', monospace;
-            z-index: 30;
+            z-index: var(--z-overlays);
             overflow: hidden;
             transition: all 0.3s ease;
             box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
@@ -1367,7 +1393,7 @@
             background: linear-gradient(135deg, rgba(5, 5, 5, 0.95), rgba(0, 20, 20, 0.85));
             border: 2px solid rgba(0, 255, 255, 0.4);
             box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
-            z-index: 30;
+            z-index: var(--z-overlays);
             cursor: grab;
         }
 
@@ -1424,17 +1450,130 @@
             }
         }
 
-        /* === TELEMETRY SIDEBAR === */
-        #telemetry-sidebar {
+        /* === MAPS DOCK SYSTEM (Unified telemetry/mini-maps container) === */
+        #maps-dock {
             position: fixed;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
+            bottom: 60px; /* Espacio para la barra de modos */
+            left: 380px; /* A la derecha del data-panel (350px width + 20px left + 10px gap) */
+            right: auto;
+            top: auto;
+            transform: none;
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             gap: 15px;
-            z-index: 10; /* Below filter panels and controls */
+            z-index: var(--z-maps);
             pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        /* Legacy telemetry-sidebar (now maps-dock) */
+        #telemetry-sidebar {
+            /* Maps dock is the new container, telemetry-sidebar becomes an alias */
+            position: fixed;
+            bottom: 60px; /* Espacio para la barra de modos */
+            left: 380px; /* A la derecha del data-panel (350px width + 20px left + 10px gap) */
+            right: auto;
+            top: auto;
+            transform: none;
+            display: flex;
+            flex-direction: row;
+            gap: 15px;
+            z-index: var(--z-maps);
+            pointer-events: none;
+        }
+        
+        /* MODES BAR - Barra horizontal minimalista de modos */
+        #modes-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 380px;
+            right: auto;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 10px;
+            background: rgba(0, 10, 15, 0.85);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 4px;
+            z-index: var(--z-maps);
+            pointer-events: none;
+            font-family: 'Share Tech Mono', monospace;
+            backdrop-filter: blur(5px);
+        }
+        
+        .mode-item {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        
+        .mode-key {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 4px;
+            background: rgba(0, 255, 255, 0.15);
+            border: 1px solid rgba(0, 255, 255, 0.4);
+            border-radius: 2px;
+            color: rgba(0, 255, 255, 0.9);
+            font-size: 9px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+        }
+        
+        .mode-label {
+            font-size: 7px;
+            color: rgba(0, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Resaltar modo activo */
+        body[data-mode="HUD"] #modes-bar .mode-item[data-mode="HUD"] .mode-key,
+        body[data-mode="DRAW"] #modes-bar .mode-item[data-mode="DRAW"] .mode-key,
+        body[data-mode="XRAY"] #modes-bar .mode-item[data-mode="XRAY"] .mode-key,
+        body[data-mode="INTEL"] #modes-bar .mode-item[data-mode="INTEL"] .mode-key,
+        body[data-mode="MATRIX"] #modes-bar .mode-item[data-mode="MATRIX"] .mode-key,
+        body[data-mode="VOID"] #modes-bar .mode-item[data-mode="VOID"] .mode-key,
+        body[data-mode="WIREFRAME"] #modes-bar .mode-item[data-mode="WIREFRAME"] .mode-key,
+        body[data-mode="DRONE"] #modes-bar .mode-item[data-mode="DRONE"] .mode-key,
+        body[data-mode="FACE"] #modes-bar .mode-item[data-mode="FACE"] .mode-key,
+        body[data-mode="OPERATOR"] #modes-bar .mode-item[data-mode="OPERATOR"] .mode-key,
+        body[data-mode="TOUCH"] #modes-bar .mode-item[data-mode="TOUCH"] .mode-key,
+        body[data-mode="CAROUSEL"] #modes-bar .mode-item[data-mode="CAROUSEL"] .mode-key,
+        body[data-mode="SANDTABLE"] #modes-bar .mode-item[data-mode="SANDTABLE"] .mode-key,
+        body[data-mode="FLUID"] #modes-bar .mode-item[data-mode="FLUID"] .mode-key {
+            background: rgba(0, 255, 255, 0.4);
+            border-color: rgba(0, 255, 255, 0.8);
+            box-shadow: 0 0 8px rgba(0, 255, 255, 0.6);
+        }
+        
+        /* Resaltar cubo activo */
+        body.cube-active #modes-bar .mode-item.cube-toggle .mode-key {
+            background: rgba(0, 255, 255, 0.4);
+            border-color: rgba(0, 255, 255, 0.8);
+            box-shadow: 0 0 8px rgba(0, 255, 255, 0.6);
+        }
+        
+        /* Maps dock visibility by mode */
+        body[data-mode="CAROUSEL"] #maps-dock,
+        body[data-mode="CAROUSEL"] #telemetry-sidebar {
+            opacity: 0.3; /* Reduced visibility in carousel mode */
+        }
+        
+        body[data-mode="INTEL"] #maps-dock .map-item[data-priority="low"],
+        body[data-mode="INTEL"] #telemetry-sidebar .telemetry-panel[data-priority="low"] {
+            display: none; /* Hide low priority maps in INTEL mode */
+        }
+        
+        body[data-mode="OPERATOR"] #maps-dock .map-item:not([data-type="radar"]),
+        body[data-mode="OPERATOR"] #telemetry-sidebar .telemetry-panel:not([data-type="radar"]) {
+            opacity: 0.5; /* Dim non-radar maps in OPERATOR mode */
         }
 
         .telemetry-panel {
@@ -1443,7 +1582,9 @@
             border: 2px solid rgba(0, 255, 255, 0.4);
             box-shadow: 0 0 25px rgba(0, 255, 255, 0.2);
             pointer-events: auto;
-            overflow: hidden;
+            overflow: visible; /* Cambiado de hidden a visible para ver el texto */
+            display: flex;
+            flex-direction: column;
         }
 
         .telemetry-panel h4 {
@@ -1462,6 +1603,21 @@
             display: block;
         }
 
+        .telemetry-info {
+            padding: 4px 8px;
+            font-size: 9px;
+            color: rgba(0, 255, 255, 0.9); /* Más visible */
+            text-align: center;
+            line-height: 1.4;
+            font-family: 'Share Tech Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: rgba(0, 255, 255, 0.1); /* Más visible */
+            border-top: 1px solid rgba(0, 255, 255, 0.4);
+            margin-top: auto; /* Empujar al final del panel */
+            flex-shrink: 0; /* No reducir tamaño */
+        }
+
         /* Thermal Optics Panel */
         #thermal-optics {
             width: 220px;
@@ -1470,7 +1626,7 @@
 
         #thermal-optics canvas {
             width: 100%;
-            height: 120px;
+            height: 110px; /* Reducido para dejar espacio al texto */
         }
 
         /* MoCap Data Panel */
@@ -1481,7 +1637,19 @@
 
         #mocap-data canvas {
             width: 100%;
-            height: 120px;
+            height: 110px; /* Reducido para dejar espacio al texto */
+            background: #000;
+        }
+
+        /* Hand Map Panel */
+        #hand-map {
+            width: 220px;
+            height: 160px;
+        }
+
+        #hand-map canvas {
+            width: 100%;
+            height: 110px; /* Reducido para dejar espacio al texto */
             background: #000;
         }
         
@@ -1498,7 +1666,7 @@
             color: var(--primary);
             font-size: 18px;
             cursor: pointer;
-            z-index: 101;
+            z-index: var(--z-toggle);
             display: none;
             align-items: center;
             justify-content: center;
@@ -1536,7 +1704,25 @@
         /* === RESPONSIVE ADJUSTMENTS === */
         @media (max-width: 1400px) {
             #telemetry-sidebar {
-                right: 10px;
+                left: 370px; /* Ajustado para pantallas medianas */
+                bottom: 50px; /* Espacio para la barra de modos */
+            }
+            
+            #modes-bar {
+                left: 370px;
+                bottom: 10px;
+                gap: 3px;
+                padding: 4px 8px;
+            }
+            
+            .mode-key {
+                min-width: 16px;
+                height: 16px;
+                font-size: 8px;
+            }
+            
+            .mode-label {
+                font-size: 6px;
             }
 
             .telemetry-panel {
@@ -1546,7 +1732,7 @@
 
             .telemetry-panel canvas {
                 height: 90px;
-            }
+}
         }
 
         @media (max-width: 1200px) {
@@ -1561,16 +1747,56 @@
                 display: none; /* Hide operator panels on mobile */
             }
 
-            /* Mini-maps at 50% size, positioned in corners */
+            /* Maps dock: horizontal carousel above touch bar */
+            #maps-dock,
             #telemetry-sidebar {
                 position: fixed;
-                bottom: calc(var(--safe-bottom) + 10px); /* Above touch bar */
+                bottom: calc(var(--safe-bottom) + 50px); /* Above modes bar and touch bar */
                 left: var(--safe-left);
                 right: auto;
                 top: auto;
                 transform: none;
                 flex-direction: row;
                 gap: 8px;
+                overflow-x: auto;
+                overflow-y: hidden;
+                scroll-snap-type: x mandatory;
+                -webkit-overflow-scrolling: touch;
+                max-width: calc(100vw - var(--safe-left) - var(--safe-right));
+                padding: 0 5px;
+            }
+            
+            /* Modes bar en móvil - más compacta */
+            #modes-bar {
+                position: fixed;
+                bottom: calc(var(--safe-bottom) + 10px);
+                left: var(--safe-left);
+                right: var(--safe-right);
+                width: auto;
+                max-width: calc(100vw - var(--safe-left) - var(--safe-right));
+                overflow-x: auto;
+                overflow-y: hidden;
+                gap: 2px;
+                padding: 4px 6px;
+                flex-wrap: nowrap;
+            }
+            
+            .mode-key {
+                min-width: 14px;
+                height: 14px;
+                font-size: 7px;
+                flex-shrink: 0;
+            }
+            
+            .mode-label {
+                font-size: 5px;
+                flex-shrink: 0;
+            }
+            
+            #maps-dock .map-item,
+            #telemetry-sidebar .telemetry-panel {
+                scroll-snap-align: start;
+                flex-shrink: 0;
                 overflow-x: auto;
                 overflow-y: hidden;
                 transition: bottom 0.3s ease, opacity 0.3s ease;
@@ -1596,9 +1822,15 @@
             }
 
             .telemetry-panel canvas {
-                height: 50px; /* 50% of original */
+                height: 45px; /* Reducido para dejar espacio al texto */
                 width: 100%;
                 display: block;
+            }
+
+            .telemetry-info {
+                font-size: 6px;
+                padding: 2px 4px;
+                line-height: 1.2;
             }
             
             /* Hide desktop panels on mobile - auto collapse */
@@ -1748,7 +1980,7 @@
             height: 70px;
             background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,10,15,0.95) 30%);
             backdrop-filter: blur(10px);
-            z-index: 100;
+            z-index: var(--z-modal);
             padding: 8px 10px 12px;
             box-sizing: border-box;
         }
@@ -1826,7 +2058,7 @@
             color: var(--primary);
             font-size: 18px;
             cursor: pointer;
-            z-index: 101;
+            z-index: var(--z-toggle);
             display: none;
             align-items: center;
             justify-content: center;
@@ -1892,7 +2124,7 @@
             border-left: 2px solid rgba(0, 255, 255, 0.3);
             border-right: 2px solid rgba(0, 255, 255, 0.3);
             pointer-events: none;
-            z-index: 50;
+            z-index: var(--z-decorative);
             box-shadow: 
                 inset 0 0 50px rgba(0, 0, 0, 0.5),
                 0 0 30px rgba(0, 0, 0, 0.8);
@@ -1922,7 +2154,7 @@
             height: 25px;
             background: #000;
             border-radius: 0 0 15px 15px;
-            z-index: 51;
+            z-index: calc(var(--z-decorative) + 1);
             pointer-events: none;
         }
 
@@ -2247,13 +2479,39 @@
         <!-- TELEMETRY SIDEBAR -->
         <div id="telemetry-sidebar">
             <div id="thermal-optics" class="telemetry-panel">
-                <h4>THERMAL OPTICS</h4>
+                <h4>1. THERMAL OPTICS</h4>
                 <canvas id="thermal-canvas"></canvas>
+                <div class="telemetry-info">Thermal vision overlay<br/>Heat signature detection</div>
             </div>
             <div id="mocap-data" class="telemetry-panel">
-                <h4>MOCAP DATA</h4>
+                <h4>2. MOCAP DATA</h4>
                 <canvas id="mocap-canvas"></canvas>
+                <div class="telemetry-info">Motion capture tracking<br/>Hand landmarks & cube</div>
             </div>
+            <div id="hand-map" class="telemetry-panel">
+                <h4>3. HAND MAP</h4>
+                <canvas id="hand-map-canvas"></canvas>
+                <div class="telemetry-info">Hand topography map<br/>Energy visualization</div>
+            </div>
+        </div>
+        
+        <!-- MODES BAR (Minimalista debajo de los mini mapas) -->
+        <div id="modes-bar">
+            <div class="mode-item" data-mode="HUD"><div class="mode-key">U</div><span class="mode-label">HUD</span></div>
+            <div class="mode-item" data-mode="DRAW"><div class="mode-key">L</div><span class="mode-label">DRAW</span></div>
+            <div class="mode-item" data-mode="XRAY"><div class="mode-key">X</div><span class="mode-label">XRAY</span></div>
+            <div class="mode-item" data-mode="INTEL"><div class="mode-key">K</div><span class="mode-label">INTEL</span></div>
+            <div class="mode-item" data-mode="MATRIX"><div class="mode-key">V</div><span class="mode-label">MATRIX</span></div>
+            <div class="mode-item" data-mode="VOID"><div class="mode-key">T</div><span class="mode-label">VOID</span></div>
+            <div class="mode-item" data-mode="WIREFRAME"><div class="mode-key">P</div><span class="mode-label">WIRE</span></div>
+            <div class="mode-item" data-mode="DRONE"><div class="mode-key">C</div><span class="mode-label">DRONE</span></div>
+            <div class="mode-item" data-mode="FACE"><div class="mode-key">B</div><span class="mode-label">FACE</span></div>
+            <div class="mode-item" data-mode="OPERATOR"><div class="mode-key">O</div><span class="mode-label">OP</span></div>
+            <div class="mode-item" data-mode="TOUCH"><div class="mode-key">R</div><span class="mode-label">TOUCH</span></div>
+            <div class="mode-item" data-mode="CAROUSEL"><div class="mode-key">J</div><span class="mode-label">CAR</span></div>
+            <div class="mode-item" data-mode="SANDTABLE"><div class="mode-key">S</div><span class="mode-label">SAND</span></div>
+            <div class="mode-item" data-mode="FLUID"><div class="mode-key">Z</div><span class="mode-label">FLUID</span></div>
+            <div class="mode-item cube-toggle"><div class="mode-key">H</div><span class="mode-label">CUBE</span></div>
         </div>
         
         <!-- MOBILE TOUCH BAR -->
@@ -2320,6 +2578,10 @@
                 <button class="touch-btn" data-mode="SANDTABLE" data-key="S">
                     <span class="touch-btn-icon">🏔️</span>
                     <span class="touch-btn-label">SAND</span>
+                </button>
+                <button class="touch-btn" data-mode="FLUID" data-key="Z">
+                    <span class="touch-btn-icon">🌊</span>
+                    <span class="touch-btn-label">FLUID</span>
                 </button>
                 <button class="touch-btn" data-action="cube" data-key="H">
                     <span class="touch-btn-icon">🎲</span>
@@ -2947,6 +3209,870 @@ class VisionSystem {
     }
 }
 
+// ========== HAND PARTICLE SYSTEM (Micro-partículas desintegrando landmarks) ==========
+class HandParticleSystem {
+    constructor(scene, camera, renderer) {
+        this.scene = scene;
+        this.camera = camera;
+        this.renderer = renderer;
+        
+        // Configuración de partículas
+        this.particlesPerLandmark = 12; // K partículas por landmark
+        this.maxParticles = 21 * 2 * this.particlesPerLandmark; // 21 landmarks * 2 manos * K
+        this.particles = [];
+        this.particleGroups = new Map(); // Por hand+landmark
+        
+        // Flow field (ruido curl/simplex)
+        this.flowTime = 0;
+        this.flowScale = 0.02;
+        this.flowStrength = 0.5;
+        
+        // Gestos activos
+        this.activeGestures = {
+            pinch: null,
+            spread: null,
+            swipe: null
+        };
+        
+        // InstancedMesh para rendimiento
+        this.particleGeometry = new THREE.BufferGeometry();
+        this.particleMaterial = null;
+        this.particleMesh = null;
+        this.initParticleSystem();
+    }
+    
+    initParticleSystem() {
+        // Crear geometría de puntos
+        const positions = new Float32Array(this.maxParticles * 3);
+        const colors = new Float32Array(this.maxParticles * 3);
+        const sizes = new Float32Array(this.maxParticles);
+        const phases = new Float32Array(this.maxParticles);
+        const seeds = new Float32Array(this.maxParticles);
+        
+        // Inicializar arrays
+        for (let i = 0; i < this.maxParticles; i++) {
+            positions[i * 3] = 0;
+            positions[i * 3 + 1] = 0;
+            positions[i * 3 + 2] = 0;
+            colors[i * 3] = 0;
+            colors[i * 3 + 1] = 1;
+            colors[i * 3 + 2] = 1;
+            sizes[i] = 2;
+            phases[i] = Math.random() * Math.PI * 2;
+            seeds[i] = Math.random();
+        }
+        
+        this.particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        this.particleGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        this.particleGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+        this.particleGeometry.setAttribute('phase', new THREE.BufferAttribute(phases, 1));
+        this.particleGeometry.setAttribute('seed', new THREE.BufferAttribute(seeds, 1));
+        
+        // Shader material para partículas con estelas y pulso
+        this.particleMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                time: { value: 0 },
+                pixelRatio: { value: window.devicePixelRatio }
+            },
+            vertexShader: `
+                attribute float size;
+                attribute float phase;
+                attribute float seed;
+                attribute vec3 color;
+                uniform float time;
+                uniform float pixelRatio;
+                varying vec3 vColor;
+                varying float vLife;
+                
+                void main() {
+                    vColor = color;
+                    vLife = sin(time * 2.0 + phase + seed * 10.0) * 0.5 + 0.5;
+                    
+                    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                    gl_PointSize = size * pixelRatio * (300.0 / -mvPosition.z) * (0.5 + vLife * 0.5);
+                    gl_Position = projectionMatrix * mvPosition;
+                }
+            `,
+            fragmentShader: `
+                varying vec3 vColor;
+                varying float vLife;
+                
+                void main() {
+                    vec2 center = gl_PointCoord - vec2(0.5);
+                    float dist = length(center);
+                    
+                    // Círculo suave con brillo
+                    float alpha = 1.0 - smoothstep(0.0, 0.5, dist);
+                    alpha *= vLife;
+                    
+                    // Estela radial
+                    float trail = 1.0 - dist * 2.0;
+                    trail = max(0.0, trail);
+                    
+                    gl_FragColor = vec4(vColor, alpha * trail);
+                }
+            `,
+            transparent: true,
+            vertexColors: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+        
+        this.particleMesh = new THREE.Points(this.particleGeometry, this.particleMaterial);
+        this.particleMesh.frustumCulled = false;
+        this.scene.add(this.particleMesh);
+    }
+    
+    // Simplex noise aproximado (simplificado)
+    simplexNoise(x, y, t) {
+        const n1 = Math.sin(x * 12.9898 + y * 78.233 + t) * 43758.5453;
+        return (n1 - Math.floor(n1)) * 2.0 - 1.0;
+    }
+    
+    // Curl noise para flow field
+    curlNoise(x, y, t) {
+        const eps = 0.01;
+        const n1 = this.simplexNoise(x, y, t);
+        const n2 = this.simplexNoise(x + eps, y, t);
+        const n3 = this.simplexNoise(x, y + eps, t);
+        
+        return {
+            x: (n3 - n1) / eps,
+            y: -(n2 - n1) / eps
+        };
+    }
+    
+    // Actualizar partículas basado en landmarks
+    update(hands, deltaTime, gestureState) {
+        if (!hands || !hands.landmarks) return;
+        
+        this.flowTime += deltaTime * 0.5;
+        this.particleMaterial.uniforms.time.value = this.flowTime;
+        
+        const positions = this.particleGeometry.attributes.position.array;
+        const colors = this.particleGeometry.attributes.color.array;
+        const sizes = this.particleGeometry.attributes.size.array;
+        const phases = this.particleGeometry.attributes.phase.array;
+        
+        let particleIndex = 0;
+        
+        // Procesar cada mano
+        for (let handIdx = 0; handIdx < Math.min(hands.landmarks.length, 2); handIdx++) {
+            const landmarks = hands.landmarks[handIdx];
+            if (!landmarks || landmarks.length < 21) continue;
+            
+            // Calcular velocidad promedio de la mano
+            const palmCenter = {
+                x: (landmarks[0].x + landmarks[5].x + landmarks[17].x) / 3,
+                y: (landmarks[0].y + landmarks[5].y + landmarks[17].y) / 3
+            };
+            
+            // Procesar cada landmark
+            for (let lmIdx = 0; lmIdx < 21; lmIdx++) {
+                const landmark = landmarks[lmIdx];
+                if (!landmark) continue;
+                
+                const key = `h${handIdx}_l${lmIdx}`;
+                
+                // Obtener o crear grupo de partículas para este landmark
+                if (!this.particleGroups.has(key)) {
+                    this.particleGroups.set(key, {
+                        anchor: { x: landmark.x, y: landmark.y, z: landmark.z || 0 },
+                        particles: []
+                    });
+                }
+                
+                const group = this.particleGroups.get(key);
+                
+                // Actualizar anchor
+                group.anchor.x = landmark.x;
+                group.anchor.y = landmark.y;
+                group.anchor.z = landmark.z || 0;
+                
+                // Calcular confianza/estabilidad (simplificado)
+                const confidence = 1.0; // Podrías calcular esto basado en jitter
+                
+                // Spawn/update partículas para este landmark
+                const targetParticles = this.particlesPerLandmark;
+                
+                // Asegurar que tenemos suficientes partículas
+                while (group.particles.length < targetParticles && particleIndex < this.maxParticles) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = (Math.random() * 0.02 + 0.01);
+                    group.particles.push({
+                        offsetX: Math.cos(angle) * radius,
+                        offsetY: Math.sin(angle) * radius,
+                        phase: Math.random() * Math.PI * 2,
+                        seed: Math.random(),
+                        life: 1.0,
+                        velX: 0,
+                        velY: 0
+                    });
+                }
+                
+                // Actualizar partículas
+                for (let pIdx = 0; pIdx < group.particles.length && particleIndex < this.maxParticles; pIdx++) {
+                    const p = group.particles[pIdx];
+                    
+                    // Posición del landmark en espacio 3D (normalizado a pantalla)
+                    const screenX = (1 - landmark.x) * 2 - 1;
+                    const screenY = -(landmark.y * 2 - 1);
+                    const depth = -(landmark.z || 0) * 2;
+                    
+                    // Flow field
+                    const flowX = landmark.x * this.flowScale;
+                    const flowY = landmark.y * this.flowScale;
+                    const flow = this.curlNoise(flowX, flowY, this.flowTime);
+                    
+                    // Fuerza de resorte hacia el anchor
+                    const springStrength = 0.1;
+                    const springX = -p.offsetX * springStrength;
+                    const springY = -p.offsetY * springStrength;
+                    
+                    // Viento de velocidad del landmark (si se mueve rápido)
+                    const windStrength = Math.min(1.0, Math.abs(flow.x) + Math.abs(flow.y)) * 0.05;
+                    
+                    // Combinar fuerzas: flow cuando quieto, velocidad cuando se mueve
+                    const handSpeed = Math.sqrt(flow.x * flow.x + flow.y * flow.y);
+                    const flowMix = handSpeed < 0.01 ? 1.0 : 0.3; // Flow domina cuando quieto
+                    
+                    p.velX += (flow.x * this.flowStrength * flowMix + springX) * deltaTime;
+                    p.velY += (flow.y * this.flowStrength * flowMix + springY) * deltaTime;
+                    
+                    // Aplicar velocidad
+                    p.offsetX += p.velX * deltaTime * 10;
+                    p.offsetY += p.velY * deltaTime * 10;
+                    
+                    // Amortiguación
+                    p.velX *= 0.95;
+                    p.velY *= 0.95;
+                    
+                    // Efectos de gestos
+                    if (gestureState.pinch && gestureState.pinch.handIdx === handIdx) {
+                        // Colapsar hacia punto de pinch
+                        const pinchX = gestureState.pinch.x - landmark.x;
+                        const pinchY = gestureState.pinch.y - landmark.y;
+                        const dist = Math.sqrt(pinchX * pinchX + pinchY * pinchY);
+                        if (dist > 0) {
+                            p.velX += (pinchX / dist) * 0.2 * deltaTime;
+                            p.velY += (pinchY / dist) * 0.2 * deltaTime;
+                        }
+                        p.life = Math.min(1.0, p.life + 0.1); // Brillo alto
+                    }
+                    
+                    if (gestureState.swipe && gestureState.swipe.handIdx === handIdx) {
+                        // Reorganizar siguiendo línea de swipe
+                        const swipeDirX = Math.cos(gestureState.swipe.angle);
+                        const swipeDirY = Math.sin(gestureState.swipe.angle);
+                        p.velX += swipeDirX * 0.15 * deltaTime;
+                        p.velY += swipeDirY * 0.15 * deltaTime;
+                    }
+                    
+                    // Pulso según confianza
+                    const pulse = Math.sin(this.flowTime * 2.0 + p.phase + p.seed * 10.0) * 0.3 + 0.7;
+                    p.life = confidence * pulse;
+                    
+                    // Actualizar buffers
+                    const worldX = screenX + p.offsetX * 2;
+                    const worldY = screenY + p.offsetY * 2;
+                    const worldZ = depth;
+                    
+                    positions[particleIndex * 3] = worldX;
+                    positions[particleIndex * 3 + 1] = worldY;
+                    positions[particleIndex * 3 + 2] = worldZ;
+                    
+                    // Color basado en energía/velocidad
+                    const energy = Math.min(1.0, Math.sqrt(p.velX * p.velX + p.velY * p.velY) * 10);
+                    colors[particleIndex * 3] = 0.0 + energy * 0.5; // R
+                    colors[particleIndex * 3 + 1] = 1.0; // G (cian)
+                    colors[particleIndex * 3 + 2] = 1.0 - energy * 0.3; // B
+                    
+                    sizes[particleIndex] = 2 + energy * 3;
+                    phases[particleIndex] = p.phase;
+                    
+                    particleIndex++;
+                }
+            }
+        }
+        
+        // Ocultar partículas no usadas
+        for (let i = particleIndex; i < this.maxParticles; i++) {
+            positions[i * 3 + 2] = -1000; // Mover fuera de vista
+        }
+        
+        // Marcar como actualizado
+        this.particleGeometry.attributes.position.needsUpdate = true;
+        this.particleGeometry.attributes.color.needsUpdate = true;
+        this.particleGeometry.attributes.size.needsUpdate = true;
+    }
+}
+
+// ========== HAND MAP RENDERER (Topografía + Heatmap) ==========
+class HandMapRenderer {
+    constructor(canvas, ctx, scene, camera, handMapCanvas = null) {
+        this.canvas = canvas;
+        this.ctx = ctx;
+        this.scene = scene;
+        this.camera = camera;
+        this.handMapCanvas = handMapCanvas; // Canvas HTML del panel
+        
+        // Canvas offscreen para el mapa
+        this.mapCanvas = document.createElement('canvas');
+        this.mapCanvas.width = 512;
+        this.mapCanvas.height = 512;
+        this.mapCtx = this.mapCanvas.getContext('2d');
+        
+        // Textura y material para el mapa
+        this.mapTexture = new THREE.CanvasTexture(this.mapCanvas);
+        this.mapTexture.minFilter = THREE.LinearFilter;
+        this.mapTexture.magFilter = THREE.LinearFilter;
+        this.mapTexture.needsUpdate = true;
+        
+        // Plano para mostrar el mapa (HUD) - renderizado en 2D canvas overlay en lugar de 3D
+        // El mapa se renderiza directamente en el canvas 2D como overlay
+        this.mapVisible = false;
+        
+        // Estado del escáner
+        this.scannerProgress = 0;
+        this.scannerDirection = 1;
+        this.lastUpdate = 0;
+        
+        // Energía por dedo
+        this.fingerEnergy = new Map();
+        this.palmPulse = 0;
+    }
+    
+    // Calcular energía de un dedo (velocidad del tip)
+    calculateFingerEnergy(landmarks, fingerTips) {
+        const energy = {};
+        const now = performance.now();
+        
+        for (const tipIdx of fingerTips) {
+            const tip = landmarks[tipIdx];
+            if (!tip) continue;
+            
+            const key = `tip_${tipIdx}`;
+            if (!this.fingerEnergy.has(key)) {
+                this.fingerEnergy.set(key, { x: tip.x, y: tip.y, lastTime: now });
+                energy[tipIdx] = 0;
+                continue;
+            }
+            
+            const prev = this.fingerEnergy.get(key);
+            const dt = (now - prev.lastTime) / 1000;
+            if (dt > 0) {
+                const dx = tip.x - prev.x;
+                const dy = tip.y - prev.y;
+                const speed = Math.sqrt(dx * dx + dy * dy) / dt;
+                energy[tipIdx] = Math.min(1.0, speed * 10);
+                
+                prev.x = tip.x;
+                prev.y = tip.y;
+                prev.lastTime = now;
+            } else {
+                energy[tipIdx] = 0;
+            }
+        }
+        
+        return energy;
+    }
+    
+    // Dibujar mapa de mano en canvas offscreen
+    renderHandMap(hands, deltaTime, gestureState = null) {
+        // Guardar gestureState para usar en el renderizado
+        this.currentGestureState = gestureState;
+        const ctx = this.mapCtx;
+        const w = this.mapCanvas.width;
+        const h = this.mapCanvas.height;
+        
+        // Si no hay manos, limpiar completamente el canvas
+        if (!hands || !hands.landmarks || hands.landmarks.length === 0) {
+            ctx.clearRect(0, 0, w, h);
+            // También limpiar el canvas HTML del panel si existe
+            if (this.handMapCanvas && this.handMapCanvas.width > 0) {
+                const handMapCtx = this.handMapCanvas.getContext('2d');
+                if (handMapCtx) {
+                    handMapCtx.clearRect(0, 0, this.handMapCanvas.width, this.handMapCanvas.height);
+                }
+            }
+            this.mapTexture.needsUpdate = true;
+            return;
+        }
+        
+        // Limpiar con fade solo cuando hay manos (para efecto de rastro)
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+        ctx.fillRect(0, 0, w, h);
+        
+        // Procesar todas las manos (hasta 2)
+        const maxHands = Math.min(hands.landmarks.length, 2);
+        
+        for (let handIdx = 0; handIdx < maxHands; handIdx++) {
+            const landmarks = hands.landmarks[handIdx];
+            if (!landmarks || landmarks.length < 21) continue;
+            
+            // Calcular energía de dedos
+            const fingerTips = [4, 8, 12, 16, 20]; // Thumb, Index, Middle, Ring, Pinky
+            const fingerEnergy = this.calculateFingerEnergy(landmarks, fingerTips);
+            
+            // Calcular pulso de palma
+            const palmCenter = {
+                x: (landmarks[0].x + landmarks[5].x + landmarks[17].x) / 3,
+                y: (landmarks[0].y + landmarks[5].y + landmarks[17].y) / 3
+            };
+            this.palmPulse = Math.sin(performance.now() * 0.002) * 0.5 + 0.5;
+            
+            // Color diferente para cada mano (primera mano: cyan, segunda mano: magenta)
+            const handColor = handIdx === 0 ? 'rgba(0, 255, 255' : 'rgba(255, 0, 255';
+            const handColorFull = handIdx === 0 ? 'rgba(0, 255, 255' : 'rgba(255, 0, 255';
+            
+            // Dibujar SDF/blur del esqueleto
+            ctx.save();
+            ctx.globalCompositeOperation = 'screen';
+            
+            // Dibujar conexiones con blur
+            ctx.strokeStyle = `${handColor}, 0.3)`;
+            ctx.lineWidth = 3;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = `${handColor}, 0.5)`;
+            
+            for (const [idx1, idx2] of HAND_CONNECTIONS) {
+                const p1 = landmarks[idx1];
+                const p2 = landmarks[idx2];
+                if (!p1 || !p2) continue;
+                
+                const x1 = (1 - p1.x) * w;
+                const y1 = p1.y * h;
+                const x2 = (1 - p2.x) * w;
+                const y2 = p2.y * h;
+                
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+            
+            // Dibujar landmarks como puntos calientes
+            for (let i = 0; i < landmarks.length; i++) {
+                const lm = landmarks[i];
+                if (!lm) continue;
+                
+                const x = (1 - lm.x) * w;
+                const y = lm.y * h;
+                
+                // Calor basado en energía si es un tip
+                let heat = 0.3;
+                if (fingerTips.includes(i)) {
+                    heat = 0.5 + fingerEnergy[i] * 0.5;
+                }
+                
+                const radius = 5 + heat * 10;
+                const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+                
+                if (handIdx === 0) {
+                    // Primera mano: cyan/amarillo
+                    gradient.addColorStop(0, `rgba(255, ${Math.floor(255 * heat)}, 0, ${0.8 * heat})`);
+                    gradient.addColorStop(0.5, `rgba(0, 255, 255, ${0.4 * heat})`);
+                } else {
+                    // Segunda mano: magenta/rosa
+                    gradient.addColorStop(0, `rgba(255, ${Math.floor(100 * heat)}, ${Math.floor(255 * heat)}, ${0.8 * heat})`);
+                    gradient.addColorStop(0.5, `rgba(255, 0, 255, ${0.4 * heat})`);
+                }
+                gradient.addColorStop(1, `${handColor}, 0)`);
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Isolíneas (marching squares aproximado)
+            ctx.strokeStyle = `${handColor}, 0.2)`;
+            ctx.lineWidth = 1;
+            ctx.shadowBlur = 0;
+            
+            // Dibujar múltiples contornos con distintos umbrales
+            for (let level = 0.3; level <= 0.9; level += 0.2) {
+                ctx.globalAlpha = level * 0.3;
+                this.drawIsoline(ctx, landmarks, w, h, level);
+            }
+            
+            ctx.restore();
+        }
+        
+        // Scanner line
+        this.scannerProgress += deltaTime * this.scannerDirection * 0.3;
+        if (this.scannerProgress > 1) {
+            this.scannerProgress = 1;
+            this.scannerDirection = -1;
+        } else if (this.scannerProgress < 0) {
+            this.scannerProgress = 0;
+            this.scannerDirection = 1;
+        }
+        
+        const scanY = this.scannerProgress * h;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, scanY);
+        ctx.lineTo(w, scanY);
+        ctx.stroke();
+        
+        // Glitch cuando hay jitter (simplificado)
+        if (Math.random() < 0.05) {
+            ctx.fillStyle = 'rgba(255, 0, 85, 0.3)';
+            ctx.fillRect(Math.random() * w, Math.random() * h, 10, 10);
+        }
+        
+        // Efectos de gestos en el mapa
+        if (this.currentGestureState && this.currentGestureState.spread) {
+            // Anillos concéntricos desde la palma cuando hay spread
+            const centerX = (1 - this.currentGestureState.spread.center.x) * w;
+            const centerY = this.currentGestureState.spread.center.y * h;
+            const ringCount = 5;
+            const maxRadius = Math.min(w, h) * 0.3;
+            
+            for (let i = 0; i < ringCount; i++) {
+                const radius = (maxRadius / ringCount) * (i + 1);
+                const alpha = 0.3 * (1 - i / ringCount);
+                ctx.strokeStyle = `rgba(0, 255, 255, ${alpha})`;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+        }
+        
+        // Renderizar cubo de energía (estrella en forma de cubo) cuando está activo
+        if (window.app && window.app.cubeActive && window.app.engine) {
+            const cubePos = window.app.engine.cubeBasePosition;
+            const cubeScale = window.app.engine.cubeBaseScale || 1.0;
+            
+            if (cubePos) {
+                // Mapear posición 3D del cubo a coordenadas 2D del mapa
+                // El cubo se mueve en rango aproximado: X: -4 a 4, Y: -3 a 3
+                const cubeX = ((cubePos.x + 4) / 8) * w;  // Mapear -4..4 a 0..width
+                // Invertir Y para que coincida con el movimiento (Y positivo en 3D = arriba, pero en canvas Y positivo = abajo)
+                const cubeY = (1 - (cubePos.y + 3) / 6) * h;  // Mapear -3..3 a height..0 (invertido)
+                
+                const time = performance.now() * 0.005;
+                const pulse = Math.sin(time * 4) * 0.4 + 0.6;
+                const energyPulse = Math.sin(time * 6) * 0.3 + 0.7;
+                
+                ctx.save();
+                ctx.globalCompositeOperation = 'screen';
+                
+                // Efecto de estrella de energía - múltiples capas de brillo
+                const starLayers = 8;
+                for (let layer = 0; layer < starLayers; layer++) {
+                    const layerSize = (15 + cubeScale * 10) * (1 + layer * 0.3);
+                    const layerAlpha = (0.8 / starLayers) * (starLayers - layer) * pulse;
+                    
+                    // Gradiente radial para efecto de energía
+                    const gradient = ctx.createRadialGradient(
+                        cubeX, cubeY, 0,
+                        cubeX, cubeY, layerSize
+                    );
+                    
+                    // Colores de energía (cyan brillante con toques de blanco)
+                    gradient.addColorStop(0, `rgba(255, 255, 255, ${layerAlpha * energyPulse})`);
+                    gradient.addColorStop(0.3, `rgba(0, 255, 255, ${layerAlpha * 0.8})`);
+                    gradient.addColorStop(0.6, `rgba(0, 200, 255, ${layerAlpha * 0.5})`);
+                    gradient.addColorStop(1, `rgba(0, 255, 255, 0)`);
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(cubeX, cubeY, layerSize, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Dibujar cubo como estrella de energía - vértices brillantes
+                const vertices = [
+                    [-0.5, -0.5, -0.5], [0.5, -0.5, -0.5], [0.5, 0.5, -0.5], [-0.5, 0.5, -0.5], // Cara frontal
+                    [-0.5, -0.5, 0.5], [0.5, -0.5, 0.5], [0.5, 0.5, 0.5], [-0.5, 0.5, 0.5]    // Cara trasera
+                ];
+                
+                // Rotación animada
+                const rotX = time * 0.5;
+                const rotY = time * 0.3;
+                const rotZ = time * 0.2;
+                
+                const projectedVertices = vertices.map(vertex => {
+                    let [x, y, z] = vertex;
+                    
+                    // Aplicar rotación
+                    const cosX = Math.cos(rotX), sinX = Math.sin(rotX);
+                    const cosY = Math.cos(rotY), sinY = Math.sin(rotY);
+                    const cosZ = Math.cos(rotZ), sinZ = Math.sin(rotZ);
+                    
+                    // Rotar alrededor de Y
+                    let tempX = x * cosY - z * sinY;
+                    let tempZ = x * sinY + z * cosY;
+                    x = tempX;
+                    z = tempZ;
+                    
+                    // Rotar alrededor de X
+                    let tempY = y * cosX - z * sinX;
+                    tempZ = y * sinX + z * cosX;
+                    y = tempY;
+                    z = tempZ;
+                    
+                    // Proyección perspectiva simple
+                    const scale = 2 / (2 + z);
+                    const screenX = cubeX + x * scale * (15 * cubeScale);
+                    const screenY = cubeY + y * scale * (15 * cubeScale);
+                    
+                    return { x: screenX, y: screenY, z: z, scale: scale };
+                });
+                
+                // Dibujar vértices como puntos de energía brillantes
+                projectedVertices.forEach((v, index) => {
+                    const size = (3 + cubeScale * 2) * v.scale * pulse;
+                    const alpha = Math.max(0.6, v.scale * pulse * energyPulse);
+                    
+                    // Gradiente para cada vértice
+                    const vertexGradient = ctx.createRadialGradient(v.x, v.y, 0, v.x, v.y, size * 2);
+                    vertexGradient.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
+                    vertexGradient.addColorStop(0.5, `rgba(0, 255, 255, ${alpha * 0.8})`);
+                    vertexGradient.addColorStop(1, `rgba(0, 255, 255, 0)`);
+                    
+                    ctx.fillStyle = vertexGradient;
+                    ctx.beginPath();
+                    ctx.arc(v.x, v.y, size * 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Punto central brillante
+                    ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(v.x, v.y, size * 0.5, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                
+                // Dibujar aristas del cubo como líneas de energía
+                const edges = [
+                    [0, 1], [1, 2], [2, 3], [3, 0], // Cara frontal
+                    [4, 5], [5, 6], [6, 7], [7, 4], // Cara trasera
+                    [0, 4], [1, 5], [2, 6], [3, 7]  // Aristas conectivas
+                ];
+                
+                ctx.strokeStyle = `rgba(0, 255, 255, ${0.6 * pulse})`;
+                ctx.lineWidth = 1.5;
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = 'rgba(0, 255, 255, 0.8)';
+                
+                edges.forEach(([i1, i2]) => {
+                    const v1 = projectedVertices[i1];
+                    const v2 = projectedVertices[i2];
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(v1.x, v1.y);
+                    ctx.lineTo(v2.x, v2.y);
+                    ctx.stroke();
+                });
+                
+                ctx.shadowBlur = 0;
+                ctx.restore();
+            }
+        }
+        
+        // Actualizar textura
+        this.mapTexture.needsUpdate = true;
+    }
+    
+    // Dibujar isolínea aproximada
+    drawIsoline(ctx, landmarks, w, h, threshold) {
+        // Simplificado: dibujar círculos alrededor de puntos calientes
+        const fingerTips = [4, 8, 12, 16, 20];
+        for (const tipIdx of fingerTips) {
+            const tip = landmarks[tipIdx];
+            if (!tip) continue;
+            
+            const x = (1 - tip.x) * w;
+            const y = tip.y * h;
+            const radius = 30 + threshold * 40;
+            
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+        
+        // También dibujar contorno alrededor de la palma
+        if (landmarks[0] && landmarks[5] && landmarks[17]) {
+            const palmX = (1 - (landmarks[0].x + landmarks[5].x + landmarks[17].x) / 3) * w;
+            const palmY = ((landmarks[0].y + landmarks[5].y + landmarks[17].y) / 3) * h;
+            const palmRadius = 40 + threshold * 30;
+            
+            ctx.beginPath();
+            ctx.arc(palmX, palmY, palmRadius, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+    }
+    
+    setVisible(visible) {
+        this.mapVisible = visible;
+    }
+    
+    // Renderizar mapa en el canvas HTML del panel (igual que thermal y mocap)
+    renderMapOverlay(ctx, canvasWidth, canvasHeight) {
+        if (!this.mapVisible) return;
+        
+        // Si hay canvas HTML del panel, renderizar ahí (igual que los otros mapas)
+        if (this.handMapCanvas && this.handMapCanvas.width > 0) {
+            const handMapCtx = this.handMapCanvas.getContext('2d');
+            if (handMapCtx) {
+                // Limpiar canvas
+                handMapCtx.clearRect(0, 0, this.handMapCanvas.width, this.handMapCanvas.height);
+                
+                // Dibujar el mapa escalado al tamaño del canvas (220px × 120px para el área del canvas)
+                const canvasWidth = this.handMapCanvas.width;
+                const canvasHeight = this.handMapCanvas.height;
+                handMapCtx.drawImage(this.mapCanvas, 0, 0, canvasWidth, canvasHeight);
+            }
+        }
+    }
+}
+
+// ========== GESTURE DETECTOR (Pinch, Spread, Swipe) ==========
+class GestureDetector {
+    constructor() {
+        this.lastHandPositions = new Map();
+        this.gestureState = {
+            pinch: null,
+            spread: null,
+            swipe: null
+        };
+        this.swipeHistory = [];
+    }
+    
+    detect(hands) {
+        if (!hands || !hands.landmarks) {
+            this.gestureState = { pinch: null, spread: null, swipe: null };
+            return this.gestureState;
+        }
+        
+        const now = performance.now();
+        
+        // Detectar pinch (pulgar + índice)
+        this.gestureState.pinch = this.detectPinch(hands);
+        
+        // Detectar spread (mano abierta)
+        this.gestureState.spread = this.detectSpread(hands);
+        
+        // Detectar swipe
+        this.gestureState.swipe = this.detectSwipe(hands, now);
+        
+        return this.gestureState;
+    }
+    
+    detectPinch(hands) {
+        for (let i = 0; i < hands.landmarks.length; i++) {
+            const landmarks = hands.landmarks[i];
+            if (!landmarks || landmarks.length < 21) continue;
+            
+            const thumbTip = landmarks[4];
+            const indexTip = landmarks[8];
+            
+            if (!thumbTip || !indexTip) continue;
+            
+            const dx = thumbTip.x - indexTip.x;
+            const dy = thumbTip.y - indexTip.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            if (dist < 0.05) { // Umbral de pinch
+                return {
+                    handIdx: i,
+                    x: (thumbTip.x + indexTip.x) / 2,
+                    y: (thumbTip.y + indexTip.y) / 2,
+                    strength: 1.0 - (dist / 0.05)
+                };
+            }
+        }
+        return null;
+    }
+    
+    detectSpread(hands) {
+        for (let i = 0; i < hands.landmarks.length; i++) {
+            const landmarks = hands.landmarks[i];
+            if (!landmarks || landmarks.length < 21) continue;
+            
+            const indexTip = landmarks[8];
+            const pinkyTip = landmarks[20];
+            
+            if (!indexTip || !pinkyTip) continue;
+            
+            const dx = indexTip.x - pinkyTip.x;
+            const dy = indexTip.y - pinkyTip.y;
+            const spread = Math.sqrt(dx * dx + dy * dy);
+            
+            if (spread > 0.15) { // Mano abierta
+                return {
+                    handIdx: i,
+                    spread: spread,
+                    center: {
+                        x: (indexTip.x + pinkyTip.x) / 2,
+                        y: (indexTip.y + pinkyTip.y) / 2
+                    }
+                };
+            }
+        }
+        return null;
+    }
+    
+    detectSwipe(hands, now) {
+        for (let i = 0; i < hands.landmarks.length; i++) {
+            const landmarks = hands.landmarks[i];
+            if (!landmarks || landmarks.length < 21) continue;
+            
+            const indexTip = landmarks[8];
+            if (!indexTip) continue;
+            
+            const key = `hand_${i}`;
+            const lastPos = this.lastHandPositions.get(key);
+            
+            if (lastPos) {
+                const dx = indexTip.x - lastPos.x;
+                const dy = indexTip.y - lastPos.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const dt = (now - lastPos.time) / 1000;
+                
+                if (dt > 0 && dist / dt > 0.3) { // Velocidad alta = swipe
+                    const angle = Math.atan2(dy, dx);
+                    
+                    // Guardar en historial
+                    this.swipeHistory.push({ x: indexTip.x, y: indexTip.y, angle, time: now });
+                    if (this.swipeHistory.length > 10) {
+                        this.swipeHistory.shift();
+                    }
+                    
+                    // Retornar swipe activo por 0.5-1s
+                    return {
+                        handIdx: i,
+                        x: indexTip.x,
+                        y: indexTip.y,
+                        angle: angle,
+                        velocity: dist / dt,
+                        startTime: now
+                    };
+                }
+            }
+            
+            // Actualizar posición
+            this.lastHandPositions.set(key, {
+                x: indexTip.x,
+                y: indexTip.y,
+                time: now
+            });
+        }
+        
+        // Limpiar swipes antiguos
+        const activeSwipe = this.gestureState.swipe;
+        if (activeSwipe && now - activeSwipe.startTime > 1000) {
+            return null;
+        }
+        
+        return activeSwipe;
+    }
+}
+
 // --- RENDER ENGINE (Visuals) ---
 class RenderEngine {
     constructor() {
@@ -2969,6 +4095,9 @@ class RenderEngine {
 
         this.mocapCanvas = document.getElementById('mocap-canvas');
         this.mocapCtx = this.mocapCanvas ? this.mocapCanvas.getContext('2d') : null;
+
+        this.handMapCanvas = document.getElementById('hand-map-canvas');
+        this.handMapCtx = this.handMapCanvas ? this.handMapCanvas.getContext('2d') : null;
 
         // Operator panel canvases
         this.radarCanvas = document.getElementById('radar-canvas');
@@ -3081,6 +4210,15 @@ class RenderEngine {
                 this.mocapCanvas.width = mocapRect.width;
                 this.mocapCanvas.height = mocapRect.height;
             }
+            
+            // Hand Map Canvas
+            if (this.handMapCanvas) {
+                const handMapRect = this.handMapCanvas.getBoundingClientRect();
+                if (handMapRect.width > 0 && handMapRect.height > 0) {
+                    this.handMapCanvas.width = handMapRect.width;
+                    this.handMapCanvas.height = handMapRect.height;
+                }
+            }
         }
 
         if (this.radarCanvas) {
@@ -3136,6 +4274,50 @@ class RenderEngine {
         this.cubeEdges = new THREE.LineSegments(edges, edgeMaterial);
         this.cubeGroup.add(this.cubeEdges);
         
+        // Partículas de energía dentro del cubo
+        this.cubeEnergyParticles = [];
+        this.cubeParticleVelocities = [];
+        const particleCount = 30;
+        
+        for (let i = 0; i < particleCount; i++) {
+            // Crear partícula de energía
+            const particleGeometry = new THREE.SphereGeometry(0.08, 8, 8);
+            const particleMaterial = new THREE.MeshStandardMaterial({
+                color: 0x00ffff,
+                transparent: true,
+                opacity: 0.8,
+                emissive: 0x00ffff,
+                emissiveIntensity: 1.5,
+                metalness: 0.0,
+                roughness: 0.1
+            });
+            const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+            
+            // Posición aleatoria dentro del cubo (rango -0.9 a 0.9 para mantenerlas dentro)
+            particle.position.set(
+                (Math.random() - 0.5) * 1.8,
+                (Math.random() - 0.5) * 1.8,
+                (Math.random() - 0.5) * 1.8
+            );
+            
+            // Velocidad aleatoria para cada partícula
+            this.cubeParticleVelocities.push({
+                x: (Math.random() - 0.5) * 0.02,
+                y: (Math.random() - 0.5) * 0.02,
+                z: (Math.random() - 0.5) * 0.02
+            });
+            
+            // Guardar referencia para animación
+            particle.userData = {
+                basePosition: particle.position.clone(),
+                phase: Math.random() * Math.PI * 2,
+                speed: 0.5 + Math.random() * 0.5
+            };
+            
+            this.cubeEnergyParticles.push(particle);
+            this.cubeGroup.add(particle);
+        }
+        
         this.scene.add(this.cubeGroup);
         this.camera3D.position.z = 5;
         this.cubeGroup.visible = false;
@@ -3147,6 +4329,12 @@ class RenderEngine {
         this.lights = [pointLight1, pointLight2, pointLight3];
 
         // Initialize touch effect system
+        
+        // Initialize Hand Particle System & Map Renderer
+        this.handParticleSystem = new HandParticleSystem(this.scene, this.camera3D, this.renderer3D);
+        this.handMapRenderer = new HandMapRenderer(this.canvas, this.ctx, this.scene, this.camera3D, this.handMapCanvas);
+        this.gestureDetector = new GestureDetector();
+        this.handParticlesEnabled = true; // Activado por defecto
         try {
             this.initTouchEffects();
         } catch (error) {
@@ -7074,6 +8262,63 @@ class RenderEngine {
         // Pulse edge glow
         const pulse = Math.sin(time * 3) * 0.3 + 0.7;
         this.cubeEdges.material.opacity = pulse;
+        
+        // Animar partículas de energía dentro del cubo
+        if (this.cubeEnergyParticles && this.cubeEnergyParticles.length > 0) {
+            const cubeSize = 0.9; // Límite dentro del cubo (el cubo es 2x2x2, así que -0.9 a 0.9)
+            
+            this.cubeEnergyParticles.forEach((particle, index) => {
+                const velocity = this.cubeParticleVelocities[index];
+                const userData = particle.userData;
+                
+                // Mover partícula según su velocidad
+                particle.position.x += velocity.x;
+                particle.position.y += velocity.y;
+                particle.position.z += velocity.z;
+                
+                // Rebote en los límites del cubo (con un poco de amortiguación)
+                if (Math.abs(particle.position.x) > cubeSize) {
+                    velocity.x *= -0.8; // Rebote con pérdida de energía
+                    particle.position.x = Math.sign(particle.position.x) * cubeSize;
+                }
+                if (Math.abs(particle.position.y) > cubeSize) {
+                    velocity.y *= -0.8;
+                    particle.position.y = Math.sign(particle.position.y) * cubeSize;
+                }
+                if (Math.abs(particle.position.z) > cubeSize) {
+                    velocity.z *= -0.8;
+                    particle.position.z = Math.sign(particle.position.z) * cubeSize;
+                }
+                
+                // Efecto de movimiento orbital adicional basado en la rotación del cubo
+                const orbitRadius = 0.3;
+                const orbitSpeed = userData.speed * 0.01;
+                const orbitX = Math.cos(time * orbitSpeed + userData.phase) * orbitRadius;
+                const orbitY = Math.sin(time * orbitSpeed + userData.phase) * orbitRadius;
+                const orbitZ = Math.sin(time * orbitSpeed * 0.7 + userData.phase) * orbitRadius;
+                
+                // Aplicar movimiento orbital relativo a la posición base
+                particle.position.x = userData.basePosition.x + orbitX;
+                particle.position.y = userData.basePosition.y + orbitY;
+                particle.position.z = userData.basePosition.z + orbitZ;
+                
+                // Mantener dentro de los límites
+                particle.position.x = Math.max(-cubeSize, Math.min(cubeSize, particle.position.x));
+                particle.position.y = Math.max(-cubeSize, Math.min(cubeSize, particle.position.y));
+                particle.position.z = Math.max(-cubeSize, Math.min(cubeSize, particle.position.z));
+                
+                // Pulso de opacidad y brillo
+                const particlePulse = Math.sin(time * 4 + userData.phase) * 0.3 + 0.7;
+                particle.material.opacity = particlePulse * 0.8;
+                particle.material.emissiveIntensity = particlePulse * 1.5;
+                
+                // Escala pulsante
+                const scale = 0.8 + particlePulse * 0.4;
+                particle.scale.set(scale, scale, scale);
+                
+                // Las partículas se mueven con el cubo automáticamente porque están en cubeGroup
+            });
+        }
 
         this.renderer3D.render(this.scene, this.camera3D);
     }
@@ -7486,7 +8731,8 @@ class RenderEngine {
         // Map 3D cube position to 2D mini-canvas coordinates
         // Cube moves in range approximately: X: -4 to 4, Y: -3 to 3
         const canvasX = ((cubePos.x + 4) / 8) * this.mocapCanvas.width;  // Map -4..4 to 0..width
-        const canvasY = ((cubePos.y + 3) / 6) * this.mocapCanvas.height; // Map -3..3 to 0..height
+        // Invertir Y para que coincida con el movimiento (Y positivo en 3D = arriba, pero en canvas Y positivo = abajo)
+        const canvasY = (1 - (cubePos.y + 3) / 6) * this.mocapCanvas.height; // Map -3..3 a height..0 (invertido)
 
         const time = Date.now() * 0.005;
 
@@ -8109,6 +9355,37 @@ class RenderEngine {
         
         this.ctx.shadowBlur = 0;
         this.ctx.restore();
+    }
+
+    // ========== HAND PARTICLE & MAP SYSTEM ==========
+    renderHandParticleSystem(hands, deltaTime) {
+        if (!this.handParticleSystem || !this.handParticlesEnabled) return;
+        
+        // Detectar gestos
+        const gestureState = this.gestureDetector.detect(hands);
+        
+        // Actualizar sistema de partículas
+        this.handParticleSystem.update(hands, deltaTime, gestureState);
+        
+        // Renderizar mapa de mano
+        if (this.handMapRenderer) {
+            this.handMapRenderer.renderHandMap(hands, deltaTime, gestureState);
+            this.handMapRenderer.setVisible(true);
+            
+            // Renderizar overlay del mapa en el canvas 2D
+            this.handMapRenderer.renderMapOverlay(this.ctx, this.canvas.width, this.canvas.height);
+        }
+    }
+    
+    toggleHandParticles() {
+        this.handParticlesEnabled = !this.handParticlesEnabled;
+        if (this.handParticleSystem && this.handParticleSystem.particleMesh) {
+            this.handParticleSystem.particleMesh.visible = this.handParticlesEnabled;
+        }
+        if (this.handMapRenderer) {
+            this.handMapRenderer.setVisible(this.handParticlesEnabled);
+        }
+        log(`HAND PARTICLES: ${this.handParticlesEnabled ? 'ENABLED' : 'DISABLED'}`);
     }
 }
 
@@ -9494,7 +10771,7 @@ class TrackingQualityMeter {
             font-family: 'Share Tech Mono', monospace;
             font-size: 11px;
             color: #00FFFF;
-            z-index: 50;
+            z-index: var(--z-decorative);
             display: none;
             min-width: 80px;
         `;
@@ -10016,6 +11293,108 @@ class PanelLayoutManager {
         }
     }
     
+    // Enforce sacred zones - ensure panels don't enter no-go areas (especially mobile touch bar)
+    enforceSacredZones(panels, safeAreas) {
+        if (!this.isMobile) {
+            // Sacred zones are mainly for mobile devices
+            return;
+        }
+        
+        // Define sacred zones (no-go areas)
+        const touchBar = document.getElementById('mobile-touch-bar');
+        const topBar = document.getElementById('mobile-top-bar');
+        
+        // Sacred zone 1: Touch bar area (bottom of screen)
+        if (touchBar) {
+            const touchBarRect = touchBar.getBoundingClientRect();
+            const sacredBottom = {
+                top: touchBarRect.top - safeAreas.bottom,
+                bottom: window.innerHeight,
+                left: 0,
+                right: window.innerWidth
+            };
+            
+            // Move any panel that intersects with touch bar area
+            for (const panel of panels) {
+                // Skip touch bar itself and panels that should be in bottom dock
+                if (panel.config.id === 'mobile-touch-bar' || 
+                    panel.config.id === 'telemetry-sidebar' ||
+                    panel.config.dock === 'bottom-left' ||
+                    panel.config.dock === 'bottom-right' ||
+                    panel.config.dock === 'bottom-center') {
+                    continue;
+                }
+                
+                // Check if panel intersects with sacred bottom zone
+                if (this.rectsIntersect(panel.rect, sacredBottom, 0)) {
+                    // Move panel up to avoid touch bar
+                    const currentTop = parseInt(panel.el.style.top) || panel.rect.top;
+                    const currentBottom = parseInt(panel.el.style.bottom);
+                    
+                    if (!isNaN(currentBottom)) {
+                        // Panel uses bottom positioning
+                        const newBottom = window.innerHeight - touchBarRect.top + safeAreas.bottom + 10;
+                        panel.el.style.bottom = `${newBottom}px`;
+                        panel.el.style.top = '';
+                    } else {
+                        // Panel uses top positioning - ensure it's above sacred zone
+                        const minTop = sacredBottom.top - panel.rect.height - 10;
+                        if (currentTop > minTop) {
+                            panel.el.style.top = `${Math.max(safeAreas.top, minTop)}px`;
+                        }
+                    }
+                    
+                    // Update rect after repositioning
+                    panel.rect = panel.el.getBoundingClientRect();
+                }
+            }
+        }
+        
+        // Sacred zone 2: Top bar area (for notches/status bars)
+        if (topBar) {
+            const topBarRect = topBar.getBoundingClientRect();
+            const sacredTop = {
+                top: 0,
+                bottom: topBarRect.bottom + safeAreas.top,
+                left: 0,
+                right: window.innerWidth
+            };
+            
+            // Move any panel that intersects with top bar area
+            for (const panel of panels) {
+                // Skip top bar itself and panels that should be in top dock
+                if (panel.config.id === 'mobile-top-bar' ||
+                    panel.config.dock === 'top-left' ||
+                    panel.config.dock === 'top-right') {
+                    continue;
+                }
+                
+                // Check if panel intersects with sacred top zone
+                if (this.rectsIntersect(panel.rect, sacredTop, 0)) {
+                    // Move panel down to avoid top bar
+                    const currentTop = parseInt(panel.el.style.top);
+                    const currentBottom = parseInt(panel.el.style.bottom) || window.innerHeight - panel.rect.top;
+                    
+                    if (!isNaN(currentTop)) {
+                        // Panel uses top positioning
+                        const newTop = topBarRect.bottom + safeAreas.top + 10;
+                        panel.el.style.top = `${newTop}px`;
+                        panel.el.style.bottom = '';
+                    } else {
+                        // Panel uses bottom positioning - ensure it's below sacred zone
+                        const maxBottom = window.innerHeight - sacredTop.bottom - 10;
+                        if (currentBottom < maxBottom) {
+                            panel.el.style.bottom = `${Math.max(safeAreas.bottom, maxBottom)}px`;
+                        }
+                    }
+                    
+                    // Update rect after repositioning
+                    panel.rect = panel.el.getBoundingClientRect();
+                }
+            }
+        }
+    }
+    
     // Update z-index for all panels (coherent layering)
     updateZIndex() {
         const zIndexMap = {
@@ -10095,13 +11474,30 @@ class PanelLayoutManager {
             }
         }
         
-        // Step 2: Update z-index
+        // Step 2: Update z-index (using CSS tokens)
         this.updateZIndex();
         
-        // Step 3: Resolve overlaps
-        // Wait a frame for layout to settle
+        // Step 3: Enforce sacred zones (no-go areas for mobile)
         requestAnimationFrame(() => {
+            const panels = this.panelConfigs.map(config => {
+                const el = document.getElementById(config.id);
+                if (!el) return null;
+                return {
+                    el,
+                    config,
+                    rect: el.getBoundingClientRect()
+                };
+            }).filter(p => p !== null);
+            
+            this.enforceSacredZones(panels, safeAreas);
+            
+            // Step 4: Resolve overlaps (after sacred zones are enforced)
             this.resolveOverlaps(safeAreas);
+            
+            // Step 5: Apply mobile-specific rules
+            if (this.isMobile) {
+                this.applyMobileRules(panels, safeAreas);
+            }
         });
     }
 }
@@ -10113,12 +11509,310 @@ let trackingQualityMeter = null;
 let dynamicQualityScaler = null;
 let panelLayoutManager = null;
 
+// ========== FLUID SIMULATION SYSTEM ==========
+class FluidSystem {
+    constructor(canvas) {
+        this.canvas = canvas;
+        // Low res grid for physics, scaled up for display
+        this.resolution = 128;
+        this.size = this.resolution + 2;
+        this.dt = 0.15;
+        this.diff = 0.0001;
+        this.visc = 0.0001;
+        
+        // Arrays for density and velocity (current and previous)
+        const arraySize = this.size * this.size;
+        this.s = new Float32Array(arraySize); // Density
+        this.density = new Float32Array(arraySize);
+        
+        this.Vx = new Float32Array(arraySize);
+        this.Vy = new Float32Array(arraySize);
+        this.Vx0 = new Float32Array(arraySize);
+        this.Vy0 = new Float32Array(arraySize);
+        
+        // Offscreen canvas for rendering the fluid
+        this.fluidCanvas = document.createElement('canvas');
+        this.fluidCanvas.width = this.resolution;
+        this.fluidCanvas.height = this.resolution;
+        this.fluidCtx = this.fluidCanvas.getContext('2d');
+        this.imageData = this.fluidCtx.createImageData(this.resolution, this.resolution);
+        
+        this.iter = 4; // Solver iterations
+        
+        // Colors
+        this.colorShift = 0;
+    }
+
+    // --- SOLVER CORE METHODS ---
+    IX(x, y) {
+        return x + y * this.size;
+    }
+
+    addDensity(x, y, amount) {
+        const index = this.IX(x, y);
+        this.density[index] += amount;
+        // Clamp
+        if (this.density[index] > 255) this.density[index] = 255;
+    }
+
+    addVelocity(x, y, amountX, amountY) {
+        const index = this.IX(x, y);
+        this.Vx[index] += amountX;
+        this.Vy[index] += amountY;
+    }
+
+    diffuse(b, x, x0, diff, dt) {
+        const a = dt * diff * (this.resolution - 2) * (this.resolution - 2);
+        this.lin_solve(b, x, x0, a, 1 + 6 * a);
+    }
+
+    lin_solve(b, x, x0, a, c) {
+        const invC = 1.0 / c;
+        for (let k = 0; k < this.iter; k++) {
+            for (let j = 1; j < this.size - 1; j++) {
+                for (let i = 1; i < this.size - 1; i++) {
+                    x[this.IX(i, j)] =
+                        (x0[this.IX(i, j)] +
+                            a * (x[this.IX(i + 1, j)] +
+                                x[this.IX(i - 1, j)] +
+                                x[this.IX(i, j + 1)] +
+                                x[this.IX(i, j - 1)]
+                            )) * invC;
+                }
+            }
+            this.set_bnd(b, x);
+        }
+    }
+
+    project(velocX, velocY, p, div) {
+        for (let j = 1; j < this.size - 1; j++) {
+            for (let i = 1; i < this.size - 1; i++) {
+                div[this.IX(i, j)] = -0.5 * (
+                    velocX[this.IX(i + 1, j)] - velocX[this.IX(i - 1, j)] +
+                    velocY[this.IX(i, j + 1)] - velocY[this.IX(i, j - 1)]
+                ) / this.resolution;
+                p[this.IX(i, j)] = 0;
+            }
+        }
+        this.set_bnd(0, div);
+        this.set_bnd(0, p);
+        this.lin_solve(0, p, div, 1, 6);
+
+        for (let j = 1; j < this.size - 1; j++) {
+            for (let i = 1; i < this.size - 1; i++) {
+                velocX[this.IX(i, j)] -= 0.5 * (p[this.IX(i + 1, j)] - p[this.IX(i - 1, j)]) * this.resolution;
+                velocY[this.IX(i, j)] -= 0.5 * (p[this.IX(i, j + 1)] - p[this.IX(i, j - 1)]) * this.resolution;
+            }
+        }
+        this.set_bnd(1, velocX);
+        this.set_bnd(2, velocY);
+    }
+
+    advect(b, d, d0, velocX, velocY, dt) {
+        let i0, i1, j0, j1;
+        let x, y, s0, t0, s1, t1;
+        let dt0 = dt * (this.resolution - 2);
+        let float_N = this.resolution - 2;
+
+        for (let j = 1; j < this.size - 1; j++) {
+            for (let i = 1; i < this.size - 1; i++) {
+                x = i - dt0 * velocX[this.IX(i, j)];
+                y = j - dt0 * velocY[this.IX(i, j)];
+
+                if (x < 0.5) x = 0.5;
+                if (x > float_N + 0.5) x = float_N + 0.5;
+                i0 = Math.floor(x);
+                i1 = i0 + 1;
+                
+                if (y < 0.5) y = 0.5;
+                if (y > float_N + 0.5) y = float_N + 0.5;
+                j0 = Math.floor(y);
+                j1 = j0 + 1;
+
+                s1 = x - i0;
+                s0 = 1.0 - s1;
+                t1 = y - j0;
+                t0 = 1.0 - t1;
+
+                const i0j0 = this.IX(i0, j0);
+                const i0j1 = this.IX(i0, j1);
+                const i1j0 = this.IX(i1, j0);
+                const i1j1 = this.IX(i1, j1);
+
+                d[this.IX(i, j)] =
+                    s0 * (t0 * d0[i0j0] + t1 * d0[i0j1]) +
+                    s1 * (t0 * d0[i1j0] + t1 * d0[i1j1]);
+            }
+        }
+        this.set_bnd(b, d);
+    }
+
+    set_bnd(b, x) {
+        for (let i = 1; i < this.size - 1; i++) {
+            x[this.IX(i, 0)] = b === 2 ? -x[this.IX(i, 1)] : x[this.IX(i, 1)];
+            x[this.IX(i, this.size - 1)] = b === 2 ? -x[this.IX(i, this.size - 2)] : x[this.IX(i, this.size - 2)];
+        }
+        for (let j = 1; j < this.size - 1; j++) {
+            x[this.IX(0, j)] = b === 1 ? -x[this.IX(1, j)] : x[this.IX(1, j)];
+            x[this.IX(this.size - 1, j)] = b === 1 ? -x[this.IX(this.size - 2, j)] : x[this.IX(this.size - 2, j)];
+        }
+        
+        x[this.IX(0, 0)] = 0.5 * (x[this.IX(1, 0)] + x[this.IX(0, 1)]);
+        x[this.IX(0, this.size - 1)] = 0.5 * (x[this.IX(1, this.size - 1)] + x[this.IX(0, this.size - 2)]);
+        x[this.IX(this.size - 1, 0)] = 0.5 * (x[this.IX(this.size - 2, 0)] + x[this.IX(this.size - 1, 1)]);
+        x[this.IX(this.size - 1, this.size - 1)] = 0.5 * (x[this.IX(this.size - 2, this.size - 1)] + x[this.IX(this.size - 1, this.size - 2)]);
+    }
+
+    // --- INTERACTION & UPDATE ---
+    update(hands) {
+        this.colorShift += 0.5;
+        
+        // Physics Step
+        this.diffuse(1, this.Vx0, this.Vx, this.visc, this.dt);
+        this.diffuse(2, this.Vy0, this.Vy, this.visc, this.dt);
+
+        this.project(this.Vx0, this.Vy0, this.Vx, this.Vy);
+
+        this.advect(1, this.Vx, this.Vx0, this.Vx0, this.Vy0, this.dt);
+        this.advect(2, this.Vy, this.Vy0, this.Vx0, this.Vy0, this.dt);
+
+        this.project(this.Vx, this.Vy, this.Vx0, this.Vy0);
+
+        this.diffuse(0, this.s, this.density, this.diff, this.dt);
+        this.advect(0, this.density, this.s, this.Vx, this.Vy, this.dt);
+
+        // Fade out - slower fade (0.99 -> 0.995) for more persistence
+        for (let i = 0; i < this.density.length; i++) {
+            this.density[i] *= 0.995; 
+        }
+
+        // Hand Interactions
+        if (hands && hands.landmarks) {
+            this.handleInput(hands);
+        }
+    }
+
+    handleInput(hands) {
+        // We need previous hand positions to calculate velocity
+        // Storing them on the fluid system instance for simplicity
+        if (!this.lastHandPositions) this.lastHandPositions = [];
+
+        hands.landmarks.forEach((hand, i) => {
+            const indexTip = hand[8]; // Index tip
+            const thumbTip = hand[4]; // Thumb tip
+            const wrist = hand[0];
+            
+            if (!indexTip) return;
+
+            // Map coordinates (0-1) to Grid Size
+            const x = Math.floor((1 - indexTip.x) * this.resolution); 
+            const y = Math.floor(indexTip.y * this.resolution);
+            
+            if (x < 1 || x >= this.resolution - 1 || y < 1 || y >= this.resolution - 1) return;
+
+            // 1. MOVEMENT -> Velocity
+            if (this.lastHandPositions[i]) {
+                const last = this.lastHandPositions[i];
+                // Calculate delta (velocity) - Increased multiplier (5.0 -> 15.0) for more response
+                const amtX = (x - last.x) * 15.0; 
+                const amtY = (y - last.y) * 15.0;
+                
+                this.addVelocity(x, y, amtX, amtY);
+                // Also add MORE density trail (20 -> 50)
+                this.addDensity(x, y, Math.sqrt(amtX*amtX + amtY*amtY) * 50);
+            }
+
+            // 2. PINCH -> Explosion of Color
+            const pinchDist = Math.hypot(indexTip.x - thumbTip.x, indexTip.y - thumbTip.y);
+            if (pinchDist < 0.05) {
+                // Inject heavy density in a radius (150 -> 255 max)
+                for(let py = -2; py <= 2; py++) {
+                    for(let px = -2; px <= 2; px++) {
+                        this.addDensity(x + px, y + py, 255);
+                    }
+                }
+            }
+
+            this.lastHandPositions[i] = { x, y };
+        });
+
+        // 3. CLAP -> Shockwave
+        if (hands.landmarks.length >= 2) {
+            const h1 = hands.landmarks[0][9]; // Middle knuckle
+            const h2 = hands.landmarks[1][9];
+            if (h1 && h2) {
+                const dist = Math.hypot(h1.x - h2.x, h1.y - h2.y);
+                // Simple state machine for clap
+                if (dist < 0.1 && !this.wasClapping) {
+                    this.wasClapping = true;
+                    // Trigger Shockwave at center
+                    const cx = Math.floor((1 - (h1.x + h2.x)/2) * this.resolution);
+                    const cy = Math.floor(((h1.y + h2.y)/2) * this.resolution);
+                    
+                    // Radial impulse - Increased force (500 -> 1000)
+                    for(let angle=0; angle<Math.PI*2; angle+=0.1) {
+                        const vx = Math.cos(angle) * 1000;
+                        const vy = Math.sin(angle) * 1000;
+                        this.addVelocity(cx, cy, vx, vy);
+                    }
+                } else if (dist > 0.15) {
+                    this.wasClapping = false;
+                }
+            }
+        }
+    }
+
+    draw(ctx) {
+        const data = this.imageData.data;
+        
+        for (let i = 0; i < this.size * this.size; i++) {
+            const density = this.density[i];
+            const pixelIndex = i * 4;
+            
+            // Lower threshold (1 -> 0.1) to show faint smoke
+            if (density > 0.1) {
+                // Sine wave coloring
+                const r = density * (Math.sin(this.colorShift * 0.01 + i * 0.001) * 0.5 + 0.5); 
+                const g = density; // Green channel high -> Cyan
+                const b = density * 1.5; // Boost Blue for stronger neon
+                
+                // Magenta tint logic if pinch active
+                if (density > 200) {
+                    data[pixelIndex] = 255;     // R
+                    data[pixelIndex + 1] = 0;   // G
+                    data[pixelIndex + 2] = 255; // B
+                } else {
+                    data[pixelIndex] = r;
+                    data[pixelIndex + 1] = g;
+                    data[pixelIndex + 2] = b;
+                }
+                // Boost Alpha
+                data[pixelIndex + 3] = Math.min(255, density * 2); 
+            } else {
+                data[pixelIndex + 3] = 0;
+            }
+        }
+        
+        this.fluidCtx.putImageData(this.imageData, 0, 0);
+        
+        // Scale up to main canvas
+        ctx.save();
+        // Use 'lighter' (additive) instead of 'screen' for brighter overlap
+        ctx.globalCompositeOperation = 'lighter'; 
+        // Increased contrast and brightness
+        ctx.filter = 'blur(6px) contrast(2.0) brightness(1.2)'; 
+        ctx.drawImage(this.fluidCanvas, 0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.restore();
+    }
+}
+
 // --- APP CONTROLLER ---
 class TacticalOS {
     constructor() {
         this.video = document.getElementById('video-feed');
         this.vision = new VisionSystem();
         this.engine = new RenderEngine();
+        this.fluidSystem = new FluidSystem(this.engine.canvas);
         
         // Initialize global systems
         globalLandmarkSmoother = new GlobalLandmarkSmoother();
@@ -10157,6 +11851,8 @@ class TacticalOS {
         this.carouselSystem = new CarouselSystem();
 
         this.mode = 'HUD'; // Default
+        // Set initial data-mode attribute
+        document.body.setAttribute('data-mode', 'HUD');
         this.isRunning = false;
 
         // Independent toggles (work in any mode)
@@ -10267,7 +11963,8 @@ class TacticalOS {
                 'O': 'OPERATOR',
                 'R': 'TOUCH',
                 'J': 'CAROUSEL',
-                'S': 'SANDTABLE'
+                'S': 'SANDTABLE',
+                'Z': 'FLUID'
             };
             
             // H key toggles cube independently (works in any mode)
@@ -10275,6 +11972,13 @@ class TacticalOS {
                 this.cubeActive = !this.cubeActive;
                 this.engine.cubeGroup.visible = this.cubeActive;
                 
+                // Update body class for CSS selectors
+                if (this.cubeActive) {
+                    document.body.classList.add('cube-active');
+                } else {
+                    document.body.classList.remove('cube-active');
+                }
+
                 // Reset cube position and scale when activating
                 if (this.cubeActive) {
                     this.engine.cubeBasePosition = { x: 0, y: 0, z: 0 };
@@ -10283,14 +11987,14 @@ class TacticalOS {
                     this.engine.cubeGroup.position.set(0, 0, 0);
                     this.engine.cubeGroup.scale.set(1, 1, 1);
                 }
-                
+
                 // If deactivating, render empty scene to clear the cube from view
                 if (!this.cubeActive) {
                     this.engine.renderer3D.render(this.engine.scene, this.engine.camera3D);
                 }
-                
+
                 log(this.cubeActive ? 'CUBE: ACTIVATED' : 'CUBE: DEACTIVATED');
-                
+
                 // Glitch effect
                 document.body.classList.add('glitch-active');
                 setTimeout(() => document.body.classList.remove('glitch-active'), 200);
@@ -10345,6 +12049,13 @@ class TacticalOS {
                     if (this.layoutManager) {
                         setTimeout(() => this.layoutManager.update(), 50);
                     }
+                }
+            }
+            
+            // P key toggles Hand Particle System & Map
+            if(key === 'P') {
+                if (this.engine) {
+                    this.engine.toggleHandParticles();
                 }
             }
         });
@@ -10851,6 +12562,9 @@ class TacticalOS {
         this.mode = newMode;
         document.getElementById('current-mode').innerText = newMode;
         document.getElementById('mode-desc').innerText = this.getModeDesc(newMode);
+        
+        // Set data-mode attribute on body for CSS selectors
+        document.body.setAttribute('data-mode', newMode);
         
         // Update visual profile for new mode
         this.visualProfile = getVisualProfile(newMode);
@@ -11807,6 +13521,14 @@ class TacticalOS {
                 // Render the 3D scene
                 this.engine.renderer3D.render(this.engine.scene, this.engine.camera3D);
                 break;
+            case 'FLUID':
+                if (this.fluidSystem) {
+                    this.fluidSystem.update(hands);
+                    this.fluidSystem.draw(this.engine.ctx);
+                }
+                // Overlay minimal skeleton
+                this.engine.drawSkeleton(hands, 'SIMPLE');
+                break;
             case 'TOUCH':
                 // Holographic air touch mode - simplified for initial release
                 try {
@@ -11877,31 +13599,37 @@ class TacticalOS {
                 break;
         }
         
-        // 4b. Render Cube if active (independent of mode)
+        // 4b. Render Hand Particle System & Map (always active when enabled)
+        if (hands && hands.landmarks && hands.landmarks.length > 0) {
+            const deltaTime = dt / 1000; // Convert to seconds
+            this.engine.renderHandParticleSystem(hands, deltaTime);
+        }
+
+        // 4c. Render Cube if active (independent of mode)
         if (this.cubeActive) {
             this.engine.renderCube(hands);
         }
 
-        // 4c. Render Mini-Canvas Telemetry (always active)
+        // 4d. Render Mini-Canvas Telemetry (always active)
         this.engine.renderThermal(this.video);
         this.engine.renderMoCap(hands, this.vision.results.face);
 
-        // 4d. Update Hand Gesture Dragging (when in OPERATOR mode)
+        // 4e. Update Hand Gesture Dragging (when in OPERATOR mode)
         if (this.mode === 'OPERATOR') {
             this.draggableSystem.updateHandDragging(hands, this.mode);
         }
 
-        // 4e. Update Carousel System (when in CAROUSEL mode)
+        // 4f. Update Carousel System (when in CAROUSEL mode)
         if (this.mode === 'CAROUSEL') {
             this.carouselSystem.update(hands);
         }
 
-        // 4f. Check for middle finger censorship gesture (always active)
+        // 4g. Check for middle finger censorship gesture (always active)
         if (this.detectMiddleFingerGesture(hands)) {
             this.applyCensorship();
         }
 
-        // 4e. Render Operator Panels (when in OPERATOR mode)
+        // 4h. Render Operator Panels (when in OPERATOR mode)
         if (this.mode === 'OPERATOR') {
             this.engine.renderRadar();
             this.engine.updateHexMatrix();

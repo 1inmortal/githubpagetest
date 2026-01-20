@@ -260,11 +260,15 @@ jobs:
 
     - name: Build para Pages
       run: |
-        # Crear directorio de build
-        mkdir -p dist
-        # Copiar archivos estáticos
-        cp -r src/ dist/ || echo "⚠️ src/ no encontrado"
-        cp index.html dist/ || echo "⚠️ index.html no encontrado"
+        # Compilar proyecto React con Vite
+        echo "🔨 Compilando proyecto React..."
+        NODE_ENV=production npm run build
+        
+        # Copiar archivos adicionales necesarios
+        echo "📋 Copiando archivos adicionales..."
+        cp -r src/assets dist/ || echo "⚠️ src/assets no encontrado, omitiendo"
+        cp -r pruebas dist/ || echo "⚠️ pruebas/ no encontrado, omitiendo"
+        cp -r public dist/ || echo "⚠️ public/ no encontrado, omitiendo"
         [ -d "config" ] && cp -r config/ dist/ || echo "⚠️ config/ no encontrado, omitiendo"
         [ -d "docs" ] && cp -r docs/ dist/ || echo "⚠️ docs/ no encontrado, omitiendo"
         [ -f "README.md" ] && cp README.md dist/ || echo "⚠️ README.md no encontrado, omitiendo"
@@ -281,7 +285,7 @@ jobs:
         echo "Archivos en dist: $(find dist -type f | wc -l)"
         echo "Tamaño total: $(du -sh dist | cut -f1)"
         
-        echo "✅ Preparación de archivos completada"
+        echo "✅ Build de React completado exitosamente"
 
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3

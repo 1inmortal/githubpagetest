@@ -541,14 +541,16 @@
       background: #000;
     }
 
-    .card img {
+    .card img,
+    .card canvas {
       width: 100%; 
       height: 100%;
       object-fit: cover;
       transition: transform 0.5s ease;
       filter: grayscale(20%);
     }
-    .card:hover img { 
+    .card:hover img,
+    .card:hover canvas { 
       transform: scale(1.05); 
       filter: grayscale(0%); 
     }
@@ -786,6 +788,16 @@
       box-shadow: 0 20px 60px rgba(0,0,0,0.5);
       opacity: 0; /* Animado */
       transform: scale(0.9);
+    }
+
+    #v-pdf-canvas {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      opacity: 0; /* Animado */
+      transform: scale(0.9);
+      background: #fff;
     }
 
     /* Columna Derecha: Información */
@@ -1480,6 +1492,7 @@
       
       <div class="view-left">
         <img src="" class="view-img" id="v-img" alt="Certificado Full">
+        <canvas id="v-pdf-canvas" style="display: none; max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 20px 60px rgba(0,0,0,0.5);"></canvas>
       </div>
       
       <div class="view-right">
@@ -1535,6 +1548,8 @@
 
   <!-- Librerías de Animación -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <!-- PDF.js para renderizar PDFs como imágenes -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
   <script>
     // --- CONFIG ---
@@ -1595,10 +1610,30 @@
         category: "ai"
       },
       {
+        file: "../pdf/Introduction to Secure Networking.pdf",
+        title: "Introduction to Secure Networking",
+        platform: "Google",
+        platformIcon: "G",
+        status: "completed",
+        date: "2024",
+        priority: 2,
+        category: "cybersecurity"
+      },
+      {
         file: "Introduction to Software Engineering.jpg",
         title: "Introduction to Software Engineering",
         platform: "Meta",
         platformIcon: "M",
+        status: "completed",
+        date: "2024",
+        priority: 2,
+        category: "fullstack"
+      },
+      {
+        file: "../pdf/Introducción a la informática.pdf",
+        title: "Introducción a la informática",
+        platform: "Coursera",
+        platformIcon: "C",
         status: "completed",
         date: "2024",
         priority: 2,
@@ -1951,6 +1986,7 @@
     
     // Elementos del Viewer
     const vImg = document.getElementById('v-img');
+    const vPdfCanvas = document.getElementById('v-pdf-canvas');
     const vTitle = document.getElementById('v-title');
     const vDesc = document.getElementById('v-desc');
     const vOrg = document.getElementById('v-org');
@@ -2042,42 +2078,162 @@
         : CERTIFICATES.filter(c => c.category === activeFilter);
     }
 
+    // --- CONFIGURAR PDF.js ---
+    if (typeof pdfjsLib !== 'undefined') {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+
+    // --- FUNCIÓN PARA RENDERIZAR PDF COMO IMAGEN ---
+    async function renderPdfAsImage(pdfUrl, canvas) {
+      try {
+        // Cargar el PDF
+        const loadingTask = pdfjsLib.getDocument(pdfUrl);
+        const pdf = await loadingTask.promise;
+        
+        // Obtener la primera página
+        const page = await pdf.getPage(1);
+        
+        // Calcular el viewport con escala adecuada
+        const viewport = page.getViewport({ scale: 2.0 });
+        
+        // Ajustar el tamaño del canvas
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        
+        // Renderizar la página en el canvas
+        const renderContext = {
+          canvasContext: canvas.getContext('2d'),
+          viewport: viewport
+        };
+        
+        await page.render(renderContext).promise;
+        
+        return true;
+      } catch (error) {
+        console.error('Error al renderizar PDF:', error);
+        return false;
+      }
+    }
+
+    // --- FUNCIÓN PARA CONSTRUIR URL ---
+    function getCertificateUrl(file) {
+      // Si el archivo es una ruta relativa (empieza con ../), usarla directamente
+      if (file.startsWith('../')) {
+        return file;
+      }
+      // Si no, usar BASE_URL
+      return BASE_URL + encodeURIComponent(file);
+    }
+
+    // --- FUNCIÓN PARA RENDERIZAR PDF EN CARD (escala más pequeña) ---
+    async function renderPdfInCard(pdfUrl, canvas) {
+      try {
+        // Cargar el PDF
+        const loadingTask = pdfjsLib.getDocument(pdfUrl);
+        const pdf = await loadingTask.promise;
+        
+        // Obtener la primera página
+        const page = await pdf.getPage(1);
+        
+        // Calcular el viewport con escala más pequeña para las cards
+        const viewport = page.getViewport({ scale: 1.0 });
+        
+        // Ajustar el tamaño del canvas al contenedor de la card
+        const containerWidth = 320; // Ancho típico de una card
+        const containerHeight = 200; // Alto del card-image-wrapper
+        const scale = Math.min(containerWidth / viewport.width, containerHeight / viewport.height, 1.0);
+        
+        const scaledViewport = page.getViewport({ scale: scale });
+        canvas.width = scaledViewport.width;
+        canvas.height = scaledViewport.height;
+        
+        // Renderizar la página en el canvas
+        const renderContext = {
+          canvasContext: canvas.getContext('2d'),
+          viewport: scaledViewport
+        };
+        
+        await page.render(renderContext).promise;
+        
+        return true;
+      } catch (error) {
+        console.error('Error al renderizar PDF en card:', error);
+        return false;
+      }
+    }
+
     // --- RENDER CARDS ---
-    function renderCards() {
+    async function renderCards() {
       // Limpiar grid
       grid.innerHTML = '';
 
       // Filtrar certificados
       currentFilteredCerts = getFilteredCertificates();
 
+      // Crear todas las cards primero
+      const cardsData = [];
       currentFilteredCerts.forEach((certData, index) => {
         const info = getCertInfo(certData);
-        const url = BASE_URL + encodeURIComponent(certData.file);
+        const url = getCertificateUrl(certData.file);
+        const isPdf = certData.file.toLowerCase().endsWith('.pdf');
         
         const card = document.createElement('div');
         card.className = 'card';
         card.dataset.category = certData.category;
         card.dataset.index = index;
-        card.innerHTML = `
-          <div class="card-image-wrapper">
-            <img src="${url}" alt="${info.title}" loading="lazy">
-            <div class="card-platform-icon" title="${info.platform}">${info.platformIcon}</div>
-          </div>
-          <div class="card-content">
-            <h3 class="card-title">${info.title}</h3>
-            <div class="card-platform">${info.platform}</div>
-            <span class="card-status ${info.status}">
-              ${info.status === 'completed' ? iconCheck + ' ' + getTranslation('status.completed') : iconClock + ' ' + getTranslation('status.inProgress')}
-            </span>
-            <div class="card-skills">
-              <div class="card-skills-text">${info.skills.slice(0, 3).join(' • ')}</div>
-            </div>
+        
+        const imageWrapper = document.createElement('div');
+        imageWrapper.className = 'card-image-wrapper';
+        
+        if (isPdf) {
+          // Crear canvas para PDF
+          const canvas = document.createElement('canvas');
+          canvas.style.width = '100%';
+          canvas.style.height = '100%';
+          canvas.style.objectFit = 'cover';
+          canvas.style.background = '#000';
+          canvas.dataset.pdfUrl = url;
+          imageWrapper.appendChild(canvas);
+          cardsData.push({ canvas, url, card });
+        } else {
+          // Crear img para imágenes normales
+          const img = document.createElement('img');
+          img.src = url;
+          img.alt = info.title;
+          img.loading = 'lazy';
+          imageWrapper.appendChild(img);
+        }
+        
+        const platformIcon = document.createElement('div');
+        platformIcon.className = 'card-platform-icon';
+        platformIcon.title = info.platform;
+        platformIcon.textContent = info.platformIcon;
+        imageWrapper.appendChild(platformIcon);
+        
+        const cardContent = document.createElement('div');
+        cardContent.className = 'card-content';
+        cardContent.innerHTML = `
+          <h3 class="card-title">${info.title}</h3>
+          <div class="card-platform">${info.platform}</div>
+          <span class="card-status ${info.status}">
+            ${info.status === 'completed' ? iconCheck + ' ' + getTranslation('status.completed') : iconClock + ' ' + getTranslation('status.inProgress')}
+          </span>
+          <div class="card-skills">
+            <div class="card-skills-text">${info.skills.slice(0, 3).join(' • ')}</div>
           </div>
         `;
-
+        
+        card.appendChild(imageWrapper);
+        card.appendChild(cardContent);
         card.onclick = () => openViewerAtIndex(index, certData);
+        
         grid.appendChild(card);
       });
+
+      // Renderizar PDFs en paralelo después de crear las cards
+      await Promise.all(cardsData.map(async ({ canvas, url }) => {
+        await renderPdfInCard(url, canvas);
+      }));
     }
 
     // Inicializar idioma y renderizar
@@ -2089,19 +2245,42 @@
     function openViewerAtIndex(index, certData) {
       currentCertIndex = index;
       const info = getCertInfo(certData);
-      const url = BASE_URL + encodeURIComponent(certData.file);
+      const url = getCertificateUrl(certData.file);
       openViewer(url, info, certData);
     }
 
     // --- ANIMACIONES GSAP (INTERACCIÓN COMPLEJA) ---
-    function openViewer(url, info, certData = null) {
+    async function openViewer(url, info, certData = null) {
       // Si no se pasa certData, buscar por índice actual
       if (!certData && currentCertIndex >= 0) {
         certData = currentFilteredCerts[currentCertIndex];
       }
 
+      // Detectar si es PDF
+      const isPdf = certData && certData.file.toLowerCase().endsWith('.pdf');
+
       // 1. Preparar datos
-      vImg.src = url;
+      if (isPdf) {
+        // Para PDFs, renderizar como imagen en canvas
+        vImg.style.display = 'none';
+        vPdfCanvas.style.display = 'block';
+        vPdfCanvas.style.opacity = '0';
+        
+        // Renderizar PDF
+        const success = await renderPdfAsImage(url, vPdfCanvas);
+        if (!success) {
+          // Si falla, mostrar mensaje de error
+          vPdfCanvas.style.display = 'none';
+          vImg.style.display = 'block';
+          vImg.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iIzIyMiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODkyYjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5FcnJvciBhbCBjYXJnYXIgUERGPC90ZXh0Pjwvc3ZnPg==';
+        }
+      } else {
+        // Para imágenes, usar img
+        vImg.style.display = 'block';
+        vPdfCanvas.style.display = 'none';
+        vImg.src = url;
+      }
+      
       vTitle.textContent = info.title;
       vDesc.textContent = info.desc;
       vOrg.textContent = info.platform || info.org;
@@ -2113,9 +2292,22 @@
         vPlatformLogo.innerHTML = `<div class="platform-logo-svg">${getPlatformLogo(certData.platform)}</div>`;
       }
       
-      // Actualizar enlace del certificado oficial
+      // Actualizar enlace del certificado oficial (no permitir descarga directa del PDF)
       if (vCertLink) {
-        vCertLink.href = url;
+        if (isPdf) {
+          // Para PDFs, convertir canvas a imagen y descargar como PNG
+          vCertLink.onclick = (e) => {
+            e.preventDefault();
+            const link = document.createElement('a');
+            link.download = info.title.replace(/[^a-z0-9]/gi, '_') + '.png';
+            link.href = vPdfCanvas.toDataURL('image/png');
+            link.click();
+          };
+          vCertLink.href = '#';
+        } else {
+          vCertLink.onclick = null;
+          vCertLink.href = url;
+        }
       }
       
       // Actualizar breadcrumb
@@ -2133,6 +2325,7 @@
 
       // 3. Timeline de apertura
       const tl = gsap.timeline();
+      const displayElement = isPdf ? vPdfCanvas : vImg;
       
       // Fondo fade in
       tl.to(viewer, { opacity: 1, duration: 0.3 })
@@ -2140,8 +2333,8 @@
           { scale: 0.9, y: 30, opacity: 0 },
           { scale: 1, y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.1)" }, "-=0.2"
         )
-        // Imagen entra desde el centro/abajo
-        .fromTo(vImg, 
+        // Imagen/PDF entra desde el centro/abajo
+        .fromTo(displayElement, 
           { scale: 0.8, opacity: 0, x: 20 },
           { scale: 1, opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, "-=0.3"
         )
@@ -2174,8 +2367,32 @@
     }
 
     // --- FUNCIÓN PARA ACTUALIZAR CONTENIDO SIN ANIMACIÓN COMPLETA ---
-    function updateViewerContent(url, info, certData) {
-      vImg.src = url;
+    async function updateViewerContent(url, info, certData) {
+      // Detectar si es PDF
+      const isPdf = certData && certData.file.toLowerCase().endsWith('.pdf');
+      
+      if (isPdf) {
+        // Para PDFs, renderizar como imagen en canvas
+        vImg.style.display = 'none';
+        vPdfCanvas.style.display = 'block';
+        vPdfCanvas.style.opacity = '0';
+        
+        // Renderizar PDF
+        const success = await renderPdfAsImage(url, vPdfCanvas);
+        if (!success) {
+          vPdfCanvas.style.display = 'none';
+          vImg.style.display = 'block';
+          vImg.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iIzIyMiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODkyYjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5FcnJvciBhbCBjYXJnYXIgUERGPC90ZXh0Pjwvc3ZnPg==';
+        } else {
+          vPdfCanvas.style.opacity = '1';
+        }
+      } else {
+        // Para imágenes, usar img
+        vImg.style.display = 'block';
+        vPdfCanvas.style.display = 'none';
+        vImg.src = url;
+      }
+      
       vTitle.textContent = info.title;
       vDesc.textContent = info.desc;
       vOrg.textContent = info.platform || info.org;
@@ -2189,7 +2406,20 @@
       
       // Actualizar enlace del certificado oficial
       if (vCertLink) {
-        vCertLink.href = url;
+        if (isPdf) {
+          // Para PDFs, convertir canvas a imagen y descargar como PNG
+          vCertLink.onclick = (e) => {
+            e.preventDefault();
+            const link = document.createElement('a');
+            link.download = info.title.replace(/[^a-z0-9]/gi, '_') + '.png';
+            link.href = vPdfCanvas.toDataURL('image/png');
+            link.click();
+          };
+          vCertLink.href = '#';
+        } else {
+          vCertLink.onclick = null;
+          vCertLink.href = url;
+        }
       }
       
       // Actualizar breadcrumb
@@ -2202,37 +2432,41 @@
     }
 
     // --- FUNCIONES DE NAVEGACIÓN ---
-    function navigateToPrev() {
+    async function navigateToPrev() {
       if (currentCertIndex > 0) {
         currentCertIndex--;
         const certData = currentFilteredCerts[currentCertIndex];
         const info = getCertInfo(certData);
-        const url = BASE_URL + encodeURIComponent(certData.file);
+        const url = getCertificateUrl(certData.file);
         
         // Animación de transición
+        const isPdf = certData.file.toLowerCase().endsWith('.pdf');
+        const displayElement = isPdf ? vPdfCanvas : vImg;
         const tl = gsap.timeline();
-        tl.to([vImg, '.view-right'], { opacity: 0, x: -20, duration: 0.2 })
-          .call(() => {
-            updateViewerContent(url, info, certData);
+        tl.to([displayElement, '.view-right'], { opacity: 0, x: -20, duration: 0.2 })
+          .call(async () => {
+            await updateViewerContent(url, info, certData);
           })
-          .to([vImg, '.view-right'], { opacity: 1, x: 0, duration: 0.3 });
+          .to([displayElement, '.view-right'], { opacity: 1, x: 0, duration: 0.3 });
       }
     }
 
-    function navigateToNext() {
+    async function navigateToNext() {
       if (currentCertIndex < currentFilteredCerts.length - 1) {
         currentCertIndex++;
         const certData = currentFilteredCerts[currentCertIndex];
         const info = getCertInfo(certData);
-        const url = BASE_URL + encodeURIComponent(certData.file);
+        const url = getCertificateUrl(certData.file);
         
         // Animación de transición
+        const isPdf = certData.file.toLowerCase().endsWith('.pdf');
+        const displayElement = isPdf ? vPdfCanvas : vImg;
         const tl = gsap.timeline();
-        tl.to([vImg, '.view-right'], { opacity: 0, x: 20, duration: 0.2 })
-          .call(() => {
-            updateViewerContent(url, info, certData);
+        tl.to([displayElement, '.view-right'], { opacity: 0, x: 20, duration: 0.2 })
+          .call(async () => {
+            await updateViewerContent(url, info, certData);
           })
-          .to([vImg, '.view-right'], { opacity: 1, x: 0, duration: 0.3 });
+          .to([displayElement, '.view-right'], { opacity: 1, x: 0, duration: 0.3 });
       }
     }
 
@@ -2264,6 +2498,9 @@
           document.body.classList.remove('locked');
           mainContent.classList.remove('blurred');
           vImg.src = ""; // Limpiar imagen
+          // Limpiar canvas del PDF
+          const ctx = vPdfCanvas.getContext('2d');
+          ctx.clearRect(0, 0, vPdfCanvas.width, vPdfCanvas.height);
         }
       });
 

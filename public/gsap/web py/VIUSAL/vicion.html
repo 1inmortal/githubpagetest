@@ -1,0 +1,3695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TouchDesigner Style Hand Tracking OS v5.0 PRO (Radial Circuit Elite)</title>
+    <!-- MediaPipe Hands CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #050505;
+            overflow: hidden;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+        }
+
+        #videoInput { display: none; }
+
+        #glCanvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 2;
+            opacity: 0;
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: scaleX(-1); /* Espejo horizontal */
+        }
+
+        #hudCanvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 4;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+
+        #threeCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        #status {
+            position: absolute;
+            z-index: 10;
+            color: #444;
+            font-size: 14px;
+            bottom: 30px; left: 30px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-left: 3px solid #444;
+            padding-left: 10px;
+            transition: all 0.3s;
+        }
+
+        .hotzone-indicator {
+            position: absolute;
+            pointer-events: none;
+            border: 1px solid rgba(0, 255, 100, 0.2);
+            background: rgba(0, 255, 100, 0.02);
+            font-size: 10px;
+            color: rgba(0, 255, 100, 0.5);
+            padding: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            letter-spacing: 1px;
+            backdrop-filter: blur(2px);
+            overflow: hidden;
+        }
+
+        .hotzone-indicator video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.7;
+            z-index: 0;
+            transform: scaleX(-1); /* Espejo horizontal para que se vea natural */
+        }
+
+        .hotzone-indicator .zone-label {
+            position: relative;
+            z-index: 1;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 4px 6px;
+            margin-bottom: 2px;
+            display: inline-block;
+        }
+
+        .active { opacity: 1 !important; }
+        
+        #status.active-status {
+            border-color: #0f0;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(0,255,0,0.5);
+        }
+
+        /* Iframe del ambiente de fondo */
+        #ambienteFrame {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        #ambienteFrame.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Canvas de nebulosa */
+        #nebulaCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        #nebulaCanvas.active {
+            opacity: 1;
+        }
+
+        /* Botones de control HUD */
+        .hud-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .hud-button {
+            width: 48px;
+            height: 48px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1.5px solid rgba(0, 255, 170, 0.5);
+            border-radius: 4px;
+            color: rgba(0, 255, 170, 0.9);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            box-shadow: 0 0 10px rgba(0, 255, 170, 0.1);
+        }
+
+        .hud-button:hover {
+            background: rgba(0, 255, 170, 0.1);
+            border-color: rgba(0, 255, 170, 0.9);
+            box-shadow: 0 0 20px rgba(0, 255, 170, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .hud-button:active {
+            transform: translateY(0);
+            box-shadow: 0 0 15px rgba(0, 255, 170, 0.4);
+        }
+
+        .hud-button.active {
+            background: rgba(0, 255, 170, 0.15);
+            border-color: rgba(0, 255, 170, 1);
+            box-shadow: 0 0 25px rgba(0, 255, 170, 0.5);
+        }
+
+        .mode-label {
+            position: absolute;
+            top: -24px;
+            right: 0;
+            font-size: 9px;
+            color: rgba(0, 255, 170, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .hud-button:hover .mode-label {
+            opacity: 1;
+        }
+
+        /* Split view layout */
+        body.split-mode #container {
+            overflow: hidden;
+        }
+
+        body.split-mode #glCanvas,
+        body.split-mode #hudCanvas,
+        body.split-mode #threeCanvas {
+            clip-path: inset(0 50% 0 0);
+        }
+
+        body.split-mode #nebulaCanvas {
+            clip-path: inset(0 0 0 50%);
+        }
+
+        body.split-mode #ambienteFrame {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Iframe del ambiente nebulosa -->
+<iframe id="ambienteFrame" src="ambiente.html"></iframe>
+
+<!-- Canvas de nebulosa -->
+<canvas id="nebulaCanvas"></canvas>
+
+<div id="container">
+    <video id="videoInput" autoplay playsinline></video>
+    <canvas id="glCanvas"></canvas>
+    <canvas id="hudCanvas"></canvas>
+    <canvas id="threeCanvas"></canvas>
+    <div id="status">SYSTEM OFFLINE // AWAITING NEURAL LINK [PRESS N]</div>
+    
+    <!-- Hot Zones Indicators -->
+    <div class="hotzone-indicator" id="zoneA" style="top: 30px; left: 30px; width: 180px; height: 120px;">
+        <video id="zoneAVideo" autoplay playsinline muted></video>
+        <div class="zone-label">
+            <span style="font-weight:bold;">SECTOR A [PRESET]</span><br/>
+            <span style="font-size:9px; opacity:0.7;">> INTERFACE_MODULATION</span>
+        </div>
+    </div>
+    <div class="hotzone-indicator" id="zoneB" style="bottom: 80px; right: 30px; width: 180px; height: 120px;">
+        <span style="font-weight:bold;">SECTOR B [DENSITY]</span><br/>
+        <span style="font-size:9px; opacity:0.7;">> PARTICLE_EMITTER_GAIN</span>
+    </div>
+</div>
+
+<!-- Controles HUD -->
+<div class="hud-controls">
+    <button id="modeButton" class="hud-button" title="Toggle Mode">
+        <span class="mode-label" id="modeLabel">NORMAL</span>
+        MODE
+    </button>
+    <button id="fullscreenButton" class="hud-button" title="Toggle Fullscreen">
+        ⛶
+    </button>
+</div>
+
+<!-- SHADERS GLSL (Igual que v4.0) -->
+<script id="vs" type="x-shader/x-vertex">
+    attribute vec2 position;
+    varying vec2 vUv;
+    void main() {
+        vUv = position * 0.5 + 0.5;
+        vUv.y = 1.0 - vUv.y; 
+        gl_Position = vec4(position, 0.0, 1.0);
+    }
+</script>
+
+<script id="fs" type="x-shader/x-fragment">
+    precision mediump float;
+    uniform sampler2D uTexture;
+    uniform float uTime;
+    uniform float uVelocity;
+    varying vec2 vUv;
+
+    void main() {
+        vec2 uv = vUv;
+        
+        // Sin distorsión, solo textura directa
+        vec4 texColor = texture2D(uTexture, uv);
+        vec3 color = texColor.rgb;
+
+        // Estética (scanline, vignette, desaturación)
+        float scanline = sin(uv.y * 800.0 + uTime * 2.0) * 0.02;
+        color -= scanline;
+        float vignette = smoothstep(0.8, 0.3, length(vUv - 0.5));
+        color *= vignette;
+        vec3 gray = vec3(dot(color, vec3(0.299, 0.587, 0.114)));
+        color = mix(color, gray, 0.3);
+        color = pow(color, vec3(1.1));
+
+        gl_FragColor = vec4(color, 1.0);
+    }
+</script>
+
+<script>
+/**
+ * SISTEMA DE RASTREO TÁCTICO V5.0 PRO (RADIAL CIRCUIT ELITE)
+ * -----------------------------------------------------------
+ * Ingeniería Creativa Avanzada:
+ * 
+ * NUEVAS CARACTERÍSTICAS V5.0 PRO:
+ * ✓ Panel Radial tipo circuito con 8 capas visuales
+ * ✓ Física de rotación suave con unwrap angular (sin saltos π/-π)
+ * ✓ Rotación por orientación de mano con smoothing avanzado
+ * ✓ Cierre con puño (FIST) + debounce (3 frames)
+ * ✓ Inercia con fricción adaptativa + spring snapping fino
+ * ✓ Hysteresis para cambio de sección (55% threshold)
+ * ✓ Circuit traces con L-shapes y data pulses animados
+ * ✓ 12 POIs por sección con hover + tooltips
+ * ✓ Datos vivos basados en rotationPhase
+ * ✓ Valores estables con hash pseudo-random (no random por frame)
+ * ✓ Animaciones de apertura/cierre con easing exponencial
+ * ✓ Stagger en colapso (traces → rings)
+ * ✓ Burst particles en cierre
+ * ✓ Glow controlado con composite operation
+ * ✓ Selector visual estático + conexión al cursor
+ * ✓ Sin pérdida de FPS (optimizado)
+ */
+
+// ============ CONFIGURACIÓN ============
+const CONFIG = {
+    pinchThreshold: 0.06,
+    minConfidence: 0.65,
+    handSmoothing: 0.2, 
+    scanEmissionRate: 0.98,
+    maxScanPoints: 80,
+    scanThreshold: 110,
+    openHandThreshold: 0.12,
+    fistThreshold: 0.07,
+    swipeVelocityThreshold: 20
+};
+
+// Configuración del Panel Radial (MEJORADO V5.0)
+const PANEL_CONFIG = {
+    maxRadius: 160,
+    expandSpeed: 0.075,
+    collapseSpeed: 0.11,
+    friction: 0.93,
+    frictionFast: 0.88,       // Fricción cuando velocidad es alta
+    snapThreshold: 0.012,     // Velocidad mínima para iniciar snap
+    snapSpring: 0.14,         // Fuerza del snap
+    snapDamping: 0.85,        // Damping del snap
+    rotationSmoothing: 0.25,  // Suavizado de rotación manual
+    maxAngularVel: 0.18,      // Velocidad angular máxima
+    sections: 8,
+    poiCount: 12,             // Puntos de interés
+    traceCount: 24,           // Trazas de circuito
+    glowIntensity: 0.6,
+    ringThickness: 2,
+    closeDebounceMs: 200,     // Debounce para FIST
+    color: "#00ffaa"
+};
+
+// ============ CONSTANTES FSM (NUEVAS) ============
+const INTENT_CONFIG = {
+    OPEN_DWELL_MS: 300,           // Tiempo que OPENHAND debe sostenerse para ARMED_OPEN → OPEN_CONFIRMED
+    CLOSE_DWELL_MS: 250,          // Tiempo que FIST debe sostenerse antes de cerrar
+    COOLDOWN_MS: 500,             // Ventana de cooldown tras cerrar (evita reapertura accidental)
+    LOST_HAND_CLOSE_MS: 1200,     // Auto-cierre si se pierde la mano (panel activo)
+    ROT_DEADZONE: 0.01,           // Deadzone angular para matar jitter (rad)
+    SNAP_DELAY_MS: 250,           // Delay antes de activar snapping tras soltar pinch
+    AUTO_DISMISS_DIST: 300,       // Distancia máxima del centro para auto-dismiss
+    AUTO_DISMISS_TIME_MS: 2000,   // Tiempo fuera del centro para auto-dismiss
+    VELOCITY_HYSTERESIS_FACTOR: 1.5  // Factor para aumentar umbral de sección cuando velocidad es alta
+};
+
+// Hysteresis para cambio de sección
+const SECTION_HYSTERESIS = 0.55; // 55% del sector
+
+const video = document.getElementById('videoInput');
+const zoneAVideo = document.getElementById('zoneAVideo');
+const glCanvas = document.getElementById('glCanvas');
+const hudCanvas = document.getElementById('hudCanvas');
+const statusDiv = document.getElementById('status');
+const zoneA = document.getElementById('zoneA');
+const zoneB = document.getElementById('zoneB');
+const ctx = hudCanvas.getContext('2d');
+let gl;
+
+// Estado del sistema
+let systemActive = false;
+let globalTime = 0;
+
+// Rastreo
+let lightPos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+let targetPos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+let velocityMag = 0;
+
+// Partículas y Efectos
+const scanPoints = []; 
+const burstParticles = [];
+const trails = [];
+const MAX_TRAIL_LENGTH = 15;
+const dataStream = [];
+
+// MediaPipe
+let hands = null;
+let camera = null;
+let detectedHands = [];
+let handLockActive = false;
+let currentGesture = "NONE";
+let previousIndexPos = null;
+let previousGesture = "NONE";
+
+// ============ SISTEMA DE MODOS Y NEBULOSA ============
+const nebulaCanvas = document.getElementById('nebulaCanvas');
+// NO crear contexto 2D aquí - se creará WebGL en initNebulaBuffers
+let nebulaGL = null; // Contexto WebGL para raymarching
+let nebulaProgram = null;
+let nebulaUniforms = {};
+let nebulaCtx = null; // Se usará solo para clipping en split mode si es necesario
+const modeButton = document.getElementById('modeButton');
+const modeLabel = document.getElementById('modeLabel');
+const fullscreenButton = document.getElementById('fullscreenButton');
+const ambienteFrame = document.getElementById('ambienteFrame');
+
+// Estados de modo
+const MODES = {
+    NORMAL: 'NORMAL',
+    BLACK: 'BLACK',
+    SPLIT: 'SPLIT'
+};
+
+let currentMode = localStorage.getItem('viewMode') || MODES.NORMAL;
+let isFullscreen = false;
+
+// Nebulosa: buffers y estado
+const NEBULA_CONFIG = {
+    internalWidth: 480,
+    internalHeight: 270,
+    driftSpeed: 0.03,
+    breathingSpeed: 0.015,
+    interactionRadius: 80,
+    interactionStrength: 0.4,
+    decayRate: 0.98,
+    pixelDensity: 1.0
+};
+
+let nebulaBaseBuffer = null;
+let nebulaStateBuffer = null;
+let nebulaBaseCtx = null;
+let nebulaStateCtx = null;
+let nebulaInitialized = false;
+
+// Hot Zones
+const hotZones = [
+    { x: 30, y: 30, w: 180, h: 120, name: "ZONE_A", element: zoneA },
+    { x: window.innerWidth - 210, y: window.innerHeight - 200, w: 180, h: 120, name: "ZONE_B", element: zoneB }
+];
+let hudPreset = 0; 
+let scanIntensity = 1;
+
+// === NUEVO: OBJETO PANEL RADIAL (MEJORADO) ===
+let panel = {
+    active: false,
+    state: 'IDLE', // IDLE, EXPANDING, ACTIVE, COLLAPSING (controla animación visual)
+    progress: 0, // 0 a 1 (animación de apertura)
+    center: { x: 0, y: 0 },
+    rotation: 0,
+    rotationVel: 0,
+    prevRotation: 0,
+    prevHandAngle: 0,       // NUEVO: Ángulo de mano previo (separado de prevRotation)
+    grabbed: false,
+    baseHandAngle: 0,
+    basePanelRotation: 0,
+    currentSection: 0,
+    prevSection: 0,
+    rotationPhase: 0,       // 0-1 fase normalizada
+    pulseTime: 0,
+    sectionsData: [],
+    pois: [],               // Puntos de interés
+    traces: [],             // Trazas de circuito
+    dataPulses: [],         // Pulsos animados en las trazas
+    fistDebounceCount: 0,   // Contador para debounce de FIST
+    collapseBurst: false,   // Flag para animación de cierre
+    
+    // ============ FSM DE INTENCIÓN (NUEVO) ============
+    intentState: 'INTENT_IDLE',  // INTENT_IDLE, INTENT_ARMED_OPEN, INTENT_OPEN_CONFIRMED, 
+                                  // INTENT_GRABBED, INTENT_ACTIVE_FREE, INTENT_CLOSING, INTENT_COOLDOWN
+    intentTimers: {
+        openDwell: 0,           // Contador de frames para OPENHAND → OPEN_CONFIRMED
+        closeDwell: 0,           // Contador de frames para FIST → CLOSING
+        cooldown: 0,             // Contador de frames para COOLDOWN
+        lostHandTimer: 0,        // Timer para auto-cierre si se pierde la mano
+        snapDelay: 0,            // Delay antes de activar snapping
+        autoDismissTimer: 0      // Timer para auto-dismiss si se aleja del centro
+    },
+    lastHandPos: { x: 0, y: 0 },  // Última posición de la mano (para auto-dismiss)
+    showGhostRing: false,          // Flag para mostrar preview ring
+    ghostRingRadius: 0              // Radio del ghost ring
+};
+
+// Generar datos Mock para las secciones
+const SECTIONS_LABELS = ["BIO-SCAN", "NETWORK", "TARGET", "MEMORY", "SECURITY", "DEBUG", "POWER", "SYSTEM"];
+panel.sectionsData = SECTIONS_LABELS.map((label, i) => ({
+    label: label,
+    val: Math.floor(Math.random() * 100),
+    id: `0x${(i+10).toString(16).toUpperCase()}`,
+    color: `hsl(${i * 45}, 80%, 60%)`,
+    baseValue: 50 + Math.random() * 50,
+    seed: i * 123.456  // Seed para valores estables
+}));
+
+// Canvas temporal
+const hiddenCanvas = document.createElement('canvas');
+hiddenCanvas.width = 80; hiddenCanvas.height = 60;
+const hCtx = hiddenCanvas.getContext('2d');
+
+// Glosario Tech
+const techWords = ["ID_404", "BUFFER", "SYNC", "LUM", "MESH", "ERR", "VEC3", "PROXY"];
+
+// WebGL Vars
+let program, positionBuffer, texture;
+
+// ============ UTILITIES ============
+
+// Unwrap angle para evitar saltos de -π a π
+function unwrapAngle(prevAngle, newAngle) {
+    const diff = newAngle - prevAngle;
+    if (diff > Math.PI) {
+        return newAngle - Math.PI * 2;
+    } else if (diff < -Math.PI) {
+        return newAngle + Math.PI * 2;
+    }
+    return newAngle;
+}
+
+// Lerp angular (interpolación de ángulos)
+function lerpAngle(a, b, t) {
+    const diff = b - a;
+    const wrappedDiff = ((diff + Math.PI) % (Math.PI * 2)) - Math.PI;
+    return a + wrappedDiff * t;
+}
+
+// Clamp
+function clamp(val, min, max) {
+    return Math.max(min, Math.min(max, val));
+}
+
+// Smooth step
+function smoothstep(edge0, edge1, x) {
+    const t = clamp((x - edge0) / (edge1 - edge0), 0, 1);
+    return t * t * (3 - 2 * t);
+}
+
+// Easing functions
+function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+}
+
+function easeInCubic(t) {
+    return t * t * t;
+}
+
+function easeOutExpo(t) {
+    return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+}
+
+function easeInExpo(t) {
+    return t === 0 ? 0 : Math.pow(2, 10 * (t - 1));
+}
+
+// Hash pseudo-random estable (para datos por sección)
+function hashFloat(seed) {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+}
+
+function resize() {
+    hudCanvas.width = window.innerWidth;
+    hudCanvas.height = window.innerHeight;
+    glCanvas.width = window.innerWidth;
+    glCanvas.height = window.innerHeight;
+    nebulaCanvas.width = window.innerWidth;
+    nebulaCanvas.height = window.innerHeight;
+    
+    // Actualizar viewport de WebGL si está inicializado
+    if (nebulaGL) {
+        nebulaGL.viewport(0, 0, nebulaCanvas.width, nebulaCanvas.height);
+    }
+    
+    hotZones[1].x = window.innerWidth - 210;
+    hotZones[1].y = window.innerHeight - 200;
+    if(gl) gl.viewport(0, 0, glCanvas.width, glCanvas.height);
+    
+    // Reinicializar buffers de nebulosa si están inicializados
+    if (nebulaInitialized) {
+        initNebulaBuffers();
+    }
+}
+
+// ============ INICIALIZACIÓN ============
+async function init() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { width: { ideal: 1280 }, height: { ideal: 720 } } 
+        });
+        video.srcObject = stream;
+        await video.play();
+        
+        // Conectar el mismo stream al video del SECTOR A
+        if (zoneAVideo) {
+            zoneAVideo.srcObject = stream;
+            await zoneAVideo.play();
+        }
+
+        resize();
+        window.addEventListener('resize', resize);
+        
+        initWebGL();
+        initThreeJS(); // NUEVO: Inicializar Three.js
+        await initHandTracking();
+        initDataStream();
+        
+        // Inicializar sistema de modos y nebulosa
+        initNebulaBuffers();
+        applyMode();
+        updateModeUI();
+        
+        loop();
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 'n') toggleSystem();
+        });
+
+    } catch (err) {
+        statusDiv.innerText = "CRITICAL ERROR: SENSOR FAILURE";
+        statusDiv.style.color = "#ff3333";
+    }
+}
+
+// ============ MEDIAPIPE ============
+async function initHandTracking() {
+    hands = new Hands({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+    });
+    hands.setOptions({
+        maxNumHands: 1, // Enfocado en 1 mano para mejor control del panel
+        modelComplexity: 1,
+        minDetectionConfidence: 0.6,
+        minTrackingConfidence: 0.5
+    });
+    hands.onResults(onHandsResults);
+    
+    camera = new Camera(video, {
+        onFrame: async () => { if (systemActive) await hands.send({ image: video }); },
+        width: 1280, height: 720
+    });
+    camera.start();
+}
+
+function onHandsResults(results) {
+    detectedHands = [];
+    if (results.multiHandLandmarks) {
+        for (let i = 0; i < results.multiHandLandmarks.length; i++) {
+            detectedHands.push({
+                landmarks: results.multiHandLandmarks[i],
+                handedness: results.multiHandedness[i].label,
+                confidence: results.multiHandedness[i].score
+            });
+        }
+    }
+    
+    if (detectedHands.length > 0) {
+        processHandTracking();
+    } else {
+        handLockActive = false;
+        currentGesture = "NONE";
+        // La FSM manejará la pérdida de mano en updateIntentFSM
+        // Aquí solo actualizamos el estado básico
+        if (panel.grabbed) {
+            panel.grabbed = false;
+        }
+        // Actualizar FSM con mano perdida
+        updateIntentFSM(null, "NONE");
+    }
+}
+
+function processHandTracking() {
+    const hand = detectedHands[0];
+    handLockActive = true;
+    const indexTip = hand.landmarks[8];
+    
+    // Invertir X
+    const rawX = hudCanvas.width - (indexTip.x * hudCanvas.width);
+    const rawY = indexTip.y * hudCanvas.height;
+    
+    // Lerp
+    targetPos.x += (rawX - targetPos.x) * CONFIG.handSmoothing;
+    targetPos.y += (rawY - targetPos.y) * CONFIG.handSmoothing;
+    
+    // Velocidad
+    if (previousIndexPos) {
+        const dx = rawX - previousIndexPos.x;
+        const dy = rawY - previousIndexPos.y;
+        velocityMag = Math.sqrt(dx*dx + dy*dy);
+    }
+    previousIndexPos = { x: rawX, y: rawY };
+
+    detectGestures(hand);
+    
+    if (currentGesture === "OPEN_HAND") emitHandScanPoints(hand);
+    
+    // === COMUNICACIÓN CON AMBIENTE.HTML ===
+    // Enviar posición del dedo índice al ambiente (coordenadas normalizadas 0-1)
+    if (ambienteReady && ambienteFrame && ambienteFrame.contentWindow) {
+        const normalizedX = 1.0 - indexTip.x; // Invertir X
+        const normalizedY = indexTip.y;
+        sendPointerToAmbient(normalizedX, normalizedY);
+        
+        // Enviar pulso cuando se detecta PINCH fuerte
+        if (currentGesture === 'PINCH') {
+            const thumbTip = hand.landmarks[4];
+            const pinchDist = Math.hypot(
+                thumbTip.x - indexTip.x,
+                thumbTip.y - indexTip.y
+            );
+            if (pinchDist < CONFIG.pinchThreshold * 0.7) {
+                sendPulseToAmbient(0.6);
+            }
+        }
+    } else {
+        // Debug: verificar por qué no se envía
+        if (!ambienteReady) {
+            // Solo log una vez para no saturar la consola
+            if (!window._ambientDebugLogged) {
+                console.log('[AMBIENT] Esperando handshake...');
+                window._ambientDebugLogged = true;
+            }
+        }
+    }
+}
+
+// ============ LÓGICA DE PANEL Y GESTOS ============
+
+// ============ FSM DE INTENCIÓN (NUEVO) ============
+function updateIntentFSM(hand, rawGesture) {
+    const frameTime = 16.67; // Aprox 60fps
+    const timers = panel.intentTimers;
+    
+    // Convertir timers de frames a ms (asumiendo ~60fps)
+    const openDwellMs = timers.openDwell * frameTime;
+    const closeDwellMs = timers.closeDwell * frameTime;
+    const cooldownMs = timers.cooldown * frameTime;
+    const lostHandMs = timers.lostHandTimer * frameTime;
+    const snapDelayMs = timers.snapDelay * frameTime;
+    const autoDismissMs = timers.autoDismissTimer * frameTime;
+    
+    // Actualizar timers (incrementar si están activos)
+    if (timers.openDwell > 0) timers.openDwell++;
+    if (timers.closeDwell > 0) timers.closeDwell++;
+    if (timers.cooldown > 0) timers.cooldown--;
+    if (timers.lostHandTimer > 0) timers.lostHandTimer++;
+    if (timers.snapDelay > 0) timers.snapDelay--;
+    if (timers.autoDismissTimer > 0) timers.autoDismissTimer++;
+    
+    // Estado actual
+    const currentIntent = panel.intentState;
+    
+    // ===== TRANSICIONES DE ESTADO =====
+    
+    // 1. COOLDOWN: Esperar hasta que expire
+    if (currentIntent === 'INTENT_COOLDOWN') {
+        if (cooldownMs <= 0) {
+            panel.intentState = 'INTENT_IDLE';
+            timers.cooldown = 0;
+        }
+        return; // No procesar otros gestos durante cooldown
+    }
+    
+    // 2. Si se pierde la mano
+    if (!handLockActive || !hand) {
+        if (currentIntent === 'INTENT_GRABBED') {
+            panel.grabbed = false;
+            panel.intentState = 'INTENT_ACTIVE_FREE';
+            timers.snapDelay = Math.ceil(INTENT_CONFIG.SNAP_DELAY_MS / frameTime);
+        } else if (currentIntent === 'INTENT_ACTIVE_FREE' && panel.active) {
+            timers.lostHandTimer++;
+            if (lostHandMs >= INTENT_CONFIG.LOST_HAND_CLOSE_MS) {
+                panel.intentState = 'INTENT_CLOSING';
+                if (panel.state !== 'COLLAPSING') {
+                    panel.state = 'COLLAPSING';
+                    panel.grabbed = false;
+                }
+            }
+        } else if (currentIntent === 'INTENT_ARMED_OPEN' || currentIntent === 'INTENT_OPEN_CONFIRMED') {
+            panel.intentState = 'INTENT_IDLE';
+            panel.showGhostRing = false;
+            timers.openDwell = 0;
+        }
+        return;
+    }
+    
+    // 3. Detección de gestos (solo si hay mano)
+    const isPinch = rawGesture === "PINCH";
+    const isOpenHand = rawGesture === "OPEN_HAND";
+    const isFist = rawGesture === "FIST";
+    
+    // 4. INTENT_IDLE → INTENT_ARMED_OPEN (OPENHAND detectado)
+    if (currentIntent === 'INTENT_IDLE') {
+        if (isOpenHand && cooldownMs <= 0) {
+            panel.intentState = 'INTENT_ARMED_OPEN';
+            panel.showGhostRing = true;
+            panel.ghostRingRadius = PANEL_CONFIG.maxRadius * 0.3; // Preview pequeño
+            // Actualizar posición del ghost ring al cursor
+            panel.center = { x: lightPos.x, y: lightPos.y };
+            timers.openDwell = 1;
+        }
+    }
+    
+    // 5. INTENT_ARMED_OPEN → INTENT_OPEN_CONFIRMED (OPENHAND sostenido)
+    else if (currentIntent === 'INTENT_ARMED_OPEN') {
+        if (isOpenHand) {
+            timers.openDwell++;
+            // Actualizar posición del ghost ring al cursor (sigue la mano)
+            panel.center = { x: lightPos.x, y: lightPos.y };
+            if (openDwellMs >= INTENT_CONFIG.OPEN_DWELL_MS) {
+                // Pero NO abrimos aquí, esperamos PINCH para confirmar
+                // El PINCH será el que dispare la apertura real
+            }
+        } else if (isPinch) {
+            // PINCH confirma la apertura
+            panel.intentState = 'INTENT_OPEN_CONFIRMED';
+            panel.showGhostRing = false;
+            timers.openDwell = 0;
+            // onPinchStart se llamará desde detectGestures
+        } else {
+            // Se perdió el gesto, volver a IDLE
+            panel.intentState = 'INTENT_IDLE';
+            panel.showGhostRing = false;
+            timers.openDwell = 0;
+        }
+    }
+    
+    // 6. INTENT_OPEN_CONFIRMED → INTENT_GRABBED (PINCH sostenido)
+    else if (currentIntent === 'INTENT_OPEN_CONFIRMED') {
+        if (isPinch && panel.grabbed) {
+            panel.intentState = 'INTENT_GRABBED';
+        } else if (!isPinch) {
+            // PINCH liberado, pasar a ACTIVE_FREE
+            panel.intentState = 'INTENT_ACTIVE_FREE';
+            timers.snapDelay = Math.ceil(INTENT_CONFIG.SNAP_DELAY_MS / frameTime);
+        }
+    }
+    
+    // 7. INTENT_GRABBED (rotación activa)
+    else if (currentIntent === 'INTENT_GRABBED') {
+        if (!isPinch) {
+            panel.grabbed = false;
+            panel.intentState = 'INTENT_ACTIVE_FREE';
+            timers.snapDelay = Math.ceil(INTENT_CONFIG.SNAP_DELAY_MS / frameTime);
+        }
+    }
+    
+    // 8. INTENT_ACTIVE_FREE (inercia + snap)
+    else if (currentIntent === 'INTENT_ACTIVE_FREE') {
+        // Re-agarre si PINCH cerca del centro
+        if (isPinch) {
+            const mx = lightPos.x;
+            const my = lightPos.y;
+            const distToCenter = Math.hypot(mx - panel.center.x, my - panel.center.y);
+            if (distToCenter < PANEL_CONFIG.maxRadius * 1.2) {
+                panel.intentState = 'INTENT_GRABBED';
+                // onPinchStart se llamará desde detectGestures
+            }
+        }
+        // Auto-dismiss si se aleja mucho del centro
+        if (panel.active && panel.state === 'ACTIVE') {
+            const mx = lightPos.x;
+            const my = lightPos.y;
+            const distToCenter = Math.hypot(mx - panel.center.x, my - panel.center.y);
+            if (distToCenter > INTENT_CONFIG.AUTO_DISMISS_DIST) {
+                timers.autoDismissTimer++;
+                if (autoDismissMs >= INTENT_CONFIG.AUTO_DISMISS_TIME_MS) {
+                    panel.intentState = 'INTENT_CLOSING';
+                    panel.state = 'COLLAPSING';
+                    panel.grabbed = false;
+                }
+            } else {
+                timers.autoDismissTimer = 0;
+            }
+        }
+        // Cierre con FIST
+        if (isFist) {
+            timers.closeDwell++;
+            if (closeDwellMs >= INTENT_CONFIG.CLOSE_DWELL_MS) {
+                panel.intentState = 'INTENT_CLOSING';
+                if (panel.state === 'EXPANDING') {
+                    // Cancelar apertura
+                    panel.state = 'COLLAPSING';
+                } else if (panel.state === 'ACTIVE') {
+                    panel.state = 'COLLAPSING';
+                }
+                panel.grabbed = false;
+                // Llamar a la función de cierre para efectos visuales
+                onFistClosePanel();
+            }
+        } else {
+            timers.closeDwell = 0;
+        }
+    }
+    
+    // 9. INTENT_CLOSING → INTENT_COOLDOWN
+    else if (currentIntent === 'INTENT_CLOSING') {
+        if (!panel.active && panel.state === 'IDLE') {
+            panel.intentState = 'INTENT_COOLDOWN';
+            timers.cooldown = Math.ceil(INTENT_CONFIG.COOLDOWN_MS / frameTime);
+            timers.closeDwell = 0;
+        }
+    }
+}
+
+function calculateHandAngle(hand) {
+    // MEJORADO: Usa el plano de la palma (wrist + index MCP + pinky MCP) para orientación más estable
+    const wrist = hand.landmarks[0];
+    const indexMCP = hand.landmarks[5];
+    const pinkyMCP = hand.landmarks[17];
+    
+    // Coordenadas pantalla (recuerda espejo en X)
+    const wx = hudCanvas.width - (wrist.x * hudCanvas.width);
+    const wy = wrist.y * hudCanvas.height;
+    const ix = hudCanvas.width - (indexMCP.x * hudCanvas.width);
+    const iy = indexMCP.y * hudCanvas.height;
+    const px = hudCanvas.width - (pinkyMCP.x * hudCanvas.width);
+    const py = pinkyMCP.y * hudCanvas.height;
+    
+    // Vector desde muñeca a índice (dirección principal)
+    const v1x = ix - wx;
+    const v1y = iy - wy;
+    
+    // Vector desde muñeca a meñique (para calcular normal del plano)
+    const v2x = px - wx;
+    const v2y = py - wy;
+    
+    // Calcular normal del plano (perpendicular al plano de la palma)
+    // En 2D, esto es simplemente el vector perpendicular a (v1x, v1y)
+    // Pero usamos v2 para validar que la palma está orientada correctamente
+    const cross = v1x * v2y - v1y * v2x;
+    
+    // Ángulo principal basado en el vector muñeca-índice
+    let angle = Math.atan2(v1y, v1x);
+    
+    // Si el cross product es negativo, la mano está "volteada" (rotación adicional)
+    // Ajustamos ligeramente el ángulo basado en la orientación del plano
+    if (Math.abs(cross) > 0.01) {
+        // Factor de corrección basado en la orientación del plano
+        const planeOrientation = Math.atan2(v2y, v2x);
+        const angleDiff = ((planeOrientation - angle + Math.PI) % (Math.PI * 2)) - Math.PI;
+        // Aplicar corrección suave (solo si la diferencia es significativa)
+        if (Math.abs(angleDiff) > 0.1) {
+            angle += angleDiff * 0.3; // Factor de mezcla
+        }
+    }
+    
+    return angle;
+}
+
+function detectGestures(hand) {
+    const lm = hand.landmarks;
+    const pinchDist = Math.hypot(lm[4].x - lm[8].x, lm[4].y - lm[8].y);
+    
+    let rawGesture = "NONE";
+    
+    if (pinchDist < CONFIG.pinchThreshold) {
+        rawGesture = "PINCH";
+        currentGesture = "PINCH";
+        panel.fistDebounceCount = 0;
+        
+        // Lógica Continua de Rotación (Grab & Rotate) - MEJORADO CON FSM
+        if (panel.grabbed && panel.intentState === 'INTENT_GRABBED') {
+            const currentAngle = calculateHandAngle(hand);
+            
+            // Unwrap usando prevHandAngle (separado de prevRotation)
+            const unwrappedAngle = unwrapAngle(panel.prevHandAngle, currentAngle);
+            
+            // Deadzone para matar jitter
+            const angleDelta = unwrappedAngle - panel.prevHandAngle;
+            if (Math.abs(angleDelta) < INTENT_CONFIG.ROT_DEADZONE) {
+                // No actualizar si el cambio es muy pequeño
+                return;
+            }
+            
+            // Actualizar prevHandAngle
+            panel.prevHandAngle = unwrappedAngle;
+            
+            // Delta desde el inicio del agarre
+            let delta = unwrappedAngle - panel.baseHandAngle;
+            
+            // Aplicar rotación con suavizado
+            const targetRot = panel.basePanelRotation + delta;
+            panel.prevRotation = panel.rotation;
+            panel.rotation = lerpAngle(panel.rotation, targetRot, PANEL_CONFIG.rotationSmoothing);
+            
+            // Calcular velocidad angular para inercia (con clamp)
+            let vel = panel.rotation - panel.prevRotation;
+            // Limitar velocidad por frame
+            vel = clamp(vel, -PANEL_CONFIG.maxAngularVel, PANEL_CONFIG.maxAngularVel);
+            panel.rotationVel = vel;
+        }
+        
+        // Evento ON PINCH START (solo si es nuevo)
+        if (previousGesture !== "PINCH") {
+            triggerBurst(lightPos.x, lightPos.y, "cyan", 15);
+            triggerAberrationPulse(0.012); // NUEVO: Pulso de aberración
+            triggerShockwave3D(lightPos.x, lightPos.y); // NUEVO: Shockwave 3D
+            onPinchStart(hand);
+        }
+
+    } else {
+        // --- PINCH LIBERADO ---
+        if (previousGesture === "PINCH") {
+            onPinchEnd();
+        }
+
+        // Detección OPEN vs FIST con DEBOUNCE
+        const tips = [8, 12, 16, 20];
+        const mcps = [5, 9, 13, 17];
+        let extended = 0, closed = 0;
+        for (let i=0; i<4; i++) {
+            if (Math.abs(lm[tips[i]].y - lm[mcps[i]].y) > CONFIG.openHandThreshold) extended++;
+            if (Math.abs(lm[tips[i]].y - lm[mcps[i]].y) < CONFIG.fistThreshold) closed++;
+        }
+        
+        if (extended >= 3) {
+            rawGesture = "OPEN_HAND";
+            currentGesture = "OPEN_HAND";
+            panel.fistDebounceCount = 0;
+        }
+        else if (closed >= 3) {
+            // FIST detectado - aplicar debounce
+            panel.fistDebounceCount++;
+            
+            // Requerir 3 frames consecutivos (aprox 100-150ms a 30fps)
+            if (panel.fistDebounceCount >= 3) {
+                rawGesture = "FIST";
+                currentGesture = "FIST";
+                if (previousGesture !== "FIST") {
+                    triggerBurst(lightPos.x, lightPos.y, "red", 25);
+                    // onFistClosePanel ahora se maneja en la FSM
+                }
+            } else {
+                rawGesture = "TRACKING";
+                currentGesture = "TRACKING";
+            }
+        } else {
+            rawGesture = "TRACKING";
+            currentGesture = "TRACKING";
+            panel.fistDebounceCount = 0;
+        }
+    }
+    
+    // Actualizar FSM de intención
+    updateIntentFSM(hand, rawGesture);
+    
+    previousGesture = currentGesture;
+}
+
+function onPinchStart(hand) {
+    const mx = lightPos.x;
+    const my = lightPos.y;
+    
+    // Verificar cooldown (la FSM ya lo maneja, pero doble verificación)
+    if (panel.intentState === 'INTENT_COOLDOWN') {
+        return; // No permitir apertura durante cooldown
+    }
+    
+    // Si el panel NO está activo y la intención es OPEN_CONFIRMED, abrir
+    if (!panel.active && (panel.intentState === 'INTENT_OPEN_CONFIRMED' || panel.intentState === 'INTENT_ARMED_OPEN')) {
+        panel.active = true;
+        panel.state = 'EXPANDING';
+        panel.center = { x: mx, y: my };
+        panel.progress = 0;
+        panel.rotationVel = 0;
+        panel.pulseTime = 0;
+        panel.showGhostRing = false;
+        
+        // Generar POIs y traces
+        generatePanelPOIs();
+        
+        // Iniciar modo Grab
+        panel.grabbed = true;
+        const currentAngle = calculateHandAngle(hand);
+        panel.baseHandAngle = currentAngle;
+        panel.prevHandAngle = currentAngle; // NUEVO: Inicializar prevHandAngle
+        panel.basePanelRotation = panel.rotation;
+        panel.prevRotation = panel.rotation;
+        
+        // Actualizar intención
+        panel.intentState = 'INTENT_GRABBED';
+    } 
+    // Si ya está activo, verificamos si estamos cerca del centro para hacer "re-grab"
+    else if (panel.active && panel.intentState === 'INTENT_ACTIVE_FREE') {
+        const distToCenter = Math.hypot(mx - panel.center.x, my - panel.center.y);
+        if (distToCenter < PANEL_CONFIG.maxRadius * 1.2) {
+            panel.grabbed = true;
+            const currentAngle = calculateHandAngle(hand);
+            panel.baseHandAngle = currentAngle;
+            panel.prevHandAngle = currentAngle; // NUEVO: Inicializar prevHandAngle
+            panel.basePanelRotation = panel.rotation;
+            panel.prevRotation = panel.rotation;
+            
+            // Actualizar intención
+            panel.intentState = 'INTENT_GRABBED';
+        } else {
+            // Si pinchamos fuera, intentar agarrar objeto 3D o interactuar con zonas hot
+            let grabbed3D = false;
+            threeScene.traverse((obj) => {
+                if (obj.userData.grabbable && !grabbed3D) {
+                    if (grab3DObject(obj)) {
+                        grabbed3D = true;
+                        triggerCameraShake(0.01, 5);
+                    }
+                }
+            });
+            
+            if (!grabbed3D) {
+                checkHotZones(mx, my);
+            }
+        }
+    }
+    // Si ya está GRABBED, solo actualizar baseHandAngle si es necesario
+    else if (panel.intentState === 'INTENT_GRABBED' && panel.grabbed) {
+        // Re-calcular baseHandAngle para evitar saltos
+        const currentAngle = calculateHandAngle(hand);
+        panel.prevHandAngle = currentAngle;
+    }
+}
+
+function onPinchEnd() {
+    // La FSM ya maneja la transición a INTENT_ACTIVE_FREE
+    // Aquí solo limpiamos el estado de grab
+    if (panel.intentState === 'INTENT_GRABBED') {
+        panel.grabbed = false;
+        // El panel sigue activo, ahora obedece a la inercia (updatePanelPhysics)
+        // La FSM ya cambió el estado a INTENT_ACTIVE_FREE
+    }
+}
+
+// Función: Cerrar panel con FIST (ahora manejado principalmente por la FSM)
+function onFistClosePanel() {
+    // Esta función se llama desde la FSM cuando se confirma el cierre
+    if (panel.active && panel.state !== 'COLLAPSING') {
+        panel.state = 'COLLAPSING';
+        panel.grabbed = false;
+        panel.collapseBurst = true;
+        panel.showGhostRing = false;
+        
+        // Burst sutil de cierre
+        const cx = panel.center.x;
+        const cy = panel.center.y;
+        for (let i = 0; i < 20; i++) {
+            const angle = (Math.PI * 2 / 20) * i;
+            const dist = PANEL_CONFIG.maxRadius * 0.8;
+            burstParticles.push({
+                x: cx + Math.cos(angle) * dist,
+                y: cy + Math.sin(angle) * dist,
+                vx: Math.cos(angle) * 2,
+                vy: Math.sin(angle) * 2,
+                life: 1,
+                decay: 0.02,
+                color: "#ff4444",
+                size: 3
+            });
+        }
+    }
+}
+
+function checkHotZones(px, py) {
+    hotZones[1].x = window.innerWidth - 210;
+    hotZones[1].y = window.innerHeight - 200;
+    for (let z of hotZones) {
+        if (px >= z.x && px <= z.x + z.w && py >= z.y && py <= z.y + z.h) {
+            triggerBurst(px, py, "#0f0", 30);
+            if (z.name === "ZONE_A") hudPreset = (hudPreset + 1) % 3;
+            if (z.name === "ZONE_B") scanIntensity = scanIntensity === 1 ? 2.0 : 1;
+            flashZone(z.element);
+        }
+    }
+}
+
+// ============ FÍSICA DEL PANEL (MEJORADO) ============
+function updatePanelPhysics() {
+    if (!panel.active) return;
+
+    // 1. Expansión / Colapso con easing mejorado
+    if (panel.state === 'EXPANDING') {
+        panel.progress += PANEL_CONFIG.expandSpeed;
+        if (panel.progress >= 1) {
+            panel.progress = 1;
+            panel.state = 'ACTIVE';
+            panel.collapseBurst = false;
+        }
+    } else if (panel.state === 'COLLAPSING') {
+        panel.progress -= PANEL_CONFIG.collapseSpeed;
+        if (panel.progress <= 0) {
+            panel.progress = 0;
+            panel.active = false;
+            panel.state = 'IDLE';
+            panel.collapseBurst = false;
+            panel.pois = [];
+            panel.traces = [];
+            panel.dataPulses = [];
+        }
+    }
+
+    // 2. Inercia y Snapping FINO (Solo si no está agarrado y después del delay)
+    if (!panel.grabbed && panel.state !== 'IDLE' && panel.intentState !== 'INTENT_GRABBED') {
+        // Aplicar rotación por inercia
+        panel.rotation += panel.rotationVel;
+        
+        // Fricción adaptativa (rápida cuando velocidad es alta)
+        const abVel = Math.abs(panel.rotationVel);
+        const friction = abVel > 0.05 ? PANEL_CONFIG.frictionFast : PANEL_CONFIG.friction;
+        panel.rotationVel *= friction;
+
+        // Snapping con spring cuando velocidad es baja Y después del delay
+        const frameTime = 16.67;
+        const snapDelayMs = panel.intentTimers.snapDelay * frameTime;
+        const canSnap = snapDelayMs <= 0; // Solo snap después del delay
+        
+        if (canSnap && abVel < PANEL_CONFIG.snapThreshold) {
+            const secSize = (Math.PI * 2) / PANEL_CONFIG.sections;
+            let normalizedRot = ((panel.rotation % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
+            
+            // Encontrar sección más cercana
+            const targetIdx = Math.round(normalizedRot / secSize) % PANEL_CONFIG.sections;
+            const targetAngle = targetIdx * secSize;
+            
+            // Spring hacia el target
+            let diff = targetAngle - normalizedRot;
+            // Wrap diff
+            if (diff > Math.PI) diff -= Math.PI * 2;
+            if (diff < -Math.PI) diff += Math.PI * 2;
+            
+            // Aplicar spring
+            panel.rotationVel += diff * PANEL_CONFIG.snapSpring;
+            panel.rotationVel *= PANEL_CONFIG.snapDamping;
+            
+            // Si ya estamos muy cerca, fijar
+            if (Math.abs(diff) < 0.01 && abVel < 0.002) {
+                panel.rotation = targetAngle;
+                panel.rotationVel = 0;
+            }
+        }
+    }
+
+    // 3. Actualizar sección actual con HYSTERESIS MEJORADO (basado en velocidad)
+    const secSize = (Math.PI * 2) / PANEL_CONFIG.sections;
+    let normalizedRot = ((panel.rotation % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
+    panel.rotationPhase = normalizedRot / (Math.PI * 2);
+    
+    // Calcular sección con hysteresis adaptativo
+    const rawSection = normalizedRot / secSize;
+    const fractional = rawSection - Math.floor(rawSection);
+    
+    // Ajustar umbral de hysteresis basado en velocidad angular
+    // Si la velocidad es alta, aumentar el umbral para evitar saltos
+    const abVel = Math.abs(panel.rotationVel);
+    const velocityFactor = Math.min(abVel * INTENT_CONFIG.VELOCITY_HYSTERESIS_FACTOR, 0.2); // Max 0.2 de ajuste
+    const dynamicHysteresis = SECTION_HYSTERESIS + velocityFactor;
+    const dynamicHysteresisInv = 1 - dynamicHysteresis;
+    
+    // Solo cambiar si pasamos el umbral de hysteresis dinámico
+    if (fractional > dynamicHysteresis || fractional < dynamicHysteresisInv) {
+        const newSection = Math.floor(rawSection + 0.5) % PANEL_CONFIG.sections;
+        if (newSection !== panel.currentSection) {
+            panel.prevSection = panel.currentSection;
+            panel.currentSection = newSection;
+            // Regenerar POIs al cambiar de sección
+            if (panel.state === 'ACTIVE') {
+                generatePanelPOIs();
+            }
+        }
+    }
+    
+    // 4. Actualizar pulso de tiempo
+    panel.pulseTime += 0.03;
+    
+    // 5. Actualizar data pulses en las trazas
+    updateDataPulses();
+}
+
+// ============ GENERACIÓN DE PANEL DETALLADO ============
+function generatePanelPOIs() {
+    panel.pois = [];
+    const section = panel.sectionsData[panel.currentSection];
+    
+    for (let i = 0; i < PANEL_CONFIG.poiCount; i++) {
+        const angle = (Math.PI * 2 / PANEL_CONFIG.poiCount) * i + hashFloat(section.seed + i) * 0.5;
+        const radiusFactor = 0.5 + hashFloat(section.seed + i + 100) * 0.4;
+        
+        panel.pois.push({
+            angle: angle,
+            radiusFactor: radiusFactor,
+            id: `N${i.toString().padStart(2, '0')}`,
+            label: techWords[Math.floor(hashFloat(section.seed + i + 200) * techWords.length)],
+            value: Math.floor(hashFloat(section.seed + i + 300) * 999),
+            priority: Math.floor(hashFloat(section.seed + i + 400) * 3),
+            blinkPhase: hashFloat(section.seed + i + 500) * Math.PI * 2
+        });
+    }
+    
+    // Generar circuit traces
+    generateCircuitTraces();
+}
+
+function generateCircuitTraces() {
+    panel.traces = [];
+    const section = panel.sectionsData[panel.currentSection];
+    
+    for (let i = 0; i < PANEL_CONFIG.traceCount; i++) {
+        const angle = (Math.PI * 2 / PANEL_CONFIG.traceCount) * i;
+        const r1 = 0.3 + hashFloat(section.seed + i + 600) * 0.2;
+        const r2 = 0.65 + hashFloat(section.seed + i + 700) * 0.2;
+        const bendAngle = angle + (hashFloat(section.seed + i + 800) - 0.5) * 0.3;
+        
+        panel.traces.push({
+            angle: angle,
+            r1: r1,
+            r2: r2,
+            bendAngle: bendAngle,
+            hasPulse: hashFloat(section.seed + i + 900) > 0.6
+        });
+    }
+    
+    // Inicializar data pulses
+    panel.dataPulses = [];
+    for (let trace of panel.traces) {
+        if (trace.hasPulse) {
+            panel.dataPulses.push({
+                traceIndex: panel.traces.indexOf(trace),
+                progress: Math.random(),
+                speed: 0.008 + Math.random() * 0.012
+            });
+        }
+    }
+}
+
+function updateDataPulses() {
+    for (let pulse of panel.dataPulses) {
+        pulse.progress += pulse.speed;
+        if (pulse.progress > 1) {
+            pulse.progress = 0;
+        }
+    }
+}
+
+// ============ EFECTOS VISUALES AVANZADOS ============
+function triggerBurst(x, y, color, count) {
+    for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 5 + 2;
+        burstParticles.push({
+            x: x, y: y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            life: 1.0,
+            decay: 0.03 + Math.random() * 0.02,
+            color: color === "cyan" ? [0, 255, 255] : (color === "red" ? [255, 50, 50] : [0, 255, 100])
+        });
+    }
+}
+
+function updateTrails(x, y) {
+    trails.push({ x, y, life: 1.0 });
+    if (trails.length > MAX_TRAIL_LENGTH) trails.shift();
+    for (let t of trails) t.life -= 0.05;
+}
+
+function initDataStream() {
+    for(let i=0; i<15; i++) {
+        dataStream.push({
+            x: window.innerWidth - 40,
+            y: Math.random() * window.innerHeight,
+            speed: 2 + Math.random() * 3,
+            text: generateHex()
+        });
+    }
+}
+function generateHex() { return "0x" + Math.floor(Math.random()*16777215).toString(16).toUpperCase().substring(0,4); }
+
+// ============ RENDER LOOP ============
+// ============ FUNCIONES DE FULLSCREEN ============
+function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+            console.error('Error al entrar en fullscreen:', err);
+        });
+    } else {
+        document.exitFullscreen();
+    }
+}
+
+function updateFullscreenButton() {
+    isFullscreen = !!document.fullscreenElement;
+    fullscreenButton.classList.toggle('active', isFullscreen);
+}
+
+// Event listeners para fullscreen
+document.addEventListener('fullscreenchange', updateFullscreenButton);
+document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+document.addEventListener('mozfullscreenchange', updateFullscreenButton);
+document.addEventListener('MSFullscreenChange', updateFullscreenButton);
+
+fullscreenButton.addEventListener('click', toggleFullscreen);
+
+// ============ FUNCIONES DE MODO ============
+function setMode(mode) {
+    currentMode = mode;
+    localStorage.setItem('viewMode', mode);
+    updateModeUI();
+    applyMode();
+}
+
+function cycleMode() {
+    const modeArray = [MODES.NORMAL, MODES.BLACK, MODES.SPLIT];
+    const currentIndex = modeArray.indexOf(currentMode);
+    const nextIndex = (currentIndex + 1) % modeArray.length;
+    setMode(modeArray[nextIndex]);
+}
+
+function updateModeUI() {
+    modeLabel.textContent = currentMode;
+    document.body.classList.remove('split-mode');
+    if (currentMode === MODES.SPLIT) {
+        document.body.classList.add('split-mode');
+    }
+}
+
+function applyMode() {
+    // Aplicar transiciones suaves
+    if (currentMode === MODES.NORMAL) {
+        if (ambienteFrame) {
+            ambienteFrame.classList.remove('hidden');
+        }
+        nebulaCanvas.classList.remove('active');
+        // Desactivar clipping en split mode
+        document.body.classList.remove('split-mode');
+    } else if (currentMode === MODES.BLACK) {
+        if (ambienteFrame) {
+            ambienteFrame.classList.add('hidden');
+        }
+        nebulaCanvas.classList.add('active');
+        document.body.classList.remove('split-mode');
+    } else if (currentMode === MODES.SPLIT) {
+        if (ambienteFrame) {
+            ambienteFrame.classList.add('hidden');
+        }
+        nebulaCanvas.classList.add('active');
+        document.body.classList.add('split-mode');
+    }
+}
+
+modeButton.addEventListener('click', cycleMode);
+
+// ============ INICIALIZACIÓN DE NEBULOSA VOLUMÉTRICA (RAYMARCHING) ============
+function initNebulaBuffers() {
+    // Inicializar WebGL en el canvas de nebulosa
+    // Intentar WebGL primero, si falla intentar WebGL2, si falla usar 2D como fallback
+    nebulaGL = nebulaCanvas.getContext('webgl', { alpha: true, antialias: false, preserveDrawingBuffer: false }) ||
+               nebulaCanvas.getContext('webgl2', { alpha: true, antialias: false, preserveDrawingBuffer: false }) ||
+               nebulaCanvas.getContext('experimental-webgl', { alpha: true, antialias: false, preserveDrawingBuffer: false });
+    
+    if (!nebulaGL) {
+        console.error('WebGL no disponible para nebulosa, intentando fallback 2D');
+        // Fallback a 2D si WebGL no está disponible
+        nebulaCtx = nebulaCanvas.getContext('2d');
+        if (!nebulaCtx) {
+            console.error('No se pudo obtener ningún contexto para nebulosa');
+            return;
+        }
+        // Usar sistema 2D básico como fallback
+        nebulaInitialized = true;
+        return;
+    }
+    
+    // Si WebGL está disponible, también crear contexto 2D para clipping (si es necesario)
+    // Pero solo lo usaremos para operaciones de compositing, no para render principal
+    try {
+        // Intentar obtener contexto 2D en un canvas temporal para clipping
+        const tempCanvas = document.createElement('canvas');
+        nebulaCtx = tempCanvas.getContext('2d');
+    } catch(e) {
+        // Si falla, no hay problema, el clipping se hará de otra forma
+    }
+    
+    // Crear shaders
+    const vertexShaderSource = `
+        attribute vec2 a_position;
+        varying vec2 v_uv;
+        void main() {
+            v_uv = a_position * 0.5 + 0.5;
+            gl_Position = vec4(a_position, 0.0, 1.0);
+        }
+    `;
+    
+    const fragmentShaderSource = `
+        precision highp float;
+        
+        uniform float uTime;
+        uniform vec2 uResolution;
+        uniform vec3 uFingerPos; // x, y normalizadas, z profundidad
+        uniform float uFingerActive;
+        uniform float uAspect;
+        
+        varying vec2 v_uv;
+        
+        // Hash function para ruido
+        float hash(vec3 p) {
+            p = fract(p * 0.3183099 + 0.1);
+            p *= 17.0;
+            return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+        }
+        
+        // Noise 3D suave
+        float noise(vec3 p) {
+            vec3 i = floor(p);
+            vec3 f = fract(p);
+            f = f * f * (3.0 - 2.0 * f);
+            
+            float n = i.x + i.y * 57.0 + 113.0 * i.z;
+            return mix(
+                mix(mix(hash(vec3(n + 0.0)), hash(vec3(n + 1.0)), f.x),
+                    mix(hash(vec3(n + 57.0)), hash(vec3(n + 58.0)), f.x), f.y),
+                mix(mix(hash(vec3(n + 113.0)), hash(vec3(n + 114.0)), f.x),
+                    mix(hash(vec3(n + 170.0)), hash(vec3(n + 171.0)), f.x), f.y), f.z);
+        }
+        
+        // Fractal Brownian Motion (fBm)
+        float fbm(vec3 p, int octaves) {
+            float value = 0.0;
+            float amplitude = 0.5;
+            float frequency = 1.0;
+            float maxValue = 0.0;
+            
+            for (int i = 0; i < 8; i++) {
+                if (i >= octaves) break;
+                value += amplitude * noise(p * frequency);
+                maxValue += amplitude;
+                amplitude *= 0.5;
+                frequency *= 2.0;
+            }
+            return value / maxValue;
+        }
+        
+        // Función de densidad de la nebulosa
+        float density(vec3 p) {
+            // Dominio warp con tiempo para flujo
+            vec3 q = p + vec3(0.0, uTime * 0.1, uTime * 0.05);
+            
+            // fBm con múltiples octavas
+            float d = fbm(q, 6);
+            
+            // Distorsión del dedo (campo de influencia repulsor)
+            if (uFingerActive > 0.5) {
+                vec3 fingerPos3D = vec3(
+                    (uFingerPos.x - 0.5) * 2.0 * uAspect,
+                    (uFingerPos.y - 0.5) * 2.0,
+                    uFingerPos.z * 2.0 - 1.0
+                );
+                float distToFinger = length(p - fingerPos3D);
+                float influence = 1.0 / (1.0 + distToFinger * 5.0);
+                // Repulsión: reducir densidad cerca del dedo
+                d *= (1.0 - influence * 0.7);
+                // Añadir turbulencia
+                d += fbm(q + (p - fingerPos3D) * 2.0, 4) * influence * 0.3;
+            }
+            
+            // Forma de caja (contención)
+            vec3 boxSize = vec3(2.0, 2.0, 2.0);
+            vec3 dBox = abs(p) - boxSize;
+            float boxDist = length(max(dBox, 0.0)) + min(max(dBox.x, max(dBox.y, dBox.z)), 0.0);
+            
+            // Solo densidad dentro de la caja
+            if (boxDist > 0.0) return 0.0;
+            
+            return d;
+        }
+        
+        // Color basado en posición y densidad
+        vec3 nebulaColor(vec3 p, float dens) {
+            // Color dinámico basado en altura y densidad
+            float yFactor = (p.y + 1.0) * 0.5;
+            vec3 color1 = vec3(0.0, 0.3, 0.8); // Azul profundo
+            vec3 color2 = vec3(0.8, 0.1, 0.6); // Magenta
+            vec3 color3 = vec3(0.0, 0.6, 1.0); // Cyan brillante
+            
+            vec3 col = mix(color1, color2, yFactor);
+            col = mix(col, color3, dens * 0.5);
+            
+            return col * dens;
+        }
+        
+        // Raymarching
+        vec4 raymarch(vec3 ro, vec3 rd) {
+            const int MAX_STEPS = 64;
+            const float MAX_DIST = 10.0;
+            const float STEP_SIZE = 0.05;
+            const float DENSITY_SCALE = 0.8;
+            
+            vec3 color = vec3(0.0);
+            float transmittance = 1.0; // Transmitancia (Beer-Lambert)
+            float totalDensity = 0.0;
+            
+            float t = 0.0;
+            for (int i = 0; i < MAX_STEPS; i++) {
+                if (t > MAX_DIST || transmittance < 0.01) break; // Early exit
+                
+                vec3 p = ro + rd * t;
+                float dens = density(p) * DENSITY_SCALE;
+                
+                if (dens > 0.001) {
+                    // Calcular color en este punto
+                    vec3 col = nebulaColor(p, dens);
+                    
+                    // Absorción (Ley de Beer-Lambert simplificada)
+                    float absorption = dens * STEP_SIZE;
+                    float alpha = 1.0 - exp(-absorption);
+                    
+                    // Acumular color con transmitancia
+                    color += col * transmittance * alpha;
+                    transmittance *= (1.0 - alpha);
+                    
+                    totalDensity += dens;
+                }
+                
+                t += STEP_SIZE;
+            }
+            
+            return vec4(color, 1.0 - transmittance);
+        }
+        
+        void main() {
+            // Coordenadas normalizadas centradas
+            vec2 uv = (v_uv - 0.5) * vec2(uAspect, 1.0);
+            
+            // Cámara
+            vec3 ro = vec3(0.0, 0.0, -3.0); // Ray origin (cámara)
+            vec3 rd = normalize(vec3(uv, 1.0)); // Ray direction
+            
+            // Raymarching
+            vec4 result = raymarch(ro, rd);
+            
+            gl_FragColor = vec4(result.rgb, result.a);
+        }
+    `;
+    
+    // Compilar shaders
+    const vertexShader = createShader(nebulaGL, nebulaGL.VERTEX_SHADER, vertexShaderSource);
+    const fragmentShader = createShader(nebulaGL, nebulaGL.FRAGMENT_SHADER, fragmentShaderSource);
+    
+    if (!vertexShader || !fragmentShader) {
+        console.error('Error compilando shaders de nebulosa');
+        return;
+    }
+    
+    // Crear programa
+    nebulaProgram = createProgram(nebulaGL, vertexShader, fragmentShader);
+    if (!nebulaProgram) {
+        console.error('Error creando programa de nebulosa');
+        return;
+    }
+    
+    // Obtener ubicaciones de atributos y uniforms
+    const positionLocation = nebulaGL.getAttribLocation(nebulaProgram, 'a_position');
+    nebulaUniforms = {
+        uTime: nebulaGL.getUniformLocation(nebulaProgram, 'uTime'),
+        uResolution: nebulaGL.getUniformLocation(nebulaProgram, 'uResolution'),
+        uFingerPos: nebulaGL.getUniformLocation(nebulaProgram, 'uFingerPos'),
+        uFingerActive: nebulaGL.getUniformLocation(nebulaProgram, 'uFingerActive'),
+        uAspect: nebulaGL.getUniformLocation(nebulaProgram, 'uAspect')
+    };
+    
+    // Crear buffer de geometría (quad que cubre toda la pantalla)
+    const positionBuffer = nebulaGL.createBuffer();
+    nebulaGL.bindBuffer(nebulaGL.ARRAY_BUFFER, positionBuffer);
+    nebulaGL.bufferData(nebulaGL.ARRAY_BUFFER, new Float32Array([
+        -1, -1,
+         1, -1,
+        -1,  1,
+         1,  1
+    ]), nebulaGL.STATIC_DRAW);
+    
+    // Guardar referencias
+    nebulaGL.positionBuffer = positionBuffer;
+    nebulaGL.positionLocation = positionLocation;
+    
+    nebulaInitialized = true;
+}
+
+function generateNebulaBase() {
+    const ctx = nebulaBaseCtx;
+    const w = nebulaBaseBuffer.width;
+    const h = nebulaBaseBuffer.height;
+    
+    // Fondo negro
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, w, h);
+    
+    // Gradientes de nebulosa
+    const gradient1 = ctx.createRadialGradient(w * 0.3, h * 0.4, 0, w * 0.3, h * 0.4, w * 0.8);
+    gradient1.addColorStop(0, 'rgba(0, 100, 200, 0.15)');
+    gradient1.addColorStop(0.5, 'rgba(100, 0, 200, 0.08)');
+    gradient1.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = gradient1;
+    ctx.fillRect(0, 0, w, h);
+    
+    const gradient2 = ctx.createRadialGradient(w * 0.7, h * 0.6, 0, w * 0.7, h * 0.6, w * 0.6);
+    gradient2.addColorStop(0, 'rgba(0, 200, 255, 0.12)');
+    gradient2.addColorStop(0.4, 'rgba(0, 100, 200, 0.06)');
+    gradient2.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = gradient2;
+    ctx.fillRect(0, 0, w, h);
+    
+    // Estrellas/polvo: muchos puntos finos
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+    for (let i = 0; i < 800; i++) {
+        const x = Math.random() * w;
+        const y = Math.random() * h;
+        const size = Math.random() * 0.8 + 0.2;
+        ctx.fillRect(x, y, size, size);
+    }
+    
+    // Más puntos más pequeños para densidad
+    ctx.fillStyle = 'rgba(200, 220, 255, 0.2)';
+    for (let i = 0; i < 1200; i++) {
+        const x = Math.random() * w;
+        const y = Math.random() * h;
+        const size = Math.random() * 0.4 + 0.1;
+        ctx.fillRect(x, y, size, size);
+    }
+}
+
+// ============ RENDER DE NEBULOSA VOLUMÉTRICA (RAYMARCHING) ============
+function renderNebula(timestamp) {
+    if (!nebulaInitialized || !nebulaGL || !nebulaProgram || (currentMode !== MODES.BLACK && currentMode !== MODES.SPLIT)) {
+        return;
+    }
+    
+    const gl = nebulaGL;
+    const t = timestamp * 0.001;
+    
+    // Configurar viewport
+    gl.viewport(0, 0, nebulaCanvas.width, nebulaCanvas.height);
+    
+    // Limpiar canvas
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    
+    // Usar programa
+    gl.useProgram(nebulaProgram);
+    
+    // Configurar geometría
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.positionBuffer);
+    gl.enableVertexAttribArray(gl.positionLocation);
+    gl.vertexAttribPointer(gl.positionLocation, 2, gl.FLOAT, false, 0, 0);
+    
+    // Calcular posición del dedo normalizada
+    let fingerX = 0.5, fingerY = 0.5, fingerZ = 0.5;
+    let fingerActive = 0.0;
+    
+    if (handLockActive && lightPos) {
+        // Mapear posición del dedo según el modo
+        if (currentMode === MODES.SPLIT) {
+            if (lightPos.x <= nebulaCanvas.width / 2) {
+                // Tracking de izquierda -> mapear a derecha
+                const leftRelative = lightPos.x / (nebulaCanvas.width / 2);
+                const rightHalfX = (nebulaCanvas.width / 2) + (leftRelative * (nebulaCanvas.width / 2));
+                fingerX = rightHalfX / nebulaCanvas.width;
+            } else {
+                // Tracking directo en derecha
+                fingerX = lightPos.x / nebulaCanvas.width;
+            }
+        } else {
+            fingerX = lightPos.x / nebulaCanvas.width;
+        }
+        
+        fingerY = lightPos.y / nebulaCanvas.height;
+        
+        // Profundidad estimada (puedes usar datos de MediaPipe si están disponibles)
+        // Por ahora usamos una profundidad fija o basada en velocidad
+        fingerZ = 0.5 + Math.min(velocityMag * 0.01, 0.3);
+        fingerActive = 1.0;
+    }
+    
+    // Suavizar posición del dedo (lerp) para evitar movimientos bruscos
+    if (!window.smoothedFingerPos) {
+        window.smoothedFingerPos = { x: fingerX, y: fingerY, z: fingerZ };
+    }
+    const lerpFactor = 0.15;
+    window.smoothedFingerPos.x += (fingerX - window.smoothedFingerPos.x) * lerpFactor;
+    window.smoothedFingerPos.y += (fingerY - window.smoothedFingerPos.y) * lerpFactor;
+    window.smoothedFingerPos.z += (fingerZ - window.smoothedFingerPos.z) * lerpFactor;
+    
+    // Pasar uniforms al shader
+    gl.uniform1f(nebulaUniforms.uTime, t);
+    gl.uniform2f(nebulaUniforms.uResolution, nebulaCanvas.width, nebulaCanvas.height);
+    gl.uniform3f(nebulaUniforms.uFingerPos, 
+        window.smoothedFingerPos.x, 
+        window.smoothedFingerPos.y, 
+        window.smoothedFingerPos.z
+    );
+    gl.uniform1f(nebulaUniforms.uFingerActive, fingerActive);
+    gl.uniform1f(nebulaUniforms.uAspect, nebulaCanvas.width / nebulaCanvas.height);
+    
+    // Renderizar
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    
+    // Aplicar clipping para split mode usando scissor test de WebGL
+    // Solo mostrar la mitad derecha de la nebulosa
+    if (currentMode === MODES.SPLIT) {
+        // Limpiar la mitad izquierda usando scissor test
+        gl.enable(gl.SCISSOR_TEST);
+        gl.scissor(0, 0, nebulaCanvas.width / 2, nebulaCanvas.height);
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.disable(gl.SCISSOR_TEST);
+    }
+}
+
+// Función applyFingerInteraction ya no se usa (la interacción se maneja en el shader)
+function applyFingerInteraction(ctx, fx, fy, w, h, velMag) {
+    // Mantenida por compatibilidad, pero la interacción real está en el shader GLSL
+}
+
+// ============ CLIPPING PARA SPLIT VIEW ============
+function applySplitClipping() {
+    if (currentMode !== MODES.SPLIT) return;
+    
+    const splitX = window.innerWidth / 2;
+    
+    // Clipping para canvas normales (mitad izquierda)
+    const normalCanvases = [glCanvas, hudCanvas, threeCanvas];
+    normalCanvases.forEach(canvas => {
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(0, 0, splitX, window.innerHeight);
+            ctx.clip();
+        }
+    });
+}
+
+function loop(timestamp) {
+    requestAnimationFrame(loop);
+    globalTime = timestamp;
+
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        if (!handLockActive) {
+            processBrightness(timestamp);
+            lightPos.x += (targetPos.x - lightPos.x) * CONFIG.handSmoothing;
+            lightPos.y += (targetPos.y - lightPos.y) * CONFIG.handSmoothing;
+        } else {
+            lightPos.x = targetPos.x;
+            lightPos.y = targetPos.y;
+        }
+
+        updateTrails(lightPos.x, lightPos.y);
+        updatePanelPhysics();
+
+        // WebGL
+        if (systemActive) {
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
+            gl.uniform1f(gl.getUniformLocation(program, "uTime"), timestamp * 0.001);
+            gl.uniform1f(gl.getUniformLocation(program, "uVelocity"), velocityMag);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        }
+        
+        // Three.js + Postprocesado
+        if (systemActive && threeScene) {
+            updateThreeJS(timestamp);
+        }
+
+        // HUD
+        ctx.clearRect(0, 0, hudCanvas.width, hudCanvas.height);
+        
+        if (systemActive) {
+            drawGrid(timestamp);
+            drawParticles();
+            drawHandVis(); 
+            
+            // NUEVO: Dibujar Panel Radial si está activo O si hay ghost ring
+            if (panel.active || panel.progress > 0.01 || panel.showGhostRing) {
+                drawRadialPanel(timestamp);
+            }
+            
+            drawHUDOverlay(timestamp);
+            
+            // Renderizar nebulosa
+            renderNebula(timestamp);
+        }
+    }
+}
+
+// ============ DIBUJO DEL PANEL RADIAL (NUEVO) ============
+// ============ DIBUJO DEL PANEL RADIAL (ULTRA MEJORADO V5.0) ============
+function drawRadialPanel(time) {
+    const cx = panel.center.x;
+    const cy = panel.center.y;
+    
+    // ====== GHOST RING (PREVIEW) - NUEVO ======
+    if (panel.showGhostRing && !panel.active) {
+        const ghostR = panel.ghostRingRadius;
+        const ghostAlpha = 0.4 + Math.sin(time * 0.003) * 0.2; // Pulsación sutil
+        
+        ctx.save();
+        ctx.strokeStyle = `rgba(0, 255, 170, ${ghostAlpha})`;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.arc(cx, cy, ghostR, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        // Indicador de "preview"
+        ctx.fillStyle = `rgba(0, 255, 170, ${ghostAlpha * 0.6})`;
+        ctx.font = "10px 'Courier New'";
+        ctx.textAlign = "center";
+        ctx.fillText("PREVIEW", cx, cy + ghostR + 15);
+        ctx.restore();
+    }
+    
+    if (panel.progress <= 0) return;
+    
+    // Easing mejorado (sin bounce excesivo)
+    const easedProgress = panel.state === 'COLLAPSING' ? 
+        easeInExpo(panel.progress) : 
+        easeOutExpo(panel.progress);
+    
+    const r = PANEL_CONFIG.maxRadius * easedProgress;
+    const alpha = easedProgress;
+    const section = panel.sectionsData[panel.currentSection];
+    
+    // Alphas por capa para stagger en colapso
+    const tracesAlpha = panel.state === 'COLLAPSING' ? 
+        smoothstep(0.8, 0.2, panel.progress) : alpha;
+    const ringAlpha = panel.state === 'COLLAPSING' ?
+        smoothstep(1.0, 0.0, panel.progress) : alpha;
+    
+    ctx.save();
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    
+    // ====== CAPA 1: CIRCUIT TRACES ======
+    if (panel.traces.length > 0 && tracesAlpha > 0.05) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(panel.rotation);
+        
+        for (let trace of panel.traces) {
+            const r1 = r * trace.r1;
+            const r2 = r * trace.r2;
+            const x1 = Math.cos(trace.angle) * r1;
+            const y1 = Math.sin(trace.angle) * r1;
+            const x2 = Math.cos(trace.angle) * r2;
+            const y2 = Math.sin(trace.angle) * r2;
+            
+            // Punto de bend (90 grados)
+            const xBend = Math.cos(trace.bendAngle) * ((r1 + r2) / 2);
+            const yBend = Math.sin(trace.bendAngle) * ((r1 + r2) / 2);
+            
+            ctx.strokeStyle = `rgba(0, 255, 170, ${tracesAlpha * 0.2})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(xBend, y1);
+            ctx.lineTo(xBend, y2);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+            
+            // Data pulse en la traza
+            const pulseIdx = panel.dataPulses.findIndex(p => p.traceIndex === panel.traces.indexOf(trace));
+            if (pulseIdx !== -1 && tracesAlpha > 0.3) {
+                const pulse = panel.dataPulses[pulseIdx];
+                let px, py;
+                if (pulse.progress < 0.33) {
+                    const t = pulse.progress / 0.33;
+                    px = x1 + (xBend - x1) * t;
+                    py = y1;
+                } else if (pulse.progress < 0.66) {
+                    const t = (pulse.progress - 0.33) / 0.33;
+                    px = xBend;
+                    py = y1 + (y2 - y1) * t;
+                } else {
+                    const t = (pulse.progress - 0.66) / 0.34;
+                    px = xBend + (x2 - xBend) * t;
+                    py = y2;
+                }
+                
+                ctx.fillStyle = `rgba(0, 255, 255, ${tracesAlpha})`;
+                ctx.beginPath();
+                ctx.arc(px, py, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        ctx.restore();
+    }
+    
+    // ====== CAPA 2: ANILLOS BASE ======
+    ctx.lineWidth = PANEL_CONFIG.ringThickness;
+    
+    // Anillo exterior
+    ctx.strokeStyle = `rgba(0, 255, 170, ${ringAlpha * 0.7})`;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    // Anillo intermedio con pulso
+    const pulseScale = 1 + Math.sin(panel.pulseTime) * 0.03;
+    ctx.strokeStyle = `rgba(0, 255, 170, ${ringAlpha * 0.4})`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 0.7 * pulseScale, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    // Anillo interior
+    ctx.strokeStyle = `rgba(0, 255, 170, ${ringAlpha * 0.25})`;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 0.4, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    // ====== CAPA 3: TICKS Y DIVISIONES ======
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(panel.rotation);
+    
+    const secSize = (Math.PI * 2) / PANEL_CONFIG.sections;
+    for (let i = 0; i < PANEL_CONFIG.sections; i++) {
+        const ang = i * secSize;
+        const isCurrent = (i === panel.currentSection);
+        
+        // Ticks con jitter sutil
+        const jitter = Math.sin(time * 0.001 + i) * 1;
+        const x1 = Math.cos(ang) * (r - 12 + jitter);
+        const y1 = Math.sin(ang) * (r - 12 + jitter);
+        const x2 = Math.cos(ang) * (r + 6);
+        const y2 = Math.sin(ang) * (r + 6);
+        
+        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * (isCurrent ? 0.9 : 0.3)})`;
+        ctx.lineWidth = isCurrent ? 2 : 1;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        
+        // Nodos en los ticks
+        if (isCurrent) {
+            ctx.fillStyle = section.color;
+            ctx.beginPath();
+            ctx.arc(x2, y2, 4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Glow
+            ctx.globalCompositeOperation = "lighter";
+            ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.5})`;
+            ctx.beginPath();
+            ctx.arc(x2, y2, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalCompositeOperation = "source-over";
+        }
+    }
+    
+    ctx.restore();
+    
+    // ====== CAPA 4: POIs (NODOS) ======
+    if (panel.pois.length > 0 && alpha > 0.5) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(panel.rotation);
+        
+        for (let poi of panel.pois) {
+            const px = Math.cos(poi.angle) * (r * poi.radiusFactor);
+            const py = Math.sin(poi.angle) * (r * poi.radiusFactor);
+            
+            // Blink phase
+            const blinkAlpha = 0.7 + Math.sin(panel.pulseTime + poi.blinkPhase) * 0.3;
+            
+            // Nodo principal
+            ctx.fillStyle = `rgba(0, 255, 170, ${alpha * blinkAlpha})`;
+            ctx.beginPath();
+            ctx.arc(px, py, 4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Cross
+            ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.6})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(px - 6, py);
+            ctx.lineTo(px + 6, py);
+            ctx.moveTo(px, py - 6);
+            ctx.lineTo(px, py + 6);
+            ctx.stroke();
+            
+            // Anillo exterior
+            ctx.strokeStyle = `rgba(0, 255, 170, ${alpha * 0.4})`;
+            ctx.beginPath();
+            ctx.arc(px, py, 8, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Label (contra-rotado)
+            ctx.save();
+            ctx.translate(px, py);
+            ctx.rotate(-panel.rotation);
+            ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.8})`;
+            ctx.font = "8px Courier New";
+            ctx.textAlign = "center";
+            ctx.fillText(poi.id, 0, -12);
+            ctx.restore();
+            
+            // Hover detection
+            const worldX = cx + Math.cos(poi.angle + panel.rotation) * (r * poi.radiusFactor);
+            const worldY = cy + Math.sin(poi.angle + panel.rotation) * (r * poi.radiusFactor);
+            const distToCursor = Math.hypot(lightPos.x - worldX, lightPos.y - worldY);
+            
+            if (distToCursor < 25 && alpha > 0.9) {
+                // Highlight
+                ctx.strokeStyle = `rgba(255, 255, 0, ${alpha * 0.9})`;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(px, py, 12, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // Tooltip (en coordenadas globales)
+                ctx.save();
+                ctx.translate(px, py);
+                ctx.rotate(-panel.rotation);
+                drawPOITooltip(poi, alpha, 0, 0);
+                ctx.restore();
+            }
+        }
+        
+        ctx.restore();
+    }
+    
+    // ====== CAPA 5: CENTRO Y DATOS ======
+    if (alpha > 0.7) {
+        ctx.fillStyle = section.color;
+        ctx.font = "bold 14px 'Courier New'";
+        ctx.textAlign = "center";
+        ctx.fillText(section.label, cx, cy - 5);
+        
+        // Valores vivos basados en rotationPhase
+        const liveValue = Math.floor(section.baseValue + Math.sin(panel.rotationPhase * Math.PI * 4 + section.seed) * 30);
+        ctx.font = "11px 'Courier New'";
+        ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.9})`;
+        ctx.fillText(`VAL: ${liveValue}`, cx, cy + 10);
+        ctx.fillText(section.id, cx, cy + 24);
+        
+        // Microtexto estable (usando hash)
+        ctx.font = "8px 'Courier New'";
+        ctx.fillStyle = `rgba(0, 255, 170, ${alpha * 0.6})`;
+        const microText = `SIG:${Math.floor(hashFloat(section.seed + 1000) * 100)}`;
+        ctx.fillText(microText, cx, cy + 36);
+    }
+    
+    // ====== CAPA 6: INDICADOR DE GRAB ======
+    if (panel.grabbed && alpha > 0.9) {
+        ctx.strokeStyle = `rgba(255, 255, 0, ${alpha * 0.7})`;
+        ctx.lineWidth = 3;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.arc(cx, cy, r + 18, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        ctx.fillStyle = `rgba(255, 255, 0, ${alpha * 0.9})`;
+        ctx.font = "11px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("⟳ ROTATE ACTIVE", cx, cy + r + 42);
+    }
+    
+    // ====== CAPA 7: SELECTOR ESTÁTICO (no rota) ======
+    if (alpha > 0.9 && !panel.grabbed) {
+        // Línea desde arriba apuntando al sector activo
+        const selectorAngle = -Math.PI / 2; // Apunta arriba
+        const sx = cx + Math.cos(selectorAngle) * (r + 25);
+        const sy = cy + Math.sin(selectorAngle) * (r + 25);
+        
+        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.6})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - r - 15);
+        ctx.lineTo(cx, cy - r - 30);
+        ctx.stroke();
+        
+        // Triángulo
+        ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.8})`;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - r - 12);
+        ctx.lineTo(cx - 5, cy - r - 18);
+        ctx.lineTo(cx + 5, cy - r - 18);
+        ctx.closePath();
+        ctx.fill();
+    }
+    
+    // ====== CAPA 8: CONEXIÓN AL CURSOR ======
+    if (!panel.grabbed && panel.progress >= 1 && alpha > 0.8) {
+        const distToCursor = Math.hypot(lightPos.x - cx, lightPos.y - cy);
+        if (distToCursor > 40 && distToCursor < 400) {
+            ctx.strokeStyle = `rgba(0, 255, 170, ${alpha * 0.15})`;
+            ctx.lineWidth = 1;
+            ctx.setLineDash([3, 6]);
+            ctx.beginPath();
+            ctx.moveTo(lightPos.x, lightPos.y);
+            ctx.lineTo(cx, cy);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+    }
+    
+    ctx.restore();
+}
+
+function drawPOITooltip(poi, alpha, offsetX, offsetY) {
+    const w = 140;
+    const h = 50;
+    const x = offsetX + 20;
+    const y = offsetY - h / 2;
+    
+    // Fondo
+    ctx.fillStyle = `rgba(0, 0, 0, ${alpha * 0.85})`;
+    ctx.fillRect(x, y, w, h);
+    
+    // Borde
+    ctx.strokeStyle = `rgba(0, 255, 170, ${alpha * 0.9})`;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x, y, w, h);
+    
+    // Contenido
+    ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+    ctx.font = "bold 10px 'Courier New'";
+    ctx.textAlign = "left";
+    ctx.fillText(`${poi.id} - ${poi.label}`, x + 6, y + 15);
+    
+    ctx.font = "9px 'Courier New'";
+    ctx.fillStyle = `rgba(0, 255, 170, ${alpha * 0.9})`;
+    ctx.fillText(`VALUE: ${poi.value}`, x + 6, y + 28);
+    ctx.fillText(`PRIORITY: ${poi.priority}`, x + 6, y + 40);
+}
+
+// ============ FUNCIONES DE DIBUJO (EXISTENTES) ============
+
+function drawGrid(time) {
+    ctx.strokeStyle = "rgba(0, 255, 100, 0.1)";
+    ctx.lineWidth = 1;
+    const paraX = (lightPos.x - hudCanvas.width/2) * 0.1;
+    const paraY = (lightPos.y - hudCanvas.height/2) * 0.1;
+    const gridSize = 100;
+    const cols = Math.ceil(hudCanvas.width / gridSize) + 2;
+    const rows = Math.ceil(hudCanvas.height / gridSize) + 2;
+    for(let i=0; i<cols; i++) {
+        const x = (i * gridSize + (time*0.02) % gridSize) - 50 - paraX;
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, hudCanvas.height); ctx.stroke();
+    }
+    for(let i=0; i<rows; i++) {
+        const y = (i * gridSize + (time*0.02) % gridSize) - 50 - paraY;
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(hudCanvas.width, y); ctx.stroke();
+    }
+}
+
+// ============ FINGERPRINT SCAN BOX (HUD CYBERPUNK) ============
+function drawFingerprintScanBox(ctx, x, y, w, h, t, intensity, seed) {
+    const pad = 8; // Padding interno
+    const innerX = x + pad;
+    const innerY = y + pad;
+    const innerW = w - pad * 2;
+    const innerH = h - pad * 2;
+    
+    ctx.save();
+    
+    // 1. BORDE DEL CUADRO (doble stroke sutil)
+    ctx.strokeStyle = `rgba(0, 255, 170, ${0.4 * intensity})`;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x, y, w, h);
+    
+    // Borde interno sutil
+    ctx.strokeStyle = `rgba(0, 255, 255, ${0.15 * intensity})`;
+    ctx.lineWidth = 0.5;
+    ctx.strokeRect(x + 2, y + 2, w - 4, h - 4);
+    
+    // 2. CLIP AL ÁREA INTERNA
+    ctx.beginPath();
+    ctx.rect(innerX, innerY, innerW, innerH);
+    ctx.clip();
+    
+    // 3. HUELLA PROCEDURAL (FINGERPRINT RIDGES)
+    const numRidges = 30;
+    const centerX = innerX + innerW * 0.5;
+    const centerY = innerY + innerH * 0.5;
+    const maxRadius = Math.min(innerW, innerH) * 0.45;
+    
+    // Hash simple para seed estable
+    function hash(n) {
+        n = ((n << 13) ^ n) >>> 0;
+        return ((n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff) / 2147483648.0;
+    }
+    
+    // Noise barato basado en seed
+    function noise2D(px, py) {
+        const i = Math.floor(px * 0.1 + seed);
+        const j = Math.floor(py * 0.1 + seed);
+        return hash(i * 73856093 ^ j * 19349663);
+    }
+    
+    // Dibujar ridges (surcos de huella)
+    for (let i = 0; i < numRidges; i++) {
+        const progress = i / numRidges;
+        const radius = maxRadius * (0.3 + progress * 0.7);
+        const angleOffset = progress * Math.PI * 4 + seed * 0.5;
+        
+        // Variación de alpha y grosor
+        const alpha = (0.08 + (i % 3) * 0.04) * intensity;
+        const lineWidth = 0.6 + (i % 2) * 0.3;
+        
+        ctx.strokeStyle = `rgba(0, 255, 170, ${alpha})`;
+        ctx.lineWidth = lineWidth;
+        
+        ctx.beginPath();
+        const numPoints = 60;
+        for (let p = 0; p <= numPoints; p++) {
+            const angle = (p / numPoints) * Math.PI * 2 + angleOffset;
+            
+            // Distorsión con noise para hacer la huella más orgánica
+            const noiseX = noise2D(Math.cos(angle) * radius, Math.sin(angle) * radius);
+            const noiseY = noise2D(Math.sin(angle) * radius, Math.cos(angle) * radius);
+            const distortion = (noiseX - 0.5) * 3;
+            
+            // Swirl suave (espiral)
+            const swirlFactor = 1 + Math.sin(angle * 2 + seed) * 0.15;
+            const r = radius * swirlFactor + distortion;
+            
+            const px = centerX + Math.cos(angle) * r;
+            const py = centerY + Math.sin(angle) * r;
+            
+            if (p === 0) {
+                ctx.moveTo(px, py);
+            } else {
+                ctx.lineTo(px, py);
+            }
+        }
+        ctx.stroke();
+        
+        // Arcos elípticos concéntricos adicionales
+        if (i % 4 === 0) {
+            const ellipseA = radius * 0.8;
+            const ellipseB = radius * 1.2;
+            ctx.beginPath();
+            ctx.ellipse(centerX, centerY, ellipseA, ellipseB, angleOffset, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+    }
+    
+    // 4. BANDA DE ESCANEO ANIMADA (SCAN REVEAL)
+    const scanSpeed = 0.8; // Velocidad del escaneo (1.2s-2.5s por ciclo)
+    const scanPos = (t * scanSpeed) % 1;
+    const scanThickness = innerH * 0.15; // Grosor de la banda
+    const scanY = innerY + scanPos * innerH;
+    
+    // Gradiente para soft edges
+    const gradient = ctx.createLinearGradient(0, scanY - scanThickness * 0.5, 0, scanY + scanThickness * 0.5);
+    gradient.addColorStop(0, `rgba(0, 255, 255, 0)`);
+    gradient.addColorStop(0.3, `rgba(0, 255, 255, ${0.4 * intensity})`);
+    gradient.addColorStop(0.5, `rgba(0, 255, 170, ${0.6 * intensity})`);
+    gradient.addColorStop(0.7, `rgba(0, 255, 255, ${0.4 * intensity})`);
+    gradient.addColorStop(1, `rgba(0, 255, 255, 0)`);
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(innerX, scanY - scanThickness * 0.5, innerW, scanThickness);
+    
+    // Línea central brillante del escaneo
+    ctx.strokeStyle = `rgba(0, 255, 170, ${0.8 * intensity})`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(innerX, scanY);
+    ctx.lineTo(innerX + innerW, scanY);
+    ctx.stroke();
+    
+    // 5. MICRODETALLES: Ticks en esquinas
+    ctx.strokeStyle = `rgba(0, 255, 170, ${0.5 * intensity})`;
+    ctx.lineWidth = 0.8;
+    const tickSize = 4;
+    
+    // Esquina superior izquierda
+    ctx.beginPath();
+    ctx.moveTo(innerX, innerY + tickSize);
+    ctx.lineTo(innerX, innerY);
+    ctx.lineTo(innerX + tickSize, innerY);
+    ctx.stroke();
+    
+    // Esquina superior derecha
+    ctx.beginPath();
+    ctx.moveTo(innerX + innerW - tickSize, innerY);
+    ctx.lineTo(innerX + innerW, innerY);
+    ctx.lineTo(innerX + innerW, innerY + tickSize);
+    ctx.stroke();
+    
+    // Esquina inferior izquierda
+    ctx.beginPath();
+    ctx.moveTo(innerX, innerY + innerH - tickSize);
+    ctx.lineTo(innerX, innerY + innerH);
+    ctx.lineTo(innerX + tickSize, innerY + innerH);
+    ctx.stroke();
+    
+    // Esquina inferior derecha
+    ctx.beginPath();
+    ctx.moveTo(innerX + innerW - tickSize, innerY + innerH);
+    ctx.lineTo(innerX + innerW, innerY + innerH);
+    ctx.lineTo(innerX + innerW, innerY + innerH - tickSize);
+    ctx.stroke();
+    
+    // 6. ETIQUETA MÍNIMA (sin tapar la huella)
+    ctx.font = "7px 'Courier New', monospace";
+    ctx.fillStyle = `rgba(0, 255, 170, ${0.6 * intensity})`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.fillText("FP SCAN", innerX + 2, innerY + innerH - 12);
+    
+    // 7. NOISE GRAIN SUTIL
+    ctx.fillStyle = `rgba(255, 255, 255, ${0.03 * intensity})`;
+    const grainPoints = 8;
+    for (let i = 0; i < grainPoints; i++) {
+        const gx = innerX + Math.random() * innerW;
+        const gy = innerY + Math.random() * innerH;
+        ctx.beginPath();
+        ctx.arc(gx, gy, 0.5, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    ctx.restore();
+}
+
+function drawHandVis() {
+    // Si el panel está activo y expandido, ocultamos el crosshair complejo para no saturar
+    if (panel.active && panel.progress > 0.8) return;
+
+    ctx.beginPath();
+    if(trails.length > 1) {
+        ctx.moveTo(trails[0].x, trails[0].y);
+        for(let i=1; i<trails.length; i++) ctx.lineTo(trails[i].x, trails[i].y);
+        ctx.strokeStyle = "rgba(0, 255, 200, 0.3)";
+        ctx.lineWidth = 4;
+        ctx.lineJoin = "round";
+        ctx.stroke();
+    }
+    if (handLockActive && detectedHands.length > 0) drawSkeleton(detectedHands[0]);
+
+    const mx = lightPos.x; const my = lightPos.y;
+    const time = globalTime * 0.002;
+    ctx.strokeStyle = handLockActive ? "#00ffaa" : "#ffffff";
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = handLockActive ? "#00ffaa" : "#ffffff";
+    ctx.beginPath(); ctx.arc(mx, my, 25, time * 2, time * 2 + Math.PI); ctx.lineWidth = 2; ctx.stroke();
+    ctx.beginPath(); ctx.arc(mx, my, 35, -time, -time + Math.PI * 1.5); ctx.lineWidth = 1; ctx.strokeStyle = "rgba(255,255,255,0.5)"; ctx.stroke();
+    ctx.fillStyle = handLockActive ? "#0f0" : "#fff";
+    ctx.beginPath(); ctx.arc(mx, my, 3, 0, Math.PI*2); ctx.fill();
+    ctx.shadowBlur = 0;
+    
+    // Caja de tracking con escaneo de huella - Solo visible si no hay panel
+    if (!panel.active) {
+        const box = 100;
+        const baseIntensity = handLockActive ? 1.0 : 0.35;
+        const boost = Math.min(velocityMag * 0.02, 0.4);
+        const intensity = baseIntensity + boost;
+        
+        // Seed estable basado en posición
+        const seed = ((Math.floor(mx) * 73856093) ^ (Math.floor(my) * 19349663)) >>> 0;
+        const normalizedSeed = (seed % 1000000) / 1000000;
+        
+        drawFingerprintScanBox(ctx, mx - box/2, my - box/2, box, box, globalTime * 0.001, intensity, normalizedSeed);
+    }
+}
+
+function drawParticles() {
+    for (let i = burstParticles.length - 1; i >= 0; i--) {
+        let p = burstParticles[i];
+        p.x += p.vx; p.y += p.vy; p.life -= p.decay;
+        if (p.life <= 0) { burstParticles.splice(i, 1); continue; }
+        ctx.fillStyle = `rgba(${p.color[0]}, ${p.color[1]}, ${p.color[2]}, ${p.life})`;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 2 * p.life, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.lineWidth = 0.5;
+    for (let i = scanPoints.length - 1; i >= 0; i--) {
+        let p = scanPoints[i];
+        p.life -= p.decay;
+        if (p.life <= 0) { scanPoints.splice(i, 1); continue; }
+        const alpha = p.life * scanIntensity;
+        ctx.fillStyle = `rgba(200, 255, 255, ${alpha})`;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI * 2); ctx.fill();
+        const connectDist = hudPreset === 1 ? 150 : 80;
+        for (let j = i - 1; j >= 0; j--) {
+            let p2 = scanPoints[j];
+            let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+            if (dist < connectDist) {
+                ctx.strokeStyle = `rgba(200, 255, 255, ${alpha * 0.3})`;
+                ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+            }
+        }
+    }
+}
+
+function drawHUDOverlay(time) {
+    ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+    ctx.font = "12px 'Courier New'";
+    ctx.textAlign = "left";
+    dataStream.forEach(d => {
+        d.y += d.speed;
+        if(d.y > hudCanvas.height) { d.y = 0; d.text = generateHex(); }
+        if(Math.random() > 0.95) d.text = generateHex();
+        ctx.fillStyle = `rgba(0, 255, 100, ${Math.random() * 0.5 + 0.2})`;
+        ctx.fillText(d.text, d.x, d.y);
+    });
+
+    const mx = lightPos.x; const my = lightPos.y;
+    // Ocultar info flotante si el panel está encima
+    if (!panel.active) {
+        const infoX = mx + 50;
+        ctx.fillStyle = "white";
+        ctx.fillText(`TRK_ID: ${handLockActive ? "HAND_01" : "LUM_SRC"}`, infoX, my);
+        ctx.fillText(`VEL: ${velocityMag.toFixed(2)} m/s`, infoX, my + 15);
+        if (handLockActive) {
+            ctx.fillStyle = currentGesture === "PINCH" ? "#0ff" : (currentGesture === "FIST" ? "#f00" : "#0f0");
+            ctx.fillText(`GST: ${currentGesture}`, infoX, my + 30);
+        }
+    }
+    drawCornerUI();
+    updateHotZoneIndicators();
+}
+
+function drawCornerUI() {
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(20, 100); ctx.lineTo(20, 20); ctx.lineTo(100, 20); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(hudCanvas.width-20, hudCanvas.height-100); ctx.lineTo(hudCanvas.width-20, hudCanvas.height-20); ctx.lineTo(hudCanvas.width-100, hudCanvas.height-20); ctx.stroke();
+}
+
+function drawSkeleton(hand) {
+    const lm = hand.landmarks;
+    const connections = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[0,9],[9,10],[10,11],[11,12],[0,13],[13,14],[14,15],[15,16],[0,17],[17,18],[18,19],[19,20],[5,9],[9,13],[13,17]];
+    ctx.strokeStyle = "rgba(0, 255, 200, 0.3)";
+    ctx.lineWidth = 1;
+    for(let c of connections) {
+        const p1 = lm[c[0]], p2 = lm[c[1]];
+        ctx.beginPath(); ctx.moveTo(hudCanvas.width - p1.x*hudCanvas.width, p1.y*hudCanvas.height); ctx.lineTo(hudCanvas.width - p2.x*hudCanvas.width, p2.y*hudCanvas.height); ctx.stroke();
+    }
+    for(let p of lm) {
+        const x = hudCanvas.width - p.x*hudCanvas.width; const y = p.y*hudCanvas.height;
+        ctx.fillStyle = "rgba(0, 255, 200, 0.5)"; ctx.beginPath(); ctx.arc(x, y, 2, 0, Math.PI*2); ctx.fill();
+    }
+}
+
+function processBrightness() {
+    hCtx.drawImage(video, 0, 0, 80, 60);
+    const data = hCtx.getImageData(0,0,80,60).data;
+    let sx=0, sy=0, count=0;
+    for(let i=0; i<data.length; i+=4) {
+        const val = (data[i]+data[i+1]+data[i+2])/3;
+        if(val > CONFIG.scanThreshold) {
+            const idx = i/4; const x = idx%80; const y = Math.floor(idx/80);
+            if(val > CONFIG.scanThreshold + 30) { sx += x; sy += y; count++; }
+            if(Math.random() > CONFIG.scanEmissionRate) addScanPoint(hudCanvas.width - (x/80)*hudCanvas.width, (y/60)*hudCanvas.height);
+        }
+    }
+    if(count>0) { targetPos.x = hudCanvas.width - (sx/count/80)*hudCanvas.width; targetPos.y = (sy/count/60)*hudCanvas.height; }
+}
+
+function emitHandScanPoints(hand) {
+    const indices = [0, 4, 8, 12, 16, 20];
+    for(let i of indices) {
+        if(Math.random() > 0.9) {
+            const p = hand.landmarks[i];
+            addScanPoint(hudCanvas.width - p.x*hudCanvas.width, p.y*hudCanvas.height);
+        }
+    }
+}
+
+function addScanPoint(x, y) {
+    if(scanPoints.length >= CONFIG.maxScanPoints * scanIntensity) scanPoints.shift();
+    scanPoints.push({ x, y, life: 1.0, decay: 0.01 + Math.random()*0.02 });
+}
+
+function updateHotZoneIndicators() {
+    const px = lightPos.x, py = lightPos.y;
+    for(let z of hotZones) {
+        const hit = px>=z.x && px<=z.x+z.w && py>=z.y && py<=z.y+z.h;
+        z.element.style.borderColor = hit ? "rgba(0,255,100,0.8)" : "rgba(0,255,100,0.2)";
+        z.element.style.background = hit ? "rgba(0,255,100,0.1)" : "rgba(0,255,100,0.02)";
+    }
+}
+
+function flashZone(el) {
+    el.style.backgroundColor = "rgba(0, 255, 100, 0.3)";
+    setTimeout(() => el.style.backgroundColor = "rgba(0, 255, 100, 0.02)", 200);
+}
+
+function toggleSystem() {
+    systemActive = !systemActive;
+    statusDiv.classList.toggle('active-status');
+    if(systemActive) {
+        glCanvas.classList.add('active'); hudCanvas.classList.add('active');
+        statusDiv.innerText = "SYSTEM ONLINE // NEURAL HANDSHAKE ESTABLISHED";
+    } else {
+        glCanvas.classList.remove('active'); hudCanvas.classList.remove('active');
+        statusDiv.innerText = "SYSTEM OFFLINE // AWAITING INPUT [PRESS N]";
+    }
+}
+
+function initWebGL() {
+    gl = glCanvas.getContext('webgl');
+    const vsS = document.getElementById('vs').textContent;
+    const fsS = document.getElementById('fs').textContent;
+    const vs = createShader(gl, gl.VERTEX_SHADER, vsS);
+    const fs = createShader(gl, gl.FRAGMENT_SHADER, fsS);
+    program = createProgram(gl, vs, fs);
+    gl.useProgram(program);
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(program, "position");
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+}
+function createShader(gl,t,s){const h=gl.createShader(t);gl.shaderSource(h,s);gl.compileShader(h);return h;}
+function createProgram(gl,v,f){const p=gl.createProgram();gl.attachShader(p,v);gl.attachShader(p,f);gl.linkProgram(p);return p;}
+
+// ============ THREE.JS + POSTPROCESADO PREMIUM ============
+let threeScene, threeCamera, threeRenderer, composer;
+let bloomLayer, neonObjects = [];
+let aberrationStrength = 0;
+let vignetteIntensity = 0.3;
+let afterimageTextures = [];
+let orbitalParticles = [];
+let orbitalParticlesSystem = null; // THREE.Points para partículas orbitales
+let ribbonTrails = [];
+let circuitLattice = null;
+let ringStack3D = null;
+let metaballs = [];
+let shockwave3D = null;
+let proximityHeatmap = null;
+let grabbed3DObject = null; // Objeto 3D agarrado
+let magneticObjects = []; // Objetos con magnetic snap
+
+// Configuración de postprocesado
+const POSTPROCESS_CONFIG = {
+    bloom: {
+        strength: 1.5,
+        radius: 0.4,
+        threshold: 0.85
+    },
+    aberration: {
+        base: 0.0,
+        max: 0.015,
+        speed: 0.1
+    },
+    vignette: {
+        base: 0.3,
+        max: 0.6,
+        velocityFactor: 0.02
+    },
+    afterimage: {
+        persistence: 0.85,
+        alpha: 0.15,
+        enabled: true
+    }
+};
+
+function initThreeJS() {
+    const threeCanvas = document.getElementById('threeCanvas');
+    if (!threeCanvas) return;
+    
+    // Scene
+    threeScene = new THREE.Scene();
+    threeScene.background = null; // Transparente
+    
+    // Camera
+    threeCamera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+    );
+    threeCamera.position.z = 5;
+    
+    // Renderer
+    threeRenderer = new THREE.WebGLRenderer({
+        canvas: threeCanvas,
+        alpha: true,
+        antialias: true,
+        powerPreference: "high-performance"
+    });
+    threeRenderer.setSize(window.innerWidth, window.innerHeight);
+    threeRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    threeRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+    threeRenderer.toneMappingExposure = 1.2;
+    
+    // Layers para bloom selectivo
+    bloomLayer = new THREE.Layers();
+    bloomLayer.set(1); // Capa 1 = objetos con bloom
+    
+    // Inicializar sistemas
+    initNeonObjects();
+    initOrbitalParticles();
+    initRibbonTrails();
+    initCircuitLattice();
+    initRingStack3D();
+    initMetaballs();
+    initShockwave3D();
+    initProximityHeatmap();
+    initPostProcessing();
+    
+    // Crear objetos 3D de ejemplo (opcional, para demostración)
+    createExample3DObjects();
+    
+    window.addEventListener('resize', () => {
+        threeCamera.aspect = window.innerWidth / window.innerHeight;
+        threeCamera.updateProjectionMatrix();
+        threeRenderer.setSize(window.innerWidth, window.innerHeight);
+        if (composer) {
+            composer.setSize(window.innerWidth, window.innerHeight);
+        }
+    });
+}
+
+function initNeonObjects() {
+    // Crear objetos "neón" que tendrán bloom
+    // Estos se agregarán dinámicamente cuando se detecten edges, brackets, etc.
+    neonObjects = [];
+}
+
+function initOrbitalParticles() {
+    orbitalParticles = [];
+    // Inicializar sistema de partículas
+    if (threeScene) {
+        const geometry = new THREE.BufferGeometry();
+        const material = new THREE.PointsMaterial({
+            size: 0.1,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.8,
+            sizeAttenuation: true
+        });
+        
+        orbitalParticlesSystem = new THREE.Points(geometry, material);
+        orbitalParticlesSystem.layers.set(1); // Bloom
+        orbitalParticlesSystem.visible = false;
+        threeScene.add(orbitalParticlesSystem);
+    }
+}
+
+function initRibbonTrails() {
+    ribbonTrails = [];
+    // Se crearán para index tip y thumb tip
+}
+
+function initCircuitLattice() {
+    // Malla de líneas 3D alrededor de la mano
+    const geometry = new THREE.BufferGeometry();
+    const material = new THREE.LineBasicMaterial({
+        color: 0x00ffaa,
+        transparent: true,
+        opacity: 0.4
+    });
+    circuitLattice = new THREE.LineSegments(geometry, material);
+    circuitLattice.layers.set(1); // Bloom layer
+    threeScene.add(circuitLattice);
+}
+
+function initRingStack3D() {
+    // Stack de anillos 3D para el panel radial
+    ringStack3D = new THREE.Group();
+    const ringCount = 5;
+    
+    for (let i = 0; i < ringCount; i++) {
+        const geometry = new THREE.TorusGeometry(
+            1.6 - i * 0.15,
+            0.02,
+            16,
+            64
+        );
+        const material = new THREE.MeshBasicMaterial({
+            color: 0x00ffaa,
+            transparent: true,
+            opacity: 0.6 - i * 0.1
+        });
+        const ring = new THREE.Mesh(geometry, material);
+        ring.layers.set(1); // Bloom
+        ring.userData.index = i;
+        ringStack3D.add(ring);
+    }
+    
+    ringStack3D.visible = false;
+    threeScene.add(ringStack3D);
+}
+
+function initMetaballs() {
+    // Metaballs simples con shader SDF
+    metaballs = [];
+    // Se crearán para seguir nudillos
+}
+
+function initShockwave3D() {
+    // Shockwave volumétrico 3D
+    const geometry = new THREE.RingGeometry(0.1, 1, 32);
+    const material = new THREE.MeshBasicMaterial({
+        color: 0x00ffff,
+        transparent: true,
+        opacity: 0,
+        side: THREE.DoubleSide
+    });
+    shockwave3D = new THREE.Mesh(geometry, material);
+    shockwave3D.layers.set(1);
+    shockwave3D.visible = false;
+    threeScene.add(shockwave3D);
+}
+
+function initProximityHeatmap() {
+    // Plano invisible para heatmap de proximidad
+    const geometry = new THREE.PlaneGeometry(10, 10, 32, 32);
+    const material = new THREE.MeshBasicMaterial({
+        transparent: true,
+        opacity: 0.3,
+        color: 0x00ff00
+    });
+    proximityHeatmap = new THREE.Mesh(geometry, material);
+    proximityHeatmap.rotation.x = -Math.PI / 2;
+    proximityHeatmap.position.z = -2;
+    proximityHeatmap.visible = false;
+    threeScene.add(proximityHeatmap);
+}
+
+// Shader personalizado para postprocesado
+const PostProcessShader = {
+    vertex: `
+        varying vec2 vUv;
+        void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    `,
+    fragment: `
+        uniform sampler2D tDiffuse;
+        uniform float uAberration;
+        uniform float uVignette;
+        uniform float uTime;
+        uniform float uVelocity;
+        varying vec2 vUv;
+        
+        void main() {
+            vec2 uv = vUv;
+            
+            // Chromatic Aberration
+            float r = texture2D(tDiffuse, uv + vec2(uAberration * 0.5, 0.0)).r;
+            float g = texture2D(tDiffuse, uv).g;
+            float b = texture2D(tDiffuse, uv - vec2(uAberration * 0.5, 0.0)).b;
+            vec3 color = vec3(r, g, b);
+            
+            // Vignette dinámico (basado en velocidad)
+            float dist = length(uv - 0.5);
+            float vig = smoothstep(0.7, 1.2, dist);
+            vig = mix(vig, 1.0, uVignette * (1.0 + uVelocity * 0.1));
+            color *= vig;
+            
+            // ACES Filmic Tone Mapping (aproximado)
+            color = color / (color + vec3(1.0));
+            color = pow(color, vec3(1.0/2.2));
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `
+};
+
+function initPostProcessing() {
+    // Sistema de postprocesado simplificado (sin EffectComposer por compatibilidad)
+    // Usamos shader personalizado en un quad de pantalla completa
+    // Para bloom, usamos compositing en canvas 2D o múltiples renders
+}
+
+function updateThreeJS(time) {
+    if (!threeScene || !threeRenderer) return;
+    
+    // Actualizar aberración cromática (pulso en eventos)
+    aberrationStrength = Math.max(0, aberrationStrength - POSTPROCESS_CONFIG.aberration.speed);
+    
+    // Actualizar vignette basado en velocidad
+    const targetVignette = POSTPROCESS_CONFIG.vignette.base + 
+        (velocityMag * POSTPROCESS_CONFIG.vignette.velocityFactor);
+    vignetteIntensity = THREE.MathUtils.lerp(
+        vignetteIntensity,
+        Math.min(targetVignette, POSTPROCESS_CONFIG.vignette.max),
+        0.1
+    );
+    
+    // Actualizar objetos reactivos (Fresnel + proximidad)
+    updateReactiveObjects(time);
+    
+    // Actualizar orbital particles
+    updateOrbitalParticles(time);
+    
+    // Actualizar ribbon trails
+    updateRibbonTrails();
+    
+    // Actualizar circuit lattice
+    updateCircuitLattice();
+    
+    // Actualizar ring stack 3D
+    updateRingStack3D(time);
+    
+    // Actualizar metaballs
+    updateMetaballs();
+    
+    // Actualizar shockwave
+    updateShockwave3D(time);
+    
+    // Actualizar heatmap
+    updateProximityHeatmap();
+    
+    // Magnetic snap
+    updateMagneticSnap();
+    
+    // Grab 3D
+    updateGrab3D();
+    
+    // Micro-parallax de cámara
+    if (handLockActive) {
+        const parallaxX = (lightPos.x / window.innerWidth - 0.5) * 0.05;
+        const parallaxY = (lightPos.y / window.innerHeight - 0.5) * 0.05;
+        threeCamera.position.x = THREE.MathUtils.lerp(threeCamera.position.x, parallaxX, 0.1);
+        threeCamera.position.y = THREE.MathUtils.lerp(threeCamera.position.y, parallaxY, 0.1);
+    }
+    
+    // Camera shake controlado (en eventos)
+    if (threeCamera.userData.shakeTime > 0) {
+        const shake = threeCamera.userData.shakeIntensity;
+        threeCamera.position.x += (Math.random() - 0.5) * shake;
+        threeCamera.position.y += (Math.random() - 0.5) * shake;
+        threeCamera.userData.shakeTime--;
+        threeCamera.userData.shakeIntensity *= 0.9; // Amortiguación
+    }
+    
+    // Motion blur falso (afterimage) - renderizar con alpha bajo y acumular
+    if (POSTPROCESS_CONFIG.afterimage.enabled) {
+        threeRenderer.setClearColor(0x000000, 0);
+        threeRenderer.render(threeScene, threeCamera);
+        
+        // Aplicar persistencia (simulado con compositing)
+        const ctx = hudCanvas.getContext('2d');
+        ctx.globalAlpha = POSTPROCESS_CONFIG.afterimage.alpha;
+        ctx.globalCompositeOperation = 'multiply';
+        ctx.drawImage(threeCanvas, 0, 0);
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = 1.0;
+    } else {
+        // Render normal
+        threeRenderer.setClearColor(0x000000, 0);
+        threeRenderer.render(threeScene, threeCamera);
+    }
+}
+
+// Trigger camera shake
+function triggerCameraShake(intensity = 0.02, duration = 10) {
+    if (!threeCamera) return;
+    threeCamera.userData.shakeTime = duration;
+    threeCamera.userData.shakeIntensity = intensity;
+}
+
+function triggerAberrationPulse(intensity = 0.015) {
+    aberrationStrength = intensity;
+}
+
+function updateOrbitalParticles(time) {
+    if (!panel.grabbed || panel.intentState !== 'INTENT_GRABBED') {
+        // Decaer partículas si no está grabbed
+        orbitalParticles = orbitalParticles.filter(p => {
+            p.life -= 0.02;
+            return p.life > 0;
+        });
+        
+        if (orbitalParticlesSystem) {
+            orbitalParticlesSystem.visible = orbitalParticles.length > 0;
+        }
+        updateOrbitalParticlesGeometry();
+        return;
+    }
+    
+    // Spawnear partículas orbitales cuando está grabbed
+    if (orbitalParticles.length < 128 && Math.random() < 0.3) {
+        const angle = Math.random() * Math.PI * 2;
+        const radius = 2 + Math.random() * 0.5;
+        orbitalParticles.push({
+            angle: angle,
+            radius: radius,
+            speed: 0.02 + Math.random() * 0.01,
+            life: 1.0,
+            size: 0.02 + Math.random() * 0.01,
+            noise: Math.random() * Math.PI * 2
+        });
+    }
+    
+    // Actualizar partículas con ruido Perlin (simplificado)
+    orbitalParticles.forEach(p => {
+        p.angle += p.speed;
+        p.life -= 0.005;
+        p.noise += 0.01;
+        // Aplicar ruido al radio
+        p.radius += Math.sin(p.noise) * 0.01;
+    });
+    
+    updateOrbitalParticlesGeometry();
+}
+
+function updateOrbitalParticlesGeometry() {
+    if (!orbitalParticlesSystem || orbitalParticles.length === 0) {
+        if (orbitalParticlesSystem) orbitalParticlesSystem.visible = false;
+        return;
+    }
+    
+    const positions = new Float32Array(orbitalParticles.length * 3);
+    const colors = new Float32Array(orbitalParticles.length * 3);
+    const sizes = new Float32Array(orbitalParticles.length);
+    
+    // Convertir panel center a coordenadas 3D
+    const cx = (panel.center.x / window.innerWidth - 0.5) * 10;
+    const cy = (0.5 - panel.center.y / window.innerHeight) * 10;
+    
+    orbitalParticles.forEach((p, i) => {
+        const x = cx + Math.cos(p.angle) * p.radius;
+        const y = cy + Math.sin(p.angle) * p.radius;
+        const z = (Math.random() - 0.5) * 0.5;
+        
+        positions[i * 3] = x;
+        positions[i * 3 + 1] = y;
+        positions[i * 3 + 2] = z;
+        
+        const life = Math.max(0, p.life);
+        colors[i * 3] = 0; // R
+        colors[i * 3 + 1] = life; // G
+        colors[i * 3 + 2] = 0.67 * life; // B
+        
+        sizes[i] = p.size * life;
+    });
+    
+    orbitalParticlesSystem.geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    orbitalParticlesSystem.geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    orbitalParticlesSystem.geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+    orbitalParticlesSystem.visible = true;
+}
+
+function initOrbitalParticles() {
+    const geometry = new THREE.BufferGeometry();
+    const material = new THREE.PointsMaterial({
+        size: 0.1,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.8,
+        sizeAttenuation: true
+    });
+    
+    orbitalParticlesSystem = new THREE.Points(geometry, material);
+    orbitalParticlesSystem.layers.set(1); // Bloom
+    orbitalParticlesSystem.visible = false;
+    threeScene.add(orbitalParticlesSystem);
+}
+
+function updateRibbonTrails() {
+    if (!handLockActive || detectedHands.length === 0) {
+        ribbonTrails = [];
+        return;
+    }
+    
+    const hand = detectedHands[0];
+    const indexTip = hand.landmarks[8];
+    const thumbTip = hand.landmarks[4];
+    
+    // Convertir a coordenadas 3D (normalizadas)
+    const indexPos = {
+        x: (indexTip.x - 0.5) * 10,
+        y: (0.5 - indexTip.y) * 10,
+        z: 0
+    };
+    const thumbPos = {
+        x: (thumbTip.x - 0.5) * 10,
+        y: (0.5 - thumbTip.y) * 10,
+        z: 0
+    };
+    
+    // Actualizar trails (simplificado - se puede mejorar con TubeGeometry)
+}
+
+function updateCircuitLattice() {
+    if (!circuitLattice || !handLockActive) {
+        circuitLattice.visible = false;
+        return;
+    }
+    
+    if (!panel.active) {
+        circuitLattice.visible = false;
+        return;
+    }
+    
+    // Reconfigurar lattice basado en sección actual
+    circuitLattice.visible = true;
+    // Actualizar geometría (simplificado)
+}
+
+function updateRingStack3D(time) {
+    if (!ringStack3D) return;
+    
+    if (!panel.active || panel.progress < 0.3) {
+        ringStack3D.visible = false;
+        return;
+    }
+    
+    ringStack3D.visible = true;
+    
+    // Posicionar en el centro del panel (convertir 2D a 3D)
+    const cx = (panel.center.x / window.innerWidth - 0.5) * 10;
+    const cy = (0.5 - panel.center.y / window.innerHeight) * 10;
+    ringStack3D.position.set(cx, cy, 0);
+    
+    // Rotar con panel
+    ringStack3D.rotation.z = panel.rotation;
+    
+    // Animar cada anillo
+    ringStack3D.children.forEach((ring, i) => {
+        const pulse = Math.sin(time * 0.001 + i) * 0.1 + 1.0;
+        ring.scale.set(pulse, pulse, 1);
+        ring.position.z = i * 0.1 - 0.2;
+        ring.material.opacity = (0.6 - i * 0.1) * panel.progress;
+    });
+}
+
+function updateMetaballs() {
+    if (!handLockActive || detectedHands.length === 0) {
+        metaballs = [];
+        return;
+    }
+    
+    // Crear metaballs para nudillos (simplificado)
+}
+
+function updateShockwave3D(time) {
+    if (!shockwave3D) return;
+    
+    if (!shockwave3D.userData.active) {
+        shockwave3D.visible = false;
+        return;
+    }
+    
+    shockwave3D.userData.progress += 0.05;
+    if (shockwave3D.userData.progress > 1) {
+        shockwave3D.userData.active = false;
+        shockwave3D.visible = false;
+        return;
+    }
+    
+    const scale = 1 + shockwave3D.userData.progress * 3;
+    shockwave3D.scale.set(scale, scale, 1);
+    shockwave3D.material.opacity = (1 - shockwave3D.userData.progress) * 0.8;
+}
+
+function triggerShockwave3D(x, y) {
+    if (!shockwave3D) return;
+    
+    const worldX = (x / window.innerWidth - 0.5) * 10;
+    const worldY = (0.5 - y / window.innerHeight) * 10;
+    
+    shockwave3D.position.set(worldX, worldY, 0);
+    shockwave3D.userData.active = true;
+    shockwave3D.userData.progress = 0;
+    shockwave3D.visible = true;
+    shockwave3D.scale.set(1, 1, 1);
+    shockwave3D.material.opacity = 0.8;
+}
+
+function updateProximityHeatmap() {
+    if (!proximityHeatmap || !handLockActive) {
+        proximityHeatmap.visible = false;
+        return;
+    }
+    
+    // Actualizar heatmap basado en posición de la mano
+    proximityHeatmap.visible = true;
+    // Actualizar material con shader para ripples
+}
+
+// ============ SHADERS REACTIVOS ============
+
+// Shader Fresnel + Scan + Noise (para objetos interactuables)
+const ReactiveShader = {
+    vertex: `
+        varying vec3 vNormal;
+        varying vec3 vPosition;
+        varying vec2 vUv;
+        void main() {
+            vNormal = normalize(normalMatrix * normal);
+            vPosition = position;
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    `,
+    fragment: `
+        uniform float uTime;
+        uniform float uProximity; // 0-1, cercanía del dedo
+        uniform vec3 uColor;
+        varying vec3 vNormal;
+        varying vec3 vPosition;
+        varying vec2 vUv;
+        
+        // Noise function
+        float noise(vec2 p) {
+            return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+        }
+        
+        void main() {
+            vec3 normal = normalize(vNormal);
+            vec3 viewDir = normalize(cameraPosition - vPosition);
+            
+            // Fresnel
+            float fresnel = pow(1.0 - dot(normal, viewDir), 2.0);
+            fresnel = mix(fresnel, 1.0, uProximity * 0.5);
+            
+            // Scanlines
+            float scan = sin(vUv.y * 800.0 + uTime * 2.0) * 0.02;
+            
+            // Noise
+            float n = noise(vUv * 10.0 + uTime);
+            n = n * 0.1;
+            
+            vec3 color = uColor;
+            color += fresnel * 0.5;
+            color += scan;
+            color += n;
+            
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `
+};
+
+// Shader Energy Conduit (línea 3D con flujo)
+const EnergyConduitShader = {
+    vertex: `
+        varying vec2 vUv;
+        varying float vProgress;
+        void main() {
+            vUv = uv;
+            vProgress = position.z;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    `,
+    fragment: `
+        uniform float uTime;
+        uniform vec3 uColor;
+        varying vec2 vUv;
+        varying float vProgress;
+        
+        void main() {
+            // Flujo de energía que recorre
+            float flow = mod(vProgress + uTime * 0.5, 1.0);
+            float energy = smoothstep(0.0, 0.1, flow) * smoothstep(1.0, 0.9, flow);
+            
+            vec3 color = uColor * energy;
+            gl_FragColor = vec4(color, energy * 0.8);
+        }
+    `
+};
+
+// Shader Scan Reveal (materialización por barrido)
+const ScanRevealShader = {
+    vertex: `
+        varying vec3 vPosition;
+        varying vec2 vUv;
+        void main() {
+            vPosition = position;
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    `,
+    fragment: `
+        uniform float uRevealProgress; // 0-1
+        uniform float uTime;
+        uniform vec3 uColor;
+        varying vec3 vPosition;
+        varying vec2 vUv;
+        
+        float noise(vec2 p) {
+            return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+        }
+        
+        void main() {
+            // Barrido vertical
+            float scanLine = vUv.y;
+            float reveal = smoothstep(uRevealProgress - 0.1, uRevealProgress, scanLine);
+            reveal *= smoothstep(uRevealProgress + 0.1, uRevealProgress, scanLine);
+            
+            // Noise en el borde
+            float n = noise(vUv * 20.0 + uTime);
+            reveal = mix(reveal, 0.0, n * 0.3);
+            
+            vec3 color = uColor * reveal;
+            gl_FragColor = vec4(color, reveal);
+        }
+    `
+};
+
+// Shader Dither Disintegration (desintegración)
+const DitherDisintegrationShader = {
+    vertex: `
+        varying vec3 vPosition;
+        varying vec2 vUv;
+        void main() {
+            vPosition = position;
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    `,
+    fragment: `
+        uniform float uDisintegrateProgress; // 0-1
+        uniform float uTime;
+        varying vec3 vPosition;
+        varying vec2 vUv;
+        
+        float random(vec2 st) {
+            return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+        }
+        
+        void main() {
+            float r = random(floor(vUv * 20.0));
+            float threshold = uDisintegrateProgress;
+            
+            if (r < threshold) {
+                discard;
+            }
+            
+            vec3 color = vec3(0.0, 1.0, 0.67);
+            float alpha = 1.0 - uDisintegrateProgress;
+            gl_FragColor = vec4(color, alpha);
+        }
+    `
+};
+
+// ============ MAGNETIC SNAP Y GRAB 3D ============
+
+function updateMagneticSnap() {
+    if (!handLockActive || detectedHands.length === 0) {
+        magneticObjects.forEach(obj => {
+            if (obj.userData.anchor) {
+                // Volver a anchor
+                obj.position.lerp(obj.userData.anchor, 0.1);
+            }
+        });
+        return;
+    }
+    
+    const hand = detectedHands[0];
+    const indexTip = hand.landmarks[8];
+    const finger3D = {
+        x: (indexTip.x - 0.5) * 10,
+        y: (0.5 - indexTip.y) * 10,
+        z: 0
+    };
+    
+    magneticObjects.forEach(obj => {
+        const dist = Math.hypot(
+            obj.position.x - finger3D.x,
+            obj.position.y - finger3D.y,
+            obj.position.z - finger3D.z
+        );
+        
+        if (dist < 2.0) { // Radio de atracción
+            // Spring suave hacia el dedo
+            const target = new THREE.Vector3(finger3D.x, finger3D.y, finger3D.z);
+            obj.position.lerp(target, 0.15);
+        } else if (obj.userData.anchor) {
+            // Volver a anchor
+            obj.position.lerp(obj.userData.anchor, 0.1);
+        }
+    });
+}
+
+function updateGrab3D() {
+    if (!grabbed3DObject || !handLockActive || detectedHands.length === 0) {
+        if (grabbed3DObject) {
+            // Soltar objeto
+            grabbed3DObject.userData.grabbed = false;
+            grabbed3DObject = null;
+        }
+        return;
+    }
+    
+    const hand = detectedHands[0];
+    const indexTip = hand.landmarks[8];
+    const thumbTip = hand.landmarks[4];
+    
+    // Posición del pinch en 3D
+    const pinch3D = {
+        x: ((indexTip.x + thumbTip.x) / 2 - 0.5) * 10,
+        y: (0.5 - (indexTip.y + thumbTip.y) / 2) * 10,
+        z: 0
+    };
+    
+    // Spring hacia la posición del pinch
+    const target = new THREE.Vector3(pinch3D.x, pinch3D.y, pinch3D.z);
+    grabbed3DObject.position.lerp(target, 0.2);
+    
+    // Rotación con slerp (simplificado)
+    const handAngle = calculateHandAngle(hand);
+    grabbed3DObject.rotation.z = THREE.MathUtils.lerp(
+        grabbed3DObject.rotation.z,
+        handAngle,
+        0.1
+    );
+    
+    // Límite de distancia (si se aleja mucho, soltar)
+    const dist = Math.hypot(
+        grabbed3DObject.position.x - pinch3D.x,
+        grabbed3DObject.position.y - pinch3D.y
+    );
+    
+    if (dist > 3.0) {
+        grabbed3DObject.userData.grabbed = false;
+        grabbed3DObject = null;
+    }
+}
+
+function grab3DObject(obj) {
+    if (!obj || !handLockActive) return false;
+    
+    const hand = detectedHands[0];
+    const indexTip = hand.landmarks[8];
+    const finger3D = {
+        x: (indexTip.x - 0.5) * 10,
+        y: (0.5 - indexTip.y) * 10,
+        z: 0
+    };
+    
+    const dist = Math.hypot(
+        obj.position.x - finger3D.x,
+        obj.position.y - finger3D.y,
+        obj.position.z - finger3D.z
+    );
+    
+    if (dist < 1.5) { // Radio de grab
+        grabbed3DObject = obj;
+        obj.userData.grabbed = true;
+        obj.userData.grabOffset = {
+            x: obj.position.x - finger3D.x,
+            y: obj.position.y - finger3D.y,
+            z: obj.position.z - finger3D.z
+        };
+        return true;
+    }
+    
+    return false;
+}
+
+// Crear objetos 3D con shaders reactivos
+function createReactiveObject(geometry, color, shaderType = 'reactive') {
+    let material;
+    
+    if (shaderType === 'reactive') {
+        material = new THREE.ShaderMaterial({
+            uniforms: {
+                uTime: { value: 0 },
+                uProximity: { value: 0 },
+                uColor: { value: new THREE.Color(color) }
+            },
+            vertexShader: ReactiveShader.vertex,
+            fragmentShader: ReactiveShader.fragment
+        });
+    } else if (shaderType === 'scanReveal') {
+        material = new THREE.ShaderMaterial({
+            uniforms: {
+                uRevealProgress: { value: 0 },
+                uTime: { value: 0 },
+                uColor: { value: new THREE.Color(color) }
+            },
+            vertexShader: ScanRevealShader.vertex,
+            fragmentShader: ScanRevealShader.fragment,
+            transparent: true
+        });
+    } else if (shaderType === 'dither') {
+        material = new THREE.ShaderMaterial({
+            uniforms: {
+                uDisintegrateProgress: { value: 0 },
+                uTime: { value: 0 }
+            },
+            vertexShader: DitherDisintegrationShader.vertex,
+            fragmentShader: DitherDisintegrationShader.fragment,
+            transparent: true
+        });
+    }
+    
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.layers.set(1); // Bloom layer
+    mesh.userData.shaderType = shaderType;
+    return mesh;
+}
+
+// Crear objetos 3D de ejemplo
+function createExample3DObjects() {
+    // Cubo interactuable con shader reactivo
+    const cubeGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+    const cube = createReactiveObject(cubeGeometry, 0x00ffaa, 'reactive');
+    cube.position.set(2, 0, 0);
+    cube.userData.grabbable = true;
+    cube.userData.anchor = cube.position.clone();
+    magneticObjects.push(cube);
+    threeScene.add(cube);
+    
+    // Esfera con scan reveal
+    const sphereGeometry = new THREE.SphereGeometry(0.4, 32, 32);
+    const sphere = createReactiveObject(sphereGeometry, 0x00ffff, 'scanReveal');
+    sphere.position.set(-2, 0, 0);
+    sphere.userData.grabbable = true;
+    sphere.userData.anchor = sphere.position.clone();
+    sphere.material.uniforms.uRevealProgress.value = 1.0; // Ya revelado
+    magneticObjects.push(sphere);
+    threeScene.add(sphere);
+    
+    // Torus con shader reactivo
+    const torusGeometry = new THREE.TorusGeometry(0.3, 0.1, 16, 32);
+    const torus = createReactiveObject(torusGeometry, 0xff00ff, 'reactive');
+    torus.position.set(0, 2, 0);
+    torus.userData.grabbable = true;
+    torus.userData.anchor = torus.position.clone();
+    magneticObjects.push(torus);
+    threeScene.add(torus);
+}
+
+// Actualizar proximidad para objetos reactivos
+function updateReactiveObjects(time) {
+    if (!handLockActive || detectedHands.length === 0) return;
+    
+    const hand = detectedHands[0];
+    const indexTip = hand.landmarks[8];
+    const finger3D = {
+        x: (indexTip.x - 0.5) * 10,
+        y: (0.5 - indexTip.y) * 10,
+        z: 0
+    };
+    
+    // Actualizar todos los objetos reactivos en la escena
+    threeScene.traverse((obj) => {
+        if (obj.userData.shaderType && obj.material.uniforms) {
+            if (obj.material.uniforms.uTime) {
+                obj.material.uniforms.uTime.value = time * 0.001;
+            }
+            
+            if (obj.material.uniforms.uProximity) {
+                const dist = Math.hypot(
+                    obj.position.x - finger3D.x,
+                    obj.position.y - finger3D.y,
+                    obj.position.z - finger3D.z
+                );
+                const proximity = Math.max(0, 1 - dist / 3); // Normalizar a 0-1
+                obj.material.uniforms.uProximity.value = proximity;
+            }
+        }
+    });
+}
+
+const lerpFactor = 0.2; 
+
+// ============ INTEGRACIÓN CON AMBIENTE.HTML ============
+// ambienteFrame ya está declarado arriba
+let ambienteReady = false;
+
+// Obtener referencia al iframe (ya está declarado arriba)
+window.addEventListener('load', () => {
+    // ambienteFrame ya está declarado como const arriba
+    if (ambienteFrame) {
+        console.log('[AMBIENT] Iframe encontrado');
+        ambienteFrame.addEventListener('load', () => {
+            console.log('[AMBIENT] Iframe cargado, esperando handshake...');
+            // Intentar obtener referencia al contentWindow después de cargar
+            setTimeout(() => {
+                if (ambienteFrame && ambienteFrame.contentWindow) {
+                    console.log('[AMBIENT] ContentWindow disponible');
+                }
+            }, 100);
+        });
+    } else {
+        console.error('[AMBIENT] Iframe no encontrado!');
+    }
+});
+
+// Escuchar handshake de ambiente.html
+window.addEventListener('message', (event) => {
+    // Validar origen (permitir mismo origen o null para desarrollo local)
+    if (event.origin !== window.location.origin && event.origin !== 'null') return;
+    
+    if (event.data && event.data.type === 'AMBIENT_READY') {
+        ambienteReady = true;
+        console.log('[AMBIENT] Handshake recibido, ambiente listo');
+        
+        // Configuración inicial del ambiente
+        if (ambienteFrame && ambienteFrame.contentWindow) {
+            try {
+                ambienteFrame.contentWindow.postMessage({
+                    type: 'AMBIENT_SET',
+                    params: {
+                        density: 0.5,
+                        speed: 0.3,
+                        hue: 0.5,
+                        bloom: 0.6,
+                        brightness: 1.5, // Aumentar brillo para mejor visibilidad
+                        fog: 0.4,
+                        nebulaStrength: 0.7
+                    }
+                }, '*'); // Usar '*' para desarrollo local
+                console.log('[AMBIENT] Configuración inicial enviada');
+            } catch (e) {
+                console.error('[AMBIENT] Error enviando configuración:', e);
+            }
+        }
+    }
+});
+
+// Función para enviar posición del dedo al ambiente
+function sendPointerToAmbient(x, y) {
+    if (!ambienteReady || !ambienteFrame || !ambienteFrame.contentWindow) {
+        return;
+    }
+    
+    // Normalizar coordenadas (0-1)
+    const normalizedX = Math.max(0, Math.min(1, x));
+    const normalizedY = Math.max(0, Math.min(1, y));
+    
+    try {
+        ambienteFrame.contentWindow.postMessage({
+            type: 'AMBIENT_POINTER',
+            x: normalizedX,
+            y: normalizedY
+        }, '*'); // Usar '*' para desarrollo local, cambiar a window.location.origin en producción
+    } catch (e) {
+        console.error('[AMBIENT] Error enviando mensaje:', e);
+    }
+}
+
+// Función para enviar pulso al ambiente
+function sendPulseToAmbient(strength = 0.8) {
+    if (!ambienteReady || !ambienteFrame || !ambienteFrame.contentWindow) return;
+    
+    try {
+        ambienteFrame.contentWindow.postMessage({
+            type: 'AMBIENT_PULSE',
+            strength: Math.max(0, Math.min(1, strength))
+        }, '*'); // Usar '*' para desarrollo local
+    } catch (e) {
+        console.error('[AMBIENT] Error enviando pulso:', e);
+    }
+}
+
+init();
+
+</script>
+</body>
+</html>
