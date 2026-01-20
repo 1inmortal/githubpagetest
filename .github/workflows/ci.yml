@@ -270,15 +270,14 @@ jobs:
         echo "🔨 Compilando proyecto React..."
         NODE_ENV=production npm run build
         
-        # Copiar solo archivos adicionales que NO están en pruebas/certificados
-        echo "📋 Copiando archivos adicionales..."
-        # NO copiar src/assets ni pruebas (ya compilados por Vite)
-        # Copiar otros archivos de pruebas EXCEPTO certificados/react
-        cp -r public dist/ 2>/dev/null || echo "⚠️ public/ no encontrado, omitiendo"
-        [ -d "config" ] && cp -r config/ dist/ || echo "⚠️ config/ no encontrado, omitiendo"
-        [ -d "docs" ] && cp -r docs/ dist/ || echo "⚠️ docs/ no encontrado, omitiendo"
-        [ -f "README.md" ] && cp README.md dist/ || echo "⚠️ README.md no encontrado, omitiendo"
-        [ -f "LICENSE" ] && cp LICENSE dist/ || echo "⚠️ LICENSE no encontrado, omitiendo"
+        # Listar archivos generados por Vite
+        echo "📋 Archivos compilados por Vite:"
+        ls -la dist/
+        ls -la dist/pruebas/certificados/ 2>/dev/null || echo "⚠️ pruebas/certificados no está en dist"
+        ls -la dist/assets/ 2>/dev/null || echo "⚠️ assets/ no está en dist"
+        
+        # NO copiar nada más - Vite ya generó todo lo necesario en dist/
+        echo "ℹ️ Vite ya copió public/ y compiló todos los archivos necesarios"
         
         # Verificar que el directorio dist existe
         if [ ! -d "dist" ]; then
