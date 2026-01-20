@@ -2350,9 +2350,10 @@ body.presenter-mode .tips-panel {
           const origin = window.location.origin;
           const pathname = window.location.pathname;
           
-          // Detectar si estamos en GitHub Pages con subdirectorio
+          // Detectar si estamos en GitHub Pages con subdirectorio (validación segura)
           let basePath = '';
-          if (pathname.includes('/githubpagetest/')) {
+          const pathParts = pathname.split('/').filter(Boolean);
+          if (pathParts.length > 0 && pathParts[0] === 'githubpagetest') {
             basePath = '/githubpagetest';
           } else {
             // Extraer el nombre del repositorio si está en la URL
@@ -2439,20 +2440,29 @@ const video = document.getElementById("mainVideo");
   const currentPath = window.location.pathname;
   const videoFileName = 'captura.mp4';
   
-  // Detectar entorno y construir rutas prioritarias
-  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  const isGitHubPages = window.location.hostname.includes('github.io');
-  const currentDir = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
+  // Detectar entorno y construir rutas prioritarias (URL segura con validación)
+  const hostname = window.location.hostname;
+  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+  // Validar hostname contra lista blanca para GitHub Pages
+  const isGitHubPages = /^[\w-]+\.github\.io$/.test(hostname);
+  const lastSlashIndex = currentPath.lastIndexOf('/');
+  const currentDir = lastSlashIndex >= 0 ? currentPath.substring(0, lastSlashIndex + 1) : '/';
   
   // Detectar basePath para GitHub Pages
   let basePath = '';
   if (isGitHubPages) {
     const pathParts = currentPath.split('/').filter(p => p);
-    if (pathParts.length > 0 && pathParts[0] !== 'public' && pathParts[0] !== 'gsap') {
-      basePath = '/' + pathParts[0];
-    }
-    if (currentPath.includes('/githubpagetest/')) {
-      basePath = '/githubpagetest';
+    // Validar pathParts de forma segura contra lista blanca
+    if (pathParts.length > 0) {
+      const firstPart = pathParts[0];
+      // Solo aceptar nombres de repositorio válidos (alphanumeric + guiones)
+      if (/^[a-z0-9-]+$/i.test(firstPart) && firstPart !== 'public' && firstPart !== 'gsap') {
+        basePath = '/' + firstPart;
+      }
+      // Validar específicamente githubpagetest
+      if (firstPart === 'githubpagetest') {
+        basePath = '/githubpagetest';
+      }
     }
   }
   
