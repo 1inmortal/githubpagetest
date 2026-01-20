@@ -5,13 +5,22 @@ import { resolve } from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/githubpagetest/',
+  base: process.env.NODE_ENV === 'production' ? '/githubpagetest/' : '/',
   server: {
     port: 3000,
-    open: '/pruebas/certificados/react.html'
+    open: '/pruebas/certificados/react.html',
+    fs: {
+      strict: false
+    }
   },
   root: '.',
   publicDir: 'public',
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src'),
+      '@pruebas': resolve(__dirname, './pruebas')
+    }
+  },
   build: {
     outDir: 'dist',
     sourcemap: true,
