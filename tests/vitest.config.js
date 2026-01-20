@@ -7,8 +7,16 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./tests/setup.js'],
+    // Solo incluir tests de la carpeta tests/, NO tests-e2e
     include: ['tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    exclude: ['tests-e2e/**/*', 'node_modules/**/*', 'dist/**/*'],
+    // Excluir explícitamente tests-e2e, playwright, y otros directorios
+    exclude: [
+      '**/tests-e2e/**',
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.{idea,git,cache,output,temp}/**',
+      '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*'
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

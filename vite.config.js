@@ -41,6 +41,15 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: ['./tests/setup.js']
+    setupFiles: ['./tests/setup.js'],
+    // Solo incluir tests de la carpeta tests/, NO tests-e2e
+    include: ['tests/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    // Excluir explícitamente tests-e2e (Playwright) y otros directorios
+    exclude: [
+      '**/tests-e2e/**',
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.{idea,git,cache,output,temp}/**'
+    ]
   }
 })
