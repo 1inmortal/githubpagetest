@@ -401,7 +401,7 @@ const PortfolioApp = () => {
             <a href="/githubpagetest/#sobre-mi" className="text-slate-400 hover:text-white transition-colors">{t('nav.inicio')}</a>
             <a href="/githubpagetest/#experiencia" className="text-slate-400 hover:text-white transition-colors">{t('nav.experiencia')}</a>
             <a href="/githubpagetest/#stack" className="text-slate-400 hover:text-white transition-colors">{t('nav.stack')}</a>
-            <a href="/githubpagetest/public/proyectos.html" className="text-slate-400 hover:text-white transition-colors">{t('nav.proyectos')}</a>
+            <a href="/githubpagetest/proyectos.html" className="text-slate-400 hover:text-white transition-colors">{t('nav.proyectos')}</a>
             <a href="/githubpagetest/#servicios" className="text-slate-400 hover:text-white transition-colors">{t('nav.servicios')}</a>
             <a href="/githubpagetest/#contacto" className="text-slate-400 hover:text-white transition-colors">{t('nav.contacto')}</a>
             <div className="flex gap-2 ml-4">
@@ -583,7 +583,7 @@ const PortfolioApp = () => {
               {t('cta.description')}
             </p>
             <a 
-              href="/githubpagetest/public/proyectos.html" 
+              href="/githubpagetest/proyectos.html" 
               className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-cyan-400/10 border-2 border-cyan-400 rounded-full text-cyan-400 text-sm font-semibold no-underline cursor-pointer transition-all duration-300 hover:bg-cyan-400/20 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(100,255,218,0.3)] active:translate-y-0"
             >
               {t('cta.button')}
