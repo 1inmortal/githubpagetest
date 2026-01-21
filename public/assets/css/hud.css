@@ -1,0 +1,431 @@
+/* ============================================================
+   HUD CSS - SISTEMA DE INTERFAZ HOLOGRÁFICA
+   ------------------------------------------------------------
+   Estilos del HUD overlay y elementos de interfaz cyberpunk
+============================================================ */
+
+/* ============================================================
+   HUD OVERLAY STYLES
+   ------------------------------------------------------------
+   Includes new corner dot and scan animations
+============================================================ */
+.hud-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; /* Crucial: allows clicks to pass through */
+  z-index: 1000;
+  overflow: visible;
+}
+
+/* Decorative Corners */
+.hud-corner {
+  position: absolute;
+  width: var(--hud-corner-size); height: var(--hud-corner-size);
+  border-style: solid;
+  border-color: var(--color-accent);
+  opacity: 0.7;
+  pointer-events: none; /* Ensure corners don't block events */
+  /* Subtle animation */
+  animation: corner-pulse 4s infinite alternate ease-in-out;
+  overflow: hidden; /* Clip pseudo-element scans */
+}
+.hud-corner.top-left { top: 15px; left: 15px; border-width: var(--hud-border-width) 0 0 var(--hud-border-width); }
+.hud-corner.top-right { top: 15px; right: 15px; border-width: var(--hud-border-width) var(--hud-border-width) 0 0; animation-delay: 0.5s; }
+.hud-corner.bottom-left { bottom: 15px; left: 15px; border-width: 0 0 var(--hud-border-width) var(--hud-border-width); animation-delay: 1s; }
+.hud-corner.bottom-right { bottom: 15px; right: 15px; border-width: 0 var(--hud-border-width) var(--hud-border-width) 0; animation-delay: 1.5s; }
+
+@keyframes corner-pulse {
+    0%, 100% { opacity: 0.7; transform: scale(1); }
+    50% { opacity: 0.9; transform: scale(1.05); }
+}
+
+/* [HUD_CORNER_SCAN] Barridos de Puntos en las Esquinas - CSS Implementation */
+.hud-corner::before {
+    content: '';
+    position: absolute;
+    background: repeating-linear-gradient(
+      to right,
+      var(--hud-dot-color) 0 2px,
+      transparent 2px 4px
+    );
+    width: var(--hud-scan-width);
+    height: var(--hud-line-thickness);
+    animation: corner-scan var(--hud-scan-speed) ease-in-out infinite;
+}
+ /* Specific positioning and animation for each corner's pseudo-element */
+.hud-corner.top-left::before {
+    width: var(--hud-scan-width); height: var(--hud-line-thickness);
+    top: calc(var(--hud-border-width) / -2); left: calc(var(--hud-border-width) / -2);
+    transform-origin: top left;
+    animation-name: corner-scan-tl;
+}
+ .hud-corner.top-right::before {
+    width: var(--hud-scan-width); height: var(--hud-line-thickness);
+    top: calc(var(--hud-border-width) / -2); right: calc(var(--hud-border-width) / -2);
+    transform-origin: top right;
+    animation-name: corner-scan-tr; animation-delay: calc(var(--hud-scan-speed) * 0.25);
+}
+ .hud-corner.bottom-left::before {
+     width: var(--hud-line-thickness); height: var(--hud-scan-width);
+     bottom: calc(var(--hud-border-width) / -2); left: calc(var(--hud-border-width) / -2);
+     transform-origin: bottom left;
+     animation-name: corner-scan-bl; animation-delay: calc(var(--hud-scan-speed) * 0.5);
+ }
+ .hud-corner.bottom-right::before {
+     width: var(--hud-line-thickness); height: var(--hud-scan-width);
+     bottom: calc(var(--hud-border-width) / -2); right: calc(var(--hud-border-width) / -2);
+     transform-origin: bottom right;
+     animation-name: corner-scan-br; animation-delay: calc(var(--hud-scan-speed) * 0.75);
+ }
+
+ @keyframes corner-scan-tl {
+     0% { transform: translateX(0); }
+     100% { transform: translateX(calc(var(--hud-corner-size) + var(--hud-border-width))); }
+ }
+  @keyframes corner-scan-tr {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(calc(-1 * (var(--hud-corner-size) + var(--hud-border-width)))); }
+  }
+  @keyframes corner-scan-bl {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(calc(-1 * (var(--hud-corner-size) + var(--hud-border-width)))); }
+  }
+  @keyframes corner-scan-br {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(calc(var(--hud-corner-size) + var(--hud-border-width))); }
+  }
+
+/* [HUD_PIXEL_DRIFT] & [NOISE_FIELD] & [INTERACTION_BURST] & [SYSTEM_GLITCH_PIXELS] - CSS for the dynamically generated elements */
+.hud-dynamic-bit {
+    position: absolute;
+    background-color: var(--hud-dot-color);
+    pointer-events: none; /* Do not block clicks */
+    opacity: 0; /* Starts hidden */
+    /* Size, shape, and animation handled by JS for variations */
+}
+ /* Specific style for noise blocks */
+ .hud-dynamic-bit.noise {
+     background-color: var(--hud-noise-color);
+     width: 3px; /* Example size */
+     height: 3px;
+     border-radius: 0; /* Square */
+ }
+  /* Specific style for small dots */
+ .hud-dynamic-bit.dot {
+     width: var(--hud-dot-size);
+     height: var(--hud-dot-size);
+     border-radius: 50%; /* Circle */
+ }
+  /* Specific style for data streaks */
+ .hud-dynamic-bit.streak {
+     background-color: var(--hud-data-streak-color);
+     width: 1px; /* Thin line */
+     height: 5px;
+     border-radius: 0;
+ }
+  /* Specific style for glitch pixels */
+   .hud-dynamic-bit.glitch {
+       width: 1px;
+       height: 1px;
+       background-color: var(--color-feedback-error); /* Red/Error color */
+       opacity: 0.7;
+       animation: glitch-pixel-fade 0.1s ease-out forwards; /* Very short animation */
+   }
+
+/* Decorative Lines */
+.hud-line {
+  position: absolute;
+  background-color: var(--color-border);
+  box-shadow: 0 0 3px var(--color-border);
+  opacity: 0.5;
+  pointer-events: none;
+    /* [DATA_STREAK] Ráfagas de Datos Emergentes - CSS Implementation for lines */
+    overflow: hidden; /* To hide pseudo-element movement */
+}
+.hud-line.top { top: 25px; left: calc(15px + var(--hud-corner-size)); right: calc(15px + var(--hud-corner-size)); height: var(--hud-line-thickness); }
+.hud-line.bottom { bottom: 25px; left: calc(15px + var(--hud-corner-size)); right: calc(15px + var(--hud-corner-size)); height: var(--hud-line-thickness); }
+.hud-line.left { left: 25px; top: calc(15px + var(--hud-corner-size)); bottom: calc(15px + var(--hud-corner-size)); width: var(--hud-line-thickness); }
+.hud-line.right { right: 25px; top: calc(15px + var(--hud-corner-size)); bottom: calc(15px + var(--hud-corner-size)); width: var(--hud-line-thickness); }
+
+/* Data streak pseudo-elements on lines */
+.hud-line::before {
+    content: '';
+    position: absolute;
+    background: linear-gradient(
+      to right,
+      transparent 0%,
+      var(--color-accent-glow) 50%,
+      transparent 100%
+    );
+    opacity: 0.6;
+    animation: line-burst 1.5s ease-in-out infinite;
+}
+@keyframes line-burst {
+  0%   { transform: translateX(-100%); opacity: 0; }
+  50%  { opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
+ .hud-line.top::before, .hud-line.bottom::before {
+     width: 10px; height: 100%;
+     top: 0; left: 0;
+ }
+ .hud-line.left::before, .hud-line.right::before {
+     width: 100%; height: 10px;
+     left: 0; top: 0;
+ }
+  /* Specific line streak animations */
+  .hud-line.top::before { animation-name: line-streak-h; }
+  .hud-line.bottom::before { animation-name: line-streak-h; animation-delay: 1s; } /* Different delay */
+  .hud-line.left::before { animation-name: line-streak-v; }
+  .hud-line.right::before { animation-name: line-streak-v; animation-delay: 2s; } /* Different delay */
+
+   @keyframes line-streak-h {
+       0% { transform: translateX(-100%); }
+       100% { transform: translateX(100vw); } /* Move across the viewport width */
+   }
+    @keyframes line-streak-v {
+        0% { transform: translateY(-100%); }
+        100% { transform: translateY(100vh); } /* Move across the viewport height */
+    }
+
+/* Info Readouts */
+.hud-readout {
+  position: absolute;
+  font-family: var(--font-main);
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  padding: 5px 10px;
+  background: rgba(var(--color-bg), 0.5);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: 1px solid var(--color-border); /* Added border */
+  border-radius: 3px;
+  -webkit-backdrop-filter: blur(4px); /* Added prefix */
+  backdrop-filter: blur(4px); /* Subtle blur on readouts */
+  pointer-events: none; /* Do not block events */
+}
+
+/* [BUFFER_GLOW] Pulso de Buffer en Zonas Estratégicas */
+.hud-readout {
+    animation: readout-buffer 4s infinite ease-in-out;
+}
+ @keyframes readout-buffer {
+     0%, 100% { box-shadow: none; }
+     50% { box-shadow: 0 0 5px rgba(var(--color-accent-rgb), 0.5); }
+ }
+
+.hud-readout span:first-child { color: var(--color-accent); margin-right: 5px;}
+.hud-readout .hud-ok { color: var(--color-feedback-success); animation: status-flicker 3s infinite alternate steps(5); }
+.hud-readout .hud-warning { color: var(--color-feedback-warning); animation: status-flicker 2s infinite alternate steps(3); }
+.hud-readout .hud-error { color: var(--color-feedback-error); animation: status-flicker 1s infinite alternate steps(2); }
+
+ @keyframes status-flicker {
+     0%, 100% { opacity: 1; }
+     50% { opacity: 0.5; }
+ }
+
+.top-left-readout { top: 40px; left: 40px; }
+.top-right-readout { top: 40px; right: 40px; text-align: right;}
+.bottom-left-readout { bottom: 40px; left: 40px; }
+.bottom-right-readout { bottom: 40px; right: 40px; text-align: right;}
+
+/* ============================================================
+   NÚCLEO NEURONAL INTERACTIVO
+   ------------------------------------------------------------
+   El cerebro central de la interfaz con reactividad dinámica
+============================================================ */
+.neural-core-container {
+  position: fixed;
+  bottom: 120px;
+  right: 30px;
+  width: 80px;
+  height: 80px;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.neural-core-container.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.neural-core-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(var(--color-accent-rgb), 0.1) 0%, transparent 70%);
+  box-shadow: 
+    0 0 20px rgba(var(--color-accent-rgb), 0.3),
+    inset 0 0 20px rgba(var(--color-accent-rgb), 0.1);
+}
+
+/* Partículas energéticas */
+.particle-container {
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  width: 120px;
+  height: 120px;
+  pointer-events: none;
+}
+
+.energy-particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: var(--color-accent);
+  border-radius: 50%;
+  box-shadow: 0 0 4px var(--color-accent-glow);
+  opacity: 0;
+  animation: particle-float 3s infinite ease-in-out;
+}
+
+@keyframes particle-float {
+  0% {
+    opacity: 0;
+    transform: translate(40px, 40px) scale(0);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(40px, 40px) scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(var(--particle-x), var(--particle-y)) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--particle-x), var(--particle-y)) scale(0);
+  }
+}
+
+/* Trazadores de luz para interacciones */
+.light-tracers {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 999;
+}
+
+.light-tracer {
+  position: absolute;
+  height: 1px;
+  background: linear-gradient(90deg, var(--color-accent) 0%, transparent 100%);
+  box-shadow: 0 0 4px var(--color-accent-glow);
+  opacity: 0;
+  transform-origin: left center;
+  animation: tracer-pulse 0.6s ease-out;
+}
+
+@keyframes tracer-pulse {
+  0% {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(1);
+  }
+}
+
+/* Indicadores de estado */
+.neural-status-indicators {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  display: flex;
+  gap: 2px;
+}
+
+.status-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  opacity: 0.3;
+  transition: opacity 0.3s ease, background-color 0.3s ease;
+}
+
+.status-indicator.active {
+  opacity: 1;
+  animation: status-pulse 1s infinite alternate;
+}
+
+@keyframes status-pulse {
+  0% { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+
+/* Estados específicos del núcleo */
+.neural-core-container.scroll-fast {
+  animation: neural-excite 0.5s ease-out;
+}
+
+.neural-core-container.interaction-active {
+  animation: neural-focus 0.3s ease-out;
+}
+
+.neural-core-container.content-aware {
+  animation: neural-analyze 2s infinite ease-in-out;
+}
+
+.neural-core-container.system-active {
+  animation: neural-operate 1s infinite ease-in-out;
+}
+
+@keyframes neural-excite {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+@keyframes neural-focus {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes neural-analyze {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.05) rotate(180deg); }
+}
+
+@keyframes neural-operate {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* Responsive para el núcleo neuronal */
+@media (max-width: 768px) {
+  .neural-core-container {
+    bottom: 140px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+  }
+  
+  .neural-core-canvas {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .particle-container {
+    width: 100px;
+    height: 100px;
+    top: -20px;
+    left: -20px;
+  }
+} 
