@@ -28,6 +28,7 @@ try {
     // Optimizaciones básicas (sin romper funcionalidad)
     
     // 1. Remover comentarios HTML (excepto los condicionales de IE)
+    // Usar flag 'g' (global) para asegurar reemplazo completo y seguro
     html = html.replace(/<!--(?!\[if)[\s\S]*?-->/g, '');
     
     // 2. Remover espacios en blanco excesivos entre tags (con cuidado)
