@@ -1,0 +1,2839 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cyberdeck OS - Netrunner Interface v2.1</title> <!-- Título actualizado -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Ya presente y correcto -->
+
+  <!-- Fuentes -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome (para iconos) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js" integrity="sha512-TJ7U6JRJx5IpyvvjLj5NQති1W8qD1j8kqUPGPWEhZpAJkqcmwqWjUjHX7MmYjZLLQ0qL6eKGjyLE8hjhR9fA==" crossorigin="anonymous"></script>
+
+  <!-- tsParticles -->
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@1/tsparticles.min.js" integrity="sha512-Q3G8xtgD2b0VPfJBDSPfFwz6MHBp2AVhI9A4J8EKvYXNDCjMD3g0qPjLqLcJSVNGvRv0dLnM9v0Q7TUqQGMLFw==" crossorigin="anonymous"></script>
+
+  <!-- Socket.IO (Placeholder URL - Integrity inválido eliminado) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js" integrity="sha512-YeeA+Qc+LdPP5etq1gvK8WaYPTz1RfxYxGLcEMNVL4rFX9Jd6I5lBHxLmC8bREIu0aQcHKZ6L8pJe3LCzPKCQg==" crossorigin="anonymous"></script> <!-- Nota: Placeholder, no usado en el JS actual -->
+
+
+  <style>
+    /* VARIABLES CSS */
+    :root {
+      --primary-color: #00f0ff; /* Azul Cyan Neón */
+      --primary-color-rgb: 0, 240, 255;
+      --secondary-color: #ff00ff; /* Magenta Neón */
+      --secondary-color-rgb: 255, 0, 255;
+      --accent-color: #f7ff00; /* Amarillo Neón */
+      --accent-color-rgb: 247, 255, 0;
+      --background-color: #050a15; /* Azul muy oscuro */
+      --panel-bg-color: rgba(10, 20, 40, 0.7); /* Azul oscuro semi-transparente */
+      --text-color: #e0f0ff; /* Texto azulado claro */
+      --text-muted-color: #a0b0d0;
+      --border-color: rgba(var(--primary-color-rgb), 0.5);
+      --highlight-bg: rgba(var(--primary-color-rgb), 0.1);
+      --selected-bg: var(--primary-color);
+      --selected-text: #050a15; /* Texto oscuro para contraste sobre selección */
+      --danger-color: #ff4444;
+
+      --font-main: 'Orbitron', sans-serif;
+      --font-secondary: 'Rajdhani', sans-serif; /* Fuente más legible para textos */
+      --animation-speed: 1s; /* Control global */
+      --base-font-size: 14px; /* Tamaño base para escritorio */
+    }
+
+    /* MODO DE ALTO CONTRASTE (Alternativa) */
+    body.high-contrast {
+      --primary-color: #ffff00;
+      --primary-color-rgb: 255, 255, 0;
+      --secondary-color: #ff00ff;
+      --secondary-color-rgb: 255, 0, 255;
+      --accent-color: #00ffff;
+      --accent-color-rgb: 0, 255, 255;
+      --background-color: #000;
+      --panel-bg-color: rgba(0, 0, 0, 0.85);
+      --text-color: #ffffff;
+      --text-muted-color: #cccccc;
+      --border-color: var(--primary-color);
+      --selected-bg: var(--primary-color);
+      --selected-text: #000;
+    }
+
+    /* RESETEO Y ESTILOS GENERALES */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { font-size: var(--base-font-size); } /* Tamaño base se ajustará en media queries */
+    body {
+      width: 100vw; height: 100vh; /* Usar vw/vh para asegurar pantalla completa */
+      background-color: var(--background-color);
+      overflow: hidden; /* Evitar scroll general POR DEFECTO, se activa en móvil */
+      font-family: var(--font-secondary);
+      color: var(--text-color);
+      transition: opacity 0.7s ease-in-out;
+      opacity: 1;
+      position: relative; /* Para overlays */
+    }
+    body.fade-out { opacity: 0; }
+
+    /* Overlay Scanlines (Sutil) */
+    body::after {
+      content: '';
+      position: fixed; /* Cambiado a fixed para que no haga scroll */
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(rgba(10, 20, 40, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
+                  linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 100% 4px, 3px 100%;
+      z-index: -1;
+      pointer-events: none;
+      animation: scanlineAnim 0.2s linear infinite;
+      opacity: 0.5;
+    }
+    @keyframes scanlineAnim {
+      0% { background-position: 0 0; }
+      100% { background-position: 0 4px; }
+    }
+
+    /* Loading Overlay */
+    #loading-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--background-color);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; /* Centrar verticalmente */
+      z-index: 2000;
+      color: var(--primary-color);
+      font-family: var(--font-main);
+      font-size: 1.5rem;
+      text-shadow: 0 0 10px var(--primary-color);
+      opacity: 1;
+      transition: opacity 0.5s ease-out;
+    }
+    #loading-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .loader { /* Simple spinner */
+       border: 4px solid rgba(var(--primary-color-rgb), 0.3);
+       border-top: 4px solid var(--primary-color);
+       border-radius: 50%;
+       width: 40px; height: 40px;
+       animation: spin 1s linear infinite;
+       margin-bottom: 15px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+
+    /* Fondos con backdrop-filter */
+    .main-container, .left-panels, .detail-container, .right-panel, .top-bar, .filter-dropdown, #themeModal, #achievementsModal, #dashboardStats, #tutorialOverlay > div {
+      background: var(--panel-bg-color);
+      backdrop-filter: blur(8px); /* Efecto cristal esmerilado */
+      border: 1px solid var(--border-color);
+      box-shadow: 0 0 15px rgba(var(--primary-color-rgb), 0.1), inset 0 0 8px rgba(var(--secondary-color-rgb), 0.1);
+    }
+
+    /* VIDEO DE FONDO */
+    #bgVideo {
+      position: fixed; top: 50%; left: 50%;
+      min-width: 100%; min-height: 100%;
+      width: auto; height: auto;
+      z-index: -3;
+      transform: translate(-50%, -50%);
+      object-fit: cover;
+      filter: brightness(0.6) saturate(1.2); /* Ajuste visual */
+    }
+    #bgVideo.parallax { transition: transform 0.1s linear; }
+
+    /* SCROLL */
+    ::-webkit-scrollbar { width: 8px; background-color: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--primary-color); border-radius: 4px; border: 1px solid var(--background-color); }
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px;}
+
+    /* BARRA SUPERIOR */
+    .top-bar {
+      position: fixed; top: 10px; left: 10px; right: 10px; /* Flotante por defecto */
+      height: 55px; /* Un poco más alta */
+      border-radius: 8px;
+      display: flex; align-items: center; padding: 0 25px; z-index: 999;
+      font-family: var(--font-main);
+    }
+    .top-bar-left { display: flex; align-items: center; gap: 25px; }
+    /* Nombres de stats actualizados */
+    .level-cred { display: flex; align-items: center; gap: 20px; font-size: 1.1rem; white-space: nowrap; }
+    .level-cred .label { color: var(--secondary-color); margin-right: 6px; text-transform: uppercase; font-weight: 400; letter-spacing: 1px;}
+    .level-cred .value { color: var(--primary-color); font-weight: 700; }
+    .top-nav { display: flex; align-items: center; gap: 30px; margin-left: 35px; }
+    .top-nav-item { color: var(--text-muted-color); font-size: 1rem; text-transform: uppercase; transition: color 0.2s, text-shadow 0.2s, background-color 0.2s; cursor: pointer; text-decoration: none; padding: 5px 0; position: relative; }
+    .top-nav-item::after { /* Subrayado animado */
+      content: ''; position: absolute; bottom: -2px; left: 0; width: 0; height: 2px;
+      background: var(--primary-color); transition: width 0.3s ease-out;
+    }
+    .top-nav-item:hover, .top-nav-item.active { color: var(--primary-color); text-shadow: 0 0 10px var(--primary-color); }
+    .top-nav-item:hover::after, .top-nav-item.active::after { width: 100%; }
+    .top-bar-right { margin-left: auto; display: flex; align-items: center; gap: 25px; font-size: 1.1rem; white-space: nowrap; }
+    /* Nombres de stats actualizados */
+    .top-bar-right .stat .label { color: var(--secondary-color); text-transform: uppercase; font-weight: 400; letter-spacing: 1px;}
+    .top-bar-right .stat .value { color: var(--primary-color); font-weight: 700; }
+    #themeToggle { background: transparent; border: 1px solid var(--primary-color); color: var(--text-color); padding: 5px 10px; cursor: pointer; font-size: 0.9rem; border-radius: 4px; transition: background 0.2s, color 0.2s, box-shadow 0.2s; font-family: var(--font-main);}
+    #themeToggle:hover { background: var(--primary-color); color: var(--selected-text); box-shadow: 0 0 8px var(--primary-color); }
+
+    /* Toggle para móvil, inicialmente oculto */
+    .nav-toggle {
+        display: none; /* OCULTO EN DESKTOP */
+        background: none;
+        border: none;
+        color: var(--primary-color);
+        font-size: 28px;
+        cursor: pointer;
+        padding: 5px;
+        z-index: 1001; /* Asegurar que esté por encima del nav */
+    }
+
+    /* CONTENEDOR PRINCIPAL */
+    .main-container {
+      position: absolute; top: 75px; /* Debajo de top-bar */ left: 10px; right: 10px; bottom: 10px;
+      display: grid;
+      grid-template-columns: 320px 1fr 380px; /* Layout por defecto para PC */
+      gap: 15px;
+      overflow: hidden; /* Evita scroll en el contenedor principal EN DESKTOP */
+      border-radius: 8px;
+    }
+
+    /* PANEL IZQUIERDO */
+    .left-panels {
+      display: flex; flex-direction: column; overflow: hidden; /* Evita que su contenido se salga */
+      padding: 20px; border-radius: 8px;
+    }
+    .search-container { margin-bottom: 20px; position: relative; }
+    .search-container input[type="text"] {
+      width: 100%; padding: 10px 15px; padding-left: 40px;
+      border: 1px solid var(--border-color); border-radius: 5px;
+      background: rgba(0,0,0,0.4); color: var(--text-color);
+      font-family: var(--font-secondary); font-size: 1rem;
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+    .search-container input[type="text"]:focus { outline: none; box-shadow: 0 0 10px var(--primary-color); border-color: var(--primary-color); }
+    .search-container .search-icon { /* Usar clase para icono */
+        position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+        color: var(--secondary-color); font-size: 1.1rem; pointer-events: none;
+    }
+
+    /* Filtro avanzado */
+    .advanced-filter-nav { margin-bottom: 20px; }
+    .advanced-filter-nav ul { list-style: none; display: flex; flex-wrap: wrap; gap: 10px; padding: 0; }
+    .advanced-filter-nav li {
+      padding: 7px 15px; background: transparent;
+      border: 1px solid var(--border-color); border-radius: 20px;
+      cursor: pointer; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted-color);
+      transition: all 0.3s ease; white-space: nowrap;
+      font-family: var(--font-main); letter-spacing: 0.5px;
+    }
+    .advanced-filter-nav li.active, .advanced-filter-nav li:hover {
+      background: var(--primary-color); color: var(--selected-text);
+      border-color: var(--primary-color);
+      box-shadow: 0 0 12px rgba(var(--primary-color-rgb), 0.7);
+      transform: translateY(-2px);
+    }
+
+    /* Contenedor de listas */
+    .list-section { display: flex; flex-direction: column; overflow: hidden; margin-bottom: 20px; flex-grow: 1; }
+    .list-title {
+      color: var(--primary-color); text-transform: uppercase; font-size: 1.2rem;
+      margin-bottom: 15px; text-shadow: 0 0 8px var(--primary-color);
+      font-family: var(--font-main); border-bottom: 1px solid rgba(var(--secondary-color-rgb), 0.3); padding-bottom: 8px;
+      display: flex; align-items: center; gap: 8px;
+      flex-shrink: 0; /* Evita que el título se encoja */
+    }
+    .list-title i { font-size: 1rem; } /* Iconos en títulos */
+
+    /* Asegurar scroll en contenedores de listas */
+    .data-list-container, .mission-list {
+       flex-grow: 1; overflow-y: auto; padding-right: 8px; /* Espacio para scrollbar */
+       min-height: 100px; /* Evita que colapse totalmente */
+    }
+
+    /* Estilo de Item común */
+    .data-item, .mission-item {
+      display: flex; flex-direction: column; padding: 12px 15px; padding-left: 25px; /* Espacio para marcador */
+      border-bottom: 1px solid rgba(var(--primary-color-rgb), 0.15);
+      cursor: pointer; position: relative;
+      transition: background-color 0.2s ease-out, transform 0.2s ease-out;
+      font-size: 1rem; color: var(--text-muted-color);
+      margin-bottom: 5px; border-radius: 4px;
+    }
+    .data-item::before, .mission-item::before { /* Marcador lateral */
+       content: ''; position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
+       width: 4px; height: 60%; background: var(--border-color); border-radius: 2px;
+       transition: background-color 0.2s, height 0.2s, box-shadow 0.2s;
+    }
+    .data-item:hover, .mission-item:hover {
+      background-color: var(--highlight-bg);
+      color: var(--text-color);
+      transform: translateX(3px);
+    }
+    .data-item:hover::before, .mission-item:hover::before {
+      background-color: var(--secondary-color); height: 80%;
+    }
+    .data-item.selected, .mission-item.selected {
+      background-color: var(--selected-bg); color: var(--selected-text);
+      box-shadow: 0 0 15px rgba(var(--primary-color-rgb), 0.5);
+      transform: translateX(5px) scale(1.01);
+    }
+    .data-item.selected::before, .mission-item.selected::before {
+      background-color: var(--accent-color); height: 90%;
+      box-shadow: 0 0 8px var(--accent-color);
+    }
+    /* Nombres actualizados */
+    .data-item.selected .program-name, .mission-item.selected .subroutine-name { color: var(--selected-text); }
+    .data-item.selected .program-desc, .mission-item.selected .subroutine-threat, .mission-item.selected .progress-text { color: rgba(5,10,21,0.8); } /* Ajustar opacidad */
+    .data-item.selected .progress-fill { background-color: var(--accent-color); }
+    .data-item.selected .new-flag { background: var(--accent-color); color: #000; }
+
+    .program-name, .subroutine-name { /* Nombre cambiado de project/mission */
+      font-weight: 600; text-transform: uppercase; margin-bottom: 4px;
+      color: var(--text-color); font-size: 1rem; font-family: var(--font-main);
+    }
+    .program-desc, .subroutine-threat { /* Nombre cambiado de project/mission */
+        font-size: 0.9rem; color: var(--text-muted-color); line-height: 1.4;
+    }
+    .subroutine-threat { /* Mismo estilo que mission-danger */
+        color: var(--danger-color); font-weight: 600;
+    }
+
+    .new-flag {
+      position: absolute; right: 15px; top: 12px; font-size: 0.7rem;
+      background: var(--secondary-color); color: #fff; padding: 2px 6px;
+      border-radius: 3px; text-transform: uppercase; pointer-events: none;
+      font-weight: bold; letter-spacing: 0.5px;
+    }
+    .mission-progress { margin-top: 8px; } /* Mantenemos nombre de clase por simplicidad JS */
+    .progress-bar {
+      width: 100%; background-color: rgba(var(--primary-color-rgb), 0.1); border-radius: 4px;
+      overflow: hidden; height: 8px; border: 1px solid rgba(var(--primary-color-rgb), 0.2);
+    }
+    .progress-fill {
+      height: 100%; background-color: var(--primary-color);
+      transition: width 0.5s ease-out; border-radius: 3px;
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
+    }
+    .progress-text {
+      font-size: 0.8rem; color: var(--text-muted-color); margin-top: 4px; display: block; text-align: right;
+    }
+
+    /* PANEL CENTRAL (Detalle) */
+    .detail-container {
+      padding: 25px 30px;
+      display: flex; flex-direction: column; justify-content: flex-start;
+      overflow-y: auto; /* Permitir scroll interno si el contenido es largo */
+      border-radius: 8px;
+    }
+    .detail-title {
+      color: var(--primary-color); text-transform: uppercase;
+      font-size: 1.8rem; margin-bottom: 8px;
+      text-shadow: 0 0 10px var(--primary-color), 0 0 20px rgba(var(--primary-color-rgb), 0.5);
+      font-family: var(--font-main);
+      letter-spacing: 1px;
+      flex-shrink: 0; /* Evita que el título se encoja */
+    }
+    .detail-subtitle {
+      color: var(--secondary-color); font-size: 1.1rem;
+      margin-bottom: 20px; text-shadow: 0 0 5px var(--secondary-color);
+      font-family: var(--font-secondary); font-weight: 600;
+      border-bottom: 1px dashed rgba(var(--secondary-color-rgb), 0.3);
+      padding-bottom: 10px;
+       flex-shrink: 0;
+    }
+    .detail-description {
+      color: var(--text-color); font-size: 1rem; line-height: 1.7;
+      flex-grow: 1; /* Permitir que crezca */
+      transition: opacity 0.3s; font-family: var(--font-secondary);
+       overflow-y: auto; /* Añadir scroll si es necesario solo para la descripción */
+    }
+    .detail-description strong {
+      color: var(--primary-color); display: block;
+      margin-top: 20px; margin-bottom: 8px; font-size: 1.1rem;
+      text-transform: uppercase; font-family: var(--font-main); letter-spacing: 0.5px;
+    }
+    .detail-description ul {
+      list-style-type: none; /* Quitar puntos por defecto */
+      padding-left: 10px; margin-bottom: 15px;
+    }
+    .detail-description li {
+      margin-bottom: 8px; position: relative; padding-left: 20px;
+    }
+    .detail-description li::before { /* Usar icono o forma cyberpunk */
+       content: "\f105"; /* Font Awesome angle-right */
+       font-family: "Font Awesome 6 Free";
+       font-weight: 900;
+       position: absolute; left: 0; top: 2px;
+       color: var(--secondary-color);
+       font-size: 0.9em;
+    }
+    .detail-description a {
+      color: var(--accent-color); text-decoration: none; font-weight: 600;
+      transition: color 0.3s, text-shadow 0.3s;
+      border-bottom: 1px dashed var(--accent-color);
+    }
+    .detail-description a:hover {
+      color: var(--primary-color);
+      text-shadow: 0 0 8px var(--primary-color);
+      border-bottom-style: solid;
+    }
+
+    /* PANEL DERECHO */
+    .right-panel {
+      padding: 20px; overflow-y: auto; /* Permitir scroll interno por defecto */
+      position: relative; display: flex; flex-direction: column;
+      border-radius: 8px;
+    }
+    .filter-menu-container {
+      position: relative; display: inline-block; margin-bottom: 20px; z-index: 10; /* Asegurar que el dropdown esté encima */
+      flex-shrink: 0;
+    }
+    .filter-button {
+      background: var(--primary-color); color: var(--selected-text); border: none;
+      padding: 8px 15px; cursor: pointer; border-radius: 5px;
+      font-size: 0.9rem; font-family: var(--font-main); text-transform: uppercase;
+      display: flex; align-items: center; gap: 8px;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    .filter-button:hover { background: var(--secondary-color); box-shadow: 0 0 10px var(--secondary-color); }
+    .filter-dropdown {
+      display: none; position: absolute; top: 105%; left: 0; /* Ligera separación */
+      background: var(--panel-bg-color); /* Hereda estilo panel */
+      border: 1px solid var(--border-color);
+      border-radius: 5px; z-index: 11; /* Por encima del botón */
+      min-width: 180px; /* Más ancho */
+      padding: 5px 0;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    .filter-menu-container:hover .filter-dropdown { display: block; animation: fadeInDropdown 0.3s ease forwards; }
+    @keyframes fadeInDropdown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+    .filter-item {
+      padding: 10px 15px; cursor: pointer; color: var(--text-muted-color);
+      font-size: 0.95rem; transition: background 0.2s, color 0.2s;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .filter-item i { width: 15px; text-align: center; color: var(--secondary-color); } /* Iconos en dropdown */
+    .filter-item:hover { background: var(--highlight-bg); color: var(--primary-color); }
+    .filter-item:hover i { color: var(--primary-color); }
+
+    .tab-content { display: none; animation: fadeInContent 0.5s forwards; flex-grow: 1; overflow: hidden;} /* Añadido flex-grow y overflow */
+    .tab-content.active { display: flex; flex-direction: column;} /* Cambiado a flex */
+    @keyframes fadeInContent { from { opacity: 0; } to { opacity: 1; } }
+
+    /* Elementos internos del panel derecho */
+    .right-panel-title {
+        color: var(--primary-color); text-transform: uppercase; font-size: 1.3rem;
+        margin-bottom: 15px; text-shadow: 0 0 8px var(--primary-color);
+        font-family: var(--font-main); border-bottom: 1px solid rgba(var(--secondary-color-rgb), 0.3); padding-bottom: 8px;
+         flex-shrink: 0;
+    }
+    .right-panel-image {
+      width: 100%; height: auto; /* Altura automática para mantener proporción */
+      max-width: 100%; /* Evitar desbordamiento */
+      max-height: 200px; /* Limitar altura en panel derecho */
+      object-fit: cover; /* Para ajustar la imagen */
+      border: 2px solid var(--border-color);
+      padding: 5px; background: rgba(0,0,0,0.2);
+      transition: transform 0.3s ease, box-shadow 0.3s ease; margin-bottom: 20px; border-radius: 6px;
+      display: block; /* Evitar espacio extra bajo la imagen */
+       flex-shrink: 0;
+    }
+    .right-panel-image:hover {
+      transform: scale(1.03);
+      box-shadow: 0 0 15px var(--primary-color);
+      border-color: var(--primary-color);
+    }
+    .right-panel-video {
+        width: 100%; height: auto; /* Igual que la imagen */
+        max-width: 100%;
+         max-height: 200px; /* Limitar altura también */
+         object-fit: cover;
+        margin-bottom: 20px; border-radius: 6px; border: 1px solid var(--border-color); display: block;
+         flex-shrink: 0;
+    }
+
+    /* Gráfico (Chart.js) */
+    .chart-container {
+      width: 100%; height: 150px; /* Altura para el mini-chart */
+      max-width: 100%; /* Asegurar que no se desborde */
+      border: 1px solid var(--border-color);
+      box-shadow: 0 0 8px rgba(var(--primary-color-rgb), 0.3);
+      position: relative; overflow: hidden; margin-bottom: 20px; border-radius: 6px;
+      background: rgba(0,0,0,0.2); padding: 10px;
+       flex-shrink: 0;
+    }
+     #statsChartContainer { /* Contenedor para el gráfico de estadísticas */
+        height: 200px; /* Más altura para el gráfico principal */
+     }
+
+    /* Visualizador de Audio */
+    #audioVisualizer {
+        width: 100%; height: 80px; display: block; margin-bottom: 20px;
+        border-radius: 4px; background: rgba(0,0,0,0.3);
+        border: 1px solid var(--border-color);
+        max-width: 100%; /* Asegurar que no se desborde */
+         flex-shrink: 0;
+    }
+
+    /* Reproductor MP3 */
+    .mp3-player {
+      width: 100%; background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border-color); box-shadow: 0 0 8px rgba(var(--primary-color-rgb), 0.3);
+      padding: 15px; display: flex; flex-direction: column; gap: 10px;
+      color: var(--text-muted-color); border-radius: 6px;
+      max-width: 100%; /* Asegurar que no se desborde */
+       flex-shrink: 0;
+    }
+    .mp3-album-cover {
+      width: 80px; height: 80px; margin: 0 auto 10px auto;
+      border: 2px solid var(--primary-color); box-shadow: 0 0 8px var(--primary-color);
+      border-radius: 4px; overflow: hidden;
+    }
+    .mp3-album-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .mp3-player-header { /* Título cambiado a Audio Interface */
+      font-size: 0.9rem; text-transform: uppercase; color: var(--secondary-color);
+      margin-bottom: 5px; text-align: center; text-shadow: 0 0 5px var(--secondary-color);
+      font-family: var(--font-main); letter-spacing: 1px;
+    }
+    #trackTitle {
+      font-size: 1.1rem; text-align: center; margin-bottom: 12px; color: var(--text-color); font-weight: 600;
+      word-break: break-word; /* Evitar desbordamiento con títulos largos */
+    }
+    .mp3-player-controls { display: flex; gap: 10px; align-items: center; justify-content: center; }
+    .mp3-btn {
+      background: transparent; border: 1px solid var(--primary-color); color: var(--primary-color);
+      padding: 6px 12px; cursor: pointer; text-transform: uppercase;
+      font-size: 0.9rem; transition: all 0.2s ease; border-radius: 4px;
+      font-family: var(--font-main);
+    }
+    .mp3-btn:hover { background: var(--primary-color); color: var(--selected-text); box-shadow: 0 0 8px var(--primary-color); }
+    .mp3-progress-container { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
+    .mp3-progress {
+      flex: 1; height: 8px; background: rgba(var(--primary-color-rgb), 0.1);
+      border: 1px solid var(--border-color); position: relative; border-radius: 4px; cursor: pointer; /* Para buscar */
+    }
+    .mp3-progress-fill {
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: 0%; background: var(--primary-color); border-radius: 3px;
+      box-shadow: 0 0 5px var(--primary-color); pointer-events: none;
+    }
+    .mp3-time { font-size: 0.85rem; color: var(--text-muted-color); width: 45px; text-align: right; flex-shrink: 0; /* Evitar que se encoja */ }
+    .mp3-volume { display: flex; align-items: center; gap: 8px; margin-top: 10px; justify-content: center; }
+    .mp3-volume-label { font-size: 0.8rem; color: var(--secondary-color); text-transform: uppercase; font-family: var(--font-main); }
+    .mp3-volume input[type="range"] {
+      width: 100px; height: 6px; -webkit-appearance: none; appearance: none;
+      background: linear-gradient(to right, var(--primary-color) 0%, var(--primary-color) var(--value, 100%), rgba(var(--primary-color-rgb), 0.2) var(--value, 100%), rgba(var(--primary-color-rgb), 0.2) 100%);
+      border: 1px solid var(--border-color);
+      cursor: pointer; border-radius: 3px; outline: none;
+    }
+    .mp3-volume input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none; width: 14px; height: 14px;
+      background: var(--accent-color); border-radius: 50%;
+      cursor: pointer; border: none; box-shadow: 0 0 5px var(--accent-color);
+    }
+    .mp3-volume input[type="range"]::-moz-range-thumb { /* Firefox */
+      width: 14px; height: 14px; background: var(--accent-color); border-radius: 50%;
+      cursor: pointer; border: none; box-shadow: 0 0 5px var(--accent-color);
+    }
+    .mp3-volume input[type="range"]::-moz-range-track { background: transparent; } /* Ocultar track por defecto FF */
+
+    /* Contenido específico de pestañas */
+    .scrollable-tab-content { /* Nueva clase para contenido scrolleable dentro de las pestañas */
+      flex-grow: 1;
+      overflow-y: auto;
+      padding-right: 5px; /* Espacio para scroll */
+    }
+    #tab-stats p, #tab-integraciones p, #tab-settings p { margin-bottom: 15px; line-height: 1.6; flex-shrink: 0; }
+
+    #historyList { list-style: none; /*max-height: 250px;*/ /* Quitamos max-height, dejamos que .scrollable-tab-content lo maneje */ }
+    #historyList li { padding: 8px 5px; border-bottom: 1px dashed rgba(var(--primary-color-rgb), 0.2); font-size: 0.9rem; color: var(--text-muted-color); }
+    #historyList li:last-child { border-bottom: none; }
+    #chatContainer { display: flex; flex-direction: column; height: 100%; flex-grow: 1; } /* Contenedor para chat */
+    #chatWindow { background: rgba(0,0,0,0.3); padding: 15px; border: 1px solid var(--border-color); /* height: 200px; */ flex-grow: 1; overflow-y: auto; margin-bottom: 10px; border-radius: 4px; font-size: 0.95rem; }
+    #chatWindow p { margin-bottom: 8px; line-height: 1.5; } /* Estilo mensajes chat */
+    #chatInputContainer { display: flex; flex-shrink: 0; }
+    #chatInput { width: calc(100% - 70px); padding: 10px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.4); color: var(--text-color); border-radius: 4px 0 0 4px; font-size: 0.95rem; }
+    #chatSend { width: 60px; padding: 10px; background: var(--primary-color); border: none; cursor: pointer; color: var(--selected-text); border-radius: 0 4px 4px 0; font-family: var(--font-main); text-transform: uppercase; font-size: 0.85rem; transition: background 0.2s; }
+    #chatSend:hover { background: var(--secondary-color); }
+    #tab-integraciones ul { list-style: none; /* max-height: 200px; */ /* Quitamos max-height */ }
+    #tab-integraciones li { background: rgba(var(--primary-color-rgb), 0.05); padding: 10px; border-radius: 4px; margin-bottom: 8px; border-left: 3px solid var(--secondary-color); }
+    #tab-integraciones strong { color: var(--primary-color); }
+    #tab-settings label { display: block; margin-bottom: 12px; cursor: pointer; color: var(--text-muted-color); font-size: 0.95rem; /* Ligeramente más grande */ }
+    #tab-settings input[type="checkbox"] { margin-right: 8px; accent-color: var(--primary-color); vertical-align: middle; }
+    #tab-settings input[type="range"] { width: 150px; vertical-align: middle; margin-left: 10px; accent-color: var(--primary-color);}
+    #tab-settings span { margin-left: 5px; color: var(--accent-color); font-weight: bold; }
+
+    /* ANIMACIONES Y EFECTOS EXTRA */
+    .neon-effect { /* Aplicar a textos importantes */
+      text-shadow: 0 0 5px rgba(var(--primary-color-rgb), 0.8),
+                   0 0 10px rgba(var(--primary-color-rgb), 0.6),
+                   0 0 15px rgba(var(--primary-color-rgb), 0.4),
+                   0 0 20px rgba(var(--primary-color-rgb), 0.2);
+      animation: neonPulse 1.8s infinite alternate ease-in-out;
+    }
+    @keyframes neonPulse {
+      from { text-shadow: 0 0 4px rgba(var(--primary-color-rgb), 0.7), 0 0 8px rgba(var(--primary-color-rgb), 0.5), 0 0 12px rgba(var(--primary-color-rgb), 0.3); }
+      to { text-shadow: 0 0 8px rgba(var(--primary-color-rgb), 0.9), 0 0 16px rgba(var(--primary-color-rgb), 0.7), 0 0 25px rgba(var(--primary-color-rgb), 0.5); }
+    }
+
+    .glitch-effect { /* Aplicar a elementos para efecto ocasional */
+      position: relative;
+    }
+    /* Nota: El JS actual NO establece el atributo 'data-text' necesario para que este efecto funcione */
+    .glitch-effect::before, .glitch-effect::after {
+      content: attr(data-text); /* Necesita JS para setear data-text */
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--panel-bg-color); /* O el fondo del elemento */
+      overflow: hidden; clip: rect(0, 900px, 0, 0);
+    }
+    .glitch-effect::before { left: 2px; text-shadow: -1px 0 var(--secondary-color); animation: glitchAnim 2s infinite linear alternate-reverse; }
+    .glitch-effect::after { left: -2px; text-shadow: 1px 0 var(--accent-color); animation: glitchAnim2 3s infinite linear alternate-reverse; }
+
+    @keyframes glitchAnim { /* Ajustar tiempos y valores */
+      0% { clip: rect(42px, 9999px, 44px, 0); } 5% { clip: rect(12px, 9999px, 59px, 0); } 10% { clip: rect(35px, 9999px, 88px, 0); } /* ... más pasos */ 100% { clip: rect(90px, 9999px, 98px, 0); }
+    }
+    @keyframes glitchAnim2 { /* Similar a glitchAnim pero con valores diferentes */
+      0% { clip: rect(65px, 9999px, 100px, 0); } /* ... */ 100% { clip: rect(10px, 9999px, 33px, 0); }
+    }
+
+    /* Otros elementos (Modales, etc.) */
+    #tsparticles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; }
+    #tutorialOverlay, #themeModal, #achievementsModal, #dashboardStats {
+        position: fixed; z-index: 1000; display: none; /* Ocultos por defecto */
+        border-radius: 8px; padding: 25px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        opacity: 0; /* Inicialmente transparente para animación */
+        transition: opacity 0.3s ease-out;
+    }
+     /* Mostrar con Opacidad */
+    #tutorialOverlay.visible, #themeModal.visible, #achievementsModal.visible, #dashboardStats.visible {
+        display: flex; /* O block según necesidad */
+        opacity: 1;
+    }
+    #tutorialOverlay { top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 10, 21, 0.9); align-items: center; justify-content: center; text-align: center; }
+    #tutorialOverlay > div { max-width: 90%; width: 500px; background: var(--panel-bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 25px; } /* Contenedor interno estilizado */
+    #tutorialOverlay h2 { font-family: var(--font-main); color: var(--primary-color); margin-bottom: 15px; font-size: 1.6rem; }
+    #tutorialOverlay p { margin-bottom: 20px; line-height: 1.6; }
+    #tutorialOverlay .close-btn { padding: 10px 25px; background: var(--primary-color); color: var(--selected-text); border: none; cursor: pointer; border-radius: 5px; font-family: var(--font-main); text-transform: uppercase; transition: background 0.2s; }
+    #tutorialOverlay .close-btn:hover { background: var(--secondary-color); }
+
+    #themeModal { top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 350px; display: none; } /* Corregido display a none inicial */
+    #themeModal.visible { display: block; opacity: 1; } /* Hacer visible con block */
+    #themeModal h3 { font-family: var(--font-main); color: var(--primary-color); margin-bottom: 20px; font-size: 1.3rem; /* Ligeramente más pequeño */ }
+    #themeModal label { display: block; margin-bottom: 5px; color: var(--text-muted-color); font-size: 0.9rem; }
+    #themeModal input[type="color"] { width: 100%; height: 40px; border: 1px solid var(--border-color); margin-bottom: 15px; padding: 0; cursor: pointer; background: transparent; border-radius: 4px; }
+    #themeModal .close-theme-btn { width: 100%; padding: 12px; background: var(--primary-color); color: var(--selected-text); border: none; cursor: pointer; border-radius: 5px; font-family: var(--font-main); text-transform: uppercase; transition: background 0.2s; }
+    #themeModal .close-theme-btn:hover { background: var(--secondary-color); }
+
+    /* Estilos para Notificaciones */
+    .notification-container { /* Clase para el contenedor de notificaciones */
+        position: fixed; bottom: 20px; right: 20px; z-index: 1100;
+        display: flex; flex-direction: column; gap: 10px;
+        width: 90%; /* Ajustar ancho en móvil */
+        max-width: 300px; /* Ancho máximo */
+        max-height: 80vh; /* Evitar que ocupen toda la pantalla */
+        overflow-y: auto; /* Scroll si hay muchas */
+        pointer-events: none; /* Permitir click "a través" del contenedor */
+    }
+    .cyber-notification { /* Estilo base para cada notificación */
+        pointer-events: all; /* Habilitar interacción con notificaciones individuales */
+        background: rgba(10, 20, 40, 0.9);
+        color: var(--text-color);
+        padding: 12px 18px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        border-left: 4px solid var(--primary-color); /* Default to primary */
+        box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+        opacity: 0;
+        transform: translateX(20px);
+        transition: all 0.4s ease-out;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.95rem;
+    }
+
+    /* Botones flotantes */
+    .floating-btn {
+      position: fixed; background: var(--primary-color); color: var(--selected-text);
+      border: none; border-radius: 50%; width: 55px; height: 55px;
+      cursor: pointer; z-index: 1000; font-size: 1.5rem; /* Icono más grande */
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 5px 15px rgba(var(--primary-color-rgb), 0.4);
+      transition: background 0.2s, transform 0.2s ease-out;
+    }
+    .floating-btn:hover { background: var(--secondary-color); transform: scale(1.1); }
+    #voiceCommandBtn { bottom: 90px; left: 20px; }
+    #fullscreenToggle { bottom: 20px; left: 20px; }
+
+    /* Iconos Sociales */
+    #socialShare { position: fixed; bottom: 25px; right: 20px; z-index: 1000; display: flex; gap: 15px; }
+    #socialShare a { color: var(--primary-color); font-size: 1.6rem; text-decoration: none; transition: transform 0.2s, color 0.2s; }
+    #socialShare a:hover { transform: scale(1.2) rotate(5deg); color: var(--accent-color); }
+
+    /* CLASES PARA SORTABLE JS */
+    .sortable-ghost { opacity: 0.4; background: var(--secondary-color); }
+    .sortable-chosen { background: var(--highlight-bg); }
+
+    /* ==================== */
+    /*    RESPONSIVIDAD     */
+    /* ==================== */
+
+     /* Laptops / Desktops pequeños (<= 1200px) - Ajustes Menores */
+     @media (max-width: 1200px) {
+       html { font-size: 13px; } /* Reducir tamaño base ligeramente */
+       .main-container {
+         grid-template-columns: 280px 1fr 320px; /* Reducir ancho de paneles laterales */
+         gap: 12px; /* Reducir espacio */
+       }
+       .top-nav { gap: 20px; margin-left: 25px; } /* Menos espacio en nav */
+       .top-bar-left { gap: 20px; }
+       .top-bar-right { gap: 20px; }
+       .detail-container { padding: 20px 25px; }
+     }
+
+     /* Tablets y Laptops pequeños (<= 992px) - CAMBIO PRINCIPAL A UNA COLUMNA */
+     @media (max-width: 992px) {
+       html { font-size: 13px; } /* Mantener o ajustar según necesidad */
+       body {
+            overflow: auto; /* Permitir scroll general si el contenido apilado excede la altura */
+            height: auto; /* Permitir que el body crezca */
+        }
+       body::after { background-size: 100% 3px, 2px 100%; /* Scanlines más finas */}
+
+       .top-bar {
+         padding: 0 15px; /* Menos padding lateral */
+         height: 50px; /* Barra ligeramente más baja */
+         position: sticky; /* Fijar la barra al hacer scroll */
+         top: 0; /* Pegar arriba */
+         /* Asegurar fondo sólido o semi-sólido aquí para sticky */
+         background: rgba(10, 20, 40, 0.9); /* Un poco más opaco para mejor legibilidad debajo */
+         backdrop-filter: blur(5px); /* Reducir blur para rendimiento */
+         z-index: 1001; /* Ponerla por encima del main-container */
+         border-radius: 0 0 8px 8px; /* Redondear abajo */
+       }
+       .top-bar-left { gap: 15px; }
+       .level-cred { gap: 15px; font-size: 1rem; } /* Stats más pequeños */
+
+       /* ----- Adaptación del Menú de Navegación ----- */
+       .top-nav {
+         /* Ocultar por defecto */
+         display: none;
+         /* Estilos para cuando se muestre como menú desplegable vertical */
+         position: absolute; /* Posición absoluta relativa al top-bar */
+         top: 100%; /* Justo debajo de la barra superior */
+         left: 0;
+         right: 0;
+         background: rgba(10, 20, 40, 0.95); /* Casi sólido */
+         backdrop-filter: blur(3px); /* Aún menos blur */
+         border: 1px solid var(--border-color);
+         border-top: none;
+         border-radius: 0 0 8px 8px;
+         padding: 10px 0; /* Ajustar padding */
+         flex-direction: column; /* Apilar verticalmente */
+         align-items: stretch; /* Ocupar todo el ancho */
+         gap: 0; /* Resetear gap */
+         margin-left: 0; /* Resetear margen */
+         max-height: calc(100vh - 50px); /* Altura máxima (altura de barra) */
+         overflow-y: auto; /* Scroll si hay muchos items */
+         z-index: 1000; /* Detrás del botón toggle pero sobre main-container */
+         box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+         animation: slideDown 0.3s ease-out forwards; /* Animación de despliegue */
+         opacity: 0; /* Iniciar oculto para animación */
+         transform: translateY(-10px);
+       }
+       .top-nav.mobile-active {
+         display: flex; /* Mostrar cuando la clase está activa */
+         opacity: 1;
+         transform: translateY(0);
+       }
+       @keyframes slideDown {
+         from { opacity: 0; transform: translateY(-10px); }
+         to { opacity: 1; transform: translateY(0); }
+       }
+       .top-nav-item {
+         padding: 12px 20px; /* Más padding horizontal */
+         width: 100%;
+         text-align: left; /* Alinear a la izquierda */
+         border-bottom: 1px solid rgba(var(--primary-color-rgb), 0.1);
+       }
+       .top-nav-item:last-child { border-bottom: none; }
+       .top-nav-item::after { display: none; } /* Ocultar subrayado animado en móvil */
+       .top-nav-item:hover, .top-nav-item.active {
+           background: var(--highlight-bg); /* Fondo al hacer hover/activo */
+           color: var(--primary-color); /* Mantener color principal */
+           text-shadow: none; /* Quitar shadow en móvil si se prefiere */
+       }
+
+       /* Botón Hamburguesa */
+       .nav-toggle {
+         display: block; /* Mostrar el botón hamburguesa */
+         order: -1; /* Ponerlo al principio en flex */
+         margin-right: 10px; /* Espacio a la derecha */
+         z-index: 1002; /* Por encima del menú desplegable */
+       }
+
+
+       /* ----- Apilar los Paneles Verticalmente ----- */
+       .main-container {
+         position: relative; /* Cambiar a relativo para flujo normal de scroll */
+         top: 0; /* Resetear top */
+         left: 5px; right: 5px; bottom: 5px; /* Márgenes pequeños */
+         margin-top: calc(50px + 10px); /* Espacio para la barra sticky + gap */
+         display: grid; /* Usar grid */
+         grid-template-columns: 1fr; /* Una sola columna */
+         grid-template-rows: auto auto auto; /* Altura automática para cada panel */
+         gap: 10px; /* Espacio entre paneles apilados */
+         overflow: visible; /* Permitir que el grid crezca */
+         height: auto; /* Altura automática para el contenido */
+       }
+
+       /* ----- Ajustar Paneles Individuales ----- */
+       .left-panels, .detail-container, .right-panel {
+         border-radius: 8px; /* Mantener redondeado */
+         height: auto; /* Altura automática inicial */
+         overflow: hidden; /* OCULTAR scrollbar del panel, se scrollea internamente */
+         /* Definir alturas MAXIMAS y permitir scroll interno para evitar paneles gigantes */
+         min-height: auto; /* Resetear min-height si lo pusimos antes */
+         padding: 15px; /* Menos padding */
+         display: flex; /* Asegurar flex para controlar hijos */
+         flex-direction: column;
+         position: relative; /* Para posicionamiento interno si es necesario */
+       }
+       .left-panels {
+         max-height: 65vh; /* Limitar altura */
+       }
+       /* Ajustes internos panel izquierdo */
+       .left-panels .search-container, .left-panels .advanced-filter-nav, .left-panels .list-title {
+          flex-shrink: 0; /* Evitar que estos elementos se encojan */
+       }
+       .list-section {
+           flex-grow: 1; /* La sección toma espacio */
+           overflow: hidden; /* Oculta overflow de la sección */
+           display: flex; /* Asegurar flex */
+           flex-direction: column;
+       }
+       .data-list-container, .mission-list {
+           flex-grow: 1; /* El contenedor de la lista crece */
+           overflow-y: auto; /* Scroll vertical obligatorio AQUI */
+           min-height: 150px; /* Altura mínima */
+       }
+
+       .detail-container {
+           max-height: 75vh; /* Limitar altura del detalle también */
+           overflow: hidden; /* Ocultar overflow */
+       }
+       .detail-container .detail-title, .detail-container .detail-subtitle {
+            flex-shrink: 0;
+       }
+       .detail-container .detail-description {
+           flex-grow: 1;
+           overflow-y: auto; /* Permitir scroll si el contenido es largo SOLO AQUI */
+       }
+
+       .right-panel {
+           max-height: 80vh; /* Limitar altura */
+           overflow: hidden; /* Ocultar overflow principal */
+       }
+       .right-panel .filter-menu-container, .right-panel .right-panel-title {
+            flex-shrink: 0;
+       }
+       .right-panel .tab-content.active {
+           flex-grow: 1; /* El contenido activo toma espacio */
+           overflow-y: auto; /* Permitir scroll DENTRO del contenido de la pestaña */
+       }
+        /* Esconder algunas stats */
+        .top-bar-right .stat:nth-child(1) { display: none; } /* Ocultar 'CAP' */
+        .level-cred { display: none; } /* Ocultar LVL y Cred */
+     }
+
+     /* Móviles (<= 768px) - Refinamientos */
+     @media (max-width: 768px) {
+       html { font-size: 12px; } /* Reducir más el tamaño base */
+
+       /* Ocultar la otra stat */
+       .top-bar-right .stat { display: none; }
+       .top-bar-right { gap: 15px; margin-left: auto;} /* Reducir gap y empujar a la derecha */
+       #themeToggle { padding: 4px 8px; font-size: 0.8rem; } /* Botón de tema más pequeño */
+
+       .main-container {
+            margin-top: calc(50px + 5px); /* Menos gap */
+            gap: 8px;
+       }
+
+       .left-panels, .detail-container, .right-panel {
+         padding: 12px;
+       }
+       /* Reajustar alturas máximas si es necesario */
+       .left-panels { max-height: 60vh; }
+       .detail-container { max-height: 70vh; }
+       .right-panel { max-height: 75vh; }
+
+       .detail-title { font-size: 1.5rem; }
+       .detail-subtitle { font-size: 1rem; margin-bottom: 15px; }
+       .detail-description { font-size: 0.95rem; line-height: 1.6; }
+
+       /* Ajustar MP3 Player */
+       .mp3-player { padding: 10px; }
+       .mp3-album-cover { width: 60px; height: 60px; }
+       .mp3-btn { padding: 5px 10px; font-size: 0.8rem; }
+       .mp3-progress-container { gap: 8px; }
+       .mp3-volume { margin-top: 8px; flex-wrap: wrap; gap: 5px; justify-content: center; } /* Permitir wrap y centrar */
+       .mp3-volume input[type="range"] { width: 120px; }
+
+       /* Reposicionar/Redimensionar botones flotantes */
+       .floating-btn {
+         width: 48px; height: 48px; font-size: 1.3rem;
+         /* Ajustar posición para evitar solapamiento con posible barra de navegación inferior del SO */
+         bottom: 15px; /* Subirlos menos que antes */
+       }
+       #voiceCommandBtn { left: 15px; bottom: 75px; /* Botón de voz un poco más arriba */}
+       #fullscreenToggle { left: 15px; bottom: 15px; /* Abajo izquierda */ }
+
+       /* Mover redes sociales abajo del todo o considerar ocultarlas */
+       #socialShare {
+            position: fixed; /* Mantener fijo */
+            bottom: 15px; /* Pegado abajo */
+            right: 15px; /* Pegado derecha */
+            left: auto; /* Resetear left */
+            padding: 0; /* Resetear padding */
+            justify-content: flex-end; /* Alinear a la derecha */
+            gap: 15px;
+            margin-top: 0; /* Resetear margin */
+            border-top: none; /* Sin línea */
+            z-index: 999; /* Debajo de botones flotantes */
+       }
+       #socialShare a { font-size: 1.6rem; }
+
+       /* Ajustar contenedor de notificaciones */
+       .notification-container {
+            bottom: 10px;
+            left: 10px;
+            right: 10px; /* Ajustar right para dejar espacio a redes sociales si es necesario */
+            width: auto; /* Ocupar ancho disponible */
+            max-width: calc(100% - 130px); /* Evitar solapamiento con botones sociales */
+            z-index: 1100; /* Asegurar que esté por encima de botones */
+        }
+
+       /* Ajustar filtros avanzados si se solapan */
+       .advanced-filter-nav ul { flex-wrap: wrap; justify-content: flex-start; } /* Alinear inicio */
+       .advanced-filter-nav li { padding: 6px 10px; font-size: 0.8rem; }
+
+       /* Chat inputs */
+       #chatWindow { min-height: 120px; font-size: 0.9rem;} /* Mínimo y reducir fuente */
+       #chatInput { padding: 8px; font-size: 0.9rem;}
+       #chatSend { width: 55px; padding: 8px; font-size: 0.8rem; }
+       #chatInputContainer { margin-top: 5px;}
+     }
+
+     /* Móviles muy pequeños (<= 480px) */
+     @media (max-width: 480px) {
+        html { font-size: 11px; } /* Aún más pequeño */
+        .top-bar { padding: 0 10px; height: 45px; } /* Barra aún más baja */
+         .main-container { margin-top: calc(45px + 5px); }
+
+        .left-panels, .detail-container, .right-panel {
+            padding: 10px;
+            border-radius: 5px; /* Menos redondeo */
+        }
+
+        /* Ajustar filtros y botón de filtro derecho */
+        .advanced-filter-nav ul { gap: 4px; }
+        .advanced-filter-nav li { padding: 5px 8px; font-size: 0.7rem; letter-spacing: 0; }
+        .filter-button { padding: 5px 8px; font-size: 0.75rem; gap: 4px; }
+        .filter-dropdown { min-width: 130px; } /* Dropdown más estrecho */
+        .filter-item { padding: 7px 10px; font-size: 0.85rem; gap: 8px;}
+
+        /* Ajustar controles MP3 */
+        .mp3-player-controls { gap: 6px; }
+        .mp3-player-controls .mp3-btn { min-width: 35px; padding: 4px 8px; font-size: 0.75rem;}
+        #trackTitle { font-size: 0.95rem; }
+        .mp3-volume input[type="range"] { width: 100px;}
+
+        .detail-title { font-size: 1.3rem; }
+        .detail-subtitle { font-size: 0.9rem; }
+        .right-panel-title { font-size: 1.1rem; }
+
+        /* Reducir botones flotantes y redes sociales */
+        .floating-btn { width: 42px; height: 42px; font-size: 1.2rem; bottom: 10px; }
+        #voiceCommandBtn { bottom: 60px; /* Subir voz */ left: 10px; }
+        #fullscreenToggle { left: 10px; /* Abajo izquierda */ }
+        #socialShare { bottom: 10px; right: 10px; gap: 12px; }
+        #socialShare a { font-size: 1.4rem; }
+        .notification-container { max-width: calc(100% - 110px); bottom: 5px; left: 5px; right: 5px; }
+
+        #tutorialOverlay > div { padding: 15px; }
+        #tutorialOverlay h2 { font-size: 1.4rem; }
+        #tutorialOverlay p { font-size: 0.9rem; }
+
+        #themeModal { padding: 15px; width: 95%; max-width: 95%;}
+        #themeModal h3 { font-size: 1.2rem; }
+        #themeModal label { font-size: 0.85rem; }
+
+        #chatWindow { min-height: 100px; font-size: 0.85rem;}
+        #chatInput { padding: 6px; font-size: 0.85rem;}
+        #chatSend { width: 50px; padding: 6px; font-size: 0.7rem; }
+     }
+
+
+  </style>
+</head>
+<body>
+  <!-- Plantillas para contenido dinámico -->
+  <template id="tpl-data-item">
+    <div class="data-item" data-id="" data-type="">
+      <div class="program-name"></div>
+      <div class="program-desc"></div>
+      <div class="new-flag"></div>
+    </div>
+  </template>
+  <template id="tpl-mission-item">
+    <div class="mission-item" data-id="">
+      <div class="subroutine-name"></div>
+      <div class="subroutine-threat"></div>
+      <div class="mission-progress">
+        <div class="progress-bar"><div class="progress-fill"></div></div>
+        <span class="progress-text"></span>
+      </div>
+      <div class="new-flag"></div>
+    </div>
+  </template>
+  <template id="tpl-chat-message">
+    <div class="chat-message" data-author="" data-timestamp="">
+      <span class="author"></span>: <span class="message"></span>
+    </div>
+  </template>
+  <template id="tpl-history-entry">
+    <li class="history-entry" data-timestamp=""><span class="entry-text"></span></li>
+  </template>
+  <template id="tpl-notification">
+    <div class="cyber-notification" data-type="">
+      <i class="icon"></i><span class="text"></span>
+    </div>
+  </template>
+  <template id="tpl-integration-item">
+    <li class="integration-item" data-status="">
+      <i class="icon"></i><span class="integration-text"></span>
+    </li>
+  </template>
+  <!-- Overlay de Carga -->
+  <div id="loading-overlay">
+    <div class="loader"></div>
+    Booting Cyberdeck OS...
+  </div>
+
+  <!-- Video de fondo -->
+  <!-- Nota: El nombre de archivo contiene espacios (%20). Se recomienda renombrar sin espacios. -->
+  <video autoplay muted loop playsinline id="bgVideo" preload="auto">
+    <source src="src/video/Anime%20girl%20wallpaper%204k%20-%20best%20purple%20wallpaper.mp4" type="video/mp4">
+    Your browser doesn't support the video element. Cyberdeck visuals degraded.
+  </video>
+
+  <!-- Fondo de Partículas -->
+  <div id="tsparticles"></div>
+
+  <!-- Overlay de Tutorial -->
+  <div id="tutorialOverlay"> <!-- Gestionado por JS con clase .visible -->
+    <div>
+      <h2><i class="fas fa-plug"></i> Cyberdeck OS Initialized</h2>
+      <p>Welcome, Netrunner. Navigate active runs and subroutines via the left panel. Access file/process details in the center. Utilize deck utilities and monitor performance on the right. Engage neural commands or keyboard shortcuts for rapid interaction with the Grid.</p>
+      <button class="close-btn" id="closeTutorialBtn">Acknowledge & Connect <i class="fas fa-check"></i></button>
+    </div>
+  </div>
+
+  <!-- Botones Globales Flotantes -->
+  <button id="voiceCommandBtn" title="Neural Commands (Voice)" class="floating-btn"><i class="fas fa-microphone-alt"></i></button>
+  <button id="fullscreenToggle" title="Toggle Full Immersion (Fullscreen)" class="floating-btn"><i class="fas fa-expand"></i></button>
+  <div id="socialShare">
+    <a href="https://twitter.com/intent/tweet?text=Check%20out%20this%20Cyberdeck%20OS%20Interface!" target="_blank" title="Share Interface Snapshot"><i class="fab fa-twitter"></i></a>
+    <a href="#" title="Broadcast on ShadowNet (Reddit Analog)"><i class="fab fa-reddit-alien"></i></a>
+     <!-- Eliminado FB por simplicidad -->
+  </div>
+
+  <!-- Modales y Paneles Flotantes -->
+  <div id="dashboardStats"> <!-- Gestionado por JS con clase .visible -->
+    <h4><i class="fas fa-chart-line"></i> Deck Status</h4>
+    <p>CPU Load: <span id="cpuUsage">0%</span></p>
+    <p>Memory Usage: <span id="memoryUsage">0MB</span></p>
+    <p>Network Latency: <span id="networkLatency">0ms</span></p>
+  </div>
+  <div id="themeModal"> <!-- Gestionado por JS con clase .visible -->
+    <h3><i class="fas fa-palette"></i> Customize Deck UI Matrix</h3>
+    <label for="primaryColorPicker">Primary Matrix Color:</label>
+    <input type="color" id="primaryColorPicker" value="#00f0ff">
+    <label for="secondaryColorPicker">Secondary Matrix Color:</label>
+    <input type="color" id="secondaryColorPicker" value="#ff00ff">
+    <label for="accentColorPicker">Accent/Highlight Color:</label>
+    <input type="color" id="accentColorPicker" value="#f7ff00">
+    <button class="close-theme-btn" id="closeThemeModalBtn">Apply & Compile <i class="fas fa-check"></i></button>
+  </div>
+  <div id="achievementsModal"> <!-- Gestionado por JS con clase .visible -->
+    <h4><i class="fas fa-trophy"></i> Netrunner Milestones</h4>
+    <ul id="achievementsList"></ul>
+  </div>
+  <!-- Contenedor de notificaciones con ARIA live region -->
+  <div id="notificationContainer" class="notification-container" aria-live="polite">
+      <!-- Notificaciones se añadirán aquí dinámicamente -->
+  </div>
+
+  <!-- HEADER -->
+  <header class="top-bar">
+    <div class="top-bar-left">
+      <!-- Botón Toggle para móvil -->
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle Navigation Menu" aria-expanded="false">
+          <i class="fas fa-bars"></i>
+      </button>
+      <!-- Stats de Nivel/Cred (Se ocultan en móvil via CSS) -->
+      <div class="level-cred">
+        <div><span class="label">LVL:</span><span class="value">9</span></div>
+        <div><span class="label">Cred:</span><span class="value">10</span></div>
+      </div>
+      <!-- Navegación principal (adaptativa) -->
+      <nav class="top-nav" id="topNav">
+        <a href="main.html" class="top-nav-item active">Dashboard</a> <!-- Usar # para SPA-like -->
+        <a href="software.html" class="top-nav-item">Software</a>
+        <a href="netmap.html" class="top-nav-item">NetMap</a>
+        <a href="datalog.html" class="top-nav-item">DataLog</a>
+      </nav>
+    </div>
+    <div class="top-bar-right">
+      <!-- Stats CAP/E$ (Se ocultan en móvil via CSS) -->
+      <div class="stat">
+        <span class="label">CAP:</span><span class="value">83/312</span>
+      </div>
+      <div class="stat">
+        <span class="label">E$:</span><span class="value">5457</span>
+      </div>
+      <button id="themeToggle" title="Customize Deck UI"><i class="fas fa-palette"></i></button>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="main-container">
+
+    <!-- PANEL IZQUIERDO: Explorador de Archivos/Procesos -->
+    <aside class="left-panels">
+      <div class="search-container">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" id="searchInput" placeholder="Access File/Process...">
+      </div>
+
+      <nav class="advanced-filter-nav">
+        <ul>
+          <li class="filter-option active" data-filter="projects"><i class="fas fa-tasks"></i> Active Runs</li>
+          <li class="filter-option" data-filter="herramientas"><i class="fas fa-tools"></i> Utilities</li>
+          <li class="filter-option" data-filter="logros"><i class="fas fa-shield-alt"></i> Access Logs</li>
+          <li class="filter-option" data-filter="contenido"><i class="fas fa-book-open"></i> Intel</li>
+          <li class="filter-option" data-filter="ideas"><i class="fas fa-lightbulb"></i> Fragments</li>
+        </ul>
+      </nav>
+
+      <!-- Sección de Archivos/Programas filtrados -->
+      <section class="list-section project-list-container">
+        <div class="list-title" id="dataListTitle"><i class="fas fa-folder-open"></i> Active Runs</div>
+        <div class="data-list-container sortable-list" id="dataList">
+          <!-- Items renderizados por JS -->
+        </div>
+      </section>
+
+      <!-- Sección de Subrutinas -->
+      <section class="list-section mission-list-container">
+        <div class="list-title"><i class="fas fa-network-wired"></i> Subroutines</div>
+        <div class="mission-list" id="missionList">
+          <!-- Subrutinas generadas por JS -->
+        </div>
+      </section>
+    </aside>
+
+    <!-- PANEL CENTRAL: Visor de Detalles -->
+    <article class="detail-container">
+      <h2 class="detail-title" id="detailTitle">Select File/Process...</h2>
+      <div class="detail-subtitle" id="detailSubtitle">File/Process details incoming...</div>
+      <div class="detail-description" id="detailDescription">
+         Select an entry from the file explorer to view detailed information, code snippets, or active process status. Use filters to navigate through active runs, installed utilities, system access logs, gathered intel fragments, and schematic blueprints. Stay sharp, Netrunner.
+      </div>
+    </article>
+
+    <!-- PANEL DERECHO: Utilidades del Deck -->
+    <aside class="right-panel">
+      <div class="filter-menu-container">
+        <button class="filter-button">
+          <i class="fas fa-cogs"></i> Deck Utilities
+        </button>
+        <div class="filter-dropdown">
+          <div class="filter-item active" data-tab="tab-general"><i class="fas fa-eye"></i> Overview</div>
+          <div class="filter-item" data-tab="tab-stats"><i class="fas fa-chart-bar"></i> Deck Performance</div>
+          <div class="filter-item" data-tab="tab-history"><i class="fas fa-history"></i> System Log</div>
+          <div class="filter-item" data-tab="tab-chat"><i class="fas fa-comments"></i> Secure Comms</div>
+          <div class="filter-item" data-tab="tab-integraciones"><i class="fas fa-plug"></i> Network Links</div>
+          <div class="filter-item" data-tab="tab-settings"><i class="fas fa-cog"></i> Deck Settings</div>
+        </div>
+      </div>
+
+      <!-- Contenido de Pestañas -->
+      <div class="tab-content active" id="tab-general">
+        <h3 class="right-panel-title" id="rightPanelTitle">System Idle</h3>
+        <img class="right-panel-image loaded" id="rightPanelImage" src="assets/img/placeholder-dark.png" alt="Selected item visual data" loading="lazy">
+        <video class="right-panel-video" id="rightPanelVideo" autoplay muted loop playsinline preload="auto" style="display: none;">
+          <source src="" type="video/mp4">
+          Your browser doesn't support the video element. Visuals compromised.
+        </video>
+        <div class="chart-container" id="miniChartContainer">
+            <canvas id="miniChart"></canvas>
+        </div>
+        <canvas id="audioVisualizer"></canvas>
+        <div class="mp3-player" id="mp3Player">
+          <div class="mp3-album-cover">
+            <img id="albumCoverIm" src="assets/img/placeholder-cover.png" alt="Audio Data Cover" loading="lazy">
+          </div>
+          <div class="mp3-player-header">Audio Interface</div>
+          <div id="trackTitle">Audio Output Idle</div>
+          <div class="mp3-player-controls">
+            <button class="mp3-btn tooltip" id="prevBtn" title="Previous Track"><i class="fas fa-backward"></i></button>
+            <button class="mp3-btn tooltip" id="playBtn" title="Play/Pause"><i class="fas fa-play"></i></button>
+            <button class="mp3-btn tooltip" id="nextBtn" title="Next Track"><i class="fas fa-forward"></i></button>
+          </div>
+          <div class="mp3-progress-container">
+            <div class="mp3-progress" id="mp3Progress">
+              <div class="mp3-progress-fill" id="mp3ProgressFill"></div>
+            </div>
+            <div class="mp3-time" id="mp3Time">--:--</div>
+          </div>
+          <div class="mp3-volume">
+            <span class="mp3-volume-label"><i class="fas fa-volume-down"></i></span>
+            <input type="range" id="volumeRange" min="0" max="1" step="0.01" value="0.8" title="Volume Control">
+             <span class="mp3-volume-label"><i class="fas fa-volume-up"></i></span>
+          </div>
+          <audio id="audioPlayer" preload="metadata"></audio>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-stats">
+        <h3 class="right-panel-title">Deck Performance Monitor</h3>
+        <p>Real-time cyberdeck core metrics and data flow analysis.</p>
+        <div class="chart-container" id="statsChartContainer">
+             <canvas id="statsChart"></canvas>
+        </div>
+         <!-- Futuro contenido de estadísticas -->
+      </div>
+
+      <div class="tab-content" id="tab-history">
+        <h3 class="right-panel-title">System Access Log</h3>
+        <input type="text" id="historySearch" placeholder="Filter log entries..." style="width:100%; padding:8px 12px; margin-bottom:15px; border:1px solid var(--border-color); background:rgba(0,0,0,0.4); color:var(--text-color); border-radius:4px; flex-shrink: 0;">
+        <div class="scrollable-tab-content"> <!-- Añadido div scrolleable -->
+            <ul id="historyList">
+            <!-- Entradas del historial generadas por JS -->
+            </ul>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-chat">
+        <h3 class="right-panel-title">Secure Comms Channel</h3>
+         <div id="chatContainer"> <!-- Contenedor para el layout flex -->
+             <div id="chatWindow">
+             <!-- Mensajes generados por JS -->
+             </div>
+             <div id="chatInputContainer">
+                 <input type="text" id="chatInput" placeholder="Transmit encrypted message...">
+                 <button id="chatSend">Send</button>
+             </div>
+         </div>
+      </div>
+
+      <div class="tab-content" id="tab-integraciones">
+        <h3 class="right-panel-title">External Network Links</h3>
+        <p>Connected data streams and grid feeds.</p>
+        <div class="scrollable-tab-content"> <!-- Añadido div scrolleable -->
+            <ul id="integrationsList">
+            <!-- Integraciones generadas por JS -->
+            </ul>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-settings">
+        <h3 class="right-panel-title">Deck Configuration</h3>
+        <p>Customize cyberdeck interface and performance parameters.</p>
+        <div class="scrollable-tab-content"> <!-- Añadido div scrolleable -->
+            <label title="Enable/Disable visual processing effects">
+            <input type="checkbox" id="toggleAnimations" checked> Enable Visual Augmentations
+            </label>
+            <label title="Adjust global processing speed for visuals"> Augmentation Speed:
+            <input type="range" id="animationSpeed" min="0.5" max="2" step="0.1" value="1">
+            <span id="animationSpeedValue">1.0x</span>
+            </label>
+            <label title="Enable/Disable system alert popups">
+            <input type="checkbox" id="toggleNotifications" checked> Enable System Alerts
+            </label>
+            <label title="Enable/Disable auditory feedback for alerts">
+            <input type="checkbox" id="toggleSoundNotifications" checked> Alert Auditory Feedback
+            </label>
+            <label title="Enable/Disable haptic feedback routines (if hardware supported)">
+            <input type="checkbox" id="toggleVibration"> Haptic Feedback Routines
+            </label>
+            <label title="Switch to high contrast visual matrix for low-light conditions">
+            <input type="checkbox" id="toggleHighContrast"> High Contrast Matrix
+            </label>
+            <label title="Allow reordering of active runs via drag interface">
+            <input type="checkbox" id="toggleLayout" checked> Draggable Run Layout
+            </label>
+            <p style="margin-top:15px; font-size:0.9rem; color:var(--accent-color);">
+            <i class="fas fa-info-circle"></i> Configuration saved to local deck memory.
+            </p>
+        </div>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- SCRIPTS -->
+  <!-- SortableJS (para Drag & Drop) -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js" integrity="sha512-Eezs+g9Lq4TCCq0wae01s9PuNWzHYoCMkE97e2qdkYthpI0pzC3UGB03lgEHn2XM85hDOUF6qgqqszs+iXU4UA==" crossorigin="anonymous"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        const loadingOverlay = document.getElementById('loading-overlay');
+
+        // --- CONFIGURACIÓN INICIAL Y VARIABLES GLOBALES ---
+        let currentProgramIndex = 0;
+        let currentSubroutineIndex = 0;
+        let activeList = 'projects';
+        let currentTrack = 0;
+        let isPlaying = false;
+        let soundNotificationsEnabled = localStorage.getItem('soundNotificationsEnabled') !== 'false';
+        let vibrationEnabled = localStorage.getItem('vibrationEnabled') === 'true';
+        let animationsEnabled = localStorage.getItem('animationsEnabled') !== 'false';
+        window.animationSpeedFactor = parseFloat(localStorage.getItem('animationSpeedFactor')) || 1;
+
+        // Selecciones del DOM
+        const audioPlayer = document.getElementById('audioPlayer');
+        const trackTitle = document.getElementById('trackTitle');
+        const albumCover = document.getElementById('albumCoverIm');
+        const playBtn = document.getElementById('playBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const mp3ProgressFill = document.getElementById('mp3ProgressFill');
+        const mp3Progress = document.getElementById('mp3Progress');
+        const mp3Time = document.getElementById('mp3Time');
+        const volumeRange = document.getElementById('volumeRange');
+
+        const detailTitle = document.getElementById('detailTitle');
+        const detailSubtitle = document.getElementById('detailSubtitle');
+        const detailDescription = document.getElementById('detailDescription');
+        const rightPanelTitle = document.getElementById('rightPanelTitle');
+        const rightPanelImage = document.getElementById('rightPanelImage');
+        const rightPanelVideo = document.getElementById('rightPanelVideo');
+
+        const dataListContainer = document.getElementById('dataList');
+        const missionListContainer = document.getElementById('missionList');
+        const dataListTitle = document.getElementById('dataListTitle');
+
+        const notificationContainer = document.getElementById('notificationContainer');
+        const tutorialOverlay = document.getElementById('tutorialOverlay');
+        const themeModal = document.getElementById('themeModal');
+
+        // Sonidos (Reemplaza con tus URLs o déjalas como placeholder)
+        const clickSound = new Audio('src/Audio/ui-click.wav'); // Placeholder
+        const notificationSound = new Audio('src/Audio/ui-notification.wav'); // Placeholder
+        const hoverSound = new Audio('src/Audio/ui-hover.wav'); // Placeholder
+        clickSound.volume = 0.4;
+        notificationSound.volume = 0.5;
+        hoverSound.volume = 0.2;
+
+        // Playlist MP3
+        const playlist = [
+          { title: "Reaktive - Signal Lost", src: "src/Audio/Future%20%E3%82%BB%E3%83%AB%E3%83%95%20-%20Ambient%20Cyberpunk.mp3", cover: "src/img/celestial.jpg" }, // Asegúrate que las rutas sean correctas
+          { title: "Void Runner - Glitch Core", src: "src/Audio/second-track.mp3", cover: "src/img/cover2.jpg" }, // Placeholder
+          { title: "SynthWave Dreams - Neon Drive", src: "src/Audio/third-track.mp3", cover: "src/img/cover3.jpg" } // Placeholder
+        ];
+
+        // --- DATOS DE EJEMPLO ---
+        const projectData = { // Active Runs
+             neonui: { id:'neonui', manifestMode:'network', title: "Neon Core UI", subtitle: "Core visual interface daemon.", description: `<strong>Process ID:</strong> 774-UI-CORE<br><strong>Status:</strong> Stable<br><strong>Description:</strong> Renders the primary Cyberdeck OS visual matrix using accelerated hardware paths. Optimized for low-latency neural feedback.<br><strong>Dependencies:</strong> [gfx_driver_v4.dll], [neural_link_api.sys]`, image: "src/img/celestial.jpg", video: "src/video/preview1.mp4" },
+             hackingpanel: { id:'hackingpanel', manifestMode:'network', title: "ICE Breaker Suite", subtitle: "Active netrunning toolkit.", description: `<strong>Process ID:</strong> 901-ICE-BRK<br><strong>Status:</strong> Active Scan<br><strong>Description:</strong> Suite of intrusion countermeasures electronic (ICE) penetration tools. Currently scanning target node [192.168.77.101]. Includes 'Wraith', 'Spectre', and 'Hammer' modules.<br><strong>Warning:</strong> High risk of counter-intrusion detected.`, image: "https://i.pinimg.com/736x/5f/05/21/5f0521673937e41576b3e8e68071acdd.jpg" },
+             braininterface: { id:'braininterface', manifestMode:'network', title: "Project Chimera (BCI)", subtitle: "Neural interface bridge.", description: `<strong>Process ID:</strong> 003-BCI-LINK<br><strong>Status:</strong> Linked<br><strong>Description:</strong> Experimental Brain-Computer Interface protocol for direct data transfer and system control via neural implant. Calibration required for optimal bandwidth.<br><strong>Bio-Monitor:</strong> Neural stress levels nominal.` }
+        };
+        const missionData = { // Subroutines
+             badlands: { id:'badlands', manifestMode:'network', title: "Data Heist: Badlands Relay", image: "src/img/chica red.jpg", danger: "Threat Level: High", newFlag: true, progress: 100 },
+             "the-glen": { id:'the-glen', manifestMode:'network', title: "Trace Route: The Glen Node", image: "src/img/chica red 2.jpg", danger: "Threat Level: High", newFlag: true, progress: 50 },
+             northside: { id:'northside', manifestMode:'network', title: "System Scan: Northside District", image: "src/img/gotic.jpg", danger: "Threat Level: Moderate", newFlag: false, progress: 75 },
+             rancho: { id:'rancho', manifestMode:'network', title: "Counter-Hack: Rancho Server Farm", image: "src/img/blanca como la nieve.jpg", danger: "Threat Level: Extreme", newFlag: true, progress: 40 }
+        };
+        const sampleData = { // Para Utilities, Logs, Intel, Fragments
+          herramientas: [ // Utilities
+            { id: 'tool1', manifestMode:'code', title: "Packet Sniffer v7.2", subtitle: "Real-time network traffic analysis.", description: `<strong>Utility Type:</strong> Network Scanner<br><strong>Features:</strong> Deep packet inspection, protocol spoofing, passive/active modes. Supports encrypted streams (requires valid key).`, image:"src/img/tool1.png"},
+            { id: 'tool2', manifestMode:'code', title: "Code Weaver IDE (Cracked)", subtitle: "AI-assisted development environment.", description: `<strong>Utility Type:</strong> Code Editor<br><strong>Features:</strong> Predictive syntax, automated debugging subroutines, direct neural coding interface (beta, unstable). Bypasses corporate licensing.`, image:"src/img/tool2.png"}
+          ],
+          logros: [ // Access Logs
+            { id: 'log1', manifestMode:'log', title: "Initial Connection", subtitle: "Cyberdeck OS successfully booted.", description: `<strong>Timestamp:</strong> [System Boot Time]<br><strong>Event:</strong> Core system modules loaded. Neural link established.` },
+            { id: 'log2', manifestMode:'log', title: "UI Matrix Reconfigured", subtitle: "Deck interface theme customized.", description: `<strong>Timestamp:</strong> [Theme Save Time]<br><strong>Event:</strong> User applied custom color matrix via Deck Settings.` },
+            { id: 'log3', manifestMode:'log', title: "Subroutine Started", subtitle: "Executed 'Trace Route: The Glen Node'.", description: `<strong>Timestamp:</strong> [Execution Time]<br><strong>Event:</strong> Initiated subroutine against target node. Progress 0%.` }
+          ],
+          contenido: [ // Intel
+             { id: 'intel1', manifestMode:'network', title: "Arasaka Security Memo (Intercepted)", subtitle: "Increased patrols near Sector 7G.", description: `<strong>Source:</strong> Encrypted Comms Sniffer<br><strong>Reliability:</strong> B+<br><strong>Content:</strong> Internal Arasaka memo detailing heightened security drone patrols in Sector 7G following recent data breaches. Avoid aerial approaches.`, image: "src/img/intel1.png" },
+             { id: 'intel2', manifestMode:'network', title: "Militech Weapon Spec (Leaked)", subtitle: "M-10AF Lexington - Prototype schematics.", description: `<strong>Source:</strong> Darknet Data Dump<br><strong>Reliability:</strong> A-<br><strong>Content:</strong> Partial schematics y performance data para el arma...` }
+          ],
+          ideas: [ // Fragments
+             { id: 'idea1', manifestMode:'schematic', title: "ICE 'Black Wall' Bypass Theory", subtitle: "Potential exploit using buffer overflow.", description: `<strong>Concept:</strong> Theorized vulnerability en el ICE 'Black Wall'.`, image: "src/img/idea1.png" },
+             { id: 'idea2', manifestMode:'schematic', title: "Neural Mod: 'Adrenaline Surge'", subtitle: "Concept for combat bio-mod.", description: `<strong>Concept:</strong> Software mod para implantes de combate que...` }
+          ]
+        };
+
+
+        // --- FUNCIONES ---
+
+        // Utilidad: Reproducir Sonido (con chequeo)
+        function playSound(audioElement) {
+            if (!soundNotificationsEnabled || !audioElement || typeof audioElement.play !== 'function') return;
+            // Evitar error si el audio no ha cargado metadata
+            if (audioElement.readyState >= 1) {
+                audioElement.currentTime = 0;
+                audioElement.play().catch(e => console.warn("Audio playback warning:", e.message)); // Silenciar errores comunes de interacción
+            } else {
+                // Escuchar cuando pueda reproducir
+                audioElement.addEventListener('canplay', () => {
+                     audioElement.currentTime = 0;
+                    audioElement.play().catch(e => console.warn("Audio playback warning (oncanplay):", e.message));
+                }, { once: true });
+                 audioElement.load(); // Intentar cargar
+            }
+        }
+
+        // Utilidad: Vibrar (con chequeo)
+        function vibrate(pattern = 50) {
+            if (vibrationEnabled && navigator.vibrate) {
+                try {
+                     navigator.vibrate(pattern);
+                 } catch (e) { console.warn("Vibration failed:", e.message)}
+            }
+        }
+
+        // Mostrar Notificación
+        function showNotification(message, type = 'info') {
+             // Comentado para mostrar siempre las notificaciones 'info'
+             // if (!soundNotificationsEnabled && type === 'info') { return; }
+             playSound(notificationSound);
+             vibrate(type === 'error' ? [100, 30, 100] : 80); // Patrón diferente para errores
+
+             const iconClass = { info: 'fas fa-info-circle', success: 'fas fa-check-circle', warning: 'fas fa-exclamation-triangle', error: 'fas fa-times-circle' }[type];
+             const color = { info: 'var(--primary-color)', success: '#4caf50', warning: 'var(--accent-color)', error: 'var(--danger-color)' }[type];
+             const prefix = { info: '[SYS]', success: '[OK]', warning: '[WARN]', error: '[ERR]' }[type];
+
+             if (!notificationContainer) return; // Salir si el contenedor no existe
+
+            const notification = document.createElement('div');
+            notification.className = `cyber-notification ${type}`;
+            notification.style.borderLeftColor = color; // Aplicar color dinámicamente
+
+            notification.innerHTML = `<i class="${iconClass}" style="color: ${color}; font-size: 1.2em;"></i><span><strong style="color:${color}; margin-right: 5px;">${prefix}</strong> ${message}</span>`;
+            notificationContainer.insertBefore(notification, notificationContainer.firstChild); // Añadir al principio
+
+            // Forzar reflow
+            void notification.offsetWidth;
+
+            notification.style.opacity = '1';
+            notification.style.transform = 'translateX(0)';
+
+            const removeNotification = () => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(20px)';
+                setTimeout(() => notification.remove(), 400);
+            };
+
+            notification.addEventListener('click', removeNotification);
+            setTimeout(removeNotification, 5000); // Desaparece después de 5 segundos
+        }
+
+        // Formatear Tiempo (MM:SS)
+        function formatTime(seconds) {
+             if (isNaN(seconds) || seconds < 0) return '--:--';
+            const minutes = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // Cargar Pista MP3
+        function loadTrack(index) {
+            if (!playlist || playlist.length === 0 || index < 0 || index >= playlist.length) {
+                console.warn("Invalid playlist or index for loadTrack");
+                 if(trackTitle) trackTitle.textContent = 'Playlist Error';
+                return;
+            }
+            const track = playlist[index];
+            if(trackTitle) trackTitle.textContent = track.title || 'Unknown Track';
+            if(albumCover) {
+                albumCover.src = track.cover || 'src/img/placeholder-cover.png'; // Fallback
+                albumCover.alt = (track.title || 'Track') + " - Audio Data";
+            }
+            if(audioPlayer) audioPlayer.src = track.src || ''; // Set src, even if empty to stop previous
+            currentTrack = index;
+            if(mp3ProgressFill) mp3ProgressFill.style.width = '0%';
+            if(mp3Time) mp3Time.textContent = '0:00';
+            // Actualizar estado botón Play/Pause visualmente
+             if (playBtn && (!audioPlayer || audioPlayer.paused || !isPlaying)) {
+                 playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                 playBtn.title = 'Play Audio Stream';
+             } else if (playBtn) {
+                 playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                 playBtn.title = 'Pause Audio Stream';
+             }
+        }
+
+        // Control Reproductor MP3
+        function togglePlay() {
+             if (!audioPlayer) return; // Salir si no hay reproductor
+
+             if (!audioPlayer.src || audioPlayer.src === window.location.href) { // Check if src is empty or just the base URL
+                if (playlist && playlist.length > 0) {
+                     loadTrack(currentTrack); // Load the first/current track if none is loaded
+                     // Need to wait slightly for the src to be set before playing
+                     setTimeout(() => {
+                         if(audioPlayer && audioPlayer.src && audioPlayer.src !== window.location.href) playAudio();
+                     }, 50);
+                 } else {
+                     showNotification("Audio playlist is empty or invalid.", "warning");
+                     return;
+                 }
+             } else {
+                 if (audioPlayer.paused) {
+                    playAudio();
+                 } else {
+                    pauseAudio();
+                 }
+             }
+        }
+
+        function playAudio() {
+            if (!audioPlayer) return;
+            if (!playBtn) return; // Safety check for button
+
+            const playPromise = audioPlayer.play();
+             if (playPromise !== undefined) {
+                 playPromise.then(() => {
+                     isPlaying = true;
+                     playBtn.innerHTML = '<i class="fas fa-pause"></i>'; playBtn.title = 'Pause Audio Stream';
+                     vibrate();
+                     // Si el AudioContext existe y está suspendido, intentar resumirlo
+                     if (audioCtx && audioCtx.state === 'suspended') {
+                         audioCtx.resume().then(() => {
+                             // Si el visualizador no estaba dibujando, iniciarlo
+                             if(!visualizerRafId && animationsEnabled && audioVisualizerCanvas && audioVisualizerCanvas.offsetParent !== null) drawAudioVisualizer();
+                         });
+                     } else {
+                        // Si el visualizador no estaba dibujando, iniciarlo
+                        if(!visualizerRafId && animationsEnabled && audioVisualizerCanvas && audioVisualizerCanvas.offsetParent !== null) drawAudioVisualizer();
+                     }
+                     setupAudioVisualizer(); // Asegurarse que el Analyser está conectado
+                     checkAndAddAchievement('Played Audio Track'); // Logro al reproducir
+                 }).catch(error => {
+                     isPlaying = false; // Marcar como no reproduciendo si falla
+                     playBtn.innerHTML = '<i class="fas fa-play"></i>'; playBtn.title = 'Play Audio Stream';
+                     console.error("Audio playback failed:", error);
+                     // Mostrar error sólo si no es por interacción del usuario
+                     if (error.name !== 'NotAllowedError' && error.name !== 'NotSupportedError') {
+                        showNotification(`Audio playback error: ${error.name}`, 'error');
+                     } else {
+                        showNotification("Click Play again to start audio.", "info"); // Guía para el usuario
+                     }
+                 });
+             } else {
+                 // En navegadores más antiguos donde play() no retorna promesa
+                  try {
+                      // Legacy browsers might need a different approach or won't support this well
+                      audioPlayer.play(); // This might throw an error immediately in some cases
+                      isPlaying = true;
+                      playBtn.innerHTML = '<i class="fas fa-pause"></i>'; playBtn.title = 'Pause Audio Stream';
+                      vibrate();
+                      setupAudioVisualizer();
+                      if (!visualizerRafId && animationsEnabled && audioVisualizerCanvas && audioVisualizerCanvas.offsetParent !== null) drawAudioVisualizer();
+                      checkAndAddAchievement('Played Audio Track'); // Logro al reproducir
+                  } catch (error) {
+                      console.error("Legacy audio playback failed:", error);
+                      isPlaying = false;
+                      playBtn.innerHTML = '<i class="fas fa-play"></i>'; playBtn.title = 'Play Audio Stream';
+                      if (error.name !== 'NotAllowedError' && error.name !== 'NotSupportedError') {
+                         showNotification(`Audio playback error: ${error.name}`, 'error');
+                      }
+                  }
+             }
+        }
+
+        function pauseAudio() {
+            if (!audioPlayer || !playBtn) return;
+            audioPlayer.pause();
+            isPlaying = false;
+            playBtn.innerHTML = '<i class="fas fa-play"></i>'; playBtn.title = 'Play Audio Stream';
+            vibrate();
+             // Detener bucle de visualización explícitamente al pausar
+            if (visualizerRafId) {
+                cancelAnimationFrame(visualizerRafId);
+                visualizerRafId = null;
+                 // Opcional: Limpiar el canvas al pausar
+                 if(audioVisualizerCtx) {
+                    audioVisualizerCtx.fillStyle = 'rgba(0,0,0,0.3)';
+                    audioVisualizerCtx.fillRect(0, 0, audioVisualizerCanvas.width, audioVisualizerCanvas.height);
+                }
+            }
+        }
+
+
+        function nextTrack() {
+             loadTrack((currentTrack + 1) % playlist.length);
+             if (isPlaying && audioPlayer) {
+                 setTimeout(() => playAudio(), 50); // Intentar reproducir automáticamente
+             }
+             vibrate();
+        }
+        function prevTrack() {
+             loadTrack((currentTrack - 1 + playlist.length) % playlist.length);
+             if (isPlaying && audioPlayer) {
+                 setTimeout(() => playAudio(), 50); // Intentar reproducir automáticamente
+             }
+             vibrate();
+         }
+
+        // Actualizar Progreso MP3
+        function updateProgress() {
+            if (!audioPlayer || !mp3ProgressFill || !mp3Time) return;
+            if (audioPlayer.duration && isFinite(audioPlayer.duration) && audioPlayer.currentTime >= 0) {
+                const progressPercent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+                mp3ProgressFill.style.width = `${progressPercent}%`;
+                mp3Time.textContent = formatTime(audioPlayer.currentTime);
+            } else {
+                 mp3ProgressFill.style.width = '0%';
+                 mp3Time.textContent = formatTime(0); // Mostrar 0:00 si no hay duración
+            }
+        }
+
+        // Buscar en la Pista MP3
+        function seek(event) {
+             if (!audioPlayer || !mp3Progress || !audioPlayer.duration || !isFinite(audioPlayer.duration) || audioPlayer.duration <= 0) return;
+             try {
+                const progressRect = mp3Progress.getBoundingClientRect();
+                const clickX = event.clientX - progressRect.left;
+                const width = progressRect.width;
+                if (width <= 0) return; // Evitar división por cero
+                const seekTime = Math.max(0, Math.min((clickX / width) * audioPlayer.duration, audioPlayer.duration)); // Asegurar que está dentro de los límites
+                audioPlayer.currentTime = seekTime;
+                vibrate(30);
+             } catch(e){ console.error("Seek error", e)}
+        }
+
+        // Control de Volumen
+        function setVolume() {
+            if (!audioPlayer || !volumeRange) return;
+            const newVolume = parseFloat(volumeRange.value);
+             if (!isNaN(newVolume)) {
+                audioPlayer.volume = newVolume;
+                const valuePercent = newVolume * 100;
+                volumeRange.style.setProperty('--value', valuePercent + '%');
+             }
+        }
+
+        // Renderizar Lista de Datos
+        function renderDataList(filter) {
+            if (!dataListContainer || !dataListTitle) return; // Safety check
+            dataListContainer.innerHTML = ''; // Limpiar lista actual
+            let itemsToRender = [];
+            let displayTitle = '';
+            let icon = 'fas fa-question-circle';
+
+            const filterMap = {
+                projects: { title: "Active Runs", icon: "fas fa-tasks" },
+                herramientas: { title: "Utilities", icon: "fas fa-tools" },
+                logros: { title: "Access Logs", icon: "fas fa-shield-alt" },
+                contenido: { title: "Intel Fragments", icon: "fas fa-book-open" },
+                ideas: { title: "Schematics/Fragments", icon: "fas fa-lightbulb" }
+            };
+
+            activeList = filter; // Establecer lista activa AQUI
+            displayTitle = filterMap[filter]?.title || filter.charAt(0).toUpperCase() + filter.slice(1);
+            icon = filterMap[filter]?.icon || 'fas fa-folder';
+
+             // Desactivar sortable por defecto
+            disableSortable();
+
+            if (filter === 'projects') {
+                 itemsToRender = Object.values(projectData); // Obtener solo los valores (objetos)
+                 // Inicializar/Habilitar SortableJS solo para esta lista si está permitido
+                 if (typeof Sortable !== 'undefined' && localStorage.getItem('layoutDragEnabled') !== 'false'){
+                    initializeSortable();
+                 } else {
+                    disableSortable(); // Asegurarse que está deshabilitado si no se permite
+                 }
+                 loadProjectOrder(); // Cargar orden DESPUÉS de activar/inicializar Sortable
+            } else {
+                 itemsToRender = sampleData[filter] || [];
+            }
+
+            // Actualizar título de forma segura (prevenir XSS)
+            dataListTitle.textContent = '';
+            const iconElement = document.createElement('i');
+            iconElement.className = icon;
+            dataListTitle.appendChild(iconElement);
+            dataListTitle.appendChild(document.createTextNode(' ' + displayTitle));
+
+            if (itemsToRender.length === 0) {
+                 dataListContainer.textContent = '';
+                 const emptyMsg = document.createElement('p');
+                 emptyMsg.style.cssText = 'padding: 15px; color: var(--text-muted-color); text-align: center;';
+                 emptyMsg.textContent = 'No entries found in data stream.';
+                 dataListContainer.appendChild(emptyMsg);
+                 return;
+            }
+
+            itemsToRender.forEach((item) => {
+                 if (!item || !item.id || !item.title) { // Validar datos mínimos
+                     console.warn("Skipping invalid item in renderDataList:", item);
+                     return;
+                 }
+                const div = document.createElement('div');
+                div.classList.add('data-item');
+                div.setAttribute('data-id', item.id);
+                div.setAttribute('data-type', filter); // Guardar tipo para selección
+                
+                // Crear elementos de forma segura sin innerHTML (prevenir XSS)
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'program-name';
+                nameDiv.textContent = item.title;
+                
+                const descDiv = document.createElement('div');
+                descDiv.className = 'program-desc';
+                descDiv.textContent = item.subtitle || '';
+                
+                div.appendChild(nameDiv);
+                div.appendChild(descDiv);
+                
+                if (item.newFlag) {
+                    const flagDiv = document.createElement('div');
+                    flagDiv.className = 'new-flag';
+                    flagDiv.textContent = 'New Data';
+                    div.appendChild(flagDiv);
+                }
+                
+                div.addEventListener('click', () => handleItemSelection(div, item, filter));
+                div.addEventListener('mouseenter', () => playSound(hoverSound));
+                dataListContainer.appendChild(div);
+            });
+        }
+
+        // Manejar Selección de Item (Izquierda)
+        function handleItemSelection(element, itemData, type) {
+             if (!element || !itemData || !itemData.id) return; // Check
+
+            // Enrutamos al modo correspondiente en el panel central
+            renderManifest(itemData);
+
+            document.querySelectorAll('.data-item.selected, .mission-item.selected').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+
+             if (detailTitle) detailTitle.textContent = itemData.title || 'No Title';
+             if (detailSubtitle) detailSubtitle.textContent = itemData.subtitle || 'Details Unavailable';
+             if (detailDescription) {
+                // SECURITY WARNING: Only use innerHTML if itemData.description is TRUSTED (like your hardcoded data).
+                // If data comes from external source/API, sanitize it first or use textContent to prevent XSS attacks.
+                detailDescription.innerHTML = itemData.description || 'No description provided for this entry.';
+             }
+
+             let hasMedia = false;
+             // Priorizar Video
+             if (itemData.video && rightPanelVideo) {
+                 try {
+                    const source = rightPanelVideo.querySelector('source');
+                    if (source) {
+                        source.src = itemData.video;
+                        rightPanelVideo.load(); // Load the new video
+                        rightPanelVideo.style.display = 'block';
+                        if(rightPanelImage) rightPanelImage.style.display = 'none'; // Hide image
+                        if(rightPanelTitle) rightPanelTitle.textContent = "Video Feed: " + itemData.title;
+                        hasMedia = true;
+                    }
+                 } catch(e) { console.error("Error loading video", e); }
+             } else if (itemData.image && rightPanelImage) {
+                rightPanelImage.src = itemData.image;
+                rightPanelImage.alt = itemData.title + " - Visual Data";
+                rightPanelImage.style.display = 'block';
+                 if(rightPanelVideo) rightPanelVideo.style.display = 'none'; // Hide video
+                 if(rightPanelTitle) rightPanelTitle.textContent = "Visual Data: " + itemData.title;
+                 hasMedia = true;
+             }
+
+            // Resetear si no hay ni video ni imagen
+             if (!hasMedia) {
+                if(rightPanelImage) {
+                    rightPanelImage.src = 'src/img/placeholder-dark.png'; // Reset to placeholder
+                    rightPanelImage.alt = "No visual data available";
+                    rightPanelImage.style.display = 'block'; // Show placeholder
+                 }
+                if(rightPanelVideo) rightPanelVideo.style.display = 'none';
+                 if(rightPanelTitle) rightPanelTitle.textContent = "System Idle";
+            }
+
+
+            localStorage.setItem(`selectedItemId_${type}`, itemData.id);
+            showNotification(`Accessing: ${itemData.title}`, 'info');
+            playSound(clickSound);
+            vibrate();
+
+            activeList = type; // Set the current active list type
+             try {
+                const items = Array.from(dataListContainer.querySelectorAll('.data-item'));
+                currentProgramIndex = items.findIndex(el => el.getAttribute('data-id') === itemData.id);
+             } catch(e){console.error("Error finding index",e)}
+
+             checkAndAddAchievement('File System Scan');
+        }
+
+        // Manejar Selección de Subrutina (Izquierda)
+        function handleMissionSelection(element, missionDataItem, id) { // Renombrado para claridad
+            if (!element || !missionDataItem || !id) return; // Check
+
+            document.querySelectorAll('.data-item.selected, .mission-item.selected').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+
+            // Panel Derecho
+            if (rightPanelTitle) rightPanelTitle.textContent = "Subroutine: " + (missionDataItem.title || 'Unknown').split(':')[0];
+            if (rightPanelImage) {
+                 rightPanelImage.src = missionDataItem.image || 'src/img/placeholder-dark.png';
+                 rightPanelImage.alt = (missionDataItem.title || 'Subroutine') + " - Target Visual";
+                 rightPanelImage.style.display = 'block';
+            }
+            if (rightPanelVideo) rightPanelVideo.style.display = 'none'; // Hide video
+
+            // Panel Central
+             if (detailTitle) detailTitle.textContent = missionDataItem.title || 'No Title';
+             if (detailSubtitle) detailSubtitle.textContent = missionDataItem.danger || "Subroutine Parameters";
+             if (detailDescription) {
+                // SECURITY WARNING: As above, ensure data is trusted before using innerHTML.
+                detailDescription.innerHTML = `
+                    <strong>Objective:</strong> ${(missionDataItem.title || '').split(':')[0]} // Target: ${(missionDataItem.title || '').split(': ')[1] || 'N/A'}.<br>
+                    <strong>Status:</strong> Execution ${missionDataItem.progress || 0}% complete.<br>
+                    <strong>Threat Assessment:</strong> ${missionDataItem.danger || 'Unknown'}. Counter-ICE recommended.
+                    ${missionDataItem.newFlag ? '<br><strong>Intel Flag:</strong> New subroutine assignment.' : ''}
+                    <p style="margin-top: 15px;">Monitor network traffic and system integrity. Evasion protocols engaged.</p>
+                `;
+            }
+
+            localStorage.setItem('selectedMissionId', id);
+            showNotification(`Tracking: ${missionDataItem.title || 'subroutine'}`, 'info');
+            playSound(clickSound);
+            vibrate();
+
+            activeList = 'missions'; // Set the current active list type
+            try {
+                const items = Array.from(missionListContainer.querySelectorAll('.mission-item'));
+                currentSubroutineIndex = items.findIndex(el => el.getAttribute('data-id') === id);
+             } catch(e){console.error("Error finding mission index",e)}
+        }
+
+        // Crear Item de Subrutina
+        function createMissionItem(id, data) {
+            if (!id || !data || !data.title) return null; // Check
+
+            const missionItem = document.createElement('div');
+            missionItem.classList.add('mission-item');
+            missionItem.setAttribute('data-id', id);
+            missionItem.innerHTML = `
+                <div class="subroutine-name">${data.title}</div>
+                <div class="subroutine-threat">${data.danger || 'Threat Unknown'}</div>
+                <div class="mission-progress">
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${data.progress || 0}%"></div>
+                  </div>
+                  <span class="progress-text">${data.progress || 0}% Execution</span>
+                </div>
+                ${data.newFlag ? '<div class="new-flag">New Task</div>' : ''}
+            `;
+            missionItem.addEventListener('click', () => handleMissionSelection(missionItem, data, id));
+            missionItem.addEventListener('mouseenter', () => playSound(hoverSound));
+            return missionItem;
+        }
+
+        // Inicializar Lista de Subrutinas
+        function initializeMissions() {
+             if (!missionListContainer) return;
+            missionListContainer.innerHTML = '';
+             let hasItems = false;
+            Object.entries(missionData).forEach(([key, data]) => {
+                 const itemElement = createMissionItem(key, data);
+                 if (itemElement) {
+                    missionListContainer.appendChild(itemElement);
+                    hasItems = true;
+                 }
+            });
+
+            if (!hasItems) {
+                missionListContainer.innerHTML = `<p style="padding: 15px; color: var(--text-muted-color); text-align: center;">No active subroutines.</p>`;
+                return;
+            }
+
+            const selectedId = localStorage.getItem('selectedMissionId');
+             if (selectedId && missionData[selectedId]) { // Ensure data still exists
+                 const itemToSelect = missionListContainer.querySelector(`.mission-item[data-id="${selectedId}"]`);
+                 if (itemToSelect) {
+                    // Slight delay to ensure rendering before triggering selection visuals/logic
+                    setTimeout(() => handleMissionSelection(itemToSelect, missionData[selectedId], selectedId), 50);
+                 }
+             } else {
+                // Optionally select the first mission if none was saved or the saved one is invalid
+                const firstItem = missionListContainer.querySelector('.mission-item');
+                if(firstItem) {
+                    const firstId = firstItem.getAttribute('data-id');
+                    if (firstId && missionData[firstId]) {
+                         setTimeout(() => handleMissionSelection(firstItem, missionData[firstId], firstId), 50);
+                    }
+                }
+             }
+        }
+
+        // --- Drag and Drop (SortableJS) ---
+        let sortableInstance = null;
+        function initializeSortable() {
+           if (typeof Sortable === 'undefined') {
+               console.warn("SortableJS module not loaded.");
+               return;
+           }
+           // Only initialize if it doesn't exist AND we are on the 'projects' list
+           if (!sortableInstance && activeList === 'projects' && dataListContainer) {
+               sortableInstance = Sortable.create(dataListContainer, {
+                 animation: 150,
+                 handle: '.data-item',
+                 ghostClass: 'sortable-ghost',
+                 chosenClass: 'sortable-chosen',
+                 disabled: localStorage.getItem('layoutDragEnabled') === 'false', // Initial state
+                 onEnd: function (evt) {
+                   // Save order only if layout drag is enabled
+                    if(localStorage.getItem('layoutDragEnabled') !== 'false') {
+                        saveProjectOrder();
+                        showNotification('Active Run sequence saved.', 'success');
+                        playSound(clickSound);
+                        vibrate(100);
+                        addAchievement('Interface Layout Optimized');
+                    } else {
+                        showNotification('Drag & Drop disabled in settings.', 'warning');
+                        // Revert visually if disabled (optional, can be jarring)
+                        // try { evt.from.insertBefore(evt.item, evt.from.children[evt.oldIndex]); } catch(e){}
+                     }
+                 },
+               });
+           } else if (sortableInstance) {
+                // If it exists, just update the disabled state based on current list and settings
+                 sortableInstance.option("disabled", localStorage.getItem('layoutDragEnabled') === 'false' || activeList !== 'projects');
+           }
+        }
+
+        function disableSortable() {
+            if (sortableInstance) {
+                sortableInstance.option("disabled", true);
+            }
+        }
+
+        function saveProjectOrder() {
+            if (activeList === 'projects' && dataListContainer) {
+                 const newOrder = Array.from(dataListContainer.querySelectorAll('.data-item'))
+                                       .map(item => item.getAttribute('data-id'))
+                                       .filter(id => id != null); // Filter out null/undefined IDs
+                 if (newOrder.length > 0) { // Only save if there's a valid order
+                    localStorage.setItem('projectOrder', JSON.stringify(newOrder));
+                 }
+            }
+        }
+
+        function loadProjectOrder() {
+           if (activeList !== 'projects' || !dataListContainer || !sortableInstance || sortableInstance.options.disabled) return; // Only if sortable is active and enabled
+
+           const storedOrder = localStorage.getItem('projectOrder');
+           if (storedOrder) {
+             try {
+                  const order = JSON.parse(storedOrder);
+                   if (!Array.isArray(order)) throw new Error("Stored order is not an array");
+
+                  const itemsMap = new Map();
+                  // Create map of current DOM items
+                  dataListContainer.querySelectorAll('.data-item[data-type="projects"]').forEach(item => {
+                      const id = item.getAttribute('data-id');
+                      if(id) itemsMap.set(id, item);
+                  });
+
+                  // Reorder based on stored array
+                  order.forEach(id => {
+                      const item = itemsMap.get(id);
+                      if (item) {
+                          dataListContainer.appendChild(item); // Move to end in correct order
+                          itemsMap.delete(id); // Remove from map
+                      }
+                  });
+                  // Append any remaining items (new ones not in stored order)
+                  itemsMap.forEach(item => dataListContainer.appendChild(item));
+
+             } catch (e) {
+                 console.error("Failed to parse or apply run sequence:", e);
+                 localStorage.removeItem('projectOrder'); // Clear invalid order
+                 showNotification('Error loading run sequence, reset to default.', 'error');
+             }
+           }
+        }
+
+
+        // --- Gráficos (Chart.js) ---
+        let miniChartInstance = null;
+        let statsChartInstance = null;
+        let chartUpdateInterval = null; // Variable para el intervalo
+
+        function getChartColors() {
+             const style = getComputedStyle(document.documentElement);
+             return {
+                 primary: style.getPropertyValue('--primary-color').trim() || '#00f0ff',
+                 secondary: style.getPropertyValue('--secondary-color').trim() || '#ff00ff',
+                 primaryRgb: style.getPropertyValue('--primary-color-rgb').trim() || '0, 240, 255',
+                 secondaryRgb: style.getPropertyValue('--secondary-color-rgb').trim() || '255, 0, 255',
+                 text: style.getPropertyValue('--text-color').trim() || '#e0f0ff',
+                 textMuted: style.getPropertyValue('--text-muted-color').trim() || '#a0b0d0',
+                 grid: `rgba(${style.getPropertyValue('--primary-color-rgb').trim() || '0, 240, 255'}, 0.1)`,
+                 fontMain: style.getPropertyValue('--font-main').trim() || 'Orbitron, sans-serif',
+                 fontSecondary: style.getPropertyValue('--font-secondary').trim() || 'Rajdhani, sans-serif'
+             };
+         }
+
+        function createMiniChart() {
+            const canvas = document.getElementById('miniChart');
+            if (!canvas || typeof Chart === 'undefined') return;
+            const ctx = canvas.getContext('2d');
+             if (!ctx) return;
+
+             if (miniChartInstance) miniChartInstance.destroy(); // Destroy previous instance
+
+             const colors = getChartColors();
+             if (!colors.primaryRgb) return; // Need RGB
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height || 80); // Use canvas height
+            gradient.addColorStop(0, `rgba(${colors.primaryRgb}, 0.6)`);
+            gradient.addColorStop(1, `rgba(${colors.primaryRgb}, 0.1)`);
+
+            const chartData = {
+                 labels: Array(20).fill(''),
+                 datasets: [{
+                     label: 'Signal Fluctuation',
+                     data: Array.from({ length: 20 }, () => Math.random() * 80 + 10),
+                     borderColor: `rgba(${colors.primaryRgb}, 0.8)`,
+                     borderWidth: 1.5, pointRadius: 0, tension: 0.4, fill: true, backgroundColor: gradient,
+                 }]
+             };
+
+            miniChartInstance = new Chart(ctx, {
+                type: 'line', data: chartData,
+                options: {
+                     responsive: true, maintainAspectRatio: false,
+                     animation: false, // Disable internal animation, rely on interval updates
+                     scales: { x: { display: false }, y: { display: false, min: 0, max: 100 } },
+                     plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                     elements: { line: { tension: 0.3 } } // Slightly smoother lines
+                 }
+            });
+        }
+
+        function createStatsChart() {
+             const canvas = document.getElementById('statsChart');
+             if (!canvas || typeof Chart === 'undefined') return;
+              const ctx = canvas.getContext('2d');
+             if (!ctx) return;
+
+             if (statsChartInstance) statsChartInstance.destroy(); // Destroy previous
+
+             const colors = getChartColors();
+             if (!colors.primaryRgb || !colors.secondaryRgb) return;
+
+             const chartData = {
+                 labels: ['Core 1', 'Core 2', 'GPU', 'Network', 'Memory', 'I/O Bus'],
+                 datasets: [{
+                     label: 'Core Load (%)',
+                     data: Array.from({length: 6}, () => Math.random() * 100), // Random initial
+                     backgroundColor: `rgba(${colors.primaryRgb}, 0.5)`,
+                     borderColor: colors.primary, borderWidth: 1, barThickness: 'flex', // Flex bar thickness
+                     borderRadius: 2, // Slightly rounded bars
+                 }, {
+                     label: 'Thermal (°C)',
+                     data: Array.from({length: 6}, () => Math.random() * 70 + 10), // Random initial temps
+                     backgroundColor: `rgba(${colors.secondaryRgb}, 0.5)`,
+                     borderColor: colors.secondary, borderWidth: 2, type: 'line', tension: 0.3,
+                     pointBackgroundColor: colors.secondary, yAxisID: 'y-temp', fill: false, pointRadius: 3, pointHoverRadius: 5,
+                 }]
+             };
+
+             statsChartInstance = new Chart(ctx, {
+                 type: 'bar', data: chartData,
+                 options: {
+                     responsive: true, maintainAspectRatio: false,
+                      animation: { duration: animationsEnabled ? 800 * window.animationSpeedFactor : 0 }, // Conditional animation
+                     scales: {
+                         x: { ticks: { color: colors.textMuted, font: { family: colors.fontSecondary, size: 10 } }, grid: { color: colors.grid } },
+                         y: {
+                             beginAtZero: true, max: 100,
+                             ticks: { color: colors.textMuted, font: { family: colors.fontSecondary, size: 10 } },
+                             grid: { color: colors.grid, drawBorder: false },
+                             title: { display: true, text: 'Load (%)', color: colors.primary, font: { family: colors.fontMain, size: 11 } }
+                         },
+                         'y-temp': {
+                             beginAtZero: true, max: 100, position: 'right',
+                             ticks: { color: colors.textMuted, font: { family: colors.fontSecondary, size: 10 } },
+                             grid: { drawOnChartArea: false },
+                             title: { display: true, text: 'Thermal (°C)', color: colors.secondary, font: { family: colors.fontMain, size: 11 } }
+                         }
+                     },
+                     plugins: {
+                         legend: { position: 'bottom', labels: { color: colors.text, font: { family: colors.fontMain, size: 11 }, padding: 15 } },
+                         tooltip: {
+                             backgroundColor: 'rgba(5, 10, 21, 0.9)', titleFont: { family: colors.fontMain }, bodyFont: { family: colors.fontSecondary }, padding: 10, cornerRadius: 3
+                         }
+                     },
+                     interaction: {
+                         mode: 'index', // Tooltip shows all datasets on hover index
+                         intersect: false,
+                     },
+                 }
+             });
+        }
+
+        // Gestionar Actualización de Gráficos con Intervalo
+        function manageChartUpdates() {
+            if (chartUpdateInterval) clearInterval(chartUpdateInterval); // Clear existing interval
+            chartUpdateInterval = null;
+
+            if (animationsEnabled) { // Only set interval if animations are on
+                 chartUpdateInterval = setInterval(() => {
+                    // Update Mini Chart (only if visible)
+                     const miniChartCanvas = document.getElementById('miniChart');
+                     if (miniChartInstance && miniChartCanvas && miniChartCanvas.offsetParent !== null) { // Check visibility
+                         miniChartInstance.data.datasets[0].data.shift();
+                         miniChartInstance.data.datasets[0].data.push(Math.random() * 80 + 10);
+                         miniChartInstance.update('none'); // Update without internal animation
+                    }
+                     // Update Stats Chart (only if visible)
+                     const statsChartCanvas = document.getElementById('statsChart');
+                    if (statsChartInstance && statsChartCanvas && statsChartCanvas.offsetParent !== null) { // Check visibility
+                         statsChartInstance.data.datasets.forEach(dataset => {
+                             dataset.data = dataset.data.map(() => Math.random() * (dataset.label.includes('Thermal') ? 80 : 100)); // Use dynamic range
+                         });
+                         statsChartInstance.update(); // Update WITH internal animation if enabled
+                    }
+                }, 2500 * window.animationSpeedFactor); // Update less frequently
+            }
+            // No else needed, interval is cleared above if animationsEnabled is false
+        }
+
+        // --- Audio Visualizer ---
+        let audioCtx;
+        let analyser;
+        let sourceNode;
+        let visualizerRafId = null; // ID for requestAnimationFrame
+        const audioVisualizerCanvas = document.getElementById('audioVisualizer');
+        let audioVisualizerCtx = null;
+         if (audioVisualizerCanvas) {
+            try {
+                audioVisualizerCtx = audioVisualizerCanvas.getContext('2d', { alpha: false }); // alpha: false might improve perf
+            } catch(e) {
+                console.error("Could not get 2D context for audio visualizer", e);
+            }
+         }
+
+        function setupAudioVisualizer() {
+            // Don't setup if context exists or canvas/player doesn't
+             if (audioCtx || !audioVisualizerCtx || !audioPlayer) return;
+
+             try {
+                 // Crear AudioContext (mejor si es tras interacción del usuario - hacemos en play)
+                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+                 // Crear Analyser
+                 analyser = audioCtx.createAnalyser();
+                 analyser.fftSize = 256; // Potencia de 2 (128 bins)
+                 analyser.smoothingTimeConstant = 0.7; // Suavizado
+
+                 // Conectar la fuente (Audio Element)
+                 // Evitar reconectar si ya existe
+                 if (!sourceNode || sourceNode.mediaElement !== audioPlayer) {
+                     sourceNode = audioCtx.createMediaElementSource(audioPlayer);
+                     sourceNode.connect(analyser);
+                     analyser.connect(audioCtx.destination); // Conectar al output
+                 }
+
+                 console.log("Audio visualizer setup/re-linked complete.");
+
+             } catch (e) {
+                 console.error("Failed to initialize AudioContext/Analyser:", e);
+                 showNotification("Audio visualizer unsupported or failed.", "warning");
+                 audioCtx = null; // Resetear si falla
+                 analyser = null;
+                 sourceNode = null;
+             }
+        }
+
+        function drawAudioVisualizer() {
+             // Stop if required elements/conditions are missing or canvas is not visible
+            if (!analyser || !audioVisualizerCtx || !isPlaying || !animationsEnabled || !audioVisualizerCanvas || audioVisualizerCanvas.offsetParent === null) {
+                if (visualizerRafId) {
+                    cancelAnimationFrame(visualizerRafId);
+                    visualizerRafId = null;
+                }
+                 // Optionally clear the canvas when not drawing or hidden
+                 if(audioVisualizerCtx && audioVisualizerCanvas) {
+                     audioVisualizerCtx.fillStyle = 'rgba(0,0,0,0.3)';
+                     audioVisualizerCtx.fillRect(0, 0, audioVisualizerCanvas.width, audioVisualizerCanvas.height);
+                 }
+                 return;
+            }
+
+             visualizerRafId = requestAnimationFrame(drawAudioVisualizer); // Loop
+
+             const bufferLength = analyser.frequencyBinCount; // fftSize / 2
+             const dataArray = new Uint8Array(bufferLength);
+             analyser.getByteFrequencyData(dataArray); // Obtener datos
+
+             // Clear canvas efficiently
+             audioVisualizerCtx.fillStyle = 'rgba(0,0,0,0.3)'; // Background
+             audioVisualizerCtx.fillRect(0, 0, audioVisualizerCanvas.width, audioVisualizerCanvas.height);
+
+             const barWidth = (audioVisualizerCanvas.width / bufferLength) * 1.2; // Slightly overlap
+             let x = 0;
+             const barHeightMultiplier = audioVisualizerCanvas.height / 180; // Scale height (adjust divisor for sensitivity)
+
+             const colors = getChartColors(); // Get current theme colors
+             const parseRgb = (rgbStr) => {
+                try { return rgbStr ? rgbStr.split(',').map(Number) : [0, 240, 255]; }
+                catch(e) { return [0, 240, 255]; } // Safer parse with fallback
+             };
+             const primaryRgb = parseRgb(colors.primaryRgb);
+             const secondaryRgb = parseRgb(colors.secondaryRgb);
+
+
+             for (let i = 0; i < bufferLength; i++) {
+                 const barHeight = dataArray[i] * barHeightMultiplier;
+                 const intensity = Math.min(1, dataArray[i] / 200); // Normalize intensity (clamp at 1)
+
+                 // Interpolate colors (Secondary to Primary based on intensity)
+                 const r = Math.floor(secondaryRgb[0] * (1 - intensity) + primaryRgb[0] * intensity);
+                 const g = Math.floor(secondaryRgb[1] * (1 - intensity) + primaryRgb[1] * intensity);
+                 const b = Math.floor(secondaryRgb[2] * (1 - intensity) + primaryRgb[2] * intensity);
+
+                 audioVisualizerCtx.fillStyle = `rgb(${r},${g},${b})`;
+                 // Draw bar from bottom up
+                 audioVisualizerCtx.fillRect(x, audioVisualizerCanvas.height - barHeight, barWidth, barHeight);
+
+                 x += barWidth + 0.5; // Gap between bars
+             }
+         }
+
+        // --- Sistema de Logros ---
+        let achievements = []; // Será cargado desde localStorage
+        const achievementChecks = { fileAccessCount: 0 }; // Contador interno
+        const achievementListElement = document.getElementById('achievementsList'); // Cache selector
+
+         // Mapeo de claves internas a títulos/condiciones temáticas
+         const achievementMap = {
+            'First Connection': { title: 'First Connection', condition: () => !achievements.includes('First Connection') },
+            'UI Matrix Reconfigured': { title: 'UI Matrix Reconfigured', condition: () => !achievements.includes('UI Matrix Reconfigured') },
+            'File System Scan': { title: 'File System Scan', condition: () => { achievementChecks.fileAccessCount = (achievementChecks.fileAccessCount || 0) + 1; return achievementChecks.fileAccessCount >= 5 && !achievements.includes('File System Scan'); } },
+            'Interface Layout Optimized': { title: 'Interface Layout Optimized', condition: () => !achievements.includes('Interface Layout Optimized') },
+            'Played Audio Track': { title: 'Auditory Channel Open', condition: () => !achievements.includes('Auditory Channel Open') }
+            // Añade más logros aquí
+         };
+
+        function loadAchievements() {
+            try {
+                 achievements = JSON.parse(localStorage.getItem('achievements')) || [];
+            } catch (e) {
+                console.error("Failed to load achievements from localStorage", e);
+                achievements = [];
+            }
+            updateAchievementsModal();
+         }
+
+        function checkAndAddAchievement(key) {
+             if (achievementMap[key] && achievementMap[key].condition()) {
+                 addAchievement(achievementMap[key].title);
+             }
+        }
+
+        function addAchievement(title) {
+          if (!achievements.includes(title)) {
+            achievements.push(title);
+            try {
+                localStorage.setItem('achievements', JSON.stringify(achievements));
+            } catch (e) {
+                console.error("Failed to save achievements to localStorage", e);
+                showNotification("Failed to save milestone.", "error");
+            }
+            updateAchievementsModal(); // Actualizar la vista del modal
+            showNotification(`Milestone: ${title}`, 'success');
+            vibrate([100, 50, 100]);
+          }
+        }
+        function updateAchievementsModal() {
+          if (!achievementListElement) return;
+          achievementListElement.innerHTML = ''; // Clear existing list
+
+          if (achievements.length === 0) {
+              achievementListElement.innerHTML = '<li>No milestones logged yet. Keep running.</li>';
+              return;
+          }
+
+          // Descripciones temáticas opcionales para el modal
+           const milestoneDetails = {
+               'First Connection': 'Cyberdeck OS boot sequence complete. Neural link nominal.',
+               'UI Matrix Reconfigured': 'User customized the visual interface parameters.',
+               'File System Scan': 'Navigated multiple file system nodes.',
+               'Interface Layout Optimized': 'Reordered the Active Runs sequence in left panel.',
+               'Auditory Channel Open': 'Initialized the audio playback subsystem.'
+           };
+
+          achievements.forEach(achTitle => {
+            const li = document.createElement('li');
+            // Simple styling inline for brevity
+            li.style.cssText = `padding: 8px 5px; border-bottom: 1px dashed rgba(var(--primary-color-rgb), 0.2); font-size: 0.9rem; color: var(--text-muted-color);`;
+            li.innerHTML = `
+                <i class="fas fa-trophy" style="color: var(--accent-color); margin-right: 10px; width: 15px;"></i>
+                <strong style="color: var(--text-color);">${achTitle}</strong><br>
+                <span style="font-size: 0.85em; padding-left: 30px; color: var(--text-muted-color); display: inline-block; margin-top: 2px;">
+                    ${milestoneDetails[achTitle] || 'Details classified.'}
+                </span>`;
+            achievementListElement.appendChild(li);
+          });
+        }
+
+
+        // --- Inicialización de Componentes y Event Listeners ---
+
+        // Cargar estado inicial de configuración
+        function loadSettings() {
+             const animCheckbox = document.getElementById('toggleAnimations');
+             const soundCheckbox = document.getElementById('toggleSoundNotifications');
+             const vibCheckbox = document.getElementById('toggleVibration');
+             const contrastCheckbox = document.getElementById('toggleHighContrast');
+             const layoutCheckbox = document.getElementById('toggleLayout');
+             const speedSlider = document.getElementById('animationSpeed');
+             const speedValueSpan = document.getElementById('animationSpeedValue');
+
+             if (animCheckbox) animCheckbox.checked = animationsEnabled;
+             if (soundCheckbox) soundCheckbox.checked = soundNotificationsEnabled;
+             if (vibCheckbox) vibCheckbox.checked = vibrationEnabled;
+             if (contrastCheckbox) contrastCheckbox.checked = document.body.classList.contains('high-contrast');
+             if (layoutCheckbox) layoutCheckbox.checked = localStorage.getItem('layoutDragEnabled') !== 'false';
+             if (speedSlider) speedSlider.value = window.animationSpeedFactor;
+             if (speedValueSpan) speedValueSpan.textContent = window.animationSpeedFactor.toFixed(1) + 'x';
+
+             document.documentElement.style.setProperty('--animation-speed', `${window.animationSpeedFactor}s`);
+             // Cargar y aplicar volumen inicial
+             if(volumeRange) {
+                volumeRange.value = localStorage.getItem('volume') || 0.8;
+                setVolume(); // Llama a setVolume para aplicar el valor inicial y estilo
+             }
+
+             // Iniciar/detener actualizaciones de gráficos según el estado cargado
+             manageChartUpdates();
+             // Aplicar estado de drag & drop a Sortable si ya está inicializado
+              if (sortableInstance) {
+                  sortableInstance.option("disabled", localStorage.getItem('layoutDragEnabled') === 'false' || activeList !== 'projects');
+              }
+        }
+
+        // Guardar estado de configuración
+        function saveSettings() {
+            try {
+                localStorage.setItem('animationsEnabled', animationsEnabled);
+                localStorage.setItem('soundNotificationsEnabled', soundNotificationsEnabled);
+                localStorage.setItem('vibrationEnabled', vibrationEnabled);
+                localStorage.setItem('highContrast', document.body.classList.contains('high-contrast'));
+                localStorage.setItem('layoutDragEnabled', document.getElementById('toggleLayout')?.checked ?? true);
+                localStorage.setItem('animationSpeedFactor', window.animationSpeedFactor);
+                if(volumeRange) localStorage.setItem('volume', volumeRange.value);
+            } catch (e) {
+                 console.error("Failed to save settings to localStorage", e);
+                 showNotification("Error saving configuration.", "error");
+            }
+        }
+
+        // Cargar Tema Guardado
+        function loadTheme() {
+             const primary = localStorage.getItem('themePrimaryColor') || '#00f0ff';
+             const secondary = localStorage.getItem('themeSecondaryColor') || '#ff00ff';
+             const accent = localStorage.getItem('themeAccentColor') || '#f7ff00';
+             const highContrast = localStorage.getItem('highContrast') === 'true';
+
+             const hexToRgb = hex => {
+                 if (!hex) return null;
+                 const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                 // return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : null;
+                 // Corrección: Devolver array de números o null
+                 return result ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)] : null;
+             };
+
+             const rootStyle = document.documentElement.style;
+             const primaryRgbArr = hexToRgb(primary);
+             const secondaryRgbArr = hexToRgb(secondary);
+             const accentRgbArr = hexToRgb(accent);
+
+             const primaryRgbStr = primaryRgbArr ? primaryRgbArr.join(', ') : '0, 240, 255'; // Fallback string
+             const secondaryRgbStr = secondaryRgbArr ? secondaryRgbArr.join(', ') : '255, 0, 255';
+             const accentRgbStr = accentRgbArr ? accentRgbArr.join(', ') : '247, 255, 0';
+
+
+             rootStyle.setProperty('--primary-color', primary);
+             rootStyle.setProperty('--primary-color-rgb', primaryRgbStr);
+             const primaryPicker = document.getElementById('primaryColorPicker');
+             if(primaryPicker) primaryPicker.value = primary;
+
+             rootStyle.setProperty('--secondary-color', secondary);
+             rootStyle.setProperty('--secondary-color-rgb', secondaryRgbStr);
+             const secondaryPicker = document.getElementById('secondaryColorPicker');
+             if(secondaryPicker) secondaryPicker.value = secondary;
+
+             rootStyle.setProperty('--accent-color', accent);
+             rootStyle.setProperty('--accent-color-rgb', accentRgbStr);
+             const accentPicker = document.getElementById('accentColorPicker');
+             if(accentPicker) accentPicker.value = accent;
+
+
+            // Alto contraste
+             document.body.classList.toggle('high-contrast', highContrast);
+             const contrastToggle = document.getElementById('toggleHighContrast');
+             if(contrastToggle) contrastToggle.checked = highContrast;
+
+
+            // REINICIALIZAR GRÁFICOS para que tomen los nuevos colores
+            createMiniChart();
+            createStatsChart();
+            // Asegurar que el intervalo de actualización se gestione correctamente con los nuevos colores/estado
+            manageChartUpdates();
+             // Forzar redibujo del visualizador si está activo
+            if (isPlaying && animationsEnabled) drawAudioVisualizer();
+             // Recargar partículas con nuevos colores
+             loadParticles();
+        }
+
+        // ---- Event Listeners Centralizados ----
+
+        // Panel Izquierdo: Filtro Avanzado
+        document.querySelectorAll('.advanced-filter-nav .filter-option').forEach(option => {
+          option.addEventListener('click', function() {
+            playSound(clickSound); vibrate();
+            document.querySelectorAll('.advanced-filter-nav .filter-option').forEach(el => el.classList.remove('active'));
+            this.classList.add('active');
+            const filter = this.getAttribute('data-filter');
+            if (filter) {
+                renderDataList(filter); // Esto actualiza activeList y renderiza
+                 // Resetear paneles central/derecho al cambiar filtro
+                 if(detailTitle) detailTitle.textContent = 'Select File/Process...';
+                 if(detailSubtitle) detailSubtitle.textContent = 'File/Process details incoming...';
+                 if(detailDescription) detailDescription.innerHTML = 'Select an entry from the file explorer... Stay sharp, Netrunner.';
+                 if(rightPanelImage) { rightPanelImage.src = 'src/img/placeholder-dark.png'; rightPanelImage.style.display = 'block'; }
+                 if(rightPanelVideo) rightPanelVideo.style.display = 'none';
+                 if(rightPanelTitle) rightPanelTitle.textContent = 'System Idle';
+                 currentProgramIndex = -1; // Reset index
+                 currentSubroutineIndex = -1; // Reset index
+                 // No se deselecciona visualmente porque la lista se re-renderiza,
+                 // pero si quisiéramos ser explícitos:
+                 // document.querySelectorAll('.data-item.selected, .mission-item.selected').forEach(el => el.classList.remove('selected'));
+            }
+          });
+        });
+
+        // Panel Derecho: Pestañas (Dropdown)
+        const filterItems = document.querySelectorAll('.filter-dropdown .filter-item');
+        const tabContents = document.querySelectorAll('.right-panel .tab-content');
+        filterItems.forEach(item => {
+          item.addEventListener('click', () => {
+            playSound(clickSound); vibrate();
+            const targetTabId = item.getAttribute('data-tab');
+            if (!targetTabId) return;
+
+            tabContents.forEach(content => content.classList.remove('active'));
+            filterItems.forEach(i => i.classList.remove('active'));
+
+            const targetTab = document.getElementById(targetTabId);
+            if (targetTab) targetTab.classList.add('active');
+            item.classList.add('active');
+
+            // Forzar redibujo de gráficos si están en la pestaña activa
+             if (targetTabId === 'tab-stats' && statsChartInstance) {
+                setTimeout(() => statsChartInstance.resize(), 50); // Pequeño delay
+            }
+            if (targetTabId === 'tab-general' && miniChartInstance) {
+                 setTimeout(() => miniChartInstance.resize(), 50); // Pequeño delay
+             }
+             // Forzar redibujo del visualizador si es visible y está reproduciendo
+             if (targetTabId === 'tab-general' && isPlaying && animationsEnabled && !visualizerRafId) {
+                 drawAudioVisualizer();
+             }
+          });
+        });
+
+        // Panel Izquierdo: Búsqueda
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', () => {
+              const filter = searchInput.value.toLowerCase().trim();
+              // Determinar en qué lista buscar (datos o misiones)
+              const listElement = activeList === 'missions' ? missionListContainer : dataListContainer;
+              const itemSelector = activeList === 'missions' ? '.mission-item' : '.data-item';
+              const displayStyle = activeList === 'missions' ? 'flex' : 'flex'; // Ajusta si el display por defecto es diferente
+
+              if (!listElement) return;
+
+              const items = listElement.querySelectorAll(itemSelector);
+              items.forEach(item => {
+                 const text = item.textContent?.toLowerCase() || ''; // Null check
+                 const match = text.includes(filter);
+                 item.style.display = match ? displayStyle : 'none';
+              });
+            });
+        }
+
+        // MP3 Player Controls
+         if(playBtn) playBtn.addEventListener('click', () => {
+            // Inicializar/Resumir AudioContext en interacción del usuario
+            if (!audioCtx) {
+                setupAudioVisualizer();
+            } else if (audioCtx.state === 'suspended') {
+                 audioCtx.resume().then(togglePlay).catch(e => console.error("AudioContext resume failed", e));
+                 return; // togglePlay se llamará después de resumir
+            }
+            // Ahora llama a togglePlay, que manejará el estado play/pause
+             togglePlay();
+         });
+        if(nextBtn) nextBtn.addEventListener('click', nextTrack);
+        if(prevBtn) prevBtn.addEventListener('click', prevTrack);
+        if(audioPlayer) {
+            audioPlayer.addEventListener('timeupdate', updateProgress);
+            audioPlayer.addEventListener('loadedmetadata', updateProgress);
+            audioPlayer.addEventListener('ended', nextTrack);
+            audioPlayer.addEventListener('error', (e) => {
+                console.error("Audio Player Error:", audioPlayer.error);
+                 const errorCode = audioPlayer.error?.code;
+                 let message = "Audio Error: Could not load track.";
+                 if(errorCode === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED) {
+                     message = "Audio Error: Format not supported.";
+                 } else if (errorCode === MediaError.MEDIA_ERR_NETWORK) {
+                     message = "Audio Error: Network issue loading track.";
+                 } else if (errorCode === MediaError.MEDIA_ERR_DECODE) {
+                     message = "Audio Error: Decoding issue.";
+                 }
+                 showNotification(message, "error");
+                 if(trackTitle) trackTitle.textContent = 'Audio Load Error';
+            });
+        }
+        if(mp3Progress) mp3Progress.addEventListener('click', seek);
+        if(volumeRange) {
+            volumeRange.addEventListener('input', setVolume);
+            volumeRange.addEventListener('change', saveSettings); // Guardar volumen al soltar
+        }
+
+        // Navegación Responsiva Móvil (Toggle)
+        const navToggle = document.getElementById('navToggle');
+        const topNav = document.getElementById('topNav');
+        if (navToggle && topNav) {
+            navToggle.addEventListener('click', (e) => {
+              e.stopPropagation(); // Evitar que el click se propague al document
+              const isExpanded = topNav.classList.toggle('mobile-active');
+              navToggle.setAttribute('aria-expanded', isExpanded);
+               playSound(clickSound);
+               vibrate();
+            });
+            // Cerrar menú si se hace clic fuera (en el body)
+            document.addEventListener('click', (e) => {
+              if (topNav.classList.contains('mobile-active') && !topNav.contains(e.target) && !navToggle.contains(e.target)) {
+                topNav.classList.remove('mobile-active');
+                navToggle.setAttribute('aria-expanded', 'false');
+              }
+            });
+             // Cerrar menú al hacer clic en un enlace (si usas #links o navegas)
+             topNav.addEventListener('click', (e) => {
+                if (e.target.tagName === 'A' && topNav.classList.contains('mobile-active')) {
+                    topNav.classList.remove('mobile-active');
+                    navToggle.setAttribute('aria-expanded', 'false');
+                    // Si son links de navegación real, la página cambiará.
+                    // Si son # links para SPA, puede que necesites lógica adicional aquí.
+                }
+             });
+        }
+
+        // Tutorial Overlay
+        const closeTutorialBtn = document.getElementById('closeTutorialBtn');
+        if (localStorage.getItem('tutorialShown') !== 'true') {
+            if (tutorialOverlay) {
+                 tutorialOverlay.style.display = 'flex'; // Usar flex para centrar
+                 setTimeout(() => tutorialOverlay.classList.add('visible'), 10); // Ligerísimo delay para transición
+             }
+        } else {
+             if (tutorialOverlay) tutorialOverlay.style.display = 'none';
+        }
+        if(closeTutorialBtn && tutorialOverlay) {
+            closeTutorialBtn.addEventListener('click', () => {
+                tutorialOverlay.classList.remove('visible');
+                 setTimeout(() => { if(tutorialOverlay) tutorialOverlay.style.display = 'none'; }, 300); // Ocultar después de animar
+                 localStorage.setItem('tutorialShown', 'true');
+                 playSound(clickSound); vibrate();
+                 checkAndAddAchievement('First Connection');
+            });
+        }
+
+        // Modal de Tema
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const closeThemeModalBtn = document.getElementById('closeThemeModalBtn');
+        const primaryColorPicker = document.getElementById('primaryColorPicker');
+        const secondaryColorPicker = document.getElementById('secondaryColorPicker');
+        const accentColorPicker = document.getElementById('accentColorPicker');
+
+        if (themeToggleBtn && themeModal) {
+            themeToggleBtn.addEventListener('click', () => {
+                 themeModal.style.display = 'block'; // Cambiar a block para posicionamiento
+                 setTimeout(() => themeModal.classList.add('visible'), 10); // Animar opacidad
+                 playSound(clickSound); vibrate();
+            });
+        }
+         if (closeThemeModalBtn && themeModal && primaryColorPicker && secondaryColorPicker && accentColorPicker) {
+            closeThemeModalBtn.addEventListener('click', () => {
+                 // Guardar colores ANTES de llamar a loadTheme
+                 const primary = primaryColorPicker.value || '#00f0ff';
+                 const secondary = secondaryColorPicker.value || '#ff00ff';
+                 const accent = accentColorPicker.value || '#f7ff00';
+                 localStorage.setItem('themePrimaryColor', primary);
+                 localStorage.setItem('themeSecondaryColor', secondary);
+                 localStorage.setItem('themeAccentColor', accent);
+
+                 loadTheme(); // Recargar tema con los nuevos valores
+
+                 themeModal.classList.remove('visible');
+                 setTimeout(() => { if(themeModal) themeModal.style.display = 'none'; }, 300);
+                 showNotification('UI Matrix reconfigured!', 'success');
+                 playSound(clickSound); vibrate();
+                 checkAndAddAchievement('UI Matrix Reconfigured');
+            });
+        }
+        // Cerrar modal de tema si se hace clic fuera (backdrop click)
+        if(themeModal) {
+             themeModal.addEventListener('click', (event) => {
+                // Check if the click is directly on the modal overlay itself (not children)
+                 if (event.target === themeModal) {
+                    themeModal.classList.remove('visible');
+                     setTimeout(() => { if(themeModal) themeModal.style.display = "none"; }, 300);
+                 }
+             });
+        }
+
+        // Configuración Avanzada (Pestaña Settings) - Listeners
+        const animCheckbox = document.getElementById('toggleAnimations');
+        const soundCheckbox = document.getElementById('toggleSoundNotifications');
+        const vibCheckbox = document.getElementById('toggleVibration');
+        const contrastCheckbox = document.getElementById('toggleHighContrast');
+        const layoutCheckbox = document.getElementById('toggleLayout');
+        const speedSlider = document.getElementById('animationSpeed');
+        const speedValueSpan = document.getElementById('animationSpeedValue');
+
+        if (animCheckbox) animCheckbox.addEventListener('change', function() { animationsEnabled = this.checked; saveSettings(); manageChartUpdates(); if(animationsEnabled && isPlaying && !visualizerRafId) drawAudioVisualizer(); else if (!animationsEnabled && visualizerRafId) { cancelAnimationFrame(visualizerRafId); visualizerRafId = null; } });
+        if (soundCheckbox) soundCheckbox.addEventListener('change', function() { soundNotificationsEnabled = this.checked; saveSettings(); });
+        if (vibCheckbox) vibCheckbox.addEventListener('change', function() { vibrationEnabled = this.checked; saveSettings(); });
+        if (contrastCheckbox) contrastCheckbox.addEventListener('change', function() { document.body.classList.toggle('high-contrast', this.checked); loadTheme(); /* Re-load theme needed */ saveSettings(); });
+        if (layoutCheckbox) layoutCheckbox.addEventListener('change', function() { const enabled = this.checked; localStorage.setItem('layoutDragEnabled', enabled); if(sortableInstance) { sortableInstance.option("disabled", !enabled || activeList !== 'projects'); } saveSettings(); });
+        if (speedSlider && speedValueSpan) {
+             speedSlider.addEventListener('input', function() {
+                const speed = parseFloat(this.value);
+                window.animationSpeedFactor = speed;
+                speedValueSpan.textContent = speed.toFixed(1) + 'x';
+                document.documentElement.style.setProperty('--animation-speed', `${speed}s`);
+                // Actualizar intervalo de gráfico inmediatamente
+                manageChartUpdates();
+            });
+            speedSlider.addEventListener('change', saveSettings); // Guardar al soltar
+         }
+
+        // Pantalla Completa
+        const fullscreenBtn = document.getElementById('fullscreenToggle');
+         if(fullscreenBtn) {
+            fullscreenBtn.addEventListener('click', () => {
+                playSound(clickSound); vibrate();
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.error(`Fullscreen error: ${err.message}`, err);
+                        showNotification(`Full Immersion Error: ${err.message}`, 'error');
+                    });
+                } else {
+                    if (document.exitFullscreen) document.exitFullscreen();
+                }
+            });
+             document.addEventListener('fullscreenchange', () => {
+                 if (fullscreenBtn) { // Check if button still exists
+                    fullscreenBtn.innerHTML = document.fullscreenElement ? '<i class="fas fa-compress"></i>' : '<i class="fas fa-expand"></i>';
+                 }
+             });
+        }
+
+        // --- Parallax Video Fondo (Optimizado) ---
+        let parallaxRafId = null;
+        let lastMouseX = window.innerWidth / 2;
+        let lastMouseY = window.innerHeight / 2;
+        const bgVideo = document.getElementById('bgVideo'); // Cache selector
+
+        function updateParallax() {
+            if (!animationsEnabled || !bgVideo) { // Stop if disabled or video not found
+                if (parallaxRafId) cancelAnimationFrame(parallaxRafId);
+                parallaxRafId = null;
+                if (bgVideo) {
+                    // Reset smoothly using transition already defined
+                    bgVideo.style.transform = `translate(-50%, -50%) scale(1.0)`;
+                    // bgVideo.classList.remove('parallax'); // Let CSS handle transition removal implicitly
+                }
+                return;
+            }
+
+            // Apply transform with smoothing via CSS transition
+            const x = (lastMouseX / window.innerWidth - 0.5) * 20; // Reduce intensity
+            const y = (lastMouseY / window.innerHeight - 0.5) * 10; // Reduce intensity
+            bgVideo.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px) scale(1.03)`; // Scale slightly
+
+             // Request next frame only if animations are still enabled
+            if(animationsEnabled) parallaxRafId = requestAnimationFrame(updateParallax); else parallaxRafId = null;
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+            // Start animation only if needed and enabled
+            if (!parallaxRafId && animationsEnabled && bgVideo) {
+                 bgVideo.classList.add('parallax'); // Ensure transition class is added
+                 updateParallax();
+            }
+        }, { passive: true });
+
+        // Event listener for mouse leaving the window
+        document.addEventListener('mouseleave', () => {
+            // Set to center coordinates; updateParallax will handle centering smoothly
+            lastMouseX = window.innerWidth / 2;
+            lastMouseY = window.innerHeight / 2;
+            // We don't need to explicitly call updateParallax here,
+            // the effect will naturally return to center due to the transform in updateParallax
+            // and the CSS transition when the mouse moves back over or stays still.
+             // If we want an immediate smooth return on mouseleave:
+             if (animationsEnabled && bgVideo && parallaxRafId) { // Check if animation loop is running
+                 // The loop will center it, but we can ensure the class for transition is there
+                 bgVideo.classList.add('parallax');
+             } else if (animationsEnabled && bgVideo) {
+                // If loop wasn't running but animations are on, gently reset
+                 bgVideo.style.transform = `translate(-50%, -50%) scale(1.03)`;
+                 bgVideo.classList.add('parallax');
+             }
+        });
+
+         // Adjust parallax when animations are toggled in settings
+         if(animCheckbox) animCheckbox.addEventListener('change', () => {
+            if (!animationsEnabled) {
+                if (parallaxRafId) cancelAnimationFrame(parallaxRafId);
+                parallaxRafId = null;
+                if (bgVideo) {
+                     bgVideo.style.transform = `translate(-50%, -50%) scale(1.0)`; // Immediate reset
+                     bgVideo.classList.remove('parallax');
+                 }
+            } else if (!parallaxRafId && bgVideo) {
+                 // Restart if animations are enabled and it wasn't running
+                 bgVideo.classList.add('parallax');
+                 updateParallax();
+            }
+        });
+
+
+        // Configuración Inicial Chat y Log temático
+        function initializeThematicElements() {
+            const chatWindow = document.getElementById('chatWindow');
+            if(chatWindow) {
+                chatWindow.innerHTML = `<p><strong style="color: var(--primary-color);">SYS_AI:</strong> Secure channel // Ready.</p><p><span style="color:var(--text-muted-color); font-style:italic;">Use /help for ICE breaker cmds.</span></p>`;
+            }
+             const historyList = document.getElementById('historyList');
+             if(historyList) {
+                 historyList.innerHTML = `<li><span style="color: var(--primary-color);">[SYS]</span> Deck OS v2.1 Boot Complete.</li>
+                                         <li><span style="color: var(--secondary-color);">[SEC]</span> Firewall: ACTIVE | Profile 'Wraith'.</li>
+                                         <li><span style="color: var(--accent-color);">[NET]</span> WARNING: Unknown Signal Ping @ Port 77.</li>`;
+             }
+             const integrationsList = document.getElementById('integrationsList');
+             if(integrationsList) {
+                  integrationsList.innerHTML = `<li><strong><i class="fas fa-rss"></i> Datahaven Feed:</strong> +New Exploit Sig: 'Reaper v4'.</li>
+                                              <li><strong><i class="fab fa-discord"></i> ShadowNet #ops:</strong> Arasaka Tower lockdown rumor++.</li>
+                                              <li><strong><i class="fas fa-satellite-dish"></i> Deep Grid:</strong> Encrypted Packet RX - Signat: 'BlackICE'.</li>`;
+             }
+        }
+
+        // Configuración tsParticles
+        function loadParticles() {
+            if (typeof tsParticles === 'undefined') {
+                 console.warn("tsParticles not loaded.");
+                 return;
+            }
+             const colors = getChartColors(); // Get current theme colors for particles
+
+            tsParticles.load("tsparticles", {
+                fpsLimit: 60,
+                particles: {
+                    number: { value: 50, density: { enable: true, area: 800 } }, // Reduced number
+                    color: { value: [colors.primary, colors.secondary, colors.accent] }, // Use theme colors
+                    shape: { type: ["circle", "triangle", "edge"] }, // Added edge
+                    opacity: { value: {min: 0.1, max: 0.5}, animation: { enable: true, speed: 0.6 * window.animationSpeedFactor, minimumValue: 0.1, sync: false } }, // Apply speed factor
+                    size: { value: {min: 1, max: 2.5}, animation: { enable: true, speed: 2.5 * window.animationSpeedFactor, minimumValue: 1, sync: false } }, // Apply speed factor
+                    links: { color: `rgba(${colors.primaryRgb || '0, 240, 255'}, 0.2)`, distance: 130, enable: true, opacity: 0.15, width: 1 }, // Use primary RGB
+                    move: {
+                        enable: true, speed: 1.2 * window.animationSpeedFactor, direction: "none", random: true, straight: false, // Apply speed factor
+                        outModes: { default: "out" },
+                        attract: { enable: false } // Disable attract for performance
+                    }
+                },
+                interactivity: {
+                    detectsOn: "canvas",
+                    events: {
+                        onHover: { enable: true, mode: "repulse",
+                            parallax: { enable: animationsEnabled, force: 25, smooth: 10 } // Parallax conditional
+                         },
+                        onClick: { enable: true, mode: "push" },
+                        resize: true
+                    },
+                    modes: {
+                        repulse: { distance: 70, duration: 0.4 / window.animationSpeedFactor, factor: 100, speed: 0.8 * window.animationSpeedFactor, maxSpeed: 40 }, // Apply speed factor
+                        push: { quantity: 2 } // Push fewer particles
+                    }
+                },
+                detectRetina: true
+            }).catch(error => {
+                 console.error("tsParticles load error:", error);
+            });
+        }
+
+
+        // --- INICIALIZACIÓN FINAL ---
+
+        loadTheme(); // Cargar tema ANTES que configuraciones o gráficos
+        loadSettings(); // Cargar configuración (aplica vol, anim speed, etc.)
+        loadAchievements(); // Cargar logros guardados
+        initializeThematicElements(); // Textos iniciales
+        renderDataList('projects'); // Lista inicial: Active Runs (esto inicializa Sortable si está activado)
+        initializeMissions(); // Lista subrutinas
+         if(playlist && playlist.length > 0) loadTrack(currentTrack); // Cargar primera pista MP3
+
+        // Esperar un poco más para la carga y quitar overlay
+        window.addEventListener('load', () => { // Usar window.load para asegurar que recursos como imágenes/video están más avanzados
+            setTimeout(() => {
+                 if (loadingOverlay) {
+                     loadingOverlay.classList.add('hidden');
+                     // Eliminar del DOM después de la transición para limpiar
+                     loadingOverlay.addEventListener('transitionend', () => loadingOverlay.remove(), { once: true });
+                 }
+            }, 250); // Reducido el tiempo, window.load ya espera bastante
+        });
+
+
+    }); // Fin de DOMContentLoaded
+  </script>
+
+</body>
+</html>
