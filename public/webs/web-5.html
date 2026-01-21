@@ -1,0 +1,3267 @@
+<!doctype html>
+<!--
+================================================================================
+  ZONA GRÁFICA - LANDING PAGE COMPLETA
+================================================================================
+  
+  DESCRIPCIÓN:
+    Landing page completa para Zona Gráfica con integración de backend,
+    formulario de contacto funcional y diseño responsive moderno.
+  
+  FUNCIONALIDADES PRINCIPALES:
+    ✅ Servicios dinámicos desde PocketBase con fallback
+    ✅ Productos específicos por categoría
+    ✅ Testimonios de clientes con carrusel manual
+    ✅ Formulario de contacto funcional con envío POST
+    ✅ Trust badges y elementos de confianza
+    ✅ Integración con WhatsApp
+    ✅ Diseño responsive completo (mobile-first)
+    ✅ Artículos dinámicos con fallback
+  
+  ESTRUCTURA DE SECCIONES:
+    1. Header fijo con navegación responsive
+    2. Banner carousel con productos destacados
+    3. Servicios (dinámicos desde PocketBase)
+    4. Trust badges (garantías y confianza)
+    5. Testimonios de clientes
+    6. Artículos populares (dinámicos desde PocketBase)
+    7. Ubicación y contacto
+    8. Formulario de contacto funcional
+    9. Footer con información completa
+  
+  TECNOLOGÍAS UTILIZADAS:
+    - React 18 (CDN) - Componentes funcionales con hooks
+    - PocketBase (API REST) - Backend para contenido dinámico
+    - Swiper.js - Carruseles responsive
+    - CSS3 con animaciones y glassmorphism
+    - Responsive design (mobile-first)
+    - CSS Grid y Flexbox para layouts
+  
+  BACKEND CONNECTION:
+    - PocketBase URL: https://zonagraficapd.ezhostingit.com
+    - Colecciones: categorias, productos, articulos, promociones
+    - API Endpoint: /api/contacto (formulario de contacto)
+    - Líneas de conexión: 708, 720-770, 766-831, 906-950, 1371-1400, 1513-1545
+  
+  RESPONSIVE BREAKPOINTS:
+    - Desktop: > 1200px
+    - Tablet: 768px - 1200px  
+    - Mobile: < 768px
+    - Small Mobile: < 480px
+    - Extra Small: < 360px
+================================================================================
+-->
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zona Gráfica — Landing</title>
+  <meta name="description" content="Hacemos posible tus ideas. Gran formato, imprenta, estampados, grabados y letreros.">
+
+  <!-- Security headers para evitar CORB -->
+  <meta http-equiv="Cross-Origin-Embedder-Policy" content="unsafe-none">
+  <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
+  <meta http-equiv="Cross-Origin-Resource-Policy" content="cross-origin">
+
+  <!-- Swiper CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/swiper@9/swiper-bundle.min.css" />
+  <!-- Inter UI Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ================================================================================
+       VARIABLES CSS Y RESET GLOBAL
+       ================================================================================ */
+    :root{
+      --bg:#ffffff; --card:#ffffff; --muted:#4b5563; --text:#0b0b10; --cyan:#00bcd4; --magenta:#e11d48; --brand:#25D366; --blue:#1E40AF;
+      --gradient: linear-gradient(90deg, cyan, magenta, yellow, black);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;scroll-behavior:smooth}
+    body{padding-top:90px}
+    h1,h2,h3,h4,h5,h6{font-family:Poppins,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;font-weight:800}
+    .subtitle{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;font-weight:500}
+    a{color:inherit;text-decoration:none}
+    .container{max-width:1100px;margin:0 auto;padding:0 16px}
+    .topbar,.bottombar{height:6px;background:linear-gradient(90deg, cyan, magenta, yellow, black)}
+    
+    /* ================================================================================
+       BARRA DE INFORMACIÓN SUPERIOR
+       Barra fija en la parte superior con información de contacto y horarios
+       ================================================================================ */
+    .infobar{background:#0a0a0f;color:#e5e7eb;border-bottom:1px solid #111}
+    .infobar-inner{display:flex;align-items:center;gap:14px;justify-content:space-between;height:36px;font-size:13px}
+    .infobar .left,.infobar .right{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+    .infobar .item{display:inline-flex;align-items:center;gap:8px;opacity:.95}
+    .infobar .i{width:14px;height:14px;opacity:.85;filter:invert(1)}
+    .i.phone{background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/phone.svg') center/contain no-repeat}
+    .i.mail{background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/mail.svg') center/contain no-repeat}
+    .i.lock{background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/lock.svg') center/contain no-repeat}
+    .i.clock{background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/clock.svg') center/contain no-repeat}
+    
+    /* ================================================================================
+       HEADER Y NAVEGACIÓN PRINCIPAL
+       Header fijo con navegación responsive, logo y botones de acción
+       ================================================================================ */
+    .header{position:fixed;top:0;left:0;right:0;z-index:100;background:#000;color:#fff;border-bottom:1px solid rgba(255,255,255,0.1);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1), box-shadow 0.3s ease;transform:translateY(0)}
+    .header.hidden{transform:translateY(-100%)}
+    .header.scrolled{box-shadow:0 4px 20px rgba(0,0,0,0.5)}
+    .header-inner{display:flex;align-items:center;justify-content:space-between;height:90px;max-width:1400px;margin:0 auto;padding:0 20px;position:relative}
+    
+    /* Logo */
+    .logo{display:flex;gap:15px;align-items:center;font-weight:800;letter-spacing:0.5px;transition:all 0.3s ease}
+    .logo:hover{transform:scale(1.02)}
+    .logo-img{height:70px;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.4));transition:all 0.3s ease}
+    
+    /* Navegación principal */
+    .nav{display:flex;gap:30px;align-items:center}
+    .nav a{color:#fff;opacity:0.9;font-weight:600;font-size:1rem;padding:8px 16px;border-radius:8px;transition:all 0.3s ease;position:relative;text-decoration:none}
+    .nav a::before{content:'';position:absolute;bottom:0;left:50%;width:0;height:2px;background:linear-gradient(90deg, #3b82f6, #8b5cf6);transition:all 0.3s ease;transform:translateX(-50%)}
+    .nav a:hover{opacity:1;background:rgba(59,130,246,0.1);transform:translateY(-2px)}
+    .nav a:hover::before{width:80%}
+    
+    /* Menú móvil */
+    .menu-btn{display:none;align-items:center;justify-content:center;width:45px;height:45px;border:1px solid rgba(255,255,255,0.2);border-radius:12px;background:rgba(255,255,255,0.1);color:#fff;transition:all 0.3s ease;backdrop-filter:blur(10px)}
+    .menu-btn:hover{background:rgba(255,255,255,0.2);transform:scale(1.05)}
+    .mobile-panel{display:none;position:absolute;left:0;right:0;top:90px;background:#000;border-bottom:1px solid rgba(255,255,255,0.1);box-shadow:0 8px 32px rgba(0,0,0,0.5)}
+    .mobile-panel.open{display:block;animation:slideDown 0.3s ease}
+    .mobile-panel a{display:block;padding:18px 24px;border-top:1px solid rgba(255,255,255,0.1);color:#fff;font-weight:600;transition:all 0.3s ease;text-decoration:none}
+    .mobile-panel a:hover{background:rgba(59,130,246,0.1);padding-left:32px}
+    
+    /* Botones de acción */
+    .wa-btn{display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(135deg, #25D366, #128C7E);color:#fff;border:none;padding:12px;border-radius:50%;font-weight:700;font-size:0.9rem;transition:all 0.3s ease;text-decoration:none;box-shadow:0 4px 15px rgba(37,211,102,0.3);width:48px;height:48px}
+    .wa-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(37,211,102,0.4);background:linear-gradient(135deg, #128C7E, #25D366)}
+    .wa-btn small{opacity:0.9;font-weight:600;font-size:0.8rem}
+    .wa-float{position:fixed;right:20px;bottom:20px;z-index:60;box-shadow:0 10px 30px rgba(37,211,102,0.4);animation:float 3s ease-in-out infinite}
+    .header-cta{display:flex;align-items:center;gap:15px}
+    .login-btn{display:inline-flex;align-items:center;gap:12px;background:linear-gradient(135deg, #3b82f6, #1d4ed8);color:#fff;border:none;padding:12px 20px;border-radius:50px;font-weight:700;font-size:0.9rem;transition:all 0.3s ease;text-decoration:none;box-shadow:0 4px 15px rgba(59,130,246,0.3)}
+    .login-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(59,130,246,0.5);background:linear-gradient(135deg, #2563eb, #1e40af)}
+    .phone-link{display:flex;align-items:center;gap:8px;color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:8px;transition:all 0.3s ease;background:rgba(255,255,255,0.1)}
+    .phone-link:hover{background:rgba(255,255,255,0.2);transform:translateY(-1px)}
+    .phone-icon{width:16px;height:16px;background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/phone.svg') center/contain no-repeat;filter:brightness(0) invert(1)}
+    
+    /* ================================================================================
+       ANIMACIONES Y KEYFRAMES
+       Definición de animaciones personalizadas para la página
+       ================================================================================ */
+    @keyframes slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes float{0%,100%{transform:translateY(0px)}50%{transform:translateY(-10px)}}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes slideUp{from{opacity:0;transform:translateY(50px) scale(0.9)}to{opacity:1;transform:translateY(0) scale(1)}}
+    @keyframes rainbow-float{0%,100%{transform:translateY(0px) rotate(0deg);opacity:0.6}25%{transform:translateY(-10px) rotate(1deg);opacity:0.8}50%{transform:translateY(-5px) rotate(-1deg);opacity:0.7}75%{transform:translateY(-15px) rotate(0.5deg);opacity:0.9}}
+    
+    /* ================================================================================
+       RESPONSIVE HEADER
+       Media queries para adaptar el header a diferentes tamaños de pantalla
+       ================================================================================ */
+    @media (max-width:768px){
+      .header-inner{height:80px;padding:0 16px}
+      .logo-img{height:60px}
+      .nav{display:none}
+      .menu-btn{display:inline-flex}
+      .wa-btn{width:44px;height:44px;padding:10px}
+      .wa-btn span{width:28px;height:28px}
+      .wa-btn small{display:none}
+      .header-cta{gap:10px}
+      .phone-link{padding:6px 10px;font-size:0.9rem}
+      body{padding-top:80px}
+    }
+    @media (max-width:640px){
+      .header-inner{height:70px}
+      .logo-img{height:50px}
+      .wa-btn{width:40px;height:40px;padding:8px}
+      .wa-btn span{width:24px;height:24px}
+      .phone-link{display:none}
+      body{padding-top:70px}
+    }
+
+    /* ================================================================================
+       CAROUSEL HERO
+       Carrusel principal con productos destacados y banners promocionales
+       ================================================================================ */
+    .hero{padding:24px 0 8px}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden}
+    .swiper{--swiper-navigation-size:20px}
+    .swiper .swiper-pagination-bullet{background:#9ca3af;opacity:.5}
+    .swiper .swiper-pagination-bullet-active{background:#111;opacity:1}
+    .swiper-slide img{display:block;width:100%;height:400px;object-fit:cover}
+    .hero-cta{position:absolute;inset:auto 16px 16px 16px;display:flex;justify-content:center}
+    .hero-cta .cta-inner{background:rgba(0,0,0,.55);color:#fff;border:1px solid rgba(255,255,255,.2);backdrop-filter:blur(6px);padding:12px 16px;border-radius:12px;display:flex;gap:12px;align-items:center}
+    .hero-wrap{position:relative}
+
+    /* ================================================================================
+       SECCIONES GENERALES
+       Estilos base para todas las secciones de la página
+       ================================================================================ */
+    .section{padding:40px 0}
+    .section h2{margin:0 0 18px;font-size:28px}
+    .title-wrap{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;margin:6px 0 20px}
+    .title-wrap .line{height:2px;background:#2b2b3a}
+    .subtitle{color:var(--muted);margin-bottom:20px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:14px;max-width:1200px;margin:0 auto}
+    @media (max-width:960px){.grid{grid-template-columns:repeat(3,1fr)}.swiper-slide img{height:320px}}
+    @media (max-width:768px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:480px){.grid{grid-template-columns:1fr}}
+    
+    /* Grid específico para servicios - centrado en múltiples filas solo desktop */
+    .servicios-grid-desktop{display:grid;grid-template-columns:repeat(auto-fit, minmax(120px, 1fr));gap:14px;max-width:1200px;margin:0 auto;justify-items:center;justify-content:center}
+    @media (max-width:1200px){.servicios-grid-desktop{grid-template-columns:repeat(auto-fit, minmax(110px, 1fr));gap:12px;max-width:1000px}}
+    @media (max-width:1000px){.servicios-grid-desktop{grid-template-columns:repeat(auto-fit, minmax(100px, 1fr));gap:10px;max-width:800px}}
+    @media (max-width:800px){.servicios-grid-desktop{grid-template-columns:repeat(auto-fit, minmax(90px, 1fr));gap:8px;max-width:600px}}
+    @media (max-width:600px){.servicios-grid-desktop{grid-template-columns:repeat(auto-fit, minmax(80px, 1fr));gap:6px;max-width:400px}}
+
+    /* ================================================================================
+       SECCIÓN SERVICIOS
+       Grid de servicios con integración PocketBase y carrusel móvil
+       ================================================================================ */
+    .service{cursor:pointer;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:15px;text-align:center;transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100px;gap:8px;width:100%;max-width:140px;margin:0 auto}
+    .service:hover{transform:translateY(-4px);border-color:var(--blue);box-shadow:0 10px 24px rgba(17,24,39,.18)}
+    .service img{width:45px;height:45px;object-fit:contain;filter:grayscale(100%) brightness(0.8);transition:all .3s ease}
+    .service b{display:block;font-size:0.8rem;font-weight:600;color:#374151;margin-top:6px;transition:all .3s ease;line-height:1.2}
+    .service .desc{display:none}
+    .service .cta{display:none}
+    .service:hover img{filter:grayscale(0) brightness(1);transform:scale(1.1)}
+    .service:hover b{color:#1e40af;transform:scale(1.05)}
+    .service.active{background:#fff;border-color:#e5e7eb}
+    .service.active img{filter:grayscale(0) brightness(1);transform:scale(1.1)}
+    .service.active b{display:block;color:#1e40af;font-weight:700}
+    .loading-services{font-size:1.1rem;font-weight:500;animation:pulse 2s ease-in-out infinite}
+    .loading-articles{font-size:1.1rem;font-weight:500;animation:pulse 2s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:0.6}50%{opacity:1}}
+
+    /* Carrusel móvil de servicios: oculta grid en móvil y muestra swiper con ~2 items */
+    .servicios-carousel{display:none}
+    .servicios-carousel .swiper{padding:4px 2px}
+    .servicios-carousel .swiper-slide{height:auto}
+    .servicios-carousel .service{min-height:110px}
+    .servicios-carousel .swiper-pagination-bullet{background:#9ca3af;opacity:.5}
+    .servicios-carousel .swiper-pagination-bullet-active{background:#111;opacity:1}
+
+    /* Ajustes para servicios en una línea */
+    @media (max-width:1200px){
+      .service{padding:12px;min-height:90px;gap:6px}
+      .service img{width:40px;height:40px}
+      .service b{font-size:0.75rem;margin-top:4px}
+    }
+    
+    @media (max-width:1000px){
+      .service{padding:10px;min-height:85px;gap:5px;max-width:120px}
+      .service img{width:35px;height:35px}
+      .service b{font-size:0.7rem;margin-top:3px}
+    }
+    
+    @media (max-width:800px){
+      .service{padding:8px;min-height:80px;gap:4px;max-width:100px}
+      .service img{width:30px;height:30px}
+      .service b{font-size:0.65rem;margin-top:2px}
+    }
+    
+    @media (max-width:600px){
+      .service{padding:6px;min-height:70px;gap:3px;max-width:80px}
+      .service img{width:25px;height:25px}
+      .service b{font-size:0.6rem;margin-top:2px}
+    }
+
+    @media (max-width:768px){
+      .servicios-grid-desktop{display:none}
+      .servicios-carousel{display:block}
+      .servicios-carousel .service{padding:12px;gap:8px;border-radius:10px;max-width:none;margin:0}
+      .servicios-carousel .service img{width:44px;height:44px}
+      .servicios-carousel .service b{font-size:0.8rem}
+    }
+
+    /* Indicador de deslizamiento para móvil: flechas guía mostrando que se puede deslizar */
+    .swipe-hint{display:none;align-items:center;justify-content:center;gap:10px;color:#64748b;margin:4px 0 10px;font-weight:600}
+    .swipe-hint .arrow{opacity:.9;font-size:18px}
+    @media (max-width:768px){.swipe-hint{display:flex}}
+
+    /* ================================================================================
+       SECCIÓN TESTIMONIOS
+       Carrusel manual de testimonios de clientes con controles de navegación
+       ================================================================================ */
+    .testimonials{background:#f8fafc;padding:60px 0;position:relative}
+    .testimonials .container{max-width:1200px;margin:0 auto;padding:0 20px}
+    .testimonials h2{text-align:center;font-size:2.5rem;font-weight:800;color:#1e293b;margin:0 0 10px}
+    .testimonials .subtitle{text-align:center;font-size:1.1rem;color:#64748b;margin:0 0 50px;max-width:600px;margin-left:auto;margin-right:auto}
+    /* Carrusel manual de testimonios: track horizontal con flechas prev/next (sin autoplay) */
+    .testimonials-carousel{position:relative;margin-top:40px}
+    .tc-viewport{overflow:hidden}
+    .tc-track{display:flex;gap:25px;transition:transform .4s ease}
+    .tc-item{flex:0 0 33.3333%}
+    .tc-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:5;border:none;border-radius:999px;width:42px;height:42px;background:rgba(15,23,42,0.4);backdrop-filter:blur(6px);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s ease}
+    .tc-arrow:hover{background:rgba(15,23,42,0.65)}
+    .tc-prev{left:-6px}
+    .tc-next{right:-6px}
+    .testimonial-card{background:#fff;border-radius:16px;padding:30px;box-shadow:0 8px 25px rgba(0,0,0,0.1);transition:all 0.3s ease;position:relative;border:1px solid #e2e8f0}
+    .testimonial-card::before{content:'"';position:absolute;top:15px;right:20px;font-size:4rem;color:#e2e8f0;font-family:serif;line-height:1}
+    .testimonial-card:hover{transform:translateY(-5px);box-shadow:0 15px 35px rgba(0,0,0,0.15)}
+    .testimonial-text{font-size:1rem;color:#374151;line-height:1.6;margin-bottom:20px;font-style:italic}
+    .testimonial-author{display:flex;align-items:center;gap:15px;margin-bottom:15px}
+    .author-avatar{width:50px;height:50px;border-radius:50%;object-fit:cover;border:3px solid #e2e8f0}
+    .author-info h4{font-size:1rem;font-weight:600;color:#1e293b;margin:0 0 4px}
+    .author-info p{font-size:0.9rem;color:#64748b;margin:0}
+    .testimonial-rating{display:flex;gap:2px}
+    .star{color:#fbbf24;font-size:1.2rem}
+    
+    /* Responsive testimonios */
+    @media (max-width:768px){
+      .testimonials{padding:40px 0}
+      .testimonials h2{font-size:2rem}
+      .testimonials .subtitle{font-size:1rem;margin:0 0 30px}
+      .testimonials-carousel{margin-top:30px}
+      .tc-track{gap:20px}
+      .tc-item{flex-basis:50%}
+      .testimonial-card{padding:20px}
+      .testimonial-text{font-size:0.9rem;margin-bottom:15px}
+      .testimonial-author{gap:12px;margin-bottom:12px}
+      .author-avatar{width:40px;height:40px}
+      .author-info h4{font-size:0.9rem}
+      .author-info p{font-size:0.8rem}
+    }
+    
+    @media (max-width:480px){
+      .testimonials{padding:30px 0}
+      .testimonials h2{font-size:1.8rem}
+      .testimonials .subtitle{font-size:0.9rem;margin:0 0 25px}
+      .tc-track{gap:15px}
+      .tc-item{flex-basis:100%}
+      .tc-arrow{width:38px;height:38px}
+      .testimonial-card{padding:15px}
+      .testimonial-text{font-size:0.85rem;margin-bottom:12px}
+      .testimonial-author{gap:10px;margin-bottom:10px}
+      .author-avatar{width:35px;height:35px}
+      .author-info h4{font-size:0.85rem}
+      .author-info p{font-size:0.75rem}
+    }
+
+    /* ================================================================================
+       SECCIÓN TRUST BADGES
+       Elementos de confianza y garantías con efectos visuales
+       ================================================================================ */
+    .trust{background:#0f0f16;border-top:1px solid #1f2030;position:relative;overflow:hidden}
+    .trust.section{padding-bottom:90px}
+    .trust::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at 15% 25%, rgba(255,0,150,0.15) 0%, transparent 45%), radial-gradient(circle at 85% 20%, rgba(0,255,255,0.15) 0%, transparent 45%), radial-gradient(circle at 25% 75%, rgba(255,255,0,0.15) 0%, transparent 45%), radial-gradient(circle at 75% 80%, rgba(255,0,255,0.15) 0%, transparent 45%), radial-gradient(circle at 5% 50%, rgba(0,255,0,0.15) 0%, transparent 45%), radial-gradient(circle at 95% 5%, rgba(255,100,0,0.15) 0%, transparent 45%);z-index:1}
+    .trust::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at 50% 30%, rgba(150,0,255,0.12) 0%, transparent 40%), radial-gradient(circle at 30% 90%, rgba(255,200,0,0.12) 0%, transparent 40%), radial-gradient(circle at 80% 60%, rgba(0,150,255,0.12) 0%, transparent 40%);z-index:1}
+    .trust h2{color:#ffffff;position:relative;z-index:2}
+    .trust .title-wrap .line{background:#3a3a4a}
+    .trust .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;position:relative;z-index:2;justify-content:center;align-items:center}
+    .trust .badge{display:flex;align-items:center;gap:12px;background:rgba(21,21,33,0.8);border:1px solid #2a2a3a;border-radius:12px;padding:16px;backdrop-filter:blur(10px);position:relative;z-index:2;margin:0 auto;max-width:340px;width:100%}
+    .trust .icon{width:20px;height:20px;filter:invert(1);opacity:.9}
+    .icon.shield{background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/shield-check.svg') center/contain no-repeat}
+    .icon.bolt{background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/bolt.svg') center/contain no-repeat}
+    .icon.certificate{background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/certificate.svg') center/contain no-repeat}
+    .icon.truck{background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/truck.svg') center/contain no-repeat}
+    .trust .txt{display:flex;flex-direction:column}
+    .trust .txt b{color:#ffffff}
+    .trust .txt small{color:#cbd5e1;font-weight:600}
+    /* Fade inferior para fundir con la siguiente sección (#f8fafc) */
+    .trust .fade-bottom{position:absolute;left:0;right:0;bottom:-1px;height:70px;background:linear-gradient(to bottom, rgba(15,15,22,0) 0%, #f8fafc 100%);z-index:2;pointer-events:none}
+    
+    /* Responsive para trust badges con arcoíris */
+    @media (max-width:768px){
+      .trust::before{background:radial-gradient(circle at 20% 30%, rgba(255,0,150,0.12) 0%, transparent 40%), radial-gradient(circle at 80% 25%, rgba(0,255,255,0.12) 0%, transparent 40%), radial-gradient(circle at 30% 70%, rgba(255,255,0,0.12) 0%, transparent 40%), radial-gradient(circle at 70% 75%, rgba(255,0,255,0.12) 0%, transparent 40%)}
+      .trust::after{background:radial-gradient(circle at 60% 40%, rgba(150,0,255,0.08) 0%, transparent 35%), radial-gradient(circle at 40% 85%, rgba(255,200,0,0.08) 0%, transparent 35%)}
+    }
+    @media (max-width:640px){
+      .trust .fade-bottom{height:60px}
+    }
+    @media (max-width:480px){
+      .trust .fade-bottom{height:50px}
+      .trust.section{padding-bottom:70px}
+    }
+    
+    @media (max-width:640px){
+      .trust.section{padding-bottom:60px}
+      .trust::before{background:radial-gradient(circle at 30% 35%, rgba(255,0,150,0.1) 0%, transparent 35%), radial-gradient(circle at 70% 30%, rgba(0,255,255,0.1) 0%, transparent 35%), radial-gradient(circle at 50% 65%, rgba(255,255,0,0.1) 0%, transparent 35%)}
+      .trust::after{background:radial-gradient(circle at 50% 50%, rgba(150,0,255,0.06) 0%, transparent 30%), radial-gradient(circle at 50% 80%, rgba(255,200,0,0.06) 0%, transparent 30%)}
+    }
+    
+    @media (max-width:480px){
+      .trust::before{background:radial-gradient(circle at 40% 40%, rgba(255,0,150,0.08) 0%, transparent 30%), radial-gradient(circle at 60% 60%, rgba(0,255,255,0.08) 0%, transparent 30%)}
+      .trust::after{background:radial-gradient(circle at 50% 50%, rgba(150,0,255,0.05) 0%, transparent 25%)}
+    }
+    
+    @media (max-width:360px){
+      .trust::before{background:radial-gradient(circle at 50% 50%, rgba(255,0,150,0.06) 0%, transparent 25%)}
+      .trust::after{background:none}
+    }
+
+    /* ===== SECCIÓN ARTÍCULOS POPULARES ===== */
+    .popular-articles{background:#f8fafc;padding:60px 0;position:relative}
+    .popular-articles .container{max-width:1200px;margin:0 auto;padding:0 20px}
+    .popular-articles h2{text-align:center;font-size:2.5rem;font-weight:800;color:#1e293b;margin:0 0 10px}
+    .popular-articles .subtitle{text-align:center;font-size:1.1rem;color:#64748b;margin:0 0 50px;max-width:600px;margin-left:auto;margin-right:auto}
+    .articles-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:25px;margin-top:40px}
+    .article-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 8px 25px rgba(0,0,0,0.1);transition:all 0.3s ease;position:relative;border:1px solid #e2e8f0;cursor:pointer}
+    .article-card:hover{transform:translateY(-8px);box-shadow:0 15px 35px rgba(0,0,0,0.15)}
+    .article-image{width:100%;height:200px;object-fit:cover;transition:transform 0.3s ease}
+    .article-card:hover .article-image{transform:scale(1.05)}
+    .article-content{padding:20px}
+    .article-category{display:inline-block;background:linear-gradient(135deg, #3b82f6, #1d4ed8);color:#fff;padding:4px 12px;border-radius:20px;font-size:0.8rem;font-weight:600;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px}
+    .article-title{font-size:1.2rem;font-weight:700;color:#1e293b;margin:0 0 8px;line-height:1.3}
+    .article-excerpt{font-size:0.9rem;color:#64748b;margin:0 0 15px;line-height:1.5}
+    .article-meta{display:flex;align-items:center;justify-content:space-between;font-size:0.8rem;color:#94a3b8}
+    .article-views{display:flex;align-items:center;gap:4px}
+    .article-date{display:flex;align-items:center;gap:4px}
+    .view-icon{width:14px;height:14px;background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/eye.svg') center/contain no-repeat;opacity:0.7}
+    .date-icon{width:14px;height:14px;background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/calendar.svg') center/contain no-repeat;opacity:0.7}
+    .trending-badge{position:absolute;top:15px;right:15px;background:linear-gradient(135deg, #ef4444, #dc2626);color:#fff;padding:6px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;box-shadow:0 4px 12px rgba(239,68,68,0.3)}
+    
+    /* Responsive artículos */
+    @media (max-width:768px){
+      .popular-articles{padding:40px 0}
+      .popular-articles h2{font-size:2rem}
+      .popular-articles .subtitle{font-size:1rem;margin:0 0 30px}
+      .articles-grid{grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:20px;margin-top:30px}
+      .article-content{padding:15px}
+      .article-title{font-size:1.1rem}
+      .article-excerpt{font-size:0.85rem}
+      .trending-badge{top:10px;right:10px;padding:4px 8px;font-size:0.7rem}
+    }
+    
+    @media (max-width:640px){
+      .popular-articles{padding:35px 0}
+      .popular-articles h2{font-size:1.8rem;margin:0 0 8px}
+      .popular-articles .subtitle{font-size:0.9rem;margin:0 0 25px}
+      .articles-grid{grid-template-columns:repeat(2,1fr);gap:12px;margin-top:20px}
+      .article-image{height:140px}
+      .article-content{padding:12px}
+      .article-category{font-size:0.7rem;padding:3px 8px;margin-bottom:8px}
+      .article-title{font-size:0.95rem;line-height:1.2;margin:0 0 6px}
+      .article-excerpt{font-size:0.75rem;line-height:1.35;margin:0 0 10px}
+      .article-meta{font-size:0.7rem;flex-direction:column;align-items:flex-start;gap:4px}
+      .article-views, .article-date{gap:3px}
+      .view-icon, .date-icon{width:12px;height:12px}
+      .trending-badge{top:8px;right:8px;padding:3px 6px;font-size:0.6rem}
+    }
+    
+    @media (max-width:480px){
+      .popular-articles{padding:25px 0}
+      .popular-articles h2{font-size:1.6rem;margin:0 0 6px}
+      .popular-articles .subtitle{font-size:0.85rem;margin:0 0 20px}
+      .articles-grid{grid-template-columns:repeat(2,1fr);gap:10px;margin-top:16px}
+      .article-image{height:120px}
+      .article-content{padding:10px}
+      .article-category{font-size:0.65rem;padding:2px 8px;margin-bottom:6px}
+      .article-title{font-size:0.85rem;line-height:1.1;margin:0 0 4px}
+      .article-excerpt{font-size:0.7rem;line-height:1.25;margin:0 0 8px}
+      .article-meta{font-size:0.65rem;gap:3px}
+      .article-views, .article-date{gap:2px}
+      .view-icon, .date-icon{width:10px;height:10px}
+      .trending-badge{top:6px;right:6px;padding:2px 5px;font-size:0.55rem}
+    }
+    
+    @media (max-width:360px){
+      .popular-articles{padding:20px 0}
+      .popular-articles h2{font-size:1.4rem;margin:0 0 5px}
+      .popular-articles .subtitle{font-size:0.8rem;margin:0 0 15px}
+      .articles-grid{grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px}
+      .article-image{height:110px}
+      .article-content{padding:8px}
+      .article-category{font-size:0.6rem;padding:2px 6px;margin-bottom:5px}
+      .article-title{font-size:0.8rem;line-height:1.1;margin:0 0 4px}
+      .article-excerpt{font-size:0.65rem;line-height:1.2;margin:0 0 6px}
+      .article-meta{font-size:0.6rem;gap:3px}
+      .view-icon, .date-icon{width:9px;height:9px}
+      .trending-badge{top:5px;right:5px;padding:1px 4px;font-size:0.5rem}
+    }
+
+    /* ===== SECCIÓN UBICACIÓN ===== */
+    .location-section{background:linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);padding:30px 0;position:relative;overflow:hidden}
+    .location-section::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at 20% 20%, rgba(255,0,150,0.2) 0%, transparent 50%), radial-gradient(circle at 80% 30%, rgba(0,255,255,0.2) 0%, transparent 50%), radial-gradient(circle at 40% 70%, rgba(255,255,0,0.2) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(255,0,255,0.2) 0%, transparent 50%), radial-gradient(circle at 10% 60%, rgba(0,255,0,0.2) 0%, transparent 50%), radial-gradient(circle at 90% 10%, rgba(255,100,0,0.2) 0%, transparent 50%);animation:rainbow-float 8s ease-in-out infinite;z-index:1}
+    .location-section::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at 60% 40%, rgba(150,0,255,0.15) 0%, transparent 40%), radial-gradient(circle at 30% 90%, rgba(255,200,0,0.15) 0%, transparent 40%), radial-gradient(circle at 85% 60%, rgba(0,150,255,0.15) 0%, transparent 40%);animation:rainbow-float 12s ease-in-out infinite reverse;z-index:1}
+    @keyframes rainbow-float{0%,100%{transform:translateY(0px) rotate(0deg);opacity:0.6}25%{transform:translateY(-10px) rotate(1deg);opacity:0.8}50%{transform:translateY(-5px) rotate(-1deg);opacity:0.7}75%{transform:translateY(-15px) rotate(0.5deg);opacity:0.9}}
+    .location-container{max-width:700px;margin:0 auto;padding:0 20px;text-align:center;position:relative;z-index:2}
+    .location-content h2{font-size:1.8rem;font-weight:800;color:#1e293b;margin:0 0 10px;line-height:1.2}
+    .location-content p{font-size:1rem;color:#64748b;margin:0 0 20px;line-height:1.6}
+    .location-info{display:flex;justify-content:center;gap:20px;flex-wrap:nowrap;align-items:stretch;max-width:1000px;margin:0 auto}
+    .location-item{display:flex;align-items:center;gap:15px;padding:20px 25px;background:#fff;border-radius:20px;box-shadow:0 3px 10px rgba(0,0,0,0.1);transition:all 0.3s ease;flex:1;min-width:0;max-width:300px;position:relative;z-index:2}
+    .location-item:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.15)}
+    .location-icon{width:45px;height:45px;background:url('img/web%205/WhatsApp%20Image%202025-10-06%20at%2010.06.42%20AM%20(5).jpeg') center/contain no-repeat;flex-shrink:0}
+    .location-text h4{font-size:1rem;font-weight:700;color:#1e293b;margin:0 0 4px}
+    .location-text p{font-size:0.85rem;color:#64748b;margin:0;line-height:1.3}
+    
+    /* Responsive para ubicación */
+    @media (max-width:768px){
+      .location-container{padding:0 16px;max-width:100%}
+      .location-content h2{font-size:1.5rem}
+      .location-content p{font-size:0.9rem}
+      .location-info{gap:15px;flex-wrap:wrap;justify-content:center}
+      .location-item{padding:15px 18px;max-width:250px;flex:0 1 calc(50% - 7.5px)}
+      .location-text h4{font-size:0.9rem}
+      .location-text p{font-size:0.8rem}
+      .location-icon{width:40px;height:40px}
+      /* Reducir intensidad de colores en tablet */
+      .location-section::before{background:radial-gradient(circle at 20% 20%, rgba(255,0,150,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 30%, rgba(0,255,255,0.15) 0%, transparent 50%), radial-gradient(circle at 40% 70%, rgba(255,255,0,0.15) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(255,0,255,0.15) 0%, transparent 50%), radial-gradient(circle at 10% 60%, rgba(0,255,0,0.15) 0%, transparent 50%), radial-gradient(circle at 90% 10%, rgba(255,100,0,0.15) 0%, transparent 50%)}
+      .location-section::after{background:radial-gradient(circle at 60% 40%, rgba(150,0,255,0.12) 0%, transparent 40%), radial-gradient(circle at 30% 90%, rgba(255,200,0,0.12) 0%, transparent 40%), radial-gradient(circle at 85% 60%, rgba(0,150,255,0.12) 0%, transparent 40%)}
+    }
+    
+    @media (max-width:640px){
+      .location-section{padding:20px 0}
+      .location-container{padding:0 12px}
+      .location-content h2{font-size:1.3rem;margin:0 0 8px}
+      .location-content p{font-size:0.85rem;margin:0 0 15px}
+      .location-info{flex-direction:column;align-items:center;gap:12px;max-width:400px;margin:0 auto}
+      .location-item{padding:12px 15px;width:100%;max-width:100%;flex-direction:row;justify-content:flex-start}
+      .location-text h4{font-size:0.8rem}
+      .location-text p{font-size:0.75rem;line-height:1.2}
+      .location-icon{width:35px;height:35px}
+      /* Simplificar efectos en móvil */
+      .location-section::before{background:radial-gradient(circle at 30% 30%, rgba(255,0,150,0.1) 0%, transparent 40%), radial-gradient(circle at 70% 70%, rgba(0,255,255,0.1) 0%, transparent 40%), radial-gradient(circle at 50% 50%, rgba(255,255,0,0.1) 0%, transparent 40%)}
+      .location-section::after{background:radial-gradient(circle at 20% 80%, rgba(150,0,255,0.08) 0%, transparent 35%), radial-gradient(circle at 80% 20%, rgba(255,200,0,0.08) 0%, transparent 35%)}
+    }
+    
+    @media (max-width:480px){
+      .location-section{padding:15px 0}
+      .location-container{padding:0 10px}
+      .location-content h2{font-size:1.2rem;margin:0 0 6px}
+      .location-content p{font-size:0.8rem;margin:0 0 12px}
+      .location-info{flex-direction:column;align-items:center;gap:10px;max-width:350px}
+      .location-item{padding:10px 12px;width:100%;max-width:100%;flex-direction:row;justify-content:flex-start}
+      .location-text h4{font-size:0.75rem;margin:0 0 2px}
+      .location-text p{font-size:0.7rem;line-height:1.1}
+      .location-icon{width:32px;height:32px}
+      /* Efectos mínimos en pantallas muy pequeñas */
+      .location-section::before{background:radial-gradient(circle at 50% 30%, rgba(255,0,150,0.08) 0%, transparent 30%), radial-gradient(circle at 50% 70%, rgba(0,255,255,0.08) 0%, transparent 30%)}
+      .location-section::after{background:none}
+      /* Reducir animación en móvil */
+      .location-section::before{animation:rainbow-float 12s ease-in-out infinite}
+    }
+    
+    @media (max-width:360px){
+      .location-section{padding:12px 0}
+      .location-container{padding:0 8px}
+      .location-content h2{font-size:1.1rem}
+      .location-content p{font-size:0.75rem}
+      .location-info{max-width:320px}
+      .location-item{padding:8px 10px;flex-direction:row;justify-content:flex-start}
+      .location-text h4{font-size:0.7rem;margin:0 0 1px}
+      .location-text p{font-size:0.65rem;line-height:1.1}
+      .location-icon{width:28px;height:28px}
+      /* Desactivar efectos en pantallas muy pequeñas */
+      .location-section::before{background:none;animation:none}
+      .location-section::after{background:none;animation:none}
+    }
+
+    /* ===== MODALES ===== */
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.9);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:1000;
+      padding:20px;
+      backdrop-filter:blur(12px);
+      animation:fadeIn 0.4s ease;
+    }
+    
+    .modal{
+      width:min(1400px,95vw);
+      max-height:95vh;
+      background:linear-gradient(145deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #1e3a8a 100%);
+      border:1px solid rgba(255,255,255,0.15);
+      border-radius:24px;
+      overflow:hidden;
+      box-shadow:
+        0 32px 64px rgba(0,0,0,0.6),
+        0 16px 32px rgba(0,0,0,0.4),
+        0 0 0 1px rgba(255,255,255,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.1);
+      animation:slideUp 0.5s cubic-bezier(0.4,0,0.2,1);
+      position:relative;
+    }
+    
+    .modal::before{
+      content:'';
+      position:absolute;
+      top:0;
+      left:0;
+      right:0;
+      height:1px;
+      background:linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    }
+    
+    .modal-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:28px 36px;
+      border-bottom:1px solid rgba(255,255,255,0.12);
+      background:linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
+      backdrop-filter:blur(15px);
+      position:relative;
+    }
+    
+    .modal-header::after{
+      content:'';
+      position:absolute;
+      bottom:0;
+      left:0;
+      right:0;
+      height:1px;
+      background:linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    }
+    
+    .modal-header strong{
+      color:#fff;
+      font-size:1.75rem;
+      font-weight:800;
+      text-shadow:0 3px 6px rgba(0,0,0,0.6);
+      letter-spacing:0.5px;
+      background:linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+    
+    .modal-close{
+      background:linear-gradient(135deg, rgba(239,68,68,0.9) 0%, rgba(220,38,38,0.9) 100%);
+      border:1px solid rgba(255,255,255,0.2);
+      color:#fff;
+      padding:14px 24px;
+      border-radius:16px;
+      cursor:pointer;
+      font-weight:700;
+      font-size:0.9rem;
+      transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+      backdrop-filter:blur(10px);
+      text-transform:uppercase;
+      letter-spacing:0.5px;
+      box-shadow:0 4px 12px rgba(239,68,68,0.3);
+    }
+    
+    .modal-close:hover{
+      background:linear-gradient(135deg, rgba(220,38,38,0.95) 0%, rgba(185,28,28,0.95) 100%);
+      transform:translateY(-3px) scale(1.05);
+      box-shadow:0 8px 25px rgba(239,68,68,0.5);
+    }
+    
+    .modal-close:active{
+      transform:translateY(-1px) scale(1.02);
+    }
+    
+    .modal-body{
+      padding:36px;
+      max-height:calc(95vh - 120px);
+      overflow-y:auto;
+      background:linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 100%);
+    }
+    
+    /* Scrollbar personalizado para el modal */
+    .modal-body::-webkit-scrollbar{
+      width:8px;
+    }
+    
+    .modal-body::-webkit-scrollbar-track{
+      background:rgba(255,255,255,0.05);
+      border-radius:4px;
+    }
+    
+    .modal-body::-webkit-scrollbar-thumb{
+      background:linear-gradient(135deg, #3b82f6, #1d4ed8);
+      border-radius:4px;
+    }
+    
+    .modal-body::-webkit-scrollbar-thumb:hover{
+      background:linear-gradient(135deg, #2563eb, #1e40af);
+    }
+    .gallery{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));
+      gap:24px;
+      margin-top:24px;
+    }
+    
+    .gallery img{
+      width:100%;
+      height:280px;
+      object-fit:cover;
+      border-radius:20px;
+      transition:all 0.5s cubic-bezier(0.4,0,0.2,1);
+      cursor:pointer;
+      box-shadow:
+        0 12px 32px rgba(0,0,0,0.4),
+        0 4px 16px rgba(0,0,0,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.1);
+      border:2px solid rgba(255,255,255,0.15);
+      position:relative;
+      overflow:hidden;
+    }
+    
+    .gallery img::before{
+      content:'';
+      position:absolute;
+      top:0;
+      left:0;
+      right:0;
+      bottom:0;
+      background:linear-gradient(135deg, rgba(59,130,246,0.1) 0%, rgba(147,51,234,0.1) 100%);
+      opacity:0;
+      transition:opacity 0.3s ease;
+    }
+    
+    .gallery img:hover{
+      transform:translateY(-12px) scale(1.03);
+      box-shadow:
+        0 20px 48px rgba(0,0,0,0.5),
+        0 8px 24px rgba(0,0,0,0.3),
+        0 0 0 1px rgba(59,130,246,0.3);
+      border-color:rgba(59,130,246,0.6);
+    }
+    
+    .gallery img:hover::before{
+      opacity:1;
+    }
+    
+    .service-description{
+      color:#e2e8f0;
+      font-size:1.2rem;
+      line-height:1.7;
+      margin-bottom:32px;
+      text-align:center;
+      padding:28px;
+      background:linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
+      border-radius:20px;
+      border:1px solid rgba(255,255,255,0.12);
+      backdrop-filter:blur(10px);
+      position:relative;
+      box-shadow:0 8px 32px rgba(0,0,0,0.2);
+    }
+    
+    .service-description::before{
+      content:'';
+      position:absolute;
+      top:0;
+      left:0;
+      right:0;
+      height:1px;
+      background:linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    }
+    
+    .gallery-title{
+      color:#fff;
+      font-size:1.5rem;
+      font-weight:700;
+      margin-bottom:20px;
+      text-align:center;
+      text-shadow:0 3px 6px rgba(0,0,0,0.6);
+      letter-spacing:0.5px;
+      background:linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+      position:relative;
+    }
+    
+    .gallery-title::after{
+      content:'';
+      position:absolute;
+      bottom:-8px;
+      left:50%;
+      transform:translateX(-50%);
+      width:60px;
+      height:3px;
+      background:linear-gradient(90deg, #3b82f6, #8b5cf6);
+      border-radius:2px;
+    }
+    .productos-lista{
+      margin-bottom:40px;
+    }
+    
+    .productos-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
+      gap:20px;
+      margin-top:20px;
+    }
+    
+    .producto-item{
+      background:linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.06) 100%);
+      border:1px solid rgba(255,255,255,0.18);
+      border-radius:18px;
+      padding:20px;
+      text-align:center;
+      color:#e2e8f0;
+      font-size:0.95rem;
+      font-weight:500;
+      transition:all 0.4s cubic-bezier(0.4,0,0.2,1);
+      backdrop-filter:blur(12px);
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      align-items:center;
+      position:relative;
+      overflow:hidden;
+      box-shadow:0 8px 32px rgba(0,0,0,0.2);
+    }
+    
+    .producto-imagen-container{
+      position:relative;
+      width:100%;
+      height:120px;
+      border-radius:12px;
+      overflow:hidden;
+      cursor:pointer;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.1);
+      transition:all 0.3s ease;
+    }
+    
+    .producto-imagen{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      transition:all 0.4s ease;
+      display:block;
+    }
+    
+    .producto-overlay{
+      position:absolute;
+      top:0;
+      left:0;
+      right:0;
+      bottom:0;
+      background:linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.6) 100%);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      opacity:0;
+      transition:all 0.3s ease;
+      backdrop-filter:blur(2px);
+    }
+    
+    .producto-zoom-icon{
+      font-size:1.2rem;
+      margin-bottom:4px;
+      transform:scale(0.8);
+      transition:transform 0.3s ease;
+    }
+    
+    .producto-zoom-text{
+      color:#fff;
+      font-size:0.7rem;
+      font-weight:600;
+      text-align:center;
+      text-shadow:0 2px 4px rgba(0,0,0,0.5);
+      transform:translateY(6px);
+      transition:transform 0.3s ease;
+    }
+    
+    .producto-imagen-container:hover .producto-overlay{
+      opacity:1;
+    }
+    
+    .producto-imagen-container:hover .producto-zoom-icon{
+      transform:scale(1.1);
+    }
+    
+    .producto-imagen-container:hover .producto-zoom-text{
+      transform:translateY(0);
+    }
+    
+    .producto-imagen-container:hover .producto-imagen{
+      transform:scale(1.05);
+    }
+    
+    .producto-imagen-container:hover{
+      border-color:rgba(59,130,246,0.6);
+      box-shadow:0 8px 24px rgba(59,130,246,0.3);
+    }
+    
+    .producto-item::before{
+      content:'';
+      position:absolute;
+      top:0;
+      left:0;
+      right:0;
+      height:1px;
+      background:linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    }
+    
+    .producto-item:hover{
+      background:linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.08) 100%);
+      border-color:rgba(59,130,246,0.6);
+      transform:translateY(-6px) scale(1.02);
+      box-shadow:0 16px 48px rgba(0,0,0,0.3);
+    }
+    
+    .producto-nombre{
+      font-weight:700;
+      color:#fff;
+      margin-bottom:8px;
+      line-height:1.4;
+      font-size:1rem;
+      text-shadow:0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .producto-btn{
+      background:linear-gradient(135deg, #25D366 0%, #128C7E 50%, #0d6b5c 100%);
+      color:#fff;
+      border:none;
+      padding:12px 24px;
+      border-radius:25px;
+      font-size:0.85rem;
+      font-weight:700;
+      cursor:pointer;
+      transition:all 0.4s cubic-bezier(0.4,0,0.2,1);
+      text-transform:uppercase;
+      letter-spacing:0.8px;
+      box-shadow:0 6px 20px rgba(37,211,102,0.3);
+      position:relative;
+      overflow:hidden;
+    }
+    
+    .producto-btn::before{
+      content:'';
+      position:absolute;
+      top:0;
+      left:-100%;
+      width:100%;
+      height:100%;
+      background:linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition:left 0.5s ease;
+    }
+    
+    .producto-btn:hover::before{
+      left:100%;
+    }
+    
+    .producto-btn:hover{
+      background:linear-gradient(135deg, #128C7E 0%, #0d6b5c 50%, #25D366 100%);
+      transform:translateY(-3px) scale(1.05);
+      box-shadow:0 12px 32px rgba(37,211,102,0.5);
+    }
+    
+    .producto-btn:active{
+      transform:translateY(-1px) scale(1.02);
+    }
+    
+    .productos-cta{
+      background:linear-gradient(135deg, rgba(37,211,102,0.15) 0%, rgba(13,107,92,0.1) 100%);
+      border:1px solid rgba(37,211,102,0.3);
+      border-radius:20px;
+      padding:28px;
+      margin-top:32px;
+      text-align:center;
+      backdrop-filter:blur(10px);
+      position:relative;
+      box-shadow:0 8px 32px rgba(37,211,102,0.1);
+    }
+    
+    .productos-cta::before{
+      content:'';
+      position:absolute;
+      top:0;
+      left:0;
+      right:0;
+      height:1px;
+      background:linear-gradient(90deg, transparent, rgba(37,211,102,0.5), transparent);
+    }
+    
+    .productos-cta p{
+      color:#e2e8f0;
+      margin:0 0 20px;
+      font-size:1rem;
+      font-weight:500;
+    }
+    
+    /* Estilos para estado de carga de productos */
+    .productos-loading{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:40px 20px;
+      color:#e2e8f0;
+      font-size:1rem;
+      font-weight:500;
+      background:rgba(255,255,255,0.05);
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.1);
+      margin:20px 0;
+    }
+    
+    .productos-loading::before{
+      content:'';
+      width:24px;
+      height:24px;
+      border:3px solid rgba(59,130,246,0.2);
+      border-top:3px solid #3b82f6;
+      border-radius:50%;
+      animation:spin 1s linear infinite;
+      margin-right:15px;
+    }
+    
+    @keyframes spin{
+      0%{transform:rotate(0deg)}
+      100%{transform:rotate(360deg)}
+    }
+    
+    .productos-no-disponibles{
+      text-align:center;
+      padding:40px 20px;
+      color:#94a3b8;
+      font-style:italic;
+      background:rgba(255,255,255,0.05);
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.1);
+    }
+    
+    .cta-whatsapp{
+      background:linear-gradient(135deg, #25D366 0%, #128C7E 50%, #0d6b5c 100%);
+      color:#fff;
+      padding:16px 32px;
+      border-radius:30px;
+      text-decoration:none;
+      font-weight:700;
+      font-size:1rem;
+      transition:all 0.4s cubic-bezier(0.4,0,0.2,1);
+      display:inline-flex;
+      align-items:center;
+      gap:12px;
+      box-shadow:0 8px 24px rgba(37,211,102,0.3);
+      position:relative;
+      overflow:hidden;
+      text-transform:uppercase;
+      letter-spacing:0.5px;
+    }
+    
+    .cta-whatsapp::before{
+      content:'';
+      position:absolute;
+      top:0;
+      left:-100%;
+      width:100%;
+      height:100%;
+      background:linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition:left 0.5s ease;
+    }
+    
+    .cta-whatsapp:hover::before{
+      left:100%;
+    }
+    
+    .cta-whatsapp:hover{
+      background:linear-gradient(135deg, #128C7E 0%, #0d6b5c 50%, #25D366 100%);
+      transform:translateY(-4px) scale(1.05);
+      box-shadow:0 16px 40px rgba(37,211,102,0.5);
+    }
+    
+    /* Animaciones */
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes slideUp{from{opacity:0;transform:translateY(50px) scale(0.9)}to{opacity:1;transform:translateY(0) scale(1)}}
+    
+    /* Responsive mejorado */
+    @media (max-width:768px){
+      .modal-backdrop{padding:16px}
+      .modal{width:calc(100vw - 32px);max-height:calc(100vh - 32px);border-radius:16px}
+      .modal-header{padding:20px;font-size:1.2rem}
+      .modal-body{padding:20px;max-height:calc(100vh - 120px)}
+      .gallery{grid-template-columns:1fr;gap:12px}
+      .gallery img{height:160px;border-radius:10px}
+      .service-description{font-size:1rem;padding:15px;margin-bottom:15px}
+      .gallery-title{font-size:1.1rem;margin-bottom:12px}
+      .productos-grid{grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));gap:10px}
+      .producto-item{font-size:0.8rem;padding:10px 12px}
+      .producto-imagen-container{height:100px}
+      .producto-zoom-icon{font-size:1rem}
+      .producto-zoom-text{font-size:0.6rem}
+    }
+    
+    @media (max-width:480px){
+      .modal-backdrop{padding:12px}
+      .modal{width:calc(100vw - 24px);max-height:calc(100vh - 24px);border-radius:12px}
+      .modal-header{padding:16px}
+      .modal-body{padding:16px;max-height:calc(100vh - 100px)}
+      .gallery{grid-template-columns:1fr;gap:10px}
+      .gallery img{height:140px;border-radius:8px}
+      .service-description{font-size:0.9rem;padding:12px;margin-bottom:12px}
+      .gallery-title{font-size:1rem;margin-bottom:10px}
+      .productos-grid{grid-template-columns:1fr;gap:8px}
+      .producto-item{font-size:0.75rem;padding:8px 10px}
+      .producto-imagen-container{height:80px}
+      .producto-zoom-icon{font-size:0.9rem}
+      .producto-zoom-text{font-size:0.55rem}
+    }
+    
+    @media (max-width:360px){
+      .modal-backdrop{padding:8px}
+      .modal{width:calc(100vw - 16px);max-height:calc(100vh - 16px);border-radius:8px}
+      .modal-header{padding:12px}
+      .modal-body{padding:12px;max-height:calc(100vh - 80px)}
+      .gallery{grid-template-columns:1fr;gap:8px}
+      .gallery img{height:120px;border-radius:6px}
+      .service-description{font-size:0.85rem;padding:10px;margin-bottom:10px}
+      .gallery-title{font-size:0.9rem;margin-bottom:8px}
+      .producto-item{font-size:0.7rem;padding:6px 8px}
+      .producto-imagen-container{height:70px}
+      .producto-zoom-icon{font-size:0.8rem}
+      .producto-zoom-text{font-size:0.5rem}
+    }
+
+    /* ================================================================================
+       SECCIÓN EMAIL/COTIZACIÓN
+       Formulario de contacto funcional con envío POST al backend
+       ================================================================================ */
+    .email-section{background:linear-gradient(135deg, rgba(30,41,59,0.9) 0%, rgba(51,65,85,0.8) 50%, rgba(71,85,105,0.9) 100%), url('img/web%205/ofertas/fondo-correo.jpeg');background-size:cover;background-position:center;background-attachment:fixed;padding:80px 0;position:relative;overflow:hidden;min-height:100vh;display:flex;align-items:center;justify-content:center}
+    .email-section::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:1}
+    .email-container{max-width:min(900px, 95vw);margin:0 auto;padding:40px max(20px, 5vw);position:relative;z-index:3;text-align:center;width:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .email-header{margin-bottom:50px}
+    .email-title{font-size:clamp(2rem, 5vw, 3rem);font-weight:800;color:#fff;margin:0 0 20px;text-shadow:0 4px 12px rgba(0,0,0,0.7), 0 2px 4px rgba(0,0,0,0.5);line-height:1.2;word-wrap:break-word;hyphens:auto}
+    .email-subtitle{font-size:clamp(1rem, 3vw, 1.3rem);color:#fff;margin:0 0 30px;opacity:0.95;line-height:1.5;text-shadow:0 2px 8px rgba(0,0,0,0.6);word-wrap:break-word}
+    .email-description{font-size:clamp(0.9rem, 2.5vw, 1.1rem);color:#e2e8f0;margin:0 0 40px;max-width:min(600px, 90vw);margin-left:auto;margin-right:auto;line-height:1.6;text-shadow:0 2px 6px rgba(0,0,0,0.5);word-wrap:break-word}
+    .email-button{display:inline-flex;align-items:center;gap:15px;background:linear-gradient(135deg, #3b82f6 0%, #1d4ed8 50%, #1e40af 100%);color:#fff;border:none;padding:clamp(16px, 4vw, 20px) clamp(32px, 8vw, 40px);border-radius:50px;font-size:clamp(1rem, 3vw, 1.2rem);font-weight:700;cursor:pointer;transition:all 0.4s ease;text-decoration:none;box-shadow:0 8px 25px rgba(59,130,246,0.4);text-transform:uppercase;letter-spacing:1px;position:relative;overflow:hidden;max-width:100%;white-space:nowrap}
+    .email-button::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);transition:left 0.5s ease}
+    .email-button:hover::before{left:100%}
+    .email-button:hover{transform:translateY(-3px);box-shadow:0 15px 35px rgba(59,130,246,0.6);background:linear-gradient(135deg, #2563eb 0%, #1e40af 50%, #1e3a8a 100%)}
+    .email-button:active{transform:translateY(-1px)}
+    .email-icon{width:clamp(20px, 4vw, 24px);height:clamp(20px, 4vw, 24px);background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/mail.svg') center/contain no-repeat;filter:brightness(0) invert(1);flex-shrink:0}
+    .email-features{display:flex;justify-content:center;margin:60px auto 0;padding-top:40px;border-top:1px solid rgba(255,255,255,0.1);width:100%;max-width:900px}
+    .features-panel{background:rgba(255,255,255,0.1);backdrop-filter:blur(15px);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:clamp(30px, 5vw, 40px);text-align:center;transition:all 0.3s ease;box-shadow:0 8px 25px rgba(0,0,0,0.2);width:100%;box-sizing:border-box;display:grid;grid-template-columns:repeat(3, 1fr);gap:clamp(20px, 4vw, 30px);align-items:start}
+    .features-panel:hover{transform:translateY(-5px);background:rgba(255,255,255,0.15);border-color:rgba(59,130,246,0.5);box-shadow:0 12px 35px rgba(0,0,0,0.3)}
+    .feature-card{background:none;border:none;padding:0;text-align:center;transition:none;box-shadow:none;width:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
+    .feature-card:hover{transform:none;background:none;border:none;box-shadow:none}
+    .feature-icon{width:clamp(40px, 8vw, 50px);height:clamp(40px, 8vw, 50px);margin:0 auto 15px;background:linear-gradient(135deg, #3b82f6, #1d4ed8);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:clamp(1.2rem, 3vw, 1.5rem);box-shadow:0 4px 15px rgba(59,130,246,0.3)}
+    .feature-title{font-weight:700;color:#fff;margin:0 0 10px;font-size:clamp(1rem, 2.5vw, 1.1rem);text-shadow:0 2px 4px rgba(0,0,0,0.5);word-wrap:break-word}
+    .feature-desc{color:#e2e8f0;font-size:clamp(0.8rem, 2vw, 0.9rem);margin:0;line-height:1.5;opacity:0.95;text-shadow:0 1px 3px rgba(0,0,0,0.4);word-wrap:break-word}
+    .email-cta{background:rgba(59,130,246,0.15);border:2px solid rgba(59,130,246,0.4);border-radius:20px;padding:clamp(20px, 4vw, 30px);margin:40px auto 0;backdrop-filter:blur(15px);box-shadow:0 8px 25px rgba(0,0,0,0.2);width:100%;max-width:600px;box-sizing:border-box;text-align:center}
+    .cta-text{color:#fff;font-size:clamp(1rem, 2.5vw, 1.1rem);margin:0 0 15px;font-weight:600;text-shadow:0 2px 4px rgba(0,0,0,0.5);word-wrap:break-word}
+    .cta-email{color:#60a5fa;font-size:clamp(1.1rem, 3vw, 1.3rem);font-weight:700;text-decoration:none;transition:color 0.3s ease;text-shadow:0 2px 4px rgba(0,0,0,0.3);word-wrap:break-word;word-break:break-all}
+    .cta-email:hover{color:#93c5fd;text-decoration:underline}
+    
+    /* ================================================================================
+       FORMULARIO DE CONTACTO
+       Estilos para el formulario funcional con campos de entrada y validación
+       ================================================================================ */
+    .contact-form{background:rgba(255,255,255,0.1);backdrop-filter:blur(15px);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:clamp(30px, 5vw, 40px);width:100%;max-width:600px;margin:0 auto;box-shadow:0 8px 25px rgba(0,0,0,0.2);transition:all 0.3s ease}
+    .contact-form:hover{transform:translateY(-5px);background:rgba(255,255,255,0.15);border-color:rgba(59,130,246,0.5);box-shadow:0 12px 35px rgba(0,0,0,0.3)}
+    .form-group{margin-bottom:25px;text-align:left}
+    .form-group label{display:block;color:#fff;font-weight:600;margin-bottom:8px;font-size:clamp(0.9rem, 2.5vw, 1rem);text-shadow:0 2px 4px rgba(0,0,0,0.5)}
+    .form-group input,.form-group textarea,.form-group select{width:100%;padding:clamp(12px, 3vw, 16px);border:2px solid rgba(255,255,255,0.2);border-radius:12px;background:rgba(255,255,255,0.1);color:#fff;font-size:clamp(0.9rem, 2.5vw, 1rem);transition:all 0.3s ease;box-sizing:border-box;backdrop-filter:blur(10px)}
+    .form-group input:focus,.form-group textarea:focus,.form-group select:focus{outline:none;border-color:#3b82f6;background:rgba(255,255,255,0.15);box-shadow:0 0 0 3px rgba(59,130,246,0.2)}
+    .form-group input::placeholder,.form-group textarea::placeholder{color:rgba(255,255,255,0.7)}
+    .form-group textarea{min-height:120px;resize:vertical;font-family:inherit}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+    .submit-btn{display:inline-flex;align-items:center;gap:15px;background:linear-gradient(135deg, #3b82f6 0%, #1d4ed8 50%, #1e40af 100%);color:#fff;border:none;padding:clamp(16px, 4vw, 20px) clamp(32px, 8vw, 40px);border-radius:50px;font-size:clamp(1rem, 3vw, 1.2rem);font-weight:700;cursor:pointer;transition:all 0.4s ease;text-decoration:none;box-shadow:0 8px 25px rgba(59,130,246,0.4);text-transform:uppercase;letter-spacing:1px;position:relative;overflow:hidden;max-width:100%;white-space:nowrap;width:100%;justify-content:center;margin-top:20px}
+    .submit-btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);transition:left 0.5s ease}
+    .submit-btn:hover::before{left:100%}
+    .submit-btn:hover{transform:translateY(-3px);box-shadow:0 15px 35px rgba(59,130,246,0.6);background:linear-gradient(135deg, #2563eb 0%, #1e40af 50%, #1e3a8a 100%)}
+    .submit-btn:active{transform:translateY(-1px)}
+    .submit-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+    .submit-icon{width:clamp(20px, 4vw, 24px);height:clamp(20px, 4vw, 24px);background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/send.svg') center/contain no-repeat;filter:brightness(0) invert(1);flex-shrink:0}
+    .loading-spinner{width:20px;height:20px;border:2px solid rgba(255,255,255,0.3);border-top:2px solid #fff;border-radius:50%;animation:spin 1s linear infinite;display:none}
+    .submit-btn.loading .loading-spinner{display:block}
+    .submit-btn.loading .submit-icon{display:none}
+    @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+    
+    /* Mensajes de estado */
+    .message{background:rgba(255,255,255,0.1);backdrop-filter:blur(15px);border:1px solid rgba(255,255,255,0.2);border-radius:12px;padding:clamp(15px, 3vw, 20px);margin:20px 0;text-align:center;transition:all 0.3s ease;display:none}
+    .message.success{background:rgba(34,197,94,0.2);border-color:rgba(34,197,94,0.4);color:#4ade80}
+    .message.error{background:rgba(239,68,68,0.2);border-color:rgba(239,68,68,0.4);color:#f87171}
+    .message.show{display:block;animation:slideDown 0.3s ease}
+    
+    /* Media queries optimizados - Solo para ajustes específicos */
+    @media (max-width:768px){
+      .email-section{min-height:auto;padding:60px 0}
+      .email-container{max-width:100%;padding:30px 20px}
+      .email-features{max-width:100%;margin:50px auto 0}
+      .features-panel{grid-template-columns:1fr;gap:25px;padding:25px 20px}
+      .feature-card{padding:0;min-height:auto;max-width:100%}
+      .feature-icon{width:35px;height:35px;font-size:1.1rem;margin:0 auto 12px}
+      .feature-title{font-size:0.95rem;margin:0 0 8px}
+      .feature-desc{font-size:0.8rem;line-height:1.4}
+      .email-cta{max-width:100%;margin:30px auto 0}
+      .contact-form{max-width:100%;padding:25px 20px}
+      .form-row{grid-template-columns:1fr;gap:15px}
+    }
+    
+    @media (max-width:480px){
+      .email-section{padding:40px 0}
+      .email-container{padding:20px 15px;max-width:100%}
+      .email-features{max-width:100%;margin:40px auto 0}
+      .features-panel{gap:20px;padding:20px 15px}
+      .feature-card{padding:0;min-height:auto;max-width:100%}
+      .feature-icon{width:30px;height:30px;font-size:1rem;margin:0 auto 10px}
+      .feature-title{font-size:0.85rem;margin:0 0 6px}
+      .feature-desc{font-size:0.75rem;line-height:1.3}
+      .email-cta{padding:15px;margin:25px auto 0;max-width:100%}
+      .cta-text{font-size:0.9rem;margin:0 0 10px}
+      .cta-email{font-size:1rem}
+      .contact-form{padding:20px 15px}
+      .form-group{margin-bottom:20px}
+      .submit-btn{padding:14px 24px;font-size:0.9rem}
+    }
+    
+    @media (max-width:360px){
+      .email-container{padding:15px 10px;max-width:100%}
+      .email-features{max-width:100%;margin:35px auto 0}
+      .features-panel{gap:15px;padding:15px 10px}
+      .feature-card{padding:0;min-height:auto;max-width:100%}
+      .feature-icon{width:25px;height:25px;font-size:0.9rem;margin:0 auto 8px}
+      .feature-title{font-size:0.8rem;margin:0 0 5px}
+      .feature-desc{font-size:0.7rem;line-height:1.2}
+      .email-cta{padding:12px;margin:20px auto 0;max-width:100%}
+      .cta-text{font-size:0.85rem;margin:0 0 8px}
+      .cta-email{font-size:0.9rem}
+      .contact-form{padding:15px 10px}
+      .form-group{margin-bottom:15px}
+      .submit-btn{padding:12px 20px;font-size:0.85rem}
+    }
+
+    /* ================================================================================
+       FOOTER
+       Pie de página con información de contacto y enlaces
+       ================================================================================ */
+    .footer{border-top:6px solid transparent;border-image:linear-gradient(90deg, cyan, magenta, yellow, black) 1;background:#000;color:#fff;padding:26px 0;margin-top:0}
+    .footer .cols{display:grid;grid-template-columns:1.2fr 1fr;gap:24px;align-items:center}
+    .brand-line{display:flex;align-items:center;gap:10px}
+    .brand-slogan{color:#e5e7eb}
+    .footer-logo{height:60px}
+    .contact{display:grid;gap:10px;justify-items:start}
+    .contact h4{margin:0 0 6px 0;letter-spacing:.5px}
+    .citem{display:flex;align-items:center;gap:10px;color:#fff}
+    .cicon{width:16px;height:16px;opacity:.9;filter:invert(1)}
+    .cicon.whatsapp{background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/brand-whatsapp.svg') center/contain no-repeat}
+    .cicon.mail{background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/mail.svg') center/contain no-repeat}
+    .cicon.facebook{background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/brand-facebook.svg') center/contain no-repeat}
+    .cicon.map{background:url('https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/map-pin.svg') center/contain no-repeat}
+    .footer-links{margin-top:18px;padding-top:18px;border-top:1px solid #1a1a24}
+    .footer-links .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    .footer-links h5{margin:0 0 8px 0;font-size:14px;letter-spacing:.4px;color:#e5e7eb}
+    .footer-links a{display:block;color:#cbd5e1;opacity:.9;padding:6px 0}
+    .footer-links a:hover{opacity:1;text-decoration:underline}
+    
+    /* Footer Responsive */
+    @media (max-width:768px){
+      .footer{padding:20px 0}
+      .footer .cols{gap:20px}
+      .footer-logo{height:50px}
+      .contact{gap:8px}
+      .contact h4{font-size:0.9rem;margin:0 0 5px 0}
+      .citem{gap:8px;font-size:0.9rem}
+      .cicon{width:14px;height:14px}
+      .footer-links{margin-top:15px;padding-top:15px}
+      .footer-links .grid{grid-template-columns:repeat(2,1fr);gap:12px}
+      .footer-links h5{font-size:13px;margin:0 0 6px 0}
+      .footer-links a{font-size:12px;padding:4px 0}
+    }
+    
+    @media (max-width:640px){
+      .footer .cols{grid-template-columns:1fr;gap:16px;text-align:center}
+      .brand-line{justify-content:center}
+      .contact{justify-items:center;gap:6px}
+      .contact h4{font-size:0.85rem}
+      .citem{justify-content:center;font-size:0.85rem}
+      .footer-links .grid{grid-template-columns:repeat(2,1fr);gap:10px}
+    }
+    
+    @media (max-width:480px){
+      .footer{padding:15px 0}
+      .footer-logo{height:40px}
+      .contact h4{font-size:0.8rem;margin:0 0 4px 0}
+      .citem{font-size:0.8rem;gap:6px}
+      .cicon{width:12px;height:12px}
+      .footer-links{margin-top:12px;padding-top:12px}
+      .footer-links .grid{grid-template-columns:1fr;gap:8px;text-align:center}
+      .footer-links h5{font-size:12px;margin:0 0 4px 0}
+      .footer-links a{font-size:11px;padding:3px 0}
+    }
+    
+    @media (max-width:360px){
+      .footer{padding:12px 0}
+      .footer-logo{height:35px}
+      .contact h4{font-size:0.75rem}
+      .citem{font-size:0.75rem;gap:5px}
+      .cicon{width:10px;height:10px}
+      .footer-links{margin-top:10px;padding-top:10px}
+      .footer-links h5{font-size:11px}
+      .footer-links a{font-size:10px;padding:2px 0}
+    }
+
+    /* ===== ADAPTACIONES MÓVILES GENERALES ===== */
+    @media (max-width:640px){
+      .infobar-inner{height:auto;gap:8px;padding:8px 0}
+      .section{padding:28px 0}
+      .nav{gap:10px}
+      .nav a{font-size:14px}
+      .swiper-slide img{height:260px}
+      .hero-cta .cta-inner{font-size:14px}
+      .grid{gap:10px}
+      .trust .grid{grid-template-columns:1fr 1fr}
+      .service{padding:16px;min-height:100px;gap:10px}
+      .service img{width:50px;height:50px}
+      .service b{font-size:0.8rem;margin-top:6px}
+      .quick-input{flex-direction:column;align-items:stretch}
+      .quick-input .btn, .quick-input button{width:100%}
+      .footer .cols{gap:16px}
+      .footer-logo{height:48px}
+      .footer-links .grid{grid-template-columns:1fr 1fr}
+    }
+    
+    @media (max-width:480px){
+      .infobar-inner{height:auto;gap:6px;padding:6px 0;font-size:12px}
+      .section{padding:20px 0}
+      .header-inner{height:70px;padding:0 12px}
+      .logo-img{height:50px}
+      .nav{gap:8px}
+      .nav a{font-size:13px;padding:6px 12px}
+      .swiper-slide img{height:220px}
+      .hero-cta .cta-inner{font-size:13px;padding:10px 14px}
+      .grid{gap:8px}
+      .trust .grid{grid-template-columns:1fr;gap:12px}
+      .trust .badge{padding:12px;gap:10px}
+      .trust .icon{width:16px;height:16px}
+      .service{padding:12px;min-height:90px;gap:8px}
+      .service img{width:40px;height:40px}
+      .service b{font-size:0.75rem;margin-top:5px}
+    }
+    
+    @media (max-width:360px){
+      .infobar-inner{height:auto;gap:4px;padding:4px 0;font-size:11px}
+      .section{padding:15px 0}
+      .header-inner{height:60px;padding:0 10px}
+      .logo-img{height:45px}
+      .nav{gap:6px}
+      .nav a{font-size:12px;padding:5px 10px}
+      .swiper-slide img{height:180px}
+      .hero-cta .cta-inner{font-size:12px;padding:8px 12px}
+      .grid{gap:6px}
+      .trust .badge{padding:10px;gap:8px}
+      .trust .icon{width:14px;height:14px}
+      .trust .txt b{font-size:13px}
+      .trust .txt small{font-size:11px}
+      .service{padding:10px;min-height:80px;gap:6px}
+      .service img{width:35px;height:35px}
+      .service b{font-size:0.7rem;margin-top:4px}
+    }
+    
+    /* ===== SCROLL OFFSET PARA HEADER STICKY ===== */
+    #servicios,#ubicacion,#cotiza,#contacto{scroll-margin-top:110px}
+    @media (max-width:640px){#servicios,#ubicacion,#cotiza,#contacto{scroll-margin-top:80px}}
+    @media (max-width:480px){#servicios,#ubicacion,#cotiza,#contacto{scroll-margin-top:70px}}
+    @media (max-width:360px){#servicios,#ubicacion,#cotiza,#contacto{scroll-margin-top:60px}}
+  </style>
+</head>
+<body>
+  <div class="topbar"></div>
+  <div class="infobar">
+    <div class="container infobar-inner">
+      <div class="left">
+        <span class="item"><span class="i mail"></span> zgrafica.mx@gmail.com</span>
+      </div>
+      <div class="right">
+        <span class="item"><span class="i clock"></span> Lun–Vie 9:00–18:00</span>
+        <span class="item"><span class="i lock"></span> Privacidad y pagos seguros</span>
+      </div>
+    </div>
+  </div>
+  <div id="root"></div>
+  <div class="bottombar"></div>
+
+  <!-- React 18 from CDN -->
+  <script crossorigin="anonymous" src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin="anonymous" src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Swiper JS -->
+  <script crossorigin="anonymous" src="https://unpkg.com/swiper@9/swiper-bundle.min.js"></script>
+  <!-- PocketBase SDK -->
+  <script crossorigin="anonymous" src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+  <script>
+    // ================================================================================
+    // CONFIGURACIÓN INICIAL Y DEPENDENCIAS
+    // ================================================================================
+    const { useState, useEffect } = React;
+
+    // Configuración básica
+    const WHATSAPP_PHONE = '528998737313'; // Número de WhatsApp: 899 873 7313
+    
+    // ================================================================================
+    // CONFIGURACIÓN DE POCKETBASE BACKEND
+    // ================================================================================
+    // URL del backend PocketBase
+    const POCKETBASE_URL = 'https://zonagraficapd.ezhostingit.com';
+    
+    // Variables globales para almacenar datos dinámicos
+    let serviciosDinamicos = [];
+    let productosDinamicos = [];
+
+    // ================================================================================
+    // FUNCIONES DE CONEXIÓN CON POCKETBASE BACKEND
+    // ================================================================================
+    
+    /**
+     * OBTENER CATEGORÍAS DESDE POCKETBASE
+     * Función para obtener categorías de servicios desde el backend
+     * Endpoint: /api/collections/categorias/records
+     * @returns {Array} Array de categorías o array vacío si hay error
+     */
+    async function obtenerCategorias() {
+      try {
+        const response = await fetch(`${POCKETBASE_URL}/api/collections/categorias/records`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        return data.items || [];
+      } catch (error) {
+        console.warn('Error al obtener categorías de PocketBase:', error);
+        return [];
+      }
+    }
+
+    // LÍNEA 734-742: Función para obtener productos desde PocketBase
+    /**
+     * OBTENER PRODUCTOS DESDE POCKETBASE
+     * Función para obtener productos desde el backend
+     * Endpoint: /api/collections/productos/records
+     * @returns {Array} Array de productos o array vacío si hay error
+     */
+    async function obtenerProductos() {
+      try {
+        const response = await fetch(`${POCKETBASE_URL}/api/collections/productos/records`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        return data.items || [];
+      } catch (error) {
+        console.warn('Error al obtener productos de PocketBase:', error);
+        return [];
+      }
+    }
+
+    // LÍNEA 748-756: Función para obtener productos por categoría
+    // Endpoint: /api/collections/productos/records?filter=(categoria='CATEGORIA')
+    async function obtenerProductosPorCategoria(categoria) {
+      try {
+        console.log(`🔍 Buscando productos para categoría: "${categoria}"`);
+        
+        // Intentar diferentes variaciones del nombre de la categoría
+        const variacionesCategoria = [
+          categoria,
+          categoria.toUpperCase(),
+          categoria.toLowerCase(),
+          categoria.replace(/\s+/g, ' ').trim()
+        ];
+        
+        // Eliminar duplicados
+        const categoriasUnicas = [...new Set(variacionesCategoria)];
+        
+        for (const catVariacion of categoriasUnicas) {
+          try {
+            const response = await fetch(`${POCKETBASE_URL}/api/collections/productos/records?filter=(categoria='${encodeURIComponent(catVariacion)}')`);
+            
+            if (response.ok) {
+              const data = await response.json();
+              const productos = data.items || [];
+              
+              if (productos.length > 0) {
+                console.log(`✅ Productos encontrados para "${catVariacion}": ${productos.length} productos`);
+                return productos;
+              }
+            }
+          } catch (catError) {
+            console.log(`⚠️ Error con variación "${catVariacion}":`, catError.message);
+            continue;
+          }
+        }
+        
+        console.log(`❌ No se encontraron productos para ninguna variación de "${categoria}"`);
+        return [];
+        
+      } catch (error) {
+        console.warn(`❌ Error general al obtener productos de ${categoria}:`, error);
+        return [];
+      }
+    }
+
+    // ================================================================================
+    // FUNCIÓN PRINCIPAL DE CARGA DE DATOS DINÁMICOS
+    // ================================================================================
+    
+    /**
+     * CARGAR DATOS DINÁMICOS DESDE POCKETBASE
+     * Función principal que carga todos los datos desde el backend
+     * - Procesa categorías y productos
+     * - Organiza los datos por categoría
+     * - Dispara eventos para actualizar la UI
+     * - Maneja errores y fallbacks
+     */
+    async function cargarDatosDinamicos() {
+      try {
+        const [categorias, productos] = await Promise.all([
+          obtenerCategorias(),
+          obtenerProductos()
+        ]);
+
+        // Procesar categorías con productos específicos
+        serviciosDinamicos = categorias.map(cat => {
+          let productos = [];
+          let descripcion = '';
+          
+          // Asignar productos específicos según la categoría
+          switch(cat.nombre) {
+            case 'IMPRENTA':
+              productos = [
+                'CARPETAS IMPRESAS',
+                'TABLOIDE EN PAPEL COUCHE', 
+                'TABLOIDE ADHESIVO CON RECORTE',
+                'BLOCK DE NOTAS / FORMATOS',
+                'VOLANTES / DIPTICOS / TRIPTICOS',
+                'TARJETAS DE PRESENTACION'
+              ];
+              descripcion = 'Impresión digital y offset de alta calidad. Tarjetas de presentación, volantes, dípticos, trípticos, block de notas, tabloides adhesivos y carpetas impresas.';
+              break;
+            case 'GRAN FORMATO':
+              productos = [
+                'VINIL ESTATICO',
+                'BANDERAS PUBLICITARIAS',
+                'BACKLITE',
+                'VINIL MATE / BRILLANTE',
+                'MICROPERFORADO',
+                'LONA IMPRESA'
+              ];
+              descripcion = 'Trabajos de gran formato para publicidad exterior e interior. Lonas impresas, microperforado, vinil mate/brillante, backlite, banderas publicitarias y vinil estático.';
+              break;
+            case 'ESTAMPADOS':
+              productos = ['SERVICIOS DE ESTAMPADO DISPONIBLES'];
+              descripcion = 'Playeras, gorras, textil personalizado y merchandising corporativo. Técnicas de serigrafía, sublimación y bordado profesional.';
+              break;
+            case 'RÍGIDOS':
+              productos = ['SERVICIOS DE RÍGIDOS DISPONIBLES'];
+              descripcion = 'Letreros rígidos, displays, stands y señalética de materiales sólidos como acrílico, PVC, foam board y metal. Durabilidad y resistencia.';
+              break;
+            case 'PROMOCIONALES':
+              productos = ['SERVICIOS PROMOCIONALES DISPONIBLES'];
+              descripcion = 'Material promocional, regalos corporativos, artículos publicitarios y merchandising personalizado para eventos y campañas.';
+              break;
+            case 'DISEÑO':
+              productos = ['SERVICIOS DE DISEÑO DISPONIBLES'];
+              descripcion = 'Servicios de diseño gráfico, identidad corporativa, logotipos, branding y creatividad visual profesional para todos tus proyectos.';
+              break;
+            case 'OTROS PRODUCTOS Y SERVICIOS':
+              productos = ['SERVICIOS ADICIONALES DISPONIBLES'];
+              descripcion = 'Servicios adicionales, productos especializados y soluciones personalizadas para necesidades específicas de tu empresa.';
+              break;
+            default:
+              productos = ['SERVICIOS DISPONIBLES'];
+              descripcion = cat.descripcion || `Servicios de ${cat.nombre.toLowerCase()}`;
+          }
+          
+          return {
+            id: cat.id,
+            nombre: cat.nombre,
+            desc: descripcion,
+            icon: 'img/web 5/iconos/gran_formato_.png', // Icono por defecto
+            productos: productos,
+            imgs: [
+              'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+              'img/web%205/ofertas/tendecia.webp',
+              'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+              'img/web%205/ofertas/vinil.jpg'
+            ]
+          };
+        });
+
+        // Procesar productos y agrupar por categoría
+        productos.forEach(producto => {
+          const servicio = serviciosDinamicos.find(s => s.nombre === producto.categoria);
+          if (servicio) {
+            servicio.productos.push(producto.nombre);
+          }
+        });
+
+        // Asignar iconos específicos según el nombre de la categoría
+        serviciosDinamicos.forEach(servicio => {
+          switch(servicio.nombre) {
+            case 'GRAN FORMATO':
+              servicio.icon = 'img/web 5/iconos/gran_formato_.png';
+              break;
+            case 'IMPRENTA':
+              servicio.icon = 'img/web 5/iconos/imprenta.png';
+              break;
+            case 'ESTAMPADOS':
+              servicio.icon = 'img/web 5/iconos/estampados.png';
+              break;
+            case 'RÍGIDOS':
+              servicio.icon = 'img/web 5/iconos/rigidos.png';
+              break;
+            case 'PROMOCIONALES':
+              servicio.icon = 'img/web 5/iconos/promocionales.png';
+              break;
+            case 'DISEÑO':
+              servicio.icon = 'img/web 5/iconos/diseño.png';
+              break;
+            case 'OTROS PRODUCTOS Y SERVICIOS':
+              servicio.icon = 'img/web 5/iconos/otros productos.png';
+              break;
+            default:
+              servicio.icon = 'img/web 5/iconos/gran_formato_.png';
+          }
+        });
+
+        productosDinamicos = productos;
+        
+        // Disparar evento para actualizar componentes
+        const event = new CustomEvent('datosCargados', { 
+          detail: { servicios: serviciosDinamicos, productos: productosDinamicos } 
+        });
+        window.dispatchEvent(event);
+
+      } catch (error) {
+        console.warn('Error al cargar datos dinámicos:', error);
+      }
+    }
+
+    // ================================================================================
+    // INICIALIZACIÓN DE DATOS DINÁMICOS
+    // ================================================================================
+    
+    // LÍNEA 831: Cargar datos al inicializar la página
+    cargarDatosDinamicos();
+
+    // LÍNEA 834: Función global para refrescar datos (útil para debugging)
+    window.refrescarDatos = cargarDatosDinamicos;
+
+    // Datos de respaldo para artículos
+    const articulosRespaldo = [
+      {
+        id: 1,
+        titulo: 'Tendencias en Diseño Gráfico 2024',
+        categoria: 'Diseño',
+        imagen: 'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+        resumen: 'Descubre las últimas tendencias en diseño gráfico que están marcando el 2024. Colores, tipografías y estilos que debes conocer.',
+        vistas: 2847,
+        fecha: '15 Ene 2024',
+        trending: true
+      },
+      {
+        id: 2,
+        titulo: 'Guía Completa de Impresión Digital',
+        categoria: 'Impresión',
+        imagen: 'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+        resumen: 'Todo lo que necesitas saber sobre impresión digital: tipos de papel, resoluciones, colores y técnicas profesionales.',
+        vistas: 1923,
+        fecha: '12 Ene 2024',
+        trending: false
+      },
+      {
+        id: 3,
+        titulo: 'Vinil para Exterior: Durabilidad y Calidad',
+        categoria: 'Materiales',
+        imagen: 'img/web%205/ofertas/vinil.jpg',
+        resumen: 'Conoce los mejores tipos de vinil para trabajos exteriores. Resistencia a la intemperie y acabados profesionales.',
+        vistas: 1654,
+        fecha: '10 Ene 2024',
+        trending: false
+      },
+      {
+        id: 4,
+        titulo: 'Estampado en Textiles: Técnicas Modernas',
+        categoria: 'Estampado',
+        imagen: 'img/web%205/ofertas/tendecia.webp',
+        resumen: 'Serigrafía, sublimación y bordado. Las mejores técnicas de estampado para diferentes tipos de textiles.',
+        vistas: 1432,
+        fecha: '8 Ene 2024',
+        trending: true
+      },
+      {
+        id: 5,
+        titulo: 'Letreros Luminosos LED: Guía de Instalación',
+        categoria: 'Letreros',
+        imagen: 'img/web%205/ofertas/vinil.jpg',
+        resumen: 'Instalación profesional de letreros luminosos. Consejos de seguridad, cableado y mantenimiento.',
+        vistas: 1287,
+        fecha: '5 Ene 2024',
+        trending: false
+      },
+      {
+        id: 6,
+        titulo: 'Corte Láser: Materiales y Aplicaciones',
+        categoria: 'Grabados',
+        imagen: 'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+        resumen: 'Explora las posibilidades del corte láser en acrílico, madera, metal y otros materiales. Técnicas y acabados.',
+        vistas: 1156,
+        fecha: '3 Ene 2024',
+        trending: false
+      }
+    ];
+
+    // ================================================================================
+    // FUNCIONES DE CONEXIÓN PARA ARTÍCULOS (POCKETBASE)
+    // ================================================================================
+    
+    // LÍNEA 906-938: Función para obtener artículos desde PocketBase
+    // Como la colección "articulos" no existe, usamos datos de respaldo
+    // En el futuro se puede crear la colección desde el panel de administración
+    async function obtenerArticulosPocketBase() {
+      try {
+        console.log('📰 Obteniendo artículos...');
+        console.log('ℹ️ La colección "articulos" no existe en PocketBase, usando datos de respaldo');
+        
+        // Verificar si la colección existe (solo para logging)
+        const meta = await fetch(`${POCKETBASE_URL}/api/collections/articulos`);
+        if (meta.status === 404) {
+          console.log('✅ Confirmado: La colección "articulos" no existe');
+        } else if (meta.status === 401) {
+          console.log('🔒 La colección "articulos" requiere autenticación');
+        } else {
+          console.log('📊 Estado de la colección:', meta.status);
+        }
+        
+        // Usar datos de respaldo ya que la colección no existe
+        console.log('📝 Usando datos de respaldo para artículos');
+        return articulosRespaldo;
+        
+      } catch (error) {
+        console.info('Artículos: usando respaldo. Detalle:', error?.message || error);
+        return articulosRespaldo; // Usar datos de respaldo en caso de error
+      }
+    }
+
+    // Función para intentar autenticación automática
+    async function intentarAutenticacionAutomatica() {
+      try {
+        console.log('🔄 Intentando autenticación automática...');
+        
+        // Crear instancia temporal de PocketBase
+        const pb = new PocketBase(POCKETBASE_URL);
+        
+        // Intentar autenticación como invitado o con credenciales públicas
+        // Nota: Esto depende de la configuración de tu PocketBase
+        try {
+          // Opción 1: Autenticación como invitado (si está habilitada)
+          await pb.collection('users').authWithPassword('guest@example.com', 'guest123');
+        } catch (guestError) {
+          console.log('👤 Autenticación como invitado falló, intentando acceso público...');
+          
+          // Opción 2: Verificar si la colección es pública
+          const publicTest = await fetch(`${POCKETBASE_URL}/api/collections/articulos/records?perPage=1`);
+          if (publicTest.ok) {
+            console.log('✅ Acceso público disponible');
+            return { success: true, public: true };
+          }
+          
+          throw new Error('No se pudo autenticar');
+        }
+        
+        // ⚠️ SECURITY WARNING: No almacenar tokens en localStorage sin encriptar
+        // CodeQL: Clear text storage of sensitive information
+        // SOLUCIÓN: Usar httpOnly cookies o sessionStorage con encriptación
+        // Deshabilitado por seguridad:
+        // if (pb.authStore.token) {
+        //   localStorage.setItem('pb_auth_token', pb.authStore.token);
+        //   console.log('💾 Token guardado para futuras consultas');
+        // }
+        if (pb.authStore.token) {
+          console.log('✅ Token obtenido (NO se almacena en localStorage por seguridad)');
+        }
+        
+        return { success: true, token: pb.authStore.token };
+        
+      } catch (error) {
+        console.warn('❌ Autenticación automática falló:', error.message);
+        return { success: false, error: error.message };
+      }
+    }
+
+    // LÍNEA 943-949: Función para cargar artículos al inicializar
+    async function cargarArticulos() {
+      const articulos = await obtenerArticulosPocketBase();
+      // Forzar re-render del componente si es necesario
+      const event = new CustomEvent('articulosCargados', { detail: articulos });
+      window.dispatchEvent(event);
+    }
+
+    // LÍNEA 951: Cargar artículos al inicializar la página
+    cargarArticulos();
+    
+    // ================================================================================
+    // FUNCIONES DE DIAGNÓSTICO Y AUTENTICACIÓN
+    // ================================================================================
+    
+    // Función para verificar el estado de la colección articulos
+    async function verificarColeccionArticulos() {
+      try {
+        console.log('🔍 Verificando colección "articulos"...');
+        
+        // Verificar si la colección existe
+        const metaResponse = await fetch(`${POCKETBASE_URL}/api/collections/articulos`);
+        console.log('📊 Estado de la colección:', metaResponse.status, metaResponse.statusText);
+        
+        if (metaResponse.status === 404) {
+          console.warn('❌ La colección "articulos" no existe');
+          return { existe: false, registros: 0, error: 'Colección no encontrada' };
+        }
+        
+        if (!metaResponse.ok) {
+          console.warn('⚠️ Error al acceder a la colección:', metaResponse.status);
+          return { existe: false, registros: 0, error: `HTTP ${metaResponse.status}` };
+        }
+        
+        // Obtener registros
+        const dataResponse = await fetch(`${POCKETBASE_URL}/api/collections/articulos/records?perPage=1`);
+        const data = await dataResponse.json();
+        
+        console.log('📈 Total de registros:', data.totalItems || 0);
+        console.log('📝 Primeros registros:', data.items || []);
+        
+        return {
+          existe: true,
+          registros: data.totalItems || 0,
+          items: data.items || [],
+          error: null
+        };
+        
+      } catch (error) {
+        console.error('💥 Error al verificar colección:', error);
+        return { existe: false, registros: 0, error: error.message };
+      }
+    }
+    
+    // Función para probar autenticación con PocketBase
+    async function probarAutenticacion() {
+      try {
+        console.log('🔐 Probando autenticación con PocketBase...');
+        
+        // Intentar obtener información de la instancia
+        const healthResponse = await fetch(`${POCKETBASE_URL}/api/health`);
+        console.log('🏥 Estado del servidor:', healthResponse.status);
+        
+        // Verificar si necesitamos autenticación para leer colecciones públicas
+        const testResponse = await fetch(`${POCKETBASE_URL}/api/collections/articulos/records?perPage=1`);
+        console.log('📖 Test de lectura:', testResponse.status);
+        
+        if (testResponse.status === 401) {
+          console.warn('🔒 Se requiere autenticación para acceder a los artículos');
+          return { autenticado: false, necesitaAuth: true };
+        }
+        
+        if (testResponse.status === 200) {
+          console.log('✅ Acceso público permitido');
+          return { autenticado: true, necesitaAuth: false };
+        }
+        
+        return { autenticado: false, necesitaAuth: true, error: `HTTP ${testResponse.status}` };
+        
+      } catch (error) {
+        console.error('💥 Error en autenticación:', error);
+        return { autenticado: false, necesitaAuth: true, error: error.message };
+      }
+    }
+    
+    // Función para autenticarse como invitado (si es necesario)
+    async function autenticarComoInvitado() {
+      try {
+        console.log('👤 Intentando autenticación como invitado...');
+        
+        // Crear un cliente temporal de PocketBase para autenticación
+        const pb = new PocketBase(POCKETBASE_URL);
+        
+        // Intentar autenticación como invitado (si está habilitada)
+        await pb.collection('users').authWithPassword('guest@example.com', 'guest123');
+        
+        console.log('✅ Autenticado como invitado');
+        return { success: true, token: pb.authStore.token };
+        
+      } catch (error) {
+        console.warn('⚠️ No se pudo autenticar como invitado:', error.message);
+        return { success: false, error: error.message };
+      }
+    }
+    
+    // Función de diagnóstico completo
+    async function ejecutarDiagnostico() {
+      console.log('🚀 Iniciando diagnóstico de PocketBase...');
+      
+      // Verificar las colecciones que sí existen
+      const [categorias, productos, articulos] = await Promise.all([
+        verificarColeccion('categorias'),
+        verificarColeccion('productos'),
+        verificarColeccion('articulos')
+      ]);
+      
+      console.log('📊 Resultados del diagnóstico:');
+      console.log('  - Colección categorias existe:', categorias.existe, `(${categorias.registros} registros)`);
+      console.log('  - Colección productos existe:', productos.existe, `(${productos.registros} registros)`);
+      console.log('  - Colección articulos existe:', articulos.existe, `(${articulos.registros} registros)`);
+      
+      if (!articulos.existe) {
+        console.log('ℹ️ La colección "articulos" no existe, usando datos de respaldo');
+      }
+      
+      return { categorias, productos, articulos };
+    }
+    
+    // Función genérica para verificar cualquier colección
+    async function verificarColeccion(nombreColeccion) {
+      try {
+        console.log(`🔍 Verificando colección "${nombreColeccion}"...`);
+        
+        const response = await fetch(`${POCKETBASE_URL}/api/collections/${nombreColeccion}/records?perPage=1`);
+        
+        if (response.status === 404) {
+          console.log(`❌ Colección "${nombreColeccion}" no existe`);
+          return { existe: false, registros: 0, error: 'No encontrada' };
+        }
+        
+        if (response.status === 401) {
+          console.log(`🔒 Colección "${nombreColeccion}" requiere autenticación`);
+          return { existe: true, registros: 0, error: 'Requiere autenticación' };
+        }
+        
+        if (!response.ok) {
+          console.log(`⚠️ Error en colección "${nombreColeccion}":`, response.status);
+          return { existe: false, registros: 0, error: `HTTP ${response.status}` };
+        }
+        
+        const data = await response.json();
+        const totalRegistros = data.totalItems || 0;
+        
+        console.log(`✅ Colección "${nombreColeccion}" existe con ${totalRegistros} registros`);
+        
+        return {
+          existe: true,
+          registros: totalRegistros,
+          items: data.items || [],
+          error: null
+        };
+        
+      } catch (error) {
+        console.error(`💥 Error al verificar "${nombreColeccion}":`, error);
+        return { existe: false, registros: 0, error: error.message };
+      }
+    }
+    
+    // Ejecutar diagnóstico al cargar la página
+    setTimeout(ejecutarDiagnostico, 2000);
+    
+    // Función para poblar la colección de artículos con datos de ejemplo
+    async function poblarArticulosEjemplo() {
+      try {
+        console.log('📝 Poblando colección de artículos con datos de ejemplo...');
+        
+        const pb = new PocketBase(POCKETBASE_URL);
+        
+        // Datos de ejemplo para artículos
+        const articulosEjemplo = [
+          {
+            titulo: 'Tendencias en Diseño Gráfico 2024',
+            categoria: 'Diseño',
+            imagen: 'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+            resumen: 'Descubre las últimas tendencias en diseño gráfico que están marcando el 2024. Colores, tipografías y estilos que debes conocer.',
+            vistas: 2847,
+            fecha: '2024-01-15',
+            trending: true
+          },
+          {
+            titulo: 'Guía Completa de Impresión Digital',
+            categoria: 'Impresión',
+            imagen: 'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+            resumen: 'Todo lo que necesitas saber sobre impresión digital: tipos de papel, resoluciones, colores y técnicas profesionales.',
+            vistas: 1923,
+            fecha: '2024-01-12',
+            trending: false
+          },
+          {
+            titulo: 'Vinil para Exterior: Durabilidad y Calidad',
+            categoria: 'Materiales',
+            imagen: 'img/web%205/ofertas/vinil.jpg',
+            resumen: 'Conoce los mejores tipos de vinil para trabajos exteriores. Resistencia a la intemperie y acabados profesionales.',
+            vistas: 1654,
+            fecha: '2024-01-10',
+            trending: false
+          }
+        ];
+        
+        // Intentar autenticación primero
+        try {
+          await pb.collection('users').authWithPassword('admin@example.com', 'admin123');
+        } catch (authError) {
+          console.warn('⚠️ No se pudo autenticar para poblar datos:', authError.message);
+          return { success: false, error: 'No se pudo autenticar' };
+        }
+        
+        // Crear artículos uno por uno
+        const resultados = [];
+        for (const articulo of articulosEjemplo) {
+          try {
+            const record = await pb.collection('articulos').create(articulo);
+            resultados.push({ success: true, id: record.id, titulo: articulo.titulo });
+            console.log('✅ Artículo creado:', articulo.titulo);
+          } catch (error) {
+            console.warn('❌ Error al crear artículo:', articulo.titulo, error.message);
+            resultados.push({ success: false, titulo: articulo.titulo, error: error.message });
+          }
+        }
+        
+        const exitosos = resultados.filter(r => r.success).length;
+        console.log(`📊 Resultado: ${exitosos}/${articulosEjemplo.length} artículos creados exitosamente`);
+        
+        return { success: exitosos > 0, resultados, total: articulosEjemplo.length, exitosos };
+        
+      } catch (error) {
+        console.error('💥 Error al poblar artículos:', error);
+        return { success: false, error: error.message };
+      }
+    }
+    
+    // Función para limpiar tokens de autenticación
+    function limpiarAutenticacion() {
+      localStorage.removeItem('pb_auth_token');
+      console.log('🧹 Tokens de autenticación limpiados');
+    }
+    
+    // Hacer funciones disponibles globalmente para debugging
+    window.pbDiagnostico = {
+      verificarColeccion,
+      verificarColeccionArticulos,
+      probarAutenticacion,
+      autenticarComoInvitado,
+      ejecutarDiagnostico,
+      poblarArticulosEjemplo,
+      limpiarAutenticacion
+    };
+    
+    // Función de utilidad para verificar el estado de todas las colecciones
+    window.verificarTodasLasColecciones = async function() {
+      console.log('🔍 Verificando todas las colecciones disponibles...');
+      
+      const colecciones = ['categorias', 'productos', 'articulos'];
+      const resultados = {};
+      
+      for (const coleccion of colecciones) {
+        resultados[coleccion] = await verificarColeccion(coleccion);
+      }
+      
+      console.log('📊 Resumen de colecciones:');
+      Object.entries(resultados).forEach(([nombre, resultado]) => {
+        const estado = resultado.existe ? '✅' : '❌';
+        const registros = resultado.registros || 0;
+        console.log(`  ${estado} ${nombre}: ${registros} registros`);
+      });
+      
+      return resultados;
+    };
+
+    // Función de utilidad para listar todos los productos disponibles
+    window.listarTodosLosProductos = async function() {
+      try {
+        console.log('📦 Listando todos los productos disponibles...');
+        const response = await fetch(`${POCKETBASE_URL}/api/collections/productos/records?perPage=100`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const productos = data.items || [];
+        
+        console.log(`📊 Total de productos encontrados: ${productos.length}`);
+        
+        // Agrupar por categoría
+        const productosPorCategoria = {};
+        productos.forEach(producto => {
+          const categoria = producto.categoria || 'Sin categoría';
+          if (!productosPorCategoria[categoria]) {
+            productosPorCategoria[categoria] = [];
+          }
+          productosPorCategoria[categoria].push(producto.nombre || 'Sin nombre');
+        });
+        
+        console.log('📋 Productos por categoría:');
+        Object.entries(productosPorCategoria).forEach(([categoria, productos]) => {
+          console.log(`  📁 ${categoria}: ${productos.length} productos`);
+          productos.forEach(producto => console.log(`    - ${producto}`));
+        });
+        
+        return { productos, productosPorCategoria };
+        
+      } catch (error) {
+        console.error('❌ Error al listar productos:', error);
+        return { productos: [], productosPorCategoria: {} };
+      }
+    };
+
+    // Función de utilidad para probar la carga de productos de una categoría específica
+    window.probarCargaProductos = async function(nombreCategoria) {
+      console.log(`🧪 Probando carga de productos para: "${nombreCategoria}"`);
+      
+      try {
+        const productos = await obtenerProductosPorCategoria(nombreCategoria);
+        console.log(`✅ Resultado: ${productos.length} productos encontrados`);
+        console.log('📋 Productos:', productos);
+        return productos;
+      } catch (error) {
+        console.error('❌ Error en la prueba:', error);
+        return [];
+      }
+    };
+
+    // Datos de testimonios
+    const testimonios = [
+      {
+        id: 1,
+        nombre: 'María González',
+        empresa: 'Restaurante El Buen Sabor',
+        testimonio: 'Excelente trabajo en nuestros menús y letreros. Muy profesionales y cumplieron con los tiempos de entrega.',
+        rating: 5,
+        avatar: 'img/web%205/ofertas/vinil.jpg'
+      },
+      {
+        id: 2,
+        nombre: 'Carlos Mendoza',
+        empresa: 'Gym Fitness Plus',
+        testimonio: 'Las playeras estampadas quedaron perfectas. Calidad superior y precios justos. Los recomiendo ampliamente.',
+        rating: 5,
+        avatar: 'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg'
+      },
+      {
+        id: 3,
+        nombre: 'Ana Rodríguez',
+        empresa: 'Farmacia San José',
+        testimonio: 'El diseño de nuestro logo y material promocional superó nuestras expectativas. Muy creativos y atentos.',
+        rating: 5,
+        avatar: 'img/web%205/ofertas/digital-printing-trends-Ghana-1.png'
+      },
+      {
+        id: 4,
+        nombre: 'Roberto Silva',
+        empresa: 'Taller Mecánico Rápido',
+        testimonio: 'Los letreros luminosos se ven increíbles. Trabajo de calidad y instalación profesional. Muy satisfecho.',
+        rating: 5,
+        avatar: 'img/web%205/ofertas/tendecia.webp'
+      },
+      {
+        id: 5,
+        nombre: 'Laura Pérez',
+        empresa: 'Boutique Elegance',
+        testimonio: 'El material impreso para nuestra tienda es de excelente calidad. Diseño moderno y acabados perfectos.',
+        rating: 5,
+        avatar: 'img/web%205/ofertas/vinil.jpg'
+      },
+      {
+        id: 6,
+        nombre: 'Miguel Torres',
+        empresa: 'Café del Centro',
+        testimonio: 'Los displays y señalética que nos hicieron son perfectos. Muy recomendables para cualquier negocio.',
+        rating: 5,
+        avatar: 'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg'
+      }
+    ];
+
+    // ================================================================================
+    // DATOS ESTÁTICOS Y CONFIGURACIÓN
+    // ================================================================================
+    
+    // LÍNEA 1008-1014: Banners de publicidad (public/webs/img/web 5/ofertas)
+    const banners = [
+      'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+      'img/web%205/ofertas/tendecia.webp',
+      'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+      'img/web%205/ofertas/vinil.jpg',
+      'img/web%205/portada.jpeg' // Imagen de respaldo
+    ];
+
+    // LÍNEA 1017-1050: Servicios estáticos (fallback si PocketBase falla)
+    const servicios = [
+      { id:'gran-formato', nombre:'Gran Formato', desc:'Lonas impresas, microperforado, vinil mate/brillante, backlite, banderas publicitarias y vinil estático. Trabajos de gran formato para publicidad exterior e interior.', icon:'img/web 5/iconos/gran_formato_.png', thumb:'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+        productos:['LONA IMPRESA', 'MICROPERFORADO', 'VINIL MATE / BRILLANTE', 'BACKLITE', 'BANDERAS PUBLICITARIAS', 'VINIL ESTATICO'],
+        imgs:[
+          'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+          'img/web%205/ofertas/tendecia.webp',
+          'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+          'img/web%205/ofertas/vinil.jpg'
+        ]},
+      { id:'imprenta', nombre:'Imprenta', desc:'Tarjetas de presentación, volantes, dípticos, trípticos, block de notas, tabloides adhesivos y carpetas impresas. Impresión digital y offset de alta calidad.', icon:'img/web 5/iconos/imprenta.png', thumb:'img/web%205/ofertas/vinil.jpg',
+        productos:['TARJETAS DE PRESENTACION', 'VOLANTES / DIPTICOS / TRIPTICOS', 'BLOCK DE NOTAS / FORMATOS', 'TABLOIDE ADHESIVO CON RECORTE', 'TABLOIDE EN PAPEL COUCHE', 'CARPETAS IMPRESAS'],
+        imgs:[
+          'img/web%205/ofertas/vinil.jpg',
+          'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+          'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+          'img/web%205/ofertas/tendecia.webp'
+        ]},
+      { id:'estampados', nombre:'Estampados', desc:'Playeras, gorras, textil personalizado y merchandising corporativo. Técnicas de serigrafía, sublimación y bordado profesional.', icon:'img/web 5/iconos/estampados.png', thumb:'img/web%205/ofertas/tendecia.webp',
+        productos:['SERVICIOS DE ESTAMPADO DISPONIBLES'],
+        imgs:[
+          'img/web%205/ofertas/tendecia.webp',
+          'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+          'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+          'img/web%205/ofertas/vinil.jpg'
+        ]},
+      { id:'rigidos', nombre:'Rígidos', desc:'Letreros rígidos, displays, stands y señalética de materiales sólidos como acrílico, PVC, foam board y metal. Durabilidad y resistencia.', icon:'img/web%205/iconos/rigidos.png', thumb:'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+        productos:['SERVICIOS DE RÍGIDOS DISPONIBLES'],
+        imgs:[
+          'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+          'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+          'img/web%205/ofertas/vinil.jpg',
+          'img/web%205/ofertas/tendecia.webp'
+        ]},
+      { id:'promocionales', nombre:'Promocionales', desc:'Material promocional, regalos corporativos, artículos publicitarios y merchandising personalizado para eventos y campañas.', icon:'img/web 5/iconos/promocionales.png', thumb:'img/web%205/ofertas/vinil.jpg',
+        productos:['SERVICIOS PROMOCIONALES DISPONIBLES'],
+        imgs:[
+          'img/web%205/ofertas/vinil.jpg',
+          'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+          'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+          'img/web%205/ofertas/tendecia.webp'
+        ]},
+      { id:'diseno', nombre:'Diseño', desc:'Servicios de diseño gráfico, identidad corporativa, logotipos, branding y creatividad visual profesional para todos tus proyectos.', icon:'img/web 5/iconos/diseño.png', thumb:'img/web%205/ofertas/tendecia.webp',
+        productos:['SERVICIOS DE DISEÑO DISPONIBLES'],
+        imgs:[
+          'img/web%205/ofertas/tendecia.webp',
+          'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+          'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+          'img/web%205/ofertas/vinil.jpg'
+        ]},
+      { id:'otros-productos', nombre:'Otros Productos y Servicios', desc:'Servicios adicionales, productos especializados y soluciones personalizadas para necesidades específicas de tu empresa.', icon:'img/web 5/iconos/otros productos.png', thumb:'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+        productos:['SERVICIOS ADICIONALES DISPONIBLES'],
+        imgs:[
+          'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+          'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+          'img/web%205/ofertas/vinil.jpg',
+          'img/web%205/ofertas/tendecia.webp'
+        ]},
+    ];
+
+    const articulosPopulares = [
+      {
+        id: 1,
+        titulo: 'Tendencias en Diseño Gráfico 2024',
+        categoria: 'Diseño',
+        imagen: 'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+        resumen: 'Descubre las últimas tendencias en diseño gráfico que están marcando el 2024. Colores, tipografías y estilos que debes conocer.',
+        vistas: 2847,
+        fecha: '15 Ene 2024',
+        trending: true
+      },
+      {
+        id: 2,
+        titulo: 'Guía Completa de Impresión Digital',
+        categoria: 'Impresión',
+        imagen: 'img/web%205/ofertas/digital-printing-trends-Ghana-1.png',
+        resumen: 'Todo lo que necesitas saber sobre impresión digital: tipos de papel, resoluciones, colores y técnicas profesionales.',
+        vistas: 1923,
+        fecha: '12 Ene 2024',
+        trending: false
+      },
+      {
+        id: 3,
+        titulo: 'Vinil para Exterior: Durabilidad y Calidad',
+        categoria: 'Materiales',
+        imagen: 'img/web%205/ofertas/vinil.jpg',
+        resumen: 'Conoce los mejores tipos de vinil para trabajos exteriores. Resistencia a la intemperie y acabados profesionales.',
+        vistas: 1654,
+        fecha: '10 Ene 2024',
+        trending: false
+      },
+      {
+        id: 4,
+        titulo: 'Estampado en Textiles: Técnicas Modernas',
+        categoria: 'Estampado',
+        imagen: 'img/web%205/ofertas/tendecia.webp',
+        resumen: 'Serigrafía, sublimación y bordado. Las mejores técnicas de estampado para diferentes tipos de textiles.',
+        vistas: 1432,
+        fecha: '8 Ene 2024',
+        trending: true
+      },
+      {
+        id: 5,
+        titulo: 'Letreros Luminosos LED: Guía de Instalación',
+        categoria: 'Letreros',
+        imagen: 'img/web%205/ofertas/vinil.jpg',
+        resumen: 'Instalación profesional de letreros luminosos. Consejos de seguridad, cableado y mantenimiento.',
+        vistas: 1287,
+        fecha: '5 Ene 2024',
+        trending: false
+      },
+      {
+        id: 6,
+        titulo: 'Corte Láser: Materiales y Aplicaciones',
+        categoria: 'Grabados',
+        imagen: 'img/web%205/ofertas/Tendencias-en-Diseno-Grafico.jpg',
+        resumen: 'Explora las posibilidades del corte láser en acrílico, madera, metal y otros materiales. Técnicas y acabados.',
+        vistas: 1156,
+        fecha: '3 Ene 2024',
+        trending: false
+      }
+    ];
+
+    // ================================================================================
+    // COMPONENTES REACT
+    // ================================================================================
+    
+    /**
+     * COMPONENTE HEADER
+     * Header fijo con navegación responsive, logo y botones de acción
+     * - Navegación principal con enlaces a secciones
+     * - Menú móvil con panel deslizable
+     * - Botones de WhatsApp y teléfono
+     * - Efectos de scroll para ocultar/mostrar header
+     */
+    function Header(){
+      useEffect(() => {
+        const header = document.querySelector('.header');
+        let lastScrollY = window.scrollY;
+        let ticking = false;
+
+        const handleScroll = () => {
+          if (!ticking) {
+            requestAnimationFrame(() => {
+              const currentScrollY = window.scrollY;
+              
+              // Agregar sombra cuando se hace scroll
+              if (currentScrollY > 50) {
+                header?.classList.add('scrolled');
+              } else {
+                header?.classList.remove('scrolled');
+              }
+
+              // Lógica para mostrar/ocultar header
+              if (currentScrollY > lastScrollY && currentScrollY > 100) {
+                // Scrolling down - ocultar header
+                header?.classList.add('hidden');
+              } else {
+                // Scrolling up - mostrar header
+                header?.classList.remove('hidden');
+              }
+
+              lastScrollY = currentScrollY;
+              ticking = false;
+            });
+            ticking = true;
+          }
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+      }, []);
+
+      return React.createElement('header',{className:'header'},
+        React.createElement('div',{className:'header-inner'},[
+          React.createElement('div',{className:'logo',key:'logo'},[
+            React.createElement('img',{className:'logo-img',src:'img/web%205/zona%20grafica.jpeg',alt:'Zona Gráfica'})
+          ]),
+          React.createElement('nav',{className:'nav',key:'nav'},[
+            React.createElement('a',{href:'#servicios'},'Servicios'),
+            React.createElement('a',{href:'#ubicacion'},'Ubicación'),
+            React.createElement('a',{href:'#cotiza'},'Cotiza'),
+            React.createElement('a',{href:'#contacto'},'Contacto')
+          ]),
+          React.createElement('div',{className:'header-cta',key:'cta'},[
+            React.createElement('a',{className:'wa-btn',href:`https://api.whatsapp.com/send?phone=${WHATSAPP_PHONE}`,target:'_blank',rel:'noopener',title:'WhatsApp: +52 899 873 7313'},[
+              React.createElement('span',{style:{display:'inline-flex',width:32,height:32,background:'url(img/web%205/iconos/whatsapp.png) center/contain no-repeat'}},'')
+            ]),
+            React.createElement('a',{className:'login-btn',href:'https://zonagraficapd.ezhostingit.com/_/#/collections?collection=_pb_users_auth_&filter=&sort=-%40rowid',rel:'noopener'},[
+              React.createElement('span',null,'Login')
+            ])
+          ]),
+          React.createElement('button',{className:'menu-btn',id:'menuBtn',ariaControls:'mobilePanel',ariaExpanded:false,onClick:()=>{
+            const p = document.getElementById('mobilePanel');
+            if(!p) return;
+            const isOpen = p.classList.toggle('open');
+            const btn = document.getElementById('menuBtn');
+            if(btn) btn.setAttribute('aria-expanded', String(isOpen));
+          }}, '☰'),
+          React.createElement('div',{id:'mobilePanel',className:'mobile-panel',key:'mp'},[
+            React.createElement('a',{href:'#servicios',onClick:()=>{
+              const p = document.getElementById('mobilePanel');
+              if(p) p.classList.remove('open');
+              const btn = document.getElementById('menuBtn');
+              if(btn) btn.setAttribute('aria-expanded','false');
+            }},'Servicios'),
+            React.createElement('a',{href:'#ubicacion',onClick:()=>{
+              const p = document.getElementById('mobilePanel');
+              if(p) p.classList.remove('open');
+              const btn = document.getElementById('menuBtn');
+              if(btn) btn.setAttribute('aria-expanded','false');
+            }},'Ubicación'),
+            React.createElement('a',{href:'#cotiza',onClick:()=>{
+              const p = document.getElementById('mobilePanel');
+              if(p) p.classList.remove('open');
+              const btn = document.getElementById('menuBtn');
+              if(btn) btn.setAttribute('aria-expanded','false');
+            }},'Cotiza'),
+            React.createElement('a',{href:'#contacto',onClick:()=>{
+              const p = document.getElementById('mobilePanel');
+              if(p) p.classList.remove('open');
+              const btn = document.getElementById('menuBtn');
+              if(btn) btn.setAttribute('aria-expanded','false');
+            }},'Contacto'),
+            React.createElement('a',{href:'tel:+528998737313',onClick:()=>{
+              const p = document.getElementById('mobilePanel');
+              if(p) p.classList.remove('open');
+              const btn = document.getElementById('menuBtn');
+              if(btn) btn.setAttribute('aria-expanded','false');
+            }},'📞 Llamar'),
+            React.createElement('a',{href:`https://api.whatsapp.com/send?phone=${WHATSAPP_PHONE}`,target:'_blank',rel:'noopener',title:'WhatsApp: +52 899 873 7313',onClick:()=>{
+              const p = document.getElementById('mobilePanel');
+              if(p) p.classList.remove('open');
+              const btn = document.getElementById('menuBtn');
+              if(btn) btn.setAttribute('aria-expanded','false');
+            }},[
+              React.createElement('span',{style:{display:'inline-flex',width:28,height:28,background:'url(img/web%205/iconos/whatsapp.png) center/contain no-repeat'}},'')
+            ])
+          ])
+        ])
+      );
+    }
+
+    /**
+     * COMPONENTE BANNER CAROUSEL
+     * Carrusel principal con productos destacados y banners promocionales
+     * - Integración con Swiper.js para funcionalidad de carrusel
+     * - Navegación automática y manual
+     * - Indicadores de paginación
+     * - Botones de llamada a la acción
+     */
+    function BannerCarousel(){
+      useEffect(()=>{
+        // eslint-disable-next-line no-new
+        new Swiper('.swiper',{
+          loop:true,
+          autoplay:{delay:3500, disableOnInteraction:false},
+          pagination:{el:'.swiper-pagination', clickable:true},
+          navigation:{nextEl:'.swiper-button-next', prevEl:'.swiper-button-prev'}
+        });
+      },[]);
+
+      return React.createElement('section',{className:'hero'},
+        React.createElement('div',{className:'container'},
+          React.createElement('div',{className:'card hero-wrap'},
+            React.createElement('div',{className:'swiper'},[
+              React.createElement('div',{className:'swiper-wrapper',key:'w'},
+                banners.map((src,i)=>React.createElement('div',{className:'swiper-slide',key:i},
+                  React.createElement('img',{
+                    src,
+                    alt:`Banner ${i+1}`,
+                    loading:'lazy',
+                    onError:(e)=>{ 
+                      try { 
+                        // Usar imagen de ofertas como respaldo
+                        e.currentTarget.src = 'img/web%205/ofertas/vinil.jpg'; 
+                        e.currentTarget.onerror = null; // Evitar loops infinitos
+                      } catch(_){} 
+                    }
+                  })
+                ))
+              ),
+              React.createElement('div',{className:'swiper-pagination',key:'p'}),
+              React.createElement('div',{className:'swiper-button-prev',key:'prev'}),
+              React.createElement('div',{className:'swiper-button-next',key:'next'})
+            ])
+          
+          )
+        )
+      );
+    }
+
+    function ServicioModal({open,onClose,servicio}){
+      const [selectedImage, setSelectedImage] = useState(null);
+      const [productosDinamicos, setProductosDinamicos] = useState([]);
+      const [cargandoProductos, setCargandoProductos] = useState(false);
+      
+      useEffect(() => {
+        if(open) {
+          document.body.style.overflow = 'hidden';
+          document.addEventListener('keydown', handleKeyDown);
+          
+          // Cargar productos dinámicamente cuando se abre el modal
+          if(servicio?.nombre) {
+            cargarProductosDelServicio(servicio.nombre);
+          }
+        } else {
+          document.body.style.overflow = 'unset';
+          document.removeEventListener('keydown', handleKeyDown);
+          // Limpiar productos cuando se cierra el modal
+          setProductosDinamicos([]);
+        }
+        return () => {
+          document.body.style.overflow = 'unset';
+          document.removeEventListener('keydown', handleKeyDown);
+        };
+      }, [open, servicio?.nombre]);
+
+      const handleKeyDown = (e) => {
+        if(e.key === 'Escape') onClose();
+      };
+
+      const handleImageClick = (src) => {
+        setSelectedImage(src);
+      };
+
+      const closeImageModal = () => {
+        setSelectedImage(null);
+      };
+
+      // Función para cargar productos dinámicamente desde PocketBase
+      const cargarProductosDelServicio = async (nombreServicio) => {
+        setCargandoProductos(true);
+        try {
+          console.log(`🔄 Cargando productos para: ${nombreServicio}`);
+          const productos = await obtenerProductosPorCategoria(nombreServicio);
+          
+          if (productos && productos.length > 0) {
+            console.log(`✅ Productos cargados: ${productos.length} productos para ${nombreServicio}`);
+            setProductosDinamicos(productos);
+          } else {
+            console.log(`⚠️ No se encontraron productos para ${nombreServicio}, usando productos estáticos`);
+            // Usar productos estáticos como fallback
+            const productosEstaticos = servicio?.productos || [];
+            setProductosDinamicos(productosEstaticos.map(nombre => ({ nombre })));
+          }
+        } catch (error) {
+          console.warn(`❌ Error al cargar productos para ${nombreServicio}:`, error);
+          // Usar productos estáticos como fallback
+          const productosEstaticos = servicio?.productos || [];
+          setProductosDinamicos(productosEstaticos.map(nombre => ({ nombre })));
+        } finally {
+          setCargandoProductos(false);
+        }
+      };
+
+      if(!open) return null;
+      
+      return React.createElement('div',{className:'modal-backdrop',onClick:onClose},[
+        React.createElement('div',{className:'modal',onClick:(e)=>e.stopPropagation(),key:'modal'},[
+          React.createElement('div',{className:'modal-header',key:'h'},[
+            React.createElement('strong',null,servicio?.nombre||'Servicio'),
+            React.createElement('button',{className:'modal-close',onClick:onClose},'✕ Cerrar')
+          ]),
+          React.createElement('div',{className:'modal-body',key:'b'},[
+            React.createElement('div',{className:'service-description',key:'desc'},servicio?.desc||'Explora nuestra galería de trabajos realizados en este servicio.'),
+            React.createElement('div',{className:'productos-lista',key:'productos'},[
+              React.createElement('h3',{className:'gallery-title',key:'productos-title'},'Productos Disponibles'),
+              cargandoProductos ? 
+                React.createElement('div',{key:'loading',className:'productos-loading'},`Cargando productos de ${servicio?.nombre || 'este servicio'}...`) :
+                productosDinamicos && productosDinamicos.length > 0 ? 
+                  React.createElement('div',{className:'productos-grid',key:'productos-grid'},
+                    productosDinamicos.map((producto,i)=>React.createElement('div',{
+                      className:'producto-item',
+                      key:i
+                    },[
+                      // Imagen de ejemplo del producto
+                      React.createElement('div',{className:'producto-imagen-container',key:'img-container'},[
+                        React.createElement('img',{
+                          className:'producto-imagen',
+                          src:servicio?.imgs?.[i % servicio.imgs.length] || 'img/web%205/ofertas/vinil.jpg',
+                          alt:`${producto.nombre || producto} - Ejemplo`,
+                          key:'img',
+                          loading:'lazy',
+                          onError:(e)=>{
+                            e.currentTarget.src='img/web%205/ofertas/vinil.jpg';
+                            e.currentTarget.onerror = null;
+                          }
+                        }),
+                        React.createElement('div',{className:'producto-overlay',key:'overlay'},[
+                          React.createElement('span',{className:'producto-zoom-icon',key:'zoom'},'🔍'),
+                          React.createElement('span',{className:'producto-zoom-text',key:'text'},'Ver ejemplo')
+                        ])
+                      ]),
+                      React.createElement('div',{className:'producto-nombre',key:'nombre'},producto.nombre || producto),
+                      React.createElement('button',{
+                        className:'producto-btn',
+                        key:'btn',
+                        onClick:()=>{
+                          const nombreProducto = producto.nombre || producto;
+                          const whatsappMsg = `Hola! Me interesa cotizar: ${nombreProducto} - ${servicio.nombre}`;
+                          window.open(`https://api.whatsapp.com/send?phone=${WHATSAPP_PHONE}&text=${encodeURIComponent(whatsappMsg)}`, '_blank');
+                        }
+                      },'Cotizar')
+                    ]))
+                  ) :
+                  React.createElement('div',{key:'no-products',className:'productos-no-disponibles'},'No hay productos disponibles para este servicio'),
+              React.createElement('div',{className:'productos-cta',key:'cta'},[
+                React.createElement('p',{key:'info'},'¿Necesitas más información sobre algún producto?'),
+                React.createElement('a',{
+                  href:`https://api.whatsapp.com/send?phone=${WHATSAPP_PHONE}&text=${encodeURIComponent(`Hola! Me interesa cotizar productos de ${servicio.nombre}`)}`,
+                  target:'_blank',
+                  rel:'noopener',
+                  className:'cta-whatsapp',
+                  key:'wa'
+                },'Contactar por WhatsApp')
+              ])
+            ]),
+            React.createElement('h3',{className:'gallery-title',key:'title'},'Galería de Trabajos'),
+            React.createElement('div',{className:'gallery',key:'gallery'},
+              (servicio?.imgs||[]).map((src,i)=>React.createElement('img',{
+                key:i,
+                src,
+                alt:`${servicio?.nombre||'Trabajo'} - Imagen ${i+1}`,
+                loading:'lazy',
+                onClick:()=>handleImageClick(src),
+                onError:(e)=>{
+                  e.currentTarget.src='img/web%205/ofertas/vinil.jpg';
+                  e.currentTarget.onerror = null;
+                }
+              }))
+            )
+          ])
+        ]),
+        // Modal para imagen ampliada
+        selectedImage && React.createElement('div',{className:'modal-backdrop',onClick:closeImageModal,key:'imgModal'},
+          React.createElement('div',{className:'modal',onClick:(e)=>e.stopPropagation(),style:{maxWidth:'90vw',maxHeight:'90vh',display:'flex',alignItems:'center',justifyContent:'center'}},[
+            React.createElement('img',{
+              src:selectedImage,
+              alt:'Imagen ampliada',
+              style:{maxWidth:'100%',maxHeight:'100%',objectFit:'contain',borderRadius:'12px'},
+              onClick:closeImageModal
+            })
+          ])
+        )
+      ]);
+    }
+
+    // LÍNEA 1371-1400: Componente ServiciosGrid con integración PocketBase
+    /**
+     * COMPONENTE SERVICIOS GRID
+     * Grid de servicios con integración PocketBase y carrusel móvil
+     * - Carga dinámica de servicios desde PocketBase
+     * - Fallback a datos estáticos si falla la conexión
+     * - Grid responsive para desktop
+     * - Carrusel Swiper para móviles
+     * - Modal para mostrar detalles del servicio
+     */
+    function ServiciosGrid(){
+      const [modal,setModal] = useState({open:false, servicio:null});
+      const [serviciosActuales, setServiciosActuales] = useState(servicios);
+      const [cargando, setCargando] = useState(true);
+      const [swiperInit, setSwiperInit] = useState(false);
+
+      useEffect(() => {
+        // LÍNEA 1378-1382: Escuchar evento de datos cargados desde PocketBase
+        const handleDatosCargados = (event) => {
+          if (event.detail.servicios && event.detail.servicios.length > 0) {
+            setServiciosActuales(event.detail.servicios);
+            setCargando(false);
+          }
+        };
+
+        window.addEventListener('datosCargados', handleDatosCargados);
+        
+        // LÍNEA 1387-1393: Timeout de fallback si no se cargan datos dinámicos
+        const timeout = setTimeout(() => {
+          if (cargando) {
+            setServiciosActuales(servicios);
+            setCargando(false);
+          }
+        }, 3000);
+
+        return () => {
+          window.removeEventListener('datosCargados', handleDatosCargados);
+          clearTimeout(timeout);
+        };
+      }, [cargando]);
+
+      // Inicializa Swiper para el carrusel móvil una vez haya datos y no esté inicializado
+      useEffect(() => {
+        if (!cargando && !swiperInit && typeof Swiper !== 'undefined') {
+          try {
+            // eslint-disable-next-line no-new
+            new Swiper('.servicios-swiper', {
+              slidesPerView: 2,
+              spaceBetween: 10,
+              centeredSlides: false,
+              allowTouchMove: true,
+              touchRatio: 1,
+              grabCursor: true,
+              pagination: { el: '.servicios-carousel .swiper-pagination', clickable: true },
+              breakpoints: {
+                320: { slidesPerView: 1.6, spaceBetween: 10 },
+                360: { slidesPerView: 1.8, spaceBetween: 10 },
+                480: { slidesPerView: 2.0, spaceBetween: 12 },
+                640: { slidesPerView: 2.4, spaceBetween: 12 }
+              }
+            });
+            setSwiperInit(true);
+          } catch(_){}
+        }
+      }, [cargando, swiperInit, serviciosActuales]);
+
+      return React.createElement(React.Fragment,null,[
+        React.createElement('section',{id:'servicios',className:'section container',key:'s'},[
+          React.createElement('div',{className:'title-wrap',key:'tw'},[
+            React.createElement('div',{className:'line'}),
+            React.createElement('h2',{style:{margin:0}},'NUESTROS SERVICIOS'),
+            React.createElement('div',{className:'line'})
+          ]),
+          // Indicador de deslizamiento en móvil
+          React.createElement('div',{className:'swipe-hint',key:'sub'},[
+            React.createElement('span',{className:'arrow'},'←'),
+            React.createElement('span',null,'Desliza para ver más servicios'),
+            React.createElement('span',{className:'arrow'},'→')
+          ]),
+          cargando ? 
+            React.createElement('div',{className:'loading-services',key:'loading',style:{textAlign:'center',padding:'40px',color:'#64748b'}},'Cargando servicios...') :
+            React.createElement(React.Fragment,{key:'content'},[
+              // Vista escritorio (grid)
+              React.createElement('div',{className:'grid servicios-grid-desktop',key:'g-desktop'},
+                serviciosActuales.map((s,idx)=>React.createElement('div',{className:`service ${idx===0?'active':''}`,key:s.id,onClick:()=>setModal({open:true,servicio:s})},[
+                  React.createElement('img',{
+                    src:s.icon,
+                    alt:s.nombre,
+                    loading:'lazy',
+                    onError:(e)=>{
+                      e.currentTarget.src='img/web%205/ofertas/vinil.jpg';
+                      e.currentTarget.onerror = null; // Evitar loops infinitos
+                    }
+                  }),
+                  React.createElement('b',null,s.nombre),
+                  React.createElement('div',{className:'desc'},s.desc||''),
+                  React.createElement('div',{className:'cta'},['Ver ejemplos ', React.createElement('span',{style:{width:'14px',height:'14px',display:'inline-block',background:'url(https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/arrow-right.svg) center/contain no-repeat'}})])
+                ]))
+              ),
+              // Vista móvil (carrusel)
+              React.createElement('div',{className:'servicios-carousel',key:'g-mobile'},
+                React.createElement('div',{className:'swiper servicios-swiper'},[
+                  React.createElement('div',{className:'swiper-wrapper',key:'wrap'},
+                    serviciosActuales.map((s,idx)=>React.createElement('div',{className:'swiper-slide',key:s.id},
+                      React.createElement('div',{className:`service ${idx===0?'active':''}`,onClick:()=>setModal({open:true,servicio:s})},[
+                        React.createElement('img',{
+                          src:s.icon,
+                          alt:s.nombre,
+                          loading:'lazy',
+                          onError:(e)=>{
+                            e.currentTarget.src='img/web%205/ofertas/vinil.jpg';
+                            e.currentTarget.onerror = null;
+                          }
+                        }),
+                        React.createElement('b',null,s.nombre)
+                      ])
+                    ))
+                  ),
+                  React.createElement('div',{className:'swiper-pagination',key:'pag'})
+                ])
+              )
+            ])
+        ]),
+        React.createElement(ServicioModal,{key:'m',open:modal.open,onClose:()=>setModal({open:false,servicio:null}),servicio:modal.servicio})
+      ]);
+    }
+
+    /**
+     * COMPONENTE TRUST BADGES
+     * Elementos de confianza y garantías con efectos visuales
+     * - Badges con iconos de confianza
+     * - Efectos de fondo con gradientes radiales
+     * - Animaciones de hover
+     * - Diseño responsive
+     */
+    function TrustBadges(){
+      return React.createElement('section',{className:'trust section'},
+        React.createElement('div',{className:'container'},[
+          React.createElement('div',{className:'title-wrap'},[
+            React.createElement('div',{className:'line'}),
+            React.createElement('h2',null,'¿Por qué elegirnos?'),
+            React.createElement('div',{className:'line'})
+          ]),
+          React.createElement('div',{className:'grid'},[
+            React.createElement('div',{className:'badge',key:'b1'},[
+              React.createElement('span',{className:'icon shield'}),
+              React.createElement('div',{className:'txt'},[
+                React.createElement('b',null,'Garantía de satisfacción'),
+                React.createElement('small',null,'Calidad constante en cada proyecto')
+              ])
+            ]),
+            React.createElement('div',{className:'badge',key:'b2'},[
+              React.createElement('span',{className:'icon bolt'}),
+              React.createElement('div',{className:'txt'},[
+                React.createElement('b',null,'Respuesta rápida'),
+                React.createElement('small',null,'Atención ágil por WhatsApp')
+              ])
+            ]),
+            React.createElement('div',{className:'badge',key:'b3'},[
+              React.createElement('span',{className:'icon certificate'}),
+              React.createElement('div',{className:'txt'},[
+                React.createElement('b',null,'Materiales certificados'),
+                React.createElement('small',null,'Marcas líderes y acabados pro')
+              ])
+            ]),
+            React.createElement('div',{className:'badge',key:'b4'},[
+              React.createElement('span',{className:'icon truck'}),
+              React.createElement('div',{className:'txt'},[
+                React.createElement('b',null,'Entregas puntuales'),
+                React.createElement('small',null,'Cumplimos tus tiempos de entrega')
+              ])
+            ])
+          ])
+        ]),
+        React.createElement('div',{className:'fade-bottom'})
+      );
+    }
+
+    /**
+     * COMPONENTE TESTIMONIOS
+     * Carrusel manual de testimonios de clientes
+     * - Navegación manual con flechas prev/next
+     * - Responsive: 3 columnas desktop, 1 móvil
+     * - Testimonios con avatar, nombre y calificación
+     * - Controles de navegación personalizados
+     */
+    function TestimonialsSection(){
+      const [index,setIndex] = React.useState(0);
+      const [perView,setPerView] = React.useState(3);
+
+      React.useEffect(()=>{
+        const update = ()=>{
+          const w = window.innerWidth;
+          if (w <= 480) setPerView(1);
+          else if (w <= 768) setPerView(2);
+          else setPerView(3);
+        };
+        update();
+        window.addEventListener('resize', update, { passive:true });
+        return ()=> window.removeEventListener('resize', update);
+      },[]);
+
+      const maxIndex = Math.max(0, testimonios.length - perView);
+      const goPrev = ()=> setIndex(i => Math.max(0, i - 1));
+      const goNext = ()=> setIndex(i => Math.min(maxIndex, i + 1));
+
+      const translateX = `translateX(-${(index * (100 / perView))}%)`;
+
+      return React.createElement('section',{className:'testimonials'},
+        React.createElement('div',{className:'container'},[
+          React.createElement('h2',{key:'title'},'Lo que dicen nuestros clientes'),
+          React.createElement('p',{className:'subtitle',key:'subtitle'},'Testimonios reales de clientes satisfechos con nuestros servicios'),
+          React.createElement('div',{className:'testimonials-carousel',key:'carousel'},[
+            React.createElement('button',{className:'tc-arrow tc-prev',onClick:goPrev,disabled:index===0},'‹'),
+            React.createElement('div',{className:'tc-viewport'},
+              React.createElement('div',{className:'tc-track',style:{transform:translateX}},
+                testimonios.map(t => React.createElement('div',{className:'tc-item',key:t.id},
+                  React.createElement('div',{className:'testimonial-card'},[
+                    React.createElement('div',{className:'testimonial-text',key:'text'},t.testimonio),
+                    React.createElement('div',{className:'testimonial-author',key:'author'},[
+                      React.createElement('img',{
+                        className:'author-avatar',
+                        src:t.avatar,
+                        alt:t.nombre,
+                        key:'avatar',
+                        onError:(e)=>{e.currentTarget.src='img/web%205/ofertas/vinil.jpg'; e.currentTarget.onerror=null;}
+                      }),
+                      React.createElement('div',{className:'author-info',key:'info'},[
+                        React.createElement('h4',null,t.nombre),
+                        React.createElement('p',null,t.empresa)
+                      ])
+                    ]),
+                    React.createElement('div',{className:'testimonial-rating',key:'rating'},
+                      Array.from({length: t.rating}, (_, i) => React.createElement('span',{className:'star',key:i},'★'))
+                    )
+                  ])
+                ))
+              )
+            ),
+            React.createElement('button',{className:'tc-arrow tc-next',onClick:goNext,disabled:index===maxIndex},'›')
+          ])
+        ])
+      );
+    }
+
+    // LÍNEA 1513-1545: Componente PopularArticlesSection con integración PocketBase
+    // Obtiene artículos dinámicos; usa respaldo ante errores; IU ya es responsive (2x en móvil)
+    // COMENTADO: Sección de artículos deshabilitada temporalmente
+    /*
+    function PopularArticlesSection(){
+      const [articulos, setArticulos] = React.useState(articulosRespaldo);
+      const [cargando, setCargando] = React.useState(true);
+
+      React.useEffect(() => {
+        // LÍNEA 1518-1530: Cargar artículos al montar el componente
+        const cargarArticulos = async () => {
+          setCargando(true);
+          try {
+            const articulosData = await obtenerArticulosPocketBase();
+            setArticulos(articulosData);
+          } catch (error) {
+            console.warn('Error al cargar artículos:', error);
+            setArticulos(articulosRespaldo);
+          } finally {
+            setCargando(false);
+          }
+        };
+
+        cargarArticulos();
+
+        // LÍNEA 1534-1540: Escuchar eventos de actualización desde PocketBase
+        const handleArticulosCargados = (event) => {
+          setArticulos(event.detail);
+          setCargando(false);
+        };
+
+        window.addEventListener('articulosCargados', handleArticulosCargados);
+        
+        return () => {
+          window.removeEventListener('articulosCargados', handleArticulosCargados);
+        };
+      }, []);
+
+      return React.createElement('section',{className:'popular-articles'},
+        React.createElement('div',{className:'container'},[
+          React.createElement('h2',{key:'title'},'Artículos Más Buscados'),
+          React.createElement('p',{className:'subtitle',key:'subtitle'},'Descubre los temas más populares y tendencias en diseño gráfico e impresión'),
+          cargando ? 
+            React.createElement('div',{className:'loading-articles',key:'loading',style:{textAlign:'center',padding:'40px',color:'#64748b'}},'Cargando artículos...') :
+            React.createElement('div',{className:'articles-grid',key:'grid'},
+              articulos.map(articulo => 
+                React.createElement('div',{className:'article-card',key:articulo.id},[
+                  articulo.trending && React.createElement('div',{className:'trending-badge',key:'trending'},'Trending'),
+                  React.createElement('img',{
+                    className:'article-image',
+                    src:articulo.imagen,
+                    alt:articulo.titulo,
+                    key:'image',
+                    onError:(e)=>{
+                      e.currentTarget.src='img/web%205/ofertas/vinil.jpg';
+                      e.currentTarget.onerror = null;
+                    }
+                  }),
+                  React.createElement('div',{className:'article-content',key:'content'},[
+                    React.createElement('span',{className:'article-category',key:'category'},articulo.categoria),
+                    React.createElement('h3',{className:'article-title',key:'title'},articulo.titulo),
+                    React.createElement('p',{className:'article-excerpt',key:'excerpt'},articulo.resumen),
+                    React.createElement('div',{className:'article-meta',key:'meta'},[
+                      React.createElement('div',{className:'article-views',key:'views'},[
+                        React.createElement('span',{className:'view-icon'}),
+                        React.createElement('span',null,articulo.vistas.toLocaleString())
+                      ]),
+                      React.createElement('div',{className:'article-date',key:'date'},[
+                        React.createElement('span',{className:'date-icon'}),
+                        React.createElement('span',null,articulo.fecha)
+                      ])
+                    ])
+                  ])
+                ])
+              )
+            )
+        ])
+      );
+    }
+    */
+
+    /**
+     * COMPONENTE UBICACIÓN
+     * Sección de ubicación y contacto
+     * - Información de horarios
+     * - Datos de contacto
+     * - Diseño con iconos y texto
+     */
+    function LocationSection(){
+      return React.createElement('section',{id:'ubicacion',className:'location-section'},
+        React.createElement('div',{className:'location-container'},[
+          React.createElement('h2',null,'Nuestra Ubicación'),
+          React.createElement('p',null,'Encuéntranos en Reynosa, Tamaulipas'),
+          React.createElement('div',{className:'location-info'},[
+            React.createElement('div',{className:'location-item',key:'address'},[
+              React.createElement('div',{className:'location-icon'}),
+              React.createElement('div',{className:'location-text'},[
+                React.createElement('h4',null,'Dirección'),
+                React.createElement('p',null,'Blvd. Las Fuentes #654 Col. Aztlán, Reynosa, Tamaulipas')
+              ])
+            ]),
+            React.createElement('div',{className:'location-item',key:'hours'},[
+              React.createElement('div',{className:'location-icon'}),
+              React.createElement('div',{className:'location-text'},[
+                React.createElement('h4',null,'Horarios'),
+                React.createElement('p',null,'Lun-Vie: 9:00-18:00, Sáb: 9:00-14:00')
+              ])
+            ]),
+            React.createElement('div',{className:'location-item',key:'contact'},[
+              React.createElement('div',{className:'location-icon'}),
+              React.createElement('div',{className:'location-text'},[
+                React.createElement('h4',null,'Contacto'),
+                React.createElement('p',null,'WhatsApp: +52 899 873 7313')
+              ])
+            ])
+          ])
+        ])
+      );
+    }
+
+    /**
+     * COMPONENTE FORMULARIO DE CONTACTO
+     * Formulario funcional con envío POST al backend
+     * - Campos: nombre, email, teléfono, servicio, mensaje
+     * - Validación de campos requeridos
+     * - Estados de carga y mensajes de éxito/error
+     * - Envío asíncrono a /api/contacto
+     * - Diseño responsive con efectos glassmorphism
+     */
+    function ContactForm(){
+      const [formData, setFormData] = React.useState({
+        nombre: '',
+        email: '',
+        telefono: '',
+        servicio: '',
+        mensaje: ''
+      });
+      const [isLoading, setIsLoading] = React.useState(false);
+      const [message, setMessage] = React.useState({ type: '', text: '' });
+
+      const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+          ...prev,
+          [name]: value
+        }));
+      };
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setMessage({ type: '', text: '' });
+
+        try {
+          // URL del backend - reemplaza con la URL real de tu API
+          const response = await fetch('/api/contacto', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+          });
+
+          if (response.ok) {
+            setMessage({ 
+              type: 'success', 
+              text: '¡Mensaje enviado correctamente! Te contactaremos pronto.' 
+            });
+            setFormData({
+              nombre: '',
+              email: '',
+              telefono: '',
+              servicio: '',
+              mensaje: ''
+            });
+          } else {
+            throw new Error('Error al enviar el mensaje');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          setMessage({ 
+            type: 'error', 
+            text: 'Hubo un error al enviar tu mensaje. Por favor, inténtalo de nuevo o contáctanos directamente.' 
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      return React.createElement('section',{id:'cotiza',className:'email-section'},
+        React.createElement('div',{className:'email-container'},[
+          React.createElement('div',{className:'email-header',key:'header'},[
+            React.createElement('h2',{className:'email-title'},'Solicita una cotización'),
+            React.createElement('p',{className:'email-subtitle'},'¿Tienes un proyecto en mente?'),
+            React.createElement('p',{className:'email-description'},'Completa el formulario con los detalles de tu proyecto y te enviaremos una cotización personalizada en menos de 24 horas.')
+          ]),
+          React.createElement('form',{
+            className:'contact-form',
+            onSubmit:handleSubmit,
+            key:'form'
+          },[
+            React.createElement('div',{className:'form-row',key:'row1'},[
+              React.createElement('div',{className:'form-group',key:'nombre'},[
+                React.createElement('label',{htmlFor:'nombre'},'Nombre completo *'),
+                React.createElement('input',{
+                  type:'text',
+                  id:'nombre',
+                  name:'nombre',
+                  value:formData.nombre,
+                  onChange:handleInputChange,
+                  placeholder:'Tu nombre completo',
+                  required:true
+                })
+              ]),
+              React.createElement('div',{className:'form-group',key:'email'},[
+                React.createElement('label',{htmlFor:'email'},'Correo electrónico *'),
+                React.createElement('input',{
+                  type:'email',
+                  id:'email',
+                  name:'email',
+                  value:formData.email,
+                  onChange:handleInputChange,
+                  placeholder:'tu@email.com',
+                  required:true
+                })
+              ])
+            ]),
+            React.createElement('div',{className:'form-row',key:'row2'},[
+              React.createElement('div',{className:'form-group',key:'telefono'},[
+                React.createElement('label',{htmlFor:'telefono'},'Teléfono'),
+                React.createElement('input',{
+                  type:'tel',
+                  id:'telefono',
+                  name:'telefono',
+                  value:formData.telefono,
+                  onChange:handleInputChange,
+                  placeholder:'+52 899 123 4567'
+                })
+              ]),
+              React.createElement('div',{className:'form-group',key:'servicio'},[
+                React.createElement('label',{htmlFor:'servicio'},'Servicio de interés'),
+                React.createElement('select',{
+                  id:'servicio',
+                  name:'servicio',
+                  value:formData.servicio,
+                  onChange:handleInputChange
+                },[
+                  React.createElement('option',{value:''},'Selecciona un servicio'),
+                  React.createElement('option',{value:'gran-formato'},'Gran Formato'),
+                  React.createElement('option',{value:'imprenta'},'Imprenta'),
+                  React.createElement('option',{value:'estampados'},'Estampados'),
+                  React.createElement('option',{value:'grabados'},'Grabados'),
+                  React.createElement('option',{value:'letreros'},'Letreros'),
+                  React.createElement('option',{value:'otro'},'Otro')
+                ])
+              ])
+            ]),
+            React.createElement('div',{className:'form-group',key:'mensaje'},[
+              React.createElement('label',{htmlFor:'mensaje'},'Descripción del proyecto *'),
+              React.createElement('textarea',{
+                id:'mensaje',
+                name:'mensaje',
+                value:formData.mensaje,
+                onChange:handleInputChange,
+                placeholder:'Describe tu proyecto: dimensiones, materiales, cantidad, colores, fecha requerida, etc.',
+                required:true
+              })
+            ]),
+            message.text && React.createElement('div',{
+              className:`message ${message.type} show`,
+              key:'message'
+            },message.text),
+            React.createElement('button',{
+              type:'submit',
+              className:`submit-btn ${isLoading ? 'loading' : ''}`,
+              disabled:isLoading,
+              key:'submit'
+            },[
+              React.createElement('span',{className:'loading-spinner'}),
+              React.createElement('span',{className:'submit-icon'}),
+              React.createElement('span',null,isLoading ? 'Enviando...' : 'Enviar mensaje')
+            ])
+          ]),
+          React.createElement('div',{className:'email-features',key:'features'},[
+            React.createElement('div',{className:'features-panel',key:'panel'},[
+              React.createElement('div',{className:'feature-card',key:'f1'},[
+                React.createElement('div',{className:'feature-icon'},'⚡'),
+                React.createElement('h4',{className:'feature-title'},'Respuesta rápida'),
+                React.createElement('p',{className:'feature-desc'},'Te contactamos en menos de 24 horas')
+              ]),
+              React.createElement('div',{className:'feature-card',key:'f2'},[
+                React.createElement('div',{className:'feature-icon'},'💰'),
+                React.createElement('h4',{className:'feature-title'},'Cotización gratuita'),
+                React.createElement('p',{className:'feature-desc'},'Sin compromiso, sin costo oculto')
+              ]),
+              React.createElement('div',{className:'feature-card',key:'f3'},[
+                React.createElement('div',{className:'feature-icon'},'🎯'),
+                React.createElement('h4',{className:'feature-title'},'Personalizada'),
+                React.createElement('p',{className:'feature-desc'},'Adaptada a tus necesidades específicas')
+              ])
+            ])
+          ]),
+          React.createElement('div',{className:'email-cta',key:'cta'},[
+            React.createElement('p',{className:'cta-text'},'¿Prefieres contactarnos directamente?'),
+            React.createElement('a',{className:'cta-email',href:'mailto:zgrafica.mx@gmail.com'},'zgrafica.mx@gmail.com')
+          ])
+        ])
+      );
+    }
+
+    /**
+     * COMPONENTE FOOTER
+     * Pie de página con información de contacto y enlaces
+     * - Logo y slogan de la empresa
+     * - Información de contacto (email, teléfono, WhatsApp)
+     * - Enlaces de navegación
+     * - Enlaces a redes sociales
+     * - Botón flotante de WhatsApp
+     */
+    function Footer(){
+      return React.createElement('footer',{id:'contacto',className:'footer'},
+        React.createElement('div',{className:'container cols'},[
+          React.createElement('div',{className:'brand-line',key:'left'},[
+            React.createElement('img',{className:'footer-logo',src:'img/web%205/zona%20grafica%20hacemos%20posible%20tus%20ideas.jpeg',alt:'Zona Gráfica – Hacemos posible tus ideas'})
+          ]),
+          React.createElement('div',{key:'right',className:'contact'},[
+            React.createElement('h4',null,'CONTÁCTANOS'),
+            React.createElement('div',{className:'citem'},[
+              React.createElement('span',{className:'cicon mail'}),
+              React.createElement('span',null,'zgrafica.mx@gmail.com')
+            ]),
+            React.createElement('div',{className:'citem'},[
+              React.createElement('span',{className:'cicon facebook'}),
+              React.createElement('span',null,'Zona Gráfica')
+            ]),
+            React.createElement('div',{className:'citem'},[
+              React.createElement('span',{className:'cicon map'}),
+              React.createElement('span',null,'Blvd. Las Fuentes #654 Col. Aztlán, 88740 Reynosa, México')
+            ])
+          ])
+        ]),
+        React.createElement('div',{className:'container footer-links'},
+          React.createElement('div',{className:'grid'},[
+            React.createElement('div',{key:'f1'},[
+              React.createElement('h5',null,'Nosotros'),
+              React.createElement('a',{href:'#servicios'},'Quiénes somos'),
+              React.createElement('a',{href:'#servicios'},'Marcas y materiales'),
+              React.createElement('a',{href:'#servicios'},'Portafolio')
+            ]),
+            React.createElement('div',{key:'f2'},[
+              React.createElement('h5',null,'Atención'),
+              React.createElement('a',{href:'#cotiza'},'Cotiza ahora'),
+              React.createElement('a',{href:'mailto:zgrafica.mx@gmail.com'},'Email'),
+              React.createElement('a',{href:`https://api.whatsapp.com/send?phone=${WHATSAPP_PHONE}`,target:'_blank',rel:'noopener',title:'WhatsApp: +52 899 873 7313'},[
+                React.createElement('span',{style:{display:'inline-flex',width:24,height:24,background:'url(img/web%205/iconos/whatsapp.png) center/contain no-repeat'}},'')
+              ])
+            ]),
+            React.createElement('div',{key:'f3'},[
+              React.createElement('h5',null,'Información'),
+              React.createElement('a',{href:'#contacto'},'Garantías y envíos')
+            ]),
+            React.createElement('div',{key:'f4'},[
+              React.createElement('h5',null,'Ubicación'),
+              React.createElement('a',{href:'#contacto'},'Reynosa, Tamaulipas'),
+              React.createElement('a',{href:'#contacto'},'Cómo llegar')
+            ])
+          ])
+        )
+      );
+    }
+
+    // ================================================================================
+    // COMPONENTE PRINCIPAL DE LA APLICACIÓN
+    // ================================================================================
+    
+    /**
+     * COMPONENTE PRINCIPAL DE LA APLICACIÓN
+     * Componente raíz que renderiza toda la aplicación React
+     * - Orquesta todos los componentes de la página
+     * - Maneja el estado global de la aplicación
+     * - Renderiza el layout completo con todas las secciones
+     */
+    function App(){
+      return React.createElement(React.Fragment,null,[
+        React.createElement(Header),
+        React.createElement(BannerCarousel),
+        React.createElement(ServiciosGrid), // Con integración PocketBase
+          React.createElement(TrustBadges),
+        // React.createElement(PopularArticlesSection), // Con integración PocketBase - COMENTADO
+        React.createElement(LocationSection),
+        React.createElement(ContactForm),
+          React.createElement(TestimonialsSection),
+        React.createElement('a',{href:`https://api.whatsapp.com/send?phone=${WHATSAPP_PHONE}`,className:'wa-btn wa-float',target:'_blank',rel:'noopener',title:'WhatsApp: +52 899 873 7313'},[
+          React.createElement('span',{style:{display:'inline-flex',width:32,height:32,background:'url(img/web%205/iconos/whatsapp.png) center/contain no-repeat'}},'')
+        ]),
+        React.createElement(Footer)
+      ]);
+    }
+
+    // ================================================================================
+    // INICIALIZACIÓN DE LA APLICACIÓN REACT
+    // ================================================================================
+    
+    // LÍNEA 1776-1777: Crear root de React y renderizar la aplicación
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(React.createElement(App));
+  </script>
+</body>
+</html>

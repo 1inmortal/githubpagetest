@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ambiente Nebulosa</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, html { width: 100%; height: 100%; overflow: hidden; background: #000; }
+    canvas { display: block; }
+    #videoElement { display: none; }
+    #processCanvas { display: none; }
+    #debugCanvas { 
+      position: fixed; 
+      top: 10px; 
+      right: 10px; 
+      width: 256px; 
+      height: 256px; 
+      border: 2px solid #64ffda;
+      background: #000;
+      z-index: 1000;
+      display: none;
+    }
+    body.debug #debugCanvas { display: block; }
+  </style>
+</head>
+<body>
+  <video id="videoElement" autoplay playsinline></video>
+  <canvas id="processCanvas"></canvas>
+  <canvas id="debugCanvas"></canvas>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" integrity="sha512-dLxUelApnYxpLt6K2iomGngnHO83iUvZytA3YjDUCjT0HDOHKXnVYdf3hU4JjM8uEhxf9nD1/ey98U3t2vZ0qQ==" crossorigin="anonymous"></script>
+  <script>
+    // === CONFIGURACIÓN INICIAL ===
+    const config = {
+      dustCount: 120000,
+      bokehCount: 5000,
+      speed: 0.3,
+      hue: 0.5,
+      bloom: 0.6,
+      brightness: 1.0,
+      fog: 0.4,
+      nebulaStrength: 0.7,
+      pointerInfluence: 0.0,
+      pointerX: 0.5,
+      pointerY: 0.5,
+      pulseStrength: 0.0,
+      pulseTime: 0.0,
+      silhouetteStrength: 2.0, // Fuerza de atracción de partículas a la silueta (aumentada)
+      silhouetteActive: false,
+      debugSilhouette: false // Mostrar canvas de debug
+    };
+
+    // === SISTEMA DE DETECCIÓN DE SILUETA ===
+    const video = document.getElementById('videoElement');
+    const processCanvas = document.getElementById('processCanvas');
+    const processCtx = processCanvas.getContext('2d', { willReadFrequently: true });
+    
+    // Textura para pasar datos de silueta al shader
+    let silhouetteTexture = null;
+    let silhouetteData = null;
+    const silhouetteSize = 128; // Resolución de la textura de silueta (128x128)
+    
+    // Canvas de debug
+    const debugCanvas = document.getElementById('debugCanvas');
+    const debugCtx = debugCanvas.getContext('2d');
+    debugCanvas.width = 256;
+    debugCanvas.height = 256;
+    
+    // Inicializar cámara
+    async function initCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+            facingMode: 'user' 
+          } 
+        });
+        video.srcObject = stream;
+        
+        video.addEventListener('loadedmetadata', () => {
+          processCanvas.width = silhouetteSize;
+          processCanvas.height = silhouetteSize;
+          config.silhouetteActive = true;
+          console.log('[SILUETA] Cámara inicializada');
+        });
+      } catch (err) {
+        console.warn('[SILUETA] No se pudo acceder a la cámara:', err);
+        config.silhouetteActive = false;
+      }
+    }
+    
+    // Procesar frame del video para detectar silueta
+    let backgroundFrame = null;
+    let frameCount = 0;
+    let backgroundFrames = [];
+    const backgroundSamples = 60; // Número de frames para calcular fondo promedio
+    
+    function processSilhouette() {
+      if (!config.silhouetteActive || video.readyState !== video.HAVE_ENOUGH_DATA) {
+        return;
+      }
+      
+      // Dibujar frame actual en canvas de procesamiento
+      processCtx.drawImage(video, 0, 0, silhouetteSize, silhouetteSize);
+      
+      // Obtener datos de imagen
+      const imageData = processCtx.getImageData(0, 0, silhouetteSize, silhouetteSize);
+      const data = imageData.data;
+      
+      // Acumular frames para calcular fondo promedio
+      if (frameCount < backgroundSamples) {
+        frameCount++;
+        backgroundFrames.push(new Uint8ClampedArray(data));
+        
+        if (frameCount === backgroundSamples) {
+          // Calcular promedio de fondo
+          backgroundFrame = new Uint8ClampedArray(data.length);
+          for (let i = 0; i < data.length; i += 4) {
+            let sumR = 0, sumG = 0, sumB = 0;
+            for (let f = 0; f < backgroundFrames.length; f++) {
+              sumR += backgroundFrames[f][i];
+              sumG += backgroundFrames[f][i + 1];
+              sumB += backgroundFrames[f][i + 2];
+            }
+            backgroundFrame[i] = sumR / backgroundFrames.length;
+            backgroundFrame[i + 1] = sumG / backgroundFrames.length;
+            backgroundFrame[i + 2] = sumB / backgroundFrames.length;
+            backgroundFrame[i + 3] = 255;
+          }
+          backgroundFrames = []; // Liberar memoria
+          console.log('[SILUETA] Fondo calculado');
+        }
+        return;
+      }
+      
+      // Detectar silueta por diferencia con fondo
+      const silhouette = new Uint8Array(silhouetteSize * silhouetteSize);
+      
+      if (backgroundFrame) {
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          
+          const bgR = backgroundFrame[i];
+          const bgG = backgroundFrame[i + 1];
+          const bgB = backgroundFrame[i + 2];
+          
+          // Calcular diferencia en espacio RGB
+          const diffR = Math.abs(r - bgR);
+          const diffG = Math.abs(g - bgG);
+          const diffB = Math.abs(b - bgB);
+          const diff = (diffR + diffG + diffB) / 3;
+          
+          // También calcular diferencia en luminosidad
+          const brightness = (r + g + b) / 3;
+          const bgBrightness = (bgR + bgG + bgB) / 3;
+          const brightnessDiff = Math.abs(brightness - bgBrightness);
+          
+          // Combinar ambos métodos para mejor detección
+          const combinedDiff = (diff * 0.7 + brightnessDiff * 0.3);
+          
+          // Threshold adaptativo (reducido para mayor sensibilidad)
+          const threshold = 25;
+          if (combinedDiff > threshold) {
+            const idx = i / 4;
+            // Suavizar el valor para mejor visualización
+            const smoothValue = Math.min(255, (combinedDiff - threshold) * 4);
+            silhouette[idx] = smoothValue;
+          }
+        }
+        
+        // Aplicar suavizado simple (dilatación/erosión básico)
+        const smoothed = new Uint8Array(silhouette);
+        for (let y = 1; y < silhouetteSize - 1; y++) {
+          for (let x = 1; x < silhouetteSize - 1; x++) {
+            const idx = y * silhouetteSize + x;
+            const neighbors = [
+              silhouette[(y - 1) * silhouetteSize + x],
+              silhouette[(y + 1) * silhouetteSize + x],
+              silhouette[y * silhouetteSize + (x - 1)],
+              silhouette[y * silhouetteSize + (x + 1)]
+            ];
+            const maxNeighbor = Math.max(...neighbors);
+            smoothed[idx] = Math.max(silhouette[idx], maxNeighbor * 0.7);
+          }
+        }
+        
+        // Actualizar textura de silueta
+        if (!silhouetteTexture) {
+          silhouetteTexture = new THREE.DataTexture(
+            new Uint8Array(silhouetteSize * silhouetteSize * 4),
+            silhouetteSize,
+            silhouetteSize,
+            THREE.RGBAFormat,
+            THREE.UnsignedByteType
+          );
+          silhouetteTexture.minFilter = THREE.LinearFilter;
+          silhouetteTexture.magFilter = THREE.LinearFilter;
+          silhouetteTexture.needsUpdate = true;
+        }
+        
+        // Convertir a RGBA
+        const textureData = silhouetteTexture.image.data;
+        for (let i = 0; i < smoothed.length; i++) {
+          const val = smoothed[i];
+          const i4 = i * 4;
+          textureData[i4] = val;     // R
+          textureData[i4 + 1] = val; // G
+          textureData[i4 + 2] = val; // B
+          textureData[i4 + 3] = val; // A
+        }
+        
+        silhouetteTexture.needsUpdate = true;
+        silhouetteData = smoothed;
+        
+        // Log ocasional para verificar que la silueta se está detectando
+        if (Math.random() < 0.01) {
+          let maxVal = 0;
+          for (let i = 0; i < smoothed.length; i++) {
+            if (smoothed[i] > maxVal) maxVal = smoothed[i];
+          }
+          if (maxVal > 0) {
+            console.log('[SILUETA] Detectada - Valor máximo:', maxVal.toFixed(0), 'Partículas activas:', config.silhouetteActive);
+          }
+        }
+        
+        // Dibujar en canvas de debug si está activado
+        if (config.debugSilhouette) {
+          const debugImageData = debugCtx.createImageData(256, 256);
+          for (let i = 0; i < smoothed.length; i++) {
+            const val = smoothed[i];
+            const i4 = i * 4;
+            // Escalar de 128x128 a 256x256
+            const x = (i % silhouetteSize) * 2;
+            const y = Math.floor(i / silhouetteSize) * 2;
+            const idx = (y * 256 + x) * 4;
+            if (idx < debugImageData.data.length - 3) {
+              debugImageData.data[idx] = val;
+              debugImageData.data[idx + 1] = val;
+              debugImageData.data[idx + 2] = val;
+              debugImageData.data[idx + 3] = 255;
+              // Duplicar píxeles para escalado 2x
+              if (x < 255) {
+                debugImageData.data[idx + 4] = val;
+                debugImageData.data[idx + 5] = val;
+                debugImageData.data[idx + 6] = val;
+                debugImageData.data[idx + 7] = 255;
+              }
+              if (y < 255) {
+                const idx2 = ((y + 1) * 256 + x) * 4;
+                if (idx2 < debugImageData.data.length - 3) {
+                  debugImageData.data[idx2] = val;
+                  debugImageData.data[idx2 + 1] = val;
+                  debugImageData.data[idx2 + 2] = val;
+                  debugImageData.data[idx2 + 3] = 255;
+                  if (x < 255) {
+                    debugImageData.data[idx2 + 4] = val;
+                    debugImageData.data[idx2 + 5] = val;
+                    debugImageData.data[idx2 + 6] = val;
+                    debugImageData.data[idx2 + 7] = 255;
+                  }
+                }
+              }
+            }
+          }
+          debugCtx.putImageData(debugImageData, 0, 0);
+        }
+      }
+    }
+    
+    // Inicializar cámara al cargar
+    initCamera();
+    
+    // Procesar silueta cada frame
+    setInterval(processSilhouette, 33); // ~30fps
+
+    // === SETUP THREE.JS ===
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+    camera.position.z = 1000;
+
+    const renderer = new THREE.WebGLRenderer({ 
+      antialias: true, 
+      alpha: false,
+      powerPreference: "high-performance"
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x000000, 1);
+    renderer.sortObjects = false;
+    document.body.appendChild(renderer.domElement);
+
+    // === SHADER DE FONDO NEBULOSA ===
+    const nebulaGeometry = new THREE.PlaneGeometry(2, 2);
+    const nebulaMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        time: { value: 0 },
+        resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+        hue: { value: config.hue },
+        fog: { value: config.fog },
+        strength: { value: config.nebulaStrength }
+      },
+      vertexShader: `
+        void main() {
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform float time;
+        uniform vec2 resolution;
+        uniform float hue;
+        uniform float fog;
+        uniform float strength;
+        
+        vec3 hsv2rgb(vec3 c) {
+          vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+          vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+          return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+        }
+        
+        float hash(vec2 p) {
+          return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+        }
+        
+        float noise(vec2 p) {
+          vec2 i = floor(p);
+          vec2 f = fract(p);
+          f = f * f * (3.0 - 2.0 * f);
+          float a = hash(i);
+          float b = hash(i + vec2(1.0, 0.0));
+          float c = hash(i + vec2(0.0, 1.0));
+          float d = hash(i + vec2(1.0, 1.0));
+          return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+        }
+        
+        float fbm(vec2 p) {
+          float value = 0.0;
+          float amplitude = 0.5;
+          for(int i = 0; i < 4; i++) {
+            value += amplitude * noise(p);
+            p *= 2.0;
+            amplitude *= 0.5;
+          }
+          return value;
+        }
+        
+        void main() {
+          vec2 uv = gl_FragCoord.xy / resolution.xy;
+          vec2 p = (uv - 0.5) * vec2(resolution.x / resolution.y, 1.0) * 2.0;
+          
+          float t = time * 0.1;
+          vec2 p1 = p * 0.5 + vec2(t * 0.1, t * 0.15);
+          vec2 p2 = p * 1.2 - vec2(t * 0.08, t * 0.12);
+          
+          float n1 = fbm(p1);
+          float n2 = fbm(p2);
+          float n3 = fbm(p * 0.3 + vec2(t * 0.05));
+          
+          float nebula = n1 * 0.5 + n2 * 0.3 + n3 * 0.2;
+          nebula = pow(nebula, 1.5) * strength;
+          
+          float dist = length(p);
+          float vignette = 1.0 - smoothstep(1.0, 2.5, dist);
+          
+          vec3 color1 = hsv2rgb(vec3(hue, 0.6, 0.15));
+          vec3 color2 = hsv2rgb(vec3(fract(hue + 0.3), 0.5, 0.25));
+          vec3 color3 = hsv2rgb(vec3(fract(hue + 0.6), 0.4, 0.1));
+          
+          vec3 col = mix(color1, color2, nebula * 0.7);
+          col = mix(col, color3, n2 * 0.3);
+          col *= vignette;
+          col = mix(vec3(0.0, 0.01, 0.02), col, fog + nebula * 0.3);
+          
+          gl_FragColor = vec4(col, 1.0);
+        }
+      `
+    });
+    const nebulaMesh = new THREE.Mesh(nebulaGeometry, nebulaMaterial);
+    scene.add(nebulaMesh);
+
+    // === SISTEMA DE PARTÍCULAS DUST (FINAS) ===
+    const dustGeometry = new THREE.BufferGeometry();
+    const dustPositions = new Float32Array(config.dustCount * 3);
+    const dustSizes = new Float32Array(config.dustCount);
+    const dustColors = new Float32Array(config.dustCount * 3);
+    const dustSpeeds = new Float32Array(config.dustCount * 3);
+    const dustOffsets = new Float32Array(config.dustCount * 3);
+
+    for (let i = 0; i < config.dustCount; i++) {
+      const i3 = i * 3;
+      dustPositions[i3] = (Math.random() - 0.5) * 4000;
+      dustPositions[i3 + 1] = (Math.random() - 0.5) * 4000;
+      dustPositions[i3 + 2] = (Math.random() - 0.5) * 4000;
+      
+      dustSizes[i] = Math.random() * 1.5 + 1.0;
+      
+      const hueOffset = (Math.random() - 0.5) * 0.2;
+      const h = config.hue + hueOffset;
+      const s = 0.5 + Math.random() * 0.4;
+      const v = 0.5 + Math.random() * 0.5;
+      const rgb = hsv2rgb([h, s, v]);
+      dustColors[i3] = rgb[0];
+      dustColors[i3 + 1] = rgb[1];
+      dustColors[i3 + 2] = rgb[2];
+      
+      dustSpeeds[i3] = (Math.random() - 0.5) * 0.5;
+      dustSpeeds[i3 + 1] = (Math.random() - 0.5) * 0.5;
+      dustSpeeds[i3 + 2] = (Math.random() - 0.5) * 0.3;
+      
+      dustOffsets[i3] = Math.random() * Math.PI * 2;
+      dustOffsets[i3 + 1] = Math.random() * Math.PI * 2;
+      dustOffsets[i3 + 2] = Math.random() * Math.PI * 2;
+    }
+
+    dustGeometry.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3));
+    dustGeometry.setAttribute('size', new THREE.BufferAttribute(dustSizes, 1));
+    dustGeometry.setAttribute('color', new THREE.BufferAttribute(dustColors, 3));
+
+    const dustMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        time: { value: 0 },
+        cameraPosition: { value: camera.position },
+        pointerX: { value: config.pointerX },
+        pointerY: { value: config.pointerY },
+        pointerInfluence: { value: config.pointerInfluence },
+        pulseStrength: { value: config.pulseStrength },
+        brightness: { value: config.brightness },
+        hue: { value: config.hue },
+        silhouetteTexture: { value: null },
+        silhouetteStrength: { value: config.silhouetteStrength },
+        silhouetteActive: { value: config.silhouetteActive },
+        silhouetteSize: { value: silhouetteSize }
+      },
+      vertexShader: `
+        uniform float time;
+        uniform float pointerX;
+        uniform float pointerY;
+        uniform float pointerInfluence;
+        uniform float pulseStrength;
+        uniform sampler2D silhouetteTexture;
+        uniform float silhouetteStrength;
+        uniform bool silhouetteActive;
+        uniform float silhouetteSize;
+        
+        attribute float size;
+        
+        varying vec3 vColor;
+        varying float vAlpha;
+        
+        void main() {
+          vec3 pos = position;
+          
+          float driftX = sin(time * 0.1 + pos.z * 0.001) * 0.5;
+          float driftY = cos(time * 0.12 + pos.x * 0.001) * 0.5;
+          float driftZ = sin(time * 0.08 + pos.y * 0.001) * 0.3;
+          
+          pos.x += driftX;
+          pos.y += driftY;
+          pos.z += driftZ;
+          
+          // === FORMACIÓN DE PARTÍCULAS ALREDEDOR DE LA SILUETA ===
+          if (silhouetteActive && silhouetteTexture != null) {
+            // Convertir posición 3D a coordenadas UV de la textura de silueta
+            // Mapear el espacio 3D al espacio de la silueta (centrado en el origen)
+            // Las partículas están en un rango de aproximadamente -2000 a +2000
+            vec2 worldPos = vec2(pos.x, pos.y);
+            // Normalizar a rango -1 a 1, luego a 0-1 para UV
+            // Invertir Y porque el video viene invertido
+            vec2 uv = vec2((worldPos.x / 2000.0) * 0.5 + 0.5, 1.0 - ((worldPos.y / 2000.0) * 0.5 + 0.5));
+            
+            // Asegurar que UV esté en rango válido
+            if (uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0) {
+              vec4 silhouetteSample = texture2D(silhouetteTexture, uv);
+              // Las texturas en WebGL ya vienen normalizadas (0-1)
+              float silhouetteValue = silhouetteSample.r;
+              
+              // Si la partícula está cerca de la silueta
+              if (silhouetteValue > 0.05) {
+                // Calcular gradiente de la silueta (bordes)
+                float uvStep = 1.0 / silhouetteSize;
+                float left = texture2D(silhouetteTexture, uv - vec2(uvStep, 0.0)).r;
+                float right = texture2D(silhouetteTexture, uv + vec2(uvStep, 0.0)).r;
+                float top = texture2D(silhouetteTexture, uv - vec2(0.0, uvStep)).r;
+                float bottom = texture2D(silhouetteTexture, uv + vec2(0.0, uvStep)).r;
+                
+                // Calcular gradiente (dirección hacia el borde)
+                vec2 gradient = vec2((right - left) * 0.5, (bottom - top) * 0.5);
+                float gradientMag = length(gradient);
+                
+                if (gradientMag > 0.01) {
+                  // Normalizar gradiente
+                  vec2 dir = normalize(gradient + vec2(0.001)); // Evitar división por cero
+                  
+                  // Atraer partículas hacia los bordes de la silueta
+                  float attraction = silhouetteValue * silhouetteStrength * 1.5;
+                  
+                  // Mover partícula hacia el borde de la silueta (más fuerte)
+                  pos.x += dir.x * attraction * 100.0;
+                  pos.y += dir.y * attraction * 100.0;
+                  
+                  // Aumentar brillo cuando está cerca de la silueta
+                  vColor = color * (1.0 + silhouetteValue * 2.0 + gradientMag * 1.5);
+                } else {
+                  // Si no hay gradiente claro, atraer hacia el centro de la silueta
+                  vec2 center = vec2(0.0, 0.0);
+                  vec2 toCenter = center - worldPos;
+                  float distToCenter = length(toCenter);
+                  
+                  if (distToCenter > 0.01) {
+                    vec2 dir = normalize(toCenter + vec2(0.001));
+                    float attraction = silhouetteValue * silhouetteStrength * 1.0;
+                    pos.x += dir.x * attraction * 80.0;
+                    pos.y += dir.y * attraction * 80.0;
+                    vColor = color * (1.0 + silhouetteValue * 1.5);
+                  }
+                }
+              }
+            }
+          }
+          
+          // Convertir pointer de 0-1 a coordenadas del mundo
+          vec2 pointerPos = vec2((pointerX - 0.5) * 4000.0, (pointerY - 0.5) * 4000.0);
+          vec2 posXZ = vec2(pos.x, pos.z);
+          vec2 toPointer = pointerPos - posXZ;
+          float distToPointer = length(toPointer);
+          
+          // Radio de influencia más grande y visible
+          float maxDist = 1500.0; // Radio de influencia
+          float influenceFactor = 1.0 - smoothstep(0.0, maxDist, distToPointer);
+          float influence = pointerInfluence * influenceFactor;
+          
+          // Movimiento MUY fuerte hacia el pointer (hacerlo muy visible)
+          if (influence > 0.01) {
+            vec2 dir = normalize(toPointer + vec2(0.001)); // Evitar división por cero
+            pos.x += dir.x * influence * 200.0; // Movimiento mucho más fuerte
+            pos.z += dir.y * influence * 200.0;
+            pos.y += sin(distToPointer * 0.01) * influence * 100.0;
+          }
+          
+          vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+          // Aumentar tamaño cuando está cerca del pointer o silueta
+          float sizeBoost = 1.0 + influence * 0.8;
+          gl_PointSize = size * (600.0 / -mvPosition.z) * (1.0 + pulseStrength * 0.5) * sizeBoost;
+          gl_Position = projectionMatrix * mvPosition;
+          
+          float dist = length(mvPosition.xyz);
+          vAlpha = 1.0 - smoothstep(500.0, 2000.0, dist);
+          vAlpha *= (1.0 + pulseStrength * 0.8 + influence * 0.5);
+          
+          // Brillo más intenso cuando está cerca del pointer
+          if (!silhouetteActive) {
+            vColor = color * (1.0 + influence * 1.2 + pulseStrength * 0.3);
+          }
+        }
+      `,
+      fragmentShader: `
+        precision mediump float;
+        
+        varying vec3 vColor;
+        varying float vAlpha;
+        uniform float brightness;
+        
+        void main() {
+          float dist = length(gl_PointCoord - vec2(0.5));
+          float alpha = 1.0 - smoothstep(0.0, 0.5, dist);
+          alpha *= vAlpha;
+          
+          vec3 col = vColor * brightness;
+          gl_FragColor = vec4(col, alpha * 0.8);
+        }
+      `,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      vertexColors: true
+    });
+
+    const dustSystem = new THREE.Points(dustGeometry, dustMaterial);
+    scene.add(dustSystem);
+
+    // === SISTEMA DE PARTÍCULAS BOKEH/ENERGY (BRILLANTES) ===
+    const bokehGeometry = new THREE.BufferGeometry();
+    const bokehPositions = new Float32Array(config.bokehCount * 3);
+    const bokehSizes = new Float32Array(config.bokehCount);
+    const bokehColors = new Float32Array(config.bokehCount * 3);
+    const bokehSpeeds = new Float32Array(config.bokehCount * 3);
+    const bokehOffsets = new Float32Array(config.bokehCount * 3);
+
+    for (let i = 0; i < config.bokehCount; i++) {
+      const i3 = i * 3;
+      bokehPositions[i3] = (Math.random() - 0.5) * 3000;
+      bokehPositions[i3 + 1] = (Math.random() - 0.5) * 3000;
+      bokehPositions[i3 + 2] = (Math.random() - 0.5) * 2000;
+      
+      bokehSizes[i] = Math.random() * 4 + 2.5;
+      
+      const hueOffset = (Math.random() - 0.5) * 0.15;
+      const h = config.hue + hueOffset;
+      const s = 0.6 + Math.random() * 0.3;
+      const v = 0.8 + Math.random() * 0.2;
+      const rgb = hsv2rgb([h, s, v]);
+      bokehColors[i3] = rgb[0];
+      bokehColors[i3 + 1] = rgb[1];
+      bokehColors[i3 + 2] = rgb[2];
+      
+      bokehSpeeds[i3] = (Math.random() - 0.5) * 0.8;
+      bokehSpeeds[i3 + 1] = (Math.random() - 0.5) * 0.8;
+      bokehSpeeds[i3 + 2] = (Math.random() - 0.5) * 0.5;
+      
+      bokehOffsets[i3] = Math.random() * Math.PI * 2;
+      bokehOffsets[i3 + 1] = Math.random() * Math.PI * 2;
+      bokehOffsets[i3 + 2] = Math.random() * Math.PI * 2;
+    }
+
+    bokehGeometry.setAttribute('position', new THREE.BufferAttribute(bokehPositions, 3));
+    bokehGeometry.setAttribute('size', new THREE.BufferAttribute(bokehSizes, 1));
+    bokehGeometry.setAttribute('color', new THREE.BufferAttribute(bokehColors, 3));
+
+    const bokehMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        time: { value: 0 },
+        cameraPosition: { value: camera.position },
+        pointerX: { value: config.pointerX },
+        pointerY: { value: config.pointerY },
+        pointerInfluence: { value: config.pointerInfluence },
+        pulseStrength: { value: config.pulseStrength },
+        brightness: { value: config.brightness },
+        bloom: { value: config.bloom },
+        hue: { value: config.hue },
+        silhouetteTexture: { value: null },
+        silhouetteStrength: { value: config.silhouetteStrength },
+        silhouetteActive: { value: config.silhouetteActive },
+        silhouetteSize: { value: silhouetteSize }
+      },
+      vertexShader: `
+        uniform float time;
+        uniform float pointerX;
+        uniform float pointerY;
+        uniform float pointerInfluence;
+        uniform float pulseStrength;
+        uniform sampler2D silhouetteTexture;
+        uniform float silhouetteStrength;
+        uniform bool silhouetteActive;
+        uniform float silhouetteSize;
+        
+        attribute float size;
+        
+        varying vec3 vColor;
+        varying float vAlpha;
+        varying float vSize;
+        
+        void main() {
+          vec3 pos = position;
+          
+          float driftX = sin(time * 0.15 + pos.z * 0.002) * 1.0;
+          float driftY = cos(time * 0.18 + pos.x * 0.002) * 1.0;
+          float driftZ = sin(time * 0.1 + pos.y * 0.002) * 0.6;
+          
+          pos.x += driftX;
+          pos.y += driftY;
+          pos.z += driftZ;
+          
+          // === FORMACIÓN DE PARTÍCULAS ALREDEDOR DE LA SILUETA ===
+          if (silhouetteActive && silhouetteTexture != null) {
+            vec2 worldPos = vec2(pos.x, pos.y);
+            // Invertir Y porque el video viene invertido
+            vec2 uv = vec2((worldPos.x / 2000.0) * 0.5 + 0.5, 1.0 - ((worldPos.y / 2000.0) * 0.5 + 0.5));
+            
+            if (uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0) {
+              vec4 silhouetteSample = texture2D(silhouetteTexture, uv);
+              // Las texturas en WebGL ya vienen normalizadas (0-1)
+              float silhouetteValue = silhouetteSample.r;
+              
+              if (silhouetteValue > 0.05) {
+                // Calcular gradiente de la silueta
+                float uvStep = 1.0 / silhouetteSize;
+                float left = texture2D(silhouetteTexture, uv - vec2(uvStep, 0.0)).r;
+                float right = texture2D(silhouetteTexture, uv + vec2(uvStep, 0.0)).r;
+                float top = texture2D(silhouetteTexture, uv - vec2(0.0, uvStep)).r;
+                float bottom = texture2D(silhouetteTexture, uv + vec2(0.0, uvStep)).r;
+                
+                vec2 gradient = vec2((right - left) * 0.5, (bottom - top) * 0.5);
+                float gradientMag = length(gradient);
+                
+                if (gradientMag > 0.01) {
+                  vec2 dir = normalize(gradient + vec2(0.001));
+                  float attraction = silhouetteValue * silhouetteStrength * 2.0;
+                  
+                  pos.x += dir.x * attraction * 120.0;
+                  pos.y += dir.y * attraction * 120.0;
+                  
+                  vColor = color * (1.0 + silhouetteValue * 2.5 + gradientMag * 2.0);
+                } else {
+                  vec2 center = vec2(0.0, 0.0);
+                  vec2 toCenter = center - worldPos;
+                  float distToCenter = length(toCenter);
+                  
+                  if (distToCenter > 0.01) {
+                    vec2 dir = normalize(toCenter + vec2(0.001));
+                    float attraction = silhouetteValue * silhouetteStrength * 1.2;
+                    pos.x += dir.x * attraction * 100.0;
+                    pos.y += dir.y * attraction * 100.0;
+                    vColor = color * (1.0 + silhouetteValue * 2.0);
+                  }
+                }
+              }
+            }
+          }
+          
+          // Convertir pointer de 0-1 a coordenadas del mundo
+          vec2 pointerPos = vec2((pointerX - 0.5) * 3000.0, (pointerY - 0.5) * 3000.0);
+          vec2 posXZ = vec2(pos.x, pos.z);
+          vec2 toPointer = pointerPos - posXZ;
+          float distToPointer = length(toPointer);
+          
+          // Radio de influencia más grande y visible
+          float maxDist = 1200.0; // Radio de influencia
+          float influenceFactor = 1.0 - smoothstep(0.0, maxDist, distToPointer);
+          float influence = pointerInfluence * influenceFactor;
+          
+          // Movimiento MUY fuerte hacia el pointer (hacerlo muy visible)
+          if (influence > 0.01) {
+            vec2 dir = normalize(toPointer + vec2(0.001)); // Evitar división por cero
+            pos.x += dir.x * influence * 250.0; // Movimiento mucho más fuerte
+            pos.z += dir.y * influence * 250.0;
+            pos.y += sin(distToPointer * 0.01) * influence * 120.0;
+          }
+          
+          vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+          float sizeBoost = 1.0 + influence * 1.2;
+          vSize = size * (500.0 / -mvPosition.z) * (1.0 + pulseStrength * 0.8) * sizeBoost;
+          gl_PointSize = vSize;
+          gl_Position = projectionMatrix * mvPosition;
+          
+          float dist = length(mvPosition.xyz);
+          vAlpha = 1.0 - smoothstep(400.0, 1800.0, dist);
+          vAlpha *= (1.0 + pulseStrength * 1.2 + influence * 0.8);
+          
+          // Brillo mucho más intenso cuando está cerca del pointer
+          if (!silhouetteActive) {
+            vColor = color * (1.0 + influence * 1.5 + pulseStrength * 0.5);
+          }
+        }
+      `,
+      fragmentShader: `
+        precision mediump float;
+        
+        varying vec3 vColor;
+        varying float vAlpha;
+        varying float vSize;
+        uniform float brightness;
+        uniform float bloom;
+        
+        void main() {
+          vec2 coord = gl_PointCoord - vec2(0.5);
+          float dist = length(coord);
+          
+          float core = 1.0 - smoothstep(0.0, 0.2, dist);
+          float glow = 1.0 - smoothstep(0.2, 0.5, dist);
+          
+          vec3 col = vColor * brightness;
+          float alpha = (core * 1.0 + glow * bloom * 0.6) * vAlpha;
+          
+          gl_FragColor = vec4(col, alpha);
+        }
+      `,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      vertexColors: true
+    });
+
+    const bokehSystem = new THREE.Points(bokehGeometry, bokehMaterial);
+    scene.add(bokehSystem);
+
+    // === HELPER: HSV to RGB ===
+    function hsv2rgb([h, s, v]) {
+      const c = v * s;
+      const x = c * (1 - Math.abs((h * 6) % 2 - 1));
+      const m = v - c;
+      let r, g, b;
+      if (h < 1/6) { r = c; g = x; b = 0; }
+      else if (h < 2/6) { r = x; g = c; b = 0; }
+      else if (h < 3/6) { r = 0; g = c; b = x; }
+      else if (h < 4/6) { r = 0; g = x; b = c; }
+      else if (h < 5/6) { r = x; g = 0; b = c; }
+      else { r = c; g = 0; b = x; }
+      return [r + m, g + m, b + m];
+    }
+
+    // === ACTUALIZACIÓN DE COLORES DINÁMICOS ===
+    function updateParticleColors() {
+      const dustColors = dustGeometry.attributes.color.array;
+      const bokehColors = bokehGeometry.attributes.color.array;
+      
+      for (let i = 0; i < config.dustCount; i++) {
+        const i3 = i * 3;
+        const hueOffset = (Math.random() - 0.5) * 0.2;
+        const h = config.hue + hueOffset;
+        const s = 0.5 + Math.random() * 0.4;
+        const v = 0.5 + Math.random() * 0.5;
+        const rgb = hsv2rgb([h, s, v]);
+        dustColors[i3] = rgb[0];
+        dustColors[i3 + 1] = rgb[1];
+        dustColors[i3 + 2] = rgb[2];
+      }
+      dustGeometry.attributes.color.needsUpdate = true;
+      
+      for (let i = 0; i < config.bokehCount; i++) {
+        const i3 = i * 3;
+        const hueOffset = (Math.random() - 0.5) * 0.15;
+        const h = config.hue + hueOffset;
+        const s = 0.5 + Math.random() * 0.4;
+        const v = 0.7 + Math.random() * 0.3;
+        const rgb = hsv2rgb([h, s, v]);
+        bokehColors[i3] = rgb[0];
+        bokehColors[i3 + 1] = rgb[1];
+        bokehColors[i3 + 2] = rgb[2];
+      }
+      bokehGeometry.attributes.color.needsUpdate = true;
+    }
+
+    // === ANIMACIÓN ===
+    let time = 0;
+    function animate() {
+      requestAnimationFrame(animate);
+      time += 0.016;
+      
+      nebulaMaterial.uniforms.time.value = time;
+      nebulaMaterial.uniforms.hue.value = config.hue;
+      nebulaMaterial.uniforms.fog.value = config.fog;
+      nebulaMaterial.uniforms.strength.value = config.nebulaStrength;
+      
+      // Actualizar textura de silueta en materiales
+      if (silhouetteTexture) {
+        dustMaterial.uniforms.silhouetteTexture.value = silhouetteTexture;
+        bokehMaterial.uniforms.silhouetteTexture.value = silhouetteTexture;
+      }
+      
+      dustMaterial.uniforms.time.value = time;
+      dustMaterial.uniforms.pointerX.value = config.pointerX;
+      dustMaterial.uniforms.pointerY.value = config.pointerY;
+      dustMaterial.uniforms.pointerInfluence.value = config.pointerInfluence;
+      dustMaterial.uniforms.pulseStrength.value = config.pulseStrength;
+      dustMaterial.uniforms.brightness.value = config.brightness;
+      dustMaterial.uniforms.hue.value = config.hue;
+      dustMaterial.uniforms.silhouetteStrength.value = config.silhouetteStrength;
+      dustMaterial.uniforms.silhouetteActive.value = config.silhouetteActive;
+      
+      bokehMaterial.uniforms.time.value = time;
+      bokehMaterial.uniforms.pointerX.value = config.pointerX;
+      bokehMaterial.uniforms.pointerY.value = config.pointerY;
+      bokehMaterial.uniforms.pointerInfluence.value = config.pointerInfluence;
+      bokehMaterial.uniforms.pulseStrength.value = config.pulseStrength;
+      bokehMaterial.uniforms.brightness.value = config.brightness;
+      bokehMaterial.uniforms.bloom.value = config.bloom;
+      bokehMaterial.uniforms.hue.value = config.hue;
+      bokehMaterial.uniforms.silhouetteStrength.value = config.silhouetteStrength;
+      bokehMaterial.uniforms.silhouetteActive.value = config.silhouetteActive;
+      
+      if (config.pulseTime > 0) {
+        config.pulseTime -= 0.016;
+        config.pulseStrength = Math.max(0, config.pulseStrength * 0.95);
+      } else {
+        config.pulseStrength = 0;
+      }
+      
+      // Decaimiento suave de la influencia
+      if (config.pointerInfluence > 0) {
+        config.pointerInfluence = Math.max(0, config.pointerInfluence * 0.97);
+      }
+      
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // === RESIZE HANDLER ===
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      nebulaMaterial.uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
+    }
+    window.addEventListener('resize', onWindowResize);
+
+    // === SISTEMA DE MENSAJES POSTMESSAGE ===
+    function isValidOrigin(origin) {
+      // Permitir mismo origen, null (file://), o cualquier origen en desarrollo
+      if (!origin || origin === 'null' || origin === 'file://') return true;
+      const currentOrigin = window.location.origin;
+      return origin === currentOrigin || origin === '*' || currentOrigin === 'null' || currentOrigin === 'file://';
+    }
+
+    window.addEventListener('message', (event) => {
+      // Log reducido (solo tipos importantes)
+      if (event.data && event.data.type && event.data.type !== 'AMBIENT_POINTER') {
+        console.log('[AMBIENT] Mensaje recibido:', event.data.type, event.origin);
+      }
+      
+      if (!isValidOrigin(event.origin)) {
+        return;
+      }
+      
+      const data = event.data;
+      if (!data || typeof data !== 'object') return;
+      
+      switch (data.type) {
+        case 'AMBIENT_SET':
+          if (data.params) {
+            if (data.params.density !== undefined) {
+              config.dustCount = Math.floor(80000 + (data.params.density * 120000));
+              config.bokehCount = Math.floor(2000 + (data.params.density * 8000));
+            }
+            if (data.params.speed !== undefined) config.speed = data.params.speed;
+            if (data.params.hue !== undefined) {
+              config.hue = data.params.hue;
+              updateParticleColors();
+            }
+            if (data.params.bloom !== undefined) config.bloom = data.params.bloom;
+            if (data.params.brightness !== undefined) config.brightness = data.params.brightness;
+            if (data.params.fog !== undefined) config.fog = data.params.fog;
+            if (data.params.nebulaStrength !== undefined) config.nebulaStrength = data.params.nebulaStrength;
+          }
+          console.log('[AMBIENT] Configuración actualizada');
+          break;
+          
+        case 'AMBIENT_POINTER':
+          if (typeof data.x === 'number' && typeof data.y === 'number') {
+            config.pointerX = Math.max(0, Math.min(1, data.x));
+            config.pointerY = Math.max(0, Math.min(1, data.y));
+            config.pointerInfluence = 2.0; // Aumentar influencia para efecto más visible
+            // Log ocasional para debug
+            if (Math.random() < 0.01) {
+              console.log('[AMBIENT] Pointer actualizado:', config.pointerX.toFixed(2), config.pointerY.toFixed(2), 'influence:', config.pointerInfluence.toFixed(2));
+            }
+          }
+          break;
+          
+        case 'AMBIENT_PULSE':
+          if (typeof data.strength === 'number') {
+            config.pulseStrength = Math.max(0, Math.min(1, data.strength));
+            config.pulseTime = 0.5;
+            console.log('[AMBIENT] Pulse:', config.pulseStrength);
+          }
+          break;
+          
+        case 'AMBIENT_RESET':
+          config.speed = 0.3;
+          config.hue = 0.5;
+          config.bloom = 0.6;
+          config.brightness = 1.0;
+          config.fog = 0.4;
+          config.nebulaStrength = 0.7;
+          config.pointerInfluence = 0.0;
+          config.pulseStrength = 0.0;
+          config.pulseTime = 0.0;
+          updateParticleColors();
+          break;
+      }
+    });
+
+    // === HANDSHAKE AL CARGAR ===
+    // Intentar enviar handshake tanto a opener como a parent (iframe)
+    function sendHandshake() {
+      const message = { type: 'AMBIENT_READY' };
+      
+      // Si está en iframe, enviar al parent
+      if (window.parent && window.parent !== window) {
+        try {
+          window.parent.postMessage(message, '*');
+          console.log('[AMBIENT] Handshake enviado a parent');
+        } catch (e) {
+          console.error('[AMBIENT] Error enviando handshake a parent:', e);
+        }
+      }
+      
+      // Si fue abierto por window.open, enviar al opener
+      if (window.opener && window.opener !== window) {
+        try {
+          window.opener.postMessage(message, '*');
+          console.log('[AMBIENT] Handshake enviado a opener');
+        } catch (e) {
+          console.error('[AMBIENT] Error enviando handshake a opener:', e);
+        }
+      }
+    }
+    
+    // Enviar handshake cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', sendHandshake);
+    } else {
+      // Ya está cargado, enviar después de un pequeño delay para asegurar que el parent esté listo
+      setTimeout(sendHandshake, 100);
+    }
+    
+    // === DEBUG: Tecla 'D' para activar/desactivar visualización de silueta ===
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'd' || e.key === 'D') {
+        config.debugSilhouette = !config.debugSilhouette;
+        if (config.debugSilhouette) {
+          document.body.classList.add('debug');
+          console.log('[SILUETA] Debug activado - Presiona D nuevamente para desactivar');
+        } else {
+          document.body.classList.remove('debug');
+          console.log('[SILUETA] Debug desactivado');
+        }
+      }
+    });
+    
+    // Inicializar textura vacía para evitar errores en shaders
+    const emptyTexture = new THREE.DataTexture(
+      new Uint8Array(silhouetteSize * silhouetteSize * 4),
+      silhouetteSize,
+      silhouetteSize,
+      THREE.RGBAFormat,
+      THREE.UnsignedByteType
+    );
+    emptyTexture.needsUpdate = true;
+    dustMaterial.uniforms.silhouetteTexture.value = emptyTexture;
+    bokehMaterial.uniforms.silhouetteTexture.value = emptyTexture;
+  </script>
+</body>
+</html>

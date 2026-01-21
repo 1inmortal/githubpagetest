@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico - Certificados React</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1400px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #0a0e27;
+            color: #e0e0e0;
+        }
+        h1 { color: #00ff88; }
+        h3 { color: #00dd77; margin-top: 0; }
+        .section {
+            background: #1a1e3a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #00ff88;
+        }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #00ff8844; border-left: 3px solid #00ff88; }
+        .error { background: #ff004444; border-left: 3px solid #ff0044; }
+        .warning { background: #ffaa0044; border-left: 3px solid #ffaa00; }
+        .info { background: #0088ff44; border-left: 3px solid #0088ff; }
+        pre {
+            background: #0a0e27;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            border: 1px solid #333;
+            font-size: 12px;
+            max-height: 300px;
+        }
+        code {
+            background: #0a0e27;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 13px;
+        }
+        a {
+            color: #00ff88;
+            text-decoration: none;
+        }
+        a:hover { text-decoration: underline; }
+        button {
+            background: #00ff88;
+            color: #0a0e27;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover { background: #00dd77; }
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        .detail-row {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 10px;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #00ff88;
+        }
+        .log-entry {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-size: 13px;
+            border-left: 3px solid;
+        }
+        .log-error { 
+            background: #ff004422; 
+            border-color: #ff0044;
+        }
+        .log-warn { 
+            background: #ffaa0022; 
+            border-color: #ffaa00;
+        }
+        .log-info { 
+            background: #0088ff22; 
+            border-color: #0088ff;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .badge-success { background: #00ff88; color: #0a0e27; }
+        .badge-error { background: #ff0044; color: white; }
+        .badge-warning { background: #ffaa00; color: #0a0e27; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Diagnóstico - Certificados React</h1>
+    
+    <div class="section">
+        <h2>📊 Estado del Sistema</h2>
+        <div id="urlStatus"></div>
+    </div>
+
+    <div class="section">
+        <h2>🛠️ Acciones</h2>
+        <button id="checkBtn" onclick="checkAll()">🔍 Ejecutar Diagnóstico Completo</button>
+        <button onclick="copyDiagnostic()">📋 Copiar Diagnóstico</button>
+        <button onclick="clearLogs()">🗑️ Limpiar Logs</button>
+        <button onclick="openReact()">🚀 Abrir Página React</button>
+        <button onclick="openGitHubActions()">⚙️ Ver GitHub Actions</button>
+    </div>
+
+    <div class="section">
+        <h2>📝 Resultados de Verificación</h2>
+        <div id="results"></div>
+    </div>
+
+    <div class="section">
+        <h2>🐛 Logs del Navegador (Errores en Runtime)</h2>
+        <div id="consoleLogs"></div>
+    </div>
+
+    <script>
+        const baseURL = 'https://1inmortal.github.io/githubpagetest';
+        
+        const urls = [
+            { name: 'Página Principal', url: baseURL + '/', type: 'html', critical: true },
+            { name: 'Certificados React HTML', url: baseURL + '/pruebas/certificados/react.html', type: 'html', critical: true },
+            { name: 'Certificados JSX (no debería servirse)', url: baseURL + '/pruebas/certificados/main.jsx', type: 'jsx', critical: false },
+            { name: 'React JSX (archivo fuente)', url: baseURL + '/pruebas/certificados/react.jsx', type: 'jsx', critical: false },
+            { name: 'Index.html compilado', url: baseURL + '/index.html', type: 'html', critical: true },
+        ];
+
+        // Sistema de logs en runtime
+        const logs = [];
+        
+        function addLog(type, message, details = '') {
+            const timestamp = new Date().toLocaleTimeString();
+            logs.push({ type, message, details, timestamp });
+            updateLogsDisplay();
+        }
+
+        function updateLogsDisplay() {
+            const logsDiv = document.getElementById('consoleLogs');
+            if (logs.length === 0) {
+                logsDiv.innerHTML = '<div class="info">No hay errores registrados aún.</div>';
+                return;
+            }
+            
+            const html = logs.map(log => `
+                <div class="log-${log.type}">
+                    <strong>[${log.timestamp}]</strong> ${log.message}
+                    ${log.details ? `<pre>${log.details}</pre>` : ''}
+                </div>
+            `).join('');
+            logsDiv.innerHTML = html;
+        }
+
+        function clearLogs() {
+            logs.length = 0;
+            updateLogsDisplay();
+        }
+
+        // Capturar errores del navegador
+        window.addEventListener('error', (e) => {
+            addLog('error', `Error: ${e.message}`, `Archivo: ${e.filename}\nLínea: ${e.lineno}:${e.colno}`);
+        });
+
+        window.addEventListener('unhandledrejection', (e) => {
+            addLog('error', `Promise rechazada: ${e.reason}`, e.reason?.stack || '');
+        });
+
+        // Monkey-patch de console para capturar logs
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        console.error = function(...args) {
+            addLog('error', args.join(' '));
+            originalError.apply(console, args);
+        };
+        
+        console.warn = function(...args) {
+            addLog('warn', args.join(' '));
+            originalWarn.apply(console, args);
+        };
+
+        // Diagnóstico completo de URL (HEAD + GET con métricas)
+        async function checkURL(url, type) {
+            const t0 = performance.now();
+            const result = {
+                url,
+                type,
+                ok: false,
+                status: 0,
+                statusText: '',
+                finalURL: url,
+                contentType: '',
+                contentLength: '',
+                ms: 0,
+                sample: '',
+                warnings: [],
+                method: 'HEAD'
+            };
+
+            try {
+                // 1. HEAD request (rápido, solo headers)
+                const headResponse = await fetch(url, { 
+                    method: 'HEAD', 
+                    cache: 'no-store',
+                    redirect: 'follow'
+                });
+                
+                result.status = headResponse.status;
+                result.statusText = headResponse.statusText;
+                result.ok = headResponse.ok;
+                result.finalURL = headResponse.url;
+                result.contentType = headResponse.headers.get('content-type') || 'unknown';
+                result.contentLength = headResponse.headers.get('content-length') || 'unknown';
+
+                // Detectar redirecciones
+                if (result.finalURL !== url) {
+                    result.warnings.push(`⚠️ Redirección detectada: ${url} → ${result.finalURL}`);
+                }
+
+                // 2. Verificar si necesitamos GET (casos sospechosos)
+                const needsGET = !headResponse.ok || 
+                                 result.contentType.includes('text/html') && (url.endsWith('.js') || url.endsWith('.jsx')) ||
+                                 url.endsWith('.jsx') || 
+                                 url.endsWith('.js') ||
+                                 type === 'html';
+
+                if (needsGET) {
+                    result.method = 'GET';
+                    const getResponse = await fetch(url, { 
+                        method: 'GET', 
+                        cache: 'no-store',
+                        redirect: 'follow'
+                    });
+                    
+                    result.status = getResponse.status;
+                    result.statusText = getResponse.statusText;
+                    result.ok = getResponse.ok;
+                    result.finalURL = getResponse.url;
+                    result.contentType = getResponse.headers.get('content-type') || 'unknown';
+                    result.contentLength = getResponse.headers.get('content-length') || 'unknown';
+
+                    // Obtener muestra del contenido (primeros 600 chars)
+                    const text = await getResponse.text();
+                    result.sample = text.slice(0, 600);
+
+                    // 3. Detección de problemas específicos de GitHub Pages
+                    
+                    // Problema: JSX servido como HTML (típico error de despliegue)
+                    if ((url.endsWith('.jsx') || url.endsWith('.js')) && result.contentType.includes('text/html')) {
+                        result.warnings.push('🚨 CRÍTICO: Archivo JS/JSX servido como HTML. GitHub Pages no debería servir archivos fuente JSX.');
+                    }
+
+                    // Problema: HTML referencia /src/ (código fuente en lugar de build)
+                    if (type === 'html' && (result.sample.includes('/src/main.jsx') || 
+                                            result.sample.includes('type="text/jsx"') ||
+                                            result.sample.includes('/src/') && result.sample.includes('.jsx'))) {
+                        result.warnings.push('🚨 CRÍTICO: HTML referencia archivos en /src/. Debes desplegar desde dist/ con assets compilados.');
+                        result.warnings.push('💡 Solución: Ejecuta build de Vite y despliega la carpeta dist/');
+                    }
+
+                    // Problema: 404 pero devuelve HTML (fallback de GitHub Pages)
+                    if (!result.ok && result.contentType.includes('text/html')) {
+                        result.warnings.push('⚠️ Devuelve HTML en error (posible 404.html fallback)');
+                    }
+
+                    // Problema: MIME type incorrecto
+                    if (url.endsWith('.js') && !result.contentType.includes('javascript')) {
+                        result.warnings.push(`⚠️ MIME type incorrecto: esperado javascript, recibido ${result.contentType}`);
+                    }
+                }
+
+                result.ms = Math.round(performance.now() - t0);
+
+            } catch (error) {
+                result.status = 0;
+                result.statusText = error.message;
+                result.ok = false;
+                result.ms = Math.round(performance.now() - t0);
+                result.warnings.push(`❌ Error de red: ${error.message}`);
+            }
+
+            return result;
+        }
+
+        // Ejecutar diagnóstico completo
+        async function checkAll() {
+            const resultsDiv = document.getElementById('results');
+            const btn = document.getElementById('checkBtn');
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ Ejecutando diagnóstico...';
+            resultsDiv.innerHTML = '<p class="info">🔍 Analizando URLs, headers, redirects y contenido...</p>';
+            
+            const results = [];
+            
+            for (const item of urls) {
+                const result = await checkURL(item.url, item.type);
+                results.push({ ...item, ...result });
+            }
+
+            // Generar reporte visual
+            let html = '';
+            
+            for (const r of results) {
+                const statusClass = r.ok ? 'success' : 'error';
+                const badge = r.ok ? 
+                    '<span class="badge badge-success">✅ OK</span>' : 
+                    '<span class="badge badge-error">❌ FALLO</span>';
+                
+                html += `
+                    <div class="${statusClass}" style="margin: 15px 0;">
+                        <h3>${badge} ${r.name}</h3>
+                        
+                        <div class="detail-row">
+                            <span class="detail-label">URL:</span>
+                            <code>${r.url}</code>
+                        </div>
+                        
+                        ${r.finalURL !== r.url ? `
+                        <div class="detail-row">
+                            <span class="detail-label">URL Final:</span>
+                            <code>${r.finalURL}</code>
+                        </div>
+                        ` : ''}
+                        
+                        <div class="detail-row">
+                            <span class="detail-label">Status:</span>
+                            <span><strong>${r.status}</strong> ${r.statusText}</span>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <span class="detail-label">Método:</span>
+                            <span>${r.method}</span>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <span class="detail-label">Content-Type:</span>
+                            <code>${r.contentType}</code>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <span class="detail-label">Content-Length:</span>
+                            <span>${r.contentLength}</span>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <span class="detail-label">Tiempo:</span>
+                            <span>${r.ms}ms</span>
+                        </div>
+                        
+                        ${r.warnings.length > 0 ? `
+                            <div style="margin-top: 10px;">
+                                <strong style="color: #ffaa00;">⚠️ Advertencias:</strong>
+                                ${r.warnings.map(w => `<div class="warning" style="margin: 5px 0; padding: 8px;">${w}</div>`).join('')}
+                            </div>
+                        ` : ''}
+                        
+                        ${r.sample ? `
+                            <details style="margin-top: 10px;">
+                                <summary style="cursor: pointer; color: #00ff88;">📄 Ver muestra del contenido (${r.sample.length} chars)</summary>
+                                <pre>${escapeHtml(r.sample)}</pre>
+                            </details>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            // Resumen general
+            const passed = results.filter(r => r.ok && r.warnings.length === 0).length;
+            const failed = results.filter(r => !r.ok).length;
+            const warnings = results.filter(r => r.ok && r.warnings.length > 0).length;
+
+            const summary = `
+                <div class="${failed > 0 ? 'error' : warnings > 0 ? 'warning' : 'success'}" style="margin-bottom: 20px;">
+                    <h3>📊 Resumen del Diagnóstico</h3>
+                    <div class="detail-row">
+                        <span class="detail-label">URLs verificadas:</span>
+                        <span>${results.length}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Exitosas:</span>
+                        <span>${passed} ✅</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Con advertencias:</span>
+                        <span>${warnings} ⚠️</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Fallidas:</span>
+                        <span>${failed} ❌</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Fecha:</span>
+                        <span>${new Date().toLocaleString()}</span>
+                    </div>
+                </div>
+            `;
+
+            resultsDiv.innerHTML = summary + html;
+            btn.disabled = false;
+            btn.textContent = '🔍 Ejecutar Diagnóstico Completo';
+            
+            // Guardar resultados para copiar
+            window.diagnosticResults = results;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Copiar diagnóstico al portapapeles
+        async function copyDiagnostic() {
+            if (!window.diagnosticResults) {
+                alert('⚠️ Primero ejecuta el diagnóstico');
+                return;
+            }
+
+            const report = {
+                timestamp: new Date().toISOString(),
+                baseURL,
+                userAgent: navigator.userAgent,
+                results: window.diagnosticResults.map(r => ({
+                    name: r.name,
+                    url: r.url,
+                    ok: r.ok,
+                    status: r.status,
+                    statusText: r.statusText,
+                    finalURL: r.finalURL,
+                    contentType: r.contentType,
+                    contentLength: r.contentLength,
+                    ms: r.ms,
+                    warnings: r.warnings,
+                    sample: r.sample ? r.sample.slice(0, 200) + '...' : ''
+                })),
+                logs: logs
+            };
+
+            try {
+                await navigator.clipboard.writeText(JSON.stringify(report, null, 2));
+                alert('✅ Diagnóstico copiado al portapapeles. Pégalo en un issue de GitHub.');
+            } catch (error) {
+                console.error('Error al copiar:', error);
+                alert('❌ No se pudo copiar al portapapeles. Revisa los permisos del navegador.');
+            }
+        }
+
+        function openReact() {
+            window.open(baseURL + '/pruebas/certificados/react.html', '_blank');
+        }
+
+        function openGitHubActions() {
+            window.open('https://github.com/1inmortal/githubpagetest/actions', '_blank');
+        }
+
+        // Información del sistema
+        document.getElementById('urlStatus').innerHTML = `
+            <div class="info">
+                <div class="detail-row">
+                    <span class="detail-label">Base URL:</span>
+                    <code>${baseURL}</code>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Navegador:</span>
+                    <span>${navigator.userAgent.split(' ').slice(-2).join(' ')}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Idioma:</span>
+                    <span>${navigator.language}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Online:</span>
+                    <span>${navigator.onLine ? '✅' : '❌'}</span>
+                </div>
+            </div>
+        `;
+
+        // Inicializar logs
+        updateLogsDisplay();
+
+        // Auto-ejecutar diagnóstico al cargar
+        setTimeout(checkAll, 1000);
+    </script>
+</body>
+</html>

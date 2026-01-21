@@ -1,103 +1,132 @@
-# Future Interface Manifesto - Portfolio Personal y Blog
+<div align="center">
 
-> Forjando realidades digitales con la arquitectura del futuro.
+  <img src="https://media.giphy.com/media/qgQUggAC3Pfv687qPC/giphy.gif" width="100%" height="auto" style="border-radius: 10px; margin-bottom: 20px;" alt="Cyberpunk Header"/>
 
----
+  <h1 style="font-size: 50px; font-weight: bold; margin-top: 0;"> INMORTAL_OS <span style="color: #00ff99;">v3.0.0</span> </h1>
+  
+  <h3 style="font-weight: bold;"> 🚀 Web3 & 3D Engineer | Full-Stack Architect | AI Developer </h3>
 
-## /// Visión Central // Future_Interface_Manifesto
+  <p align="center">
+    <a href="https://1inmortal.github.io/githubpagetest/">
+      <img src="https://img.shields.io/badge/SYSTEM_STATUS-ONLINE-success?style=for-the-badge&logo=probot&logoColor=white&color=00ff99" alt="System Status" />
+    </a>
+    <a href="#contacto">
+      <img src="https://img.shields.io/badge/OPEN_PROTOCOL-CONNECT-blueviolet?style=for-the-badge&logo=discord&logoColor=white" alt="Connect" />
+    </a>
+  </p>
 
-Mi trayectoria como **Frontend Developer** no se limita a la construcción convencional de sitios web. Mi visión se enfoca en la creación de **interfaces digitales avanzadas y futuristas**, arquitecturas web que trascienden la simple presentación de información para convertirse en experiencias inmersivas y altamente interactivas.
+  <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=600&size=24&duration=3000&pause=1000&color=00FF99&center=true&vCenter=true&width=500&lines=Inicializando+Inmortal_OS...;Construyendo+dApps+Web3;Entrenando+Modelos+IA;Renderizando+Experiencias+3D;System+Ready." alt="Typing Effect" />
 
-Estoy especializado en el diseño y la implementación de:
-
--   **HUD (Heads-Up Display) Interfaces:** Construyendo capas visuales que presentan datos críticos de manera no intrusiva.
--   **UI/UX Avanzados:** Fusionando estética futurista con principios sólidos de usabilidad.
--   **Visualizaciones de Datos Dinámicas:** Transformando datos en representaciones visuales impactantes.
--   **Efectos Visuales y Sonoros:** Dando vida a la interfaz con animaciones y paisajes sonoros reactivos.
-
-Considero cada proyecto web como la construcción de una nueva terminal. Mi propósito es diseñar esa puerta para que sea eficiente, segura y que comunique una sensación de tecnología avanzada.
-
----
-
-## Tabla de Contenidos
-
-- [Tecnologías Utilizadas](#tecnologías-utilizadas)
-- [Estructura del Repositorio](#estructura-del-repositorio)
-- [Instalación y Uso](#instalación-y-uso)
-- [Contribuciones](#contribuciones)
-- [Licencia](#licencia)
-- [Agradecimientos](#agradecimientos)
+</div>
 
 ---
 
-## Tecnologías Utilizadas
+### 📡 <span style="color: #00ff99;">// SYSTEM_LOGS:</span> SOBRE MÍ
 
-Este proyecto utiliza una variedad de tecnologías modernas:
+> *"Más que escribir código, construyo ecosistemas. Mi pasión reside en la intersección entre el diseño minimalista, la ingeniería robusta y la descentralización."*
 
-**Frontend:**
--   ![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white)
--   ![CSS3](https://img.shields.io/badge/css3-%231572B6.svg?style=for-the-badge&logo=css3&logoColor=white)
--   ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)
--   ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
--   ![Three.js](https://img.shields.io/badge/three.js-black?style=for-the-badge&logo=three.js&logoColor=white)
--   ![Bootstrap](https://img.shields.io/badge/bootstrap-%23563D7C.svg?style=for-the-badge&logo=bootstrap&logoColor=white)
+Hola, soy **1inmortal**. Soy un Ingeniero Full-Stack especializado en conectar el diseño y la arquitectura de software compleja. Actualmente enfocado en **Web3**, **Inteligencia Artificial** aplicada y **Experiencias 3D** en el navegador.
 
-**Backend & Herramientas:**
--   ![Node.js](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
--   ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
--   ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+* 🔭 **Actualmente trabajando en:** Arquitectura de microservicios DeFi y Agentes Autónomos.
+* 🌱 **Aprendiendo:** Modelos avanzados de LLMs y Shaders WebGL de alto rendimiento.
+* ⚡ **Fun fact:** Mi código está optimizado para sobrevivir al apocalipsis digital.
+* 🎯 **Objetivo:** Colaborar con equipos que quieran construir el futuro (Web3, AI, 3D).
 
 ---
 
-## Estructura del Repositorio
+### 🛠️ <span style="color: #f7df1e;">// ARSENAL_TECNOLÓGICO:</span> TECH STACK
 
-Este repositorio es un monorepo que contiene varios subproyectos y componentes. Aquí hay una descripción general de los directorios más importantes:
+<div align="center">
 
--   **`/` (raíz):** Contiene el sitio web principal del portafolio (el `index.html` y sus assets).
--   **`/react-ui-login`:** Un componente de UI para un formulario de inicio de sesión, construido con React. Consulta su [README.md](./react-ui-login/README.md) para más detalles.
--   **`/Blog`:** Contiene los artículos y los assets del blog.
--   **`/Evidencias`:** Una colección de proyectos más pequeños y demostraciones técnicas. Cada subdirectorio es un proyecto independiente con su propio `README.md`.
--   **`/Certificados`:** Muestra de certificaciones y logros.
+  <img src="https://img.shields.io/badge/Frontend-Protocol-bf00ff?style=flat-square&logo=react&logoColor=white" />
+  <br/>
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" />
+  <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white" />
+  <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" />
+  <img src="https://img.shields.io/badge/Three.js-000000?style=for-the-badge&logo=three.js&logoColor=white" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" />
 
----
+  <br/><br/>
 
-## Instalación y Uso
+  <img src="https://img.shields.io/badge/Backend_&_AI-Core-ff0055?style=flat-square&logo=python&logoColor=white" />
+  <br/>
+  <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" />
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" />
+  <img src="https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white" />
+  <img src="https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white" />
 
-Para explorar este proyecto en tu entorno local, sigue estos pasos:
+  <br/><br/>
 
-1.  **Clona el repositorio:**
-    ```bash
-    git clone https://github.com/tu_usuario/githubpagetest.git
-    cd githubpagetest
-    ```
+  <img src="https://img.shields.io/badge/Web3-Layer-00ff99?style=flat-square&logo=ethereum&logoColor=black" />
+  <br/>
+  <img src="https://img.shields.io/badge/Solidity-363636?style=for-the-badge&logo=solidity&logoColor=white" />
+  <img src="https://img.shields.io/badge/Ethereum-3C3C3D?style=for-the-badge&logo=ethereum&logoColor=white" />
+  <img src="https://img.shields.io/badge/Hardhat-FFF100?style=for-the-badge&logo=hardhat&logoColor=black" />
+  <img src="https://img.shields.io/badge/IPFS-65C2CB?style=for-the-badge&logo=ipfs&logoColor=white" />
 
-2.  **Para ver el portafolio principal (sitio estático):**
-    -   Simplemente abre el archivo `index.html` en la raíz del proyecto en tu navegador.
-
-3.  **Para ejecutar los subproyectos de Node.js (como `react-ui-login`):**
-    -   Navega al directorio del subproyecto específico (p. ej., `cd react-ui-login`).
-    -   Instala las dependencias con `npm install`.
-    -   Inicia el servidor de desarrollo con `npm start` o `npm run dev` (consulta el `README.md` del subproyecto para el comando exacto).
-
----
-
-## Contribuciones
-
-Las contribuciones son bienvenidas. Si deseas colaborar, por favor revisa el archivo [`CONTRIBUTING.md`](CONTRIBUTING.md) para más detalles sobre cómo proponer cambios y mejoras.
+</div>
 
 ---
 
-## Licencia
+### 📂 <span style="color: #ff0055;">// PROYECTOS_DESTACADOS</span>
 
-Este proyecto se distribuye bajo la **Licencia Pública General de GNU v3.0**. Consulta el archivo [`LICENSE`](LICENSE) para ver el texto completo de la licencia.
-
----
-
-## Agradecimientos
-
--   A todos los desarrolladores de las librerías y herramientas de código abierto que han hecho posible este proyecto.
--   A la comunidad de desarrolladores por su constante inspiración y apoyo.
+| PID | Proyecto | Tipo | Stack | Estado |
+| :---: | :--- | :--- | :--- | :---: |
+| **001** | 🦄 **EcoVerse DEX** | *DeFi Platform* | `Solidity` `React` `Ethers.js` | 🟢 **LIVE** |
+| **002** | 🧠 **Neural Studio** | *AI SaaS* | `Python` `FastAPI` `Stable Diff.` | 🟡 **BETA** |
+| **003** | 🧊 **Metaverse Core** | *3D Engine* | `Three.js` `WebGL` `Socket.io` | 🔵 **STABLE** |
+| **004** | 📹 **Video Sync** | *Interactive* | `JS` `HTML5` `Video API` | 🟣 **DEMO** |
 
 ---
 
-_Esperando tu transmisión para iniciar la construcción._
+### 📊 <span style="color: #00bfff;">// MÉTRICAS_DEL_SISTEMA</span>
+
+<div align="center">
+  <img src="https://github-readme-stats.vercel.app/api?username=1inmortal&show_icons=true&theme=radical&hide_border=true&bg_color=0D1117&title_color=00FF99&icon_color=00FF99&text_color=c9d1d9" alt="1inmortal's GitHub stats" width="48%" />
+  <img src="https://github-readme-streak-stats.herokuapp.com/?user=1inmortal&theme=radical&hide_border=true&background=0D1117&ring=00FF99&fire=00FF99&currStreakLabel=00FF99" alt="1inmortal's Streak" width="48%" />
+</div>
+
+<div align="center">
+  <br/>
+  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=1inmortal&layout=compact&theme=radical&hide_border=true&bg_color=0D1117&title_color=00FF99&text_color=c9d1d9&langs_count=8" alt="Top Langs" />
+</div>
+
+---
+
+### 👾 <span style="color: #bd34eb;">// ZONA_DE_PRUEBAS:</span> GITHUB PAGES TEST
+
+Este repositorio actúa como el **Núcleo Central** de mi portafolio profesional y laboratorio de pruebas.
+Puedes acceder a la versión desplegada y operativa aquí:
+
+<div align="center">
+  
+  [![Deploy Status](https://img.shields.io/badge/DEPLOYMENT-ACTIVE-success?style=for-the-badge&logo=github)](https://1inmortal.github.io/githubpagetest/)
+
+  ### [👉 ACCEDER A INMORTAL_OS V3.0](https://1inmortal.github.io/githubpagetest/)
+  
+</div>
+
+---
+
+### 📬 <span style="color: #ff9900;">// INICIAR_CONEXIÓN</span>
+
+¿Tienes un proyecto visionario? Estoy listo para construir el futuro contigo.
+
+<p align="center">
+  <a href="mailto:contacto@inmortal.dev">
+    <img src="https://img.shields.io/badge/EMAIL-contacto@inmortal.dev-red?style=for-the-badge&logo=gmail&logoColor=white" alt="Email" />
+  </a>
+  <a href="https://linkedin.com/in/tu-usuario">
+    <img src="https://img.shields.io/badge/LINKEDIN-Connect-blue?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" />
+  </a>
+  <a href="https://twitter.com/tu-usuario">
+    <img src="https://img.shields.io/badge/X-Follow-black?style=for-the-badge&logo=x&logoColor=white" alt="Twitter" />
+  </a>
+</p>
+
+<p align="center">
+  <img src="https://media.giphy.com/media/LHTJ3NSN2gq9q/giphy.gif" width="100" alt="System Offline"/>
+  <br/>
+  <code>SYSTEM SHUTDOWN... SEE YOU IN THE METAVERSE.</code>
+</p>

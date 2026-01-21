@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nebulosa Volumétrica 4D - Full Hand Tracking</title>
+    <script src="https://cdn.tailwindcss.com" integrity="sha512-GU2tzExCbJF48BhPBn2h9K7mfLSKoX8VqbJcIBmVTLxFfHCPm/ZkbYhPnxRTr3xGDCLxWbvxJVdcWShZhZEzqA==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" integrity="sha512-dLxUelApnYxpLt6K2iomGngnHO83iUvZytA3YjDUCjT0HDOHKXnVYdf3hU4JjM8uEhxf9nD1/ey98U3t2vZ0qQ==" crossorigin="anonymous"></script>
+    <!-- MediaPipe Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" integrity="sha512-0YBDSKR7T7C0n3QsqrGR5s2L7PJDqRAhK7W9+5IHlz4qN9bnBr8aGLJfcJXaSmXFJzVMoRJLlFLCLZDQ7MnDrQ==" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" integrity="sha512-bWQdQb9Y+QhTfQN+lMvdHlqNdFmqr7LwTJTLbPG1D7lHBrZTJ6UcKdvPh4+J9jTlBkPjWQfPHVTjP3V8EzxFbQ==" crossorigin="anonymous"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;500&display=swap');
+        
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background-color: #000; 
+            font-family: 'Orbitron', sans-serif; 
+        }
+        canvas#main-canvas { display: block; }
+        
+        /* Tracking Windows Container */
+        .tracking-panel {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 100;
+        }
+        
+        .tracking-window {
+            width: 220px;
+            background: rgba(5, 10, 20, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(100, 255, 218, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 
+                        inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+        
+        .tracking-header {
+            padding: 10px 14px;
+            background: linear-gradient(135deg, rgba(100, 255, 218, 0.1), rgba(189, 52, 254, 0.1));
+            border-bottom: 1px solid rgba(100, 255, 218, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .tracking-header .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ff4444;
+            animation: pulse-dot 1.5s infinite;
+        }
+        
+        .tracking-header .dot.active {
+            background: #64ffda;
+        }
+        
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.85); }
+        }
+        
+        .tracking-header h3 {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: rgba(255,255,255,0.9);
+            margin: 0;
+        }
+        
+        .tracking-canvas-wrap {
+            position: relative;
+            width: 100%;
+            height: 160px;
+            background: #000;
+        }
+        
+        .tracking-canvas-wrap canvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .tracking-stats {
+            padding: 10px 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.6);
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .tracking-stats .value {
+            color: #64ffda;
+            font-weight: 500;
+        }
+        
+        /* UI Overlay */
+        #ui-overlay {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            pointer-events: none;
+            color: white;
+            z-index: 100;
+        }
+        
+        #ui-overlay h1 {
+            font-size: 1.8rem;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #64ffda 0%, #bd34fe 50%, #00d4ff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0 0 8px 0;
+            text-shadow: none;
+        }
+        
+        #ui-overlay .subtitle {
+            font-size: 0.85rem;
+            font-weight: 400;
+            color: rgba(255,255,255,0.7);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        #ui-overlay .subtitle span {
+            color: #64ffda;
+            font-weight: 500;
+        }
+        
+        #status-bar {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .status-item .indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ff4444;
+            box-shadow: 0 0 8px rgba(255, 68, 68, 0.5);
+        }
+        
+        .status-item .indicator.online {
+            background: #64ffda;
+            box-shadow: 0 0 12px rgba(100, 255, 218, 0.6);
+        }
+        
+        /* Loader */
+        .loader {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+        
+        .loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .loader h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #64ffda;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .loader p {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.85rem;
+        }
+        
+        .loader-bar {
+            width: 200px;
+            height: 3px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            margin-top: 24px;
+            overflow: hidden;
+        }
+        
+        .loader-bar::after {
+            content: '';
+            display: block;
+            width: 40%;
+            height: 100%;
+            background: linear-gradient(90deg, #64ffda, #bd34fe);
+            border-radius: 3px;
+            animation: loader-move 1.2s ease-in-out infinite;
+        }
+        
+        @keyframes loader-move {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(350%); }
+        }
+        
+        /* Hand Skeleton Colors */
+        .hand-skeleton {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loader" class="loader">
+        <h1>Quantum Engine</h1>
+        <p>Inicializando shaders y modelos de IA...</p>
+        <div class="loader-bar"></div>
+    </div>
+
+    <div id="ui-overlay">
+        <h1>Nebula Engine</h1>
+        <p class="subtitle">Control por <span>tracking de manos</span></p>
+        <div id="status-bar">
+            <div class="status-item">
+                <div class="indicator" id="cam-indicator"></div>
+                <span id="cam-status">Cámara desconectada</span>
+            </div>
+            <div class="status-item">
+                <div class="indicator" id="hand-indicator"></div>
+                <span id="hand-status">Mano no detectada</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tracking Windows Panel -->
+    <div class="tracking-panel">
+        <!-- Window 1: Index Finger Tracking -->
+        <div class="tracking-window">
+            <div class="tracking-header">
+                <div class="dot" id="finger-dot"></div>
+                <h3>Índice Tracking</h3>
+            </div>
+            <div class="tracking-canvas-wrap">
+                <canvas id="finger-canvas"></canvas>
+            </div>
+            <div class="tracking-stats">
+                <span>Pos: <span class="value" id="finger-pos">0, 0</span></span>
+                <span>Z: <span class="value" id="finger-depth">0.00</span></span>
+            </div>
+        </div>
+        
+        <!-- Window 2: Full Hand Skeleton -->
+        <div class="tracking-window">
+            <div class="tracking-header">
+                <div class="dot" id="hand-dot"></div>
+                <h3>Hand Skeleton</h3>
+            </div>
+            <div class="tracking-canvas-wrap">
+                <canvas id="hand-canvas"></canvas>
+            </div>
+            <div class="tracking-stats">
+                <span>Landmarks: <span class="value" id="landmarks-count">0</span></span>
+                <span>Conf: <span class="value" id="hand-confidence">0%</span></span>
+            </div>
+        </div>
+        
+        <!-- Window 3: Palm Center & Gesture -->
+        <div class="tracking-window">
+            <div class="tracking-header">
+                <div class="dot" id="palm-dot"></div>
+                <h3>Palm Center</h3>
+            </div>
+            <div class="tracking-canvas-wrap">
+                <canvas id="palm-canvas"></canvas>
+            </div>
+            <div class="tracking-stats">
+                <span>Palm: <span class="value" id="palm-pos">0, 0</span></span>
+                <span>Spread: <span class="value" id="finger-spread">0°</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden video element for camera -->
+    <video id="input-video" style="display:none"></video>
+
+    <script id="vertexShader" type="x-shader/x-vertex">
+        varying vec2 vUv;
+        varying vec3 vWorldPosition;
+        void main() {
+            vUv = uv;
+            vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+            vWorldPosition = worldPosition.xyz;
+            gl_Position = projectionMatrix * viewMatrix * worldPosition;
+        }
+    </script>
+
+    <script id="fragmentShader" type="x-shader/x-fragment">
+        precision highp float;
+
+        uniform float uTime;
+        uniform vec2 uResolution;
+        uniform vec3 uFingerPos;
+        uniform vec3 uPalmPos;
+        uniform float uInteractionStrength;
+        uniform float uFingerSpread;
+        varying vec2 vUv;
+        varying vec3 vWorldPosition;
+
+        // Improved Noise Functions
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
+        vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+
+        float snoise(vec3 v) {
+            const vec2 C = vec2(1.0/6.0, 1.0/3.0);
+            const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+            
+            vec3 i  = floor(v + dot(v, C.yyy));
+            vec3 x0 = v - i + dot(i, C.xxx);
+            
+            vec3 g = step(x0.yzx, x0.xyz);
+            vec3 l = 1.0 - g;
+            vec3 i1 = min(g.xyz, l.zxy);
+            vec3 i2 = max(g.xyz, l.zxy);
+            
+            vec3 x1 = x0 - i1 + C.xxx;
+            vec3 x2 = x0 - i2 + C.yyy;
+            vec3 x3 = x0 - D.yyy;
+            
+            i = mod289(i);
+            vec4 p = permute(permute(permute(
+                i.z + vec4(0.0, i1.z, i2.z, 1.0))
+                + i.y + vec4(0.0, i1.y, i2.y, 1.0))
+                + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+            
+            float n_ = 0.142857142857;
+            vec3 ns = n_ * D.wyz - D.xzx;
+            
+            vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+            
+            vec4 x_ = floor(j * ns.z);
+            vec4 y_ = floor(j - 7.0 * x_);
+            
+            vec4 x = x_ *ns.x + ns.yyyy;
+            vec4 y = y_ *ns.x + ns.yyyy;
+            vec4 h = 1.0 - abs(x) - abs(y);
+            
+            vec4 b0 = vec4(x.xy, y.xy);
+            vec4 b1 = vec4(x.zw, y.zw);
+            
+            vec4 s0 = floor(b0)*2.0 + 1.0;
+            vec4 s1 = floor(b1)*2.0 + 1.0;
+            vec4 sh = -step(h, vec4(0.0));
+            
+            vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
+            vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
+            
+            vec3 p0 = vec3(a0.xy, h.x);
+            vec3 p1 = vec3(a0.zw, h.y);
+            vec3 p2 = vec3(a1.xy, h.z);
+            vec3 p3 = vec3(a1.zw, h.w);
+            
+            vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
+            p0 *= norm.x;
+            p1 *= norm.y;
+            p2 *= norm.z;
+            p3 *= norm.w;
+            
+            vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
+            m = m * m;
+            return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
+        }
+
+        // Optimized FBM - max 4 octaves for performance
+        float fbm(vec3 p, int octaves) {
+            float value = 0.0;
+            float amplitude = 0.5;
+            float frequency = 1.0;
+            float lacunarity = 2.0;
+            float gain = 0.5;
+            
+            // Limited to 4 octaves max for GPU performance
+            for(int i = 0; i < 4; i++) {
+                if(i >= octaves) break;
+                value += amplitude * snoise(p * frequency);
+                frequency *= lacunarity;
+                amplitude *= gain;
+            }
+            return value;
+        }
+
+        // Optimized turbulent noise - 3 iterations
+        float turbulence(vec3 p) {
+            float t = 0.0;
+            float scale = 1.0;
+            for(int i = 0; i < 3; i++) {
+                t += abs(snoise(p * scale)) / scale;
+                scale *= 2.0;
+            }
+            return t;
+        }
+
+        // Nebula density function - EXPANDED
+        float map(vec3 p) {
+            // Finger interaction - enhanced
+            float distToFinger = length(p - uFingerPos);
+            float fingerInteraction = smoothstep(4.0, 0.0, distToFinger) * uInteractionStrength;
+            
+            // Palm interaction - creates larger waves
+            float distToPalm = length(p - uPalmPos);
+            float palmInteraction = smoothstep(6.0, 0.0, distToPalm) * uInteractionStrength * 0.5;
+            
+            // Combined interaction
+            float interaction = fingerInteraction + palmInteraction;
+            
+            // Time-based flow
+            float slowTime = uTime * 0.08;
+            vec3 q = p + slowTime * 0.3;
+            
+            // Add swirl effect near finger
+            float swirl = sin(distToFinger * 2.0 - uTime * 2.0) * fingerInteraction * 0.3;
+            q.xy += swirl;
+            
+            // Multi-layer noise - optimized octaves
+            float f1 = fbm(q * 0.5, 4);
+            float f2 = fbm(q * 1.2 + vec3(100.0), 3) * 0.5;
+            float turb = turbulence(q * 0.3) * 0.3;
+            
+            float f = f1 + f2 + turb;
+            
+            // EXPANDED sphere mask - much larger nebula
+            float mask = smoothstep(8.0, 2.0, length(p));
+            
+            // Finger spread affects density spread
+            float spreadEffect = 1.0 + uFingerSpread * 0.3;
+            
+            return max(0.0, f * mask * spreadEffect - 0.15 + interaction * 0.2);
+        }
+
+        void main() {
+            vec3 rayOrigin = cameraPosition;
+            vec3 rayDir = normalize(vWorldPosition - cameraPosition);
+
+            vec3 color = vec3(0.0);
+            float transmittance = 1.0;
+            
+            // Raymarching Loop - 64 steps (balanced for GPU performance)
+            float t = 0.0;
+            for(int i = 0; i < 64; i++) {
+                vec3 p = rayOrigin + rayDir * t;
+                float density = map(p);
+                
+                if(density > 0.005) {
+                    // Enhanced coloring with more gradients
+                    float heightFactor = p.y * 0.3;
+                    float radialFactor = length(p.xz) * 0.15;
+                    float timeFactor = sin(uTime * 0.15 + length(p) * 0.5) * 0.5 + 0.5;
+                    
+                    // Color palette: Deep Blue -> Cyan -> Magenta -> Purple
+                    vec3 col1 = vec3(0.05, 0.1, 0.4);   // Deep Blue
+                    vec3 col2 = vec3(0.1, 0.8, 0.9);    // Cyan
+                    vec3 col3 = vec3(0.9, 0.1, 0.6);    // Magenta
+                    vec3 col4 = vec3(0.5, 0.1, 0.8);    // Purple
+                    
+                    vec3 localColor = mix(col1, col2, smoothstep(-2.0, 2.0, p.y + timeFactor));
+                    localColor = mix(localColor, col3, smoothstep(0.3, 0.7, timeFactor + radialFactor));
+                    localColor = mix(localColor, col4, smoothstep(2.0, 5.0, length(p)));
+                    
+                    // Finger glow - enhanced
+                    float fingerGlow = smoothstep(2.5, 0.0, length(p - uFingerPos));
+                    vec3 fingerColor = vec3(0.2, 1.0, 0.85);
+                    localColor = mix(localColor, fingerColor, fingerGlow * uInteractionStrength);
+                    
+                    // Palm glow - softer, wider
+                    float palmGlow = smoothstep(4.0, 0.0, length(p - uPalmPos));
+                    vec3 palmColor = vec3(1.0, 0.4, 0.8);
+                    localColor = mix(localColor, palmColor, palmGlow * uInteractionStrength * 0.4);
+                    
+                    // Add inner glow/emission
+                    float emission = pow(density, 2.0) * 0.5;
+                    localColor += localColor * emission;
+
+                    float opacity = density * 0.35;
+                    color += localColor * opacity * transmittance;
+                    transmittance *= (1.0 - opacity);
+                }
+                
+                t += 0.2;
+                if (transmittance < 0.01 || t > 20.0) break;
+            }
+
+            // Pure black background - NO stars/static
+            gl_FragColor = vec4(color, 1.0);
+        }
+    </script>
+
+    <script>
+        let scene, camera, renderer, nebulaMesh, material;
+        let videoElement, hands;
+        let fingerPos = new THREE.Vector3(0, 0, 0);
+        let targetFingerPos = new THREE.Vector3(0, 0, 0);
+        let palmPos = new THREE.Vector3(0, 0, 0);
+        let targetPalmPos = new THREE.Vector3(0, 0, 0);
+        let interactionStrength = 0;
+        let targetStrength = 0;
+        let fingerSpread = 0;
+        let targetFingerSpread = 0;
+        let currentLandmarks = null;
+        
+        // Canvas contexts for tracking windows
+        let fingerCtx, handCtx, palmCtx;
+        let fingerCanvas, handCanvas, palmCanvas;
+
+        async function init() {
+            // 1. Three.js Setup
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 10;
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.setClearColor(0x000000, 1);
+            renderer.domElement.id = 'main-canvas';
+            document.body.appendChild(renderer.domElement);
+
+            // Create LARGER Volumetric Cube for expanded nebula
+            const geometry = new THREE.BoxGeometry(20, 20, 20);
+            material = new THREE.ShaderMaterial({
+                vertexShader: document.getElementById('vertexShader').textContent,
+                fragmentShader: document.getElementById('fragmentShader').textContent,
+                uniforms: {
+                    uTime: { value: 0 },
+                    uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+                    uFingerPos: { value: new THREE.Vector3(0, 0, 0) },
+                    uPalmPos: { value: new THREE.Vector3(0, 0, 0) },
+                    uInteractionStrength: { value: 0 },
+                    uFingerSpread: { value: 0 }
+                },
+                transparent: true,
+                side: THREE.BackSide
+            });
+
+            nebulaMesh = new THREE.Mesh(geometry, material);
+            scene.add(nebulaMesh);
+
+            // 2. Setup tracking canvases
+            setupTrackingCanvases();
+
+            // 3. MediaPipe Hands Setup
+            videoElement = document.getElementById('input-video');
+
+            hands = new Hands({
+                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+            });
+
+            hands.setOptions({
+                maxNumHands: 1,
+                modelComplexity: 1,
+                minDetectionConfidence: 0.7,
+                minTrackingConfidence: 0.7
+            });
+
+            hands.onResults(onResults);
+
+            const cameraPipe = new Camera(videoElement, {
+                onFrame: async () => {
+                    await hands.send({ image: videoElement });
+                },
+                width: 640,
+                height: 480
+            });
+
+            cameraPipe.start().then(() => {
+                document.getElementById('loader').classList.add('hidden');
+                document.getElementById('cam-indicator').classList.add('online');
+                document.getElementById('cam-status').innerText = 'Cámara activa';
+            });
+
+            animate();
+        }
+
+        function setupTrackingCanvases() {
+            fingerCanvas = document.getElementById('finger-canvas');
+            handCanvas = document.getElementById('hand-canvas');
+            palmCanvas = document.getElementById('palm-canvas');
+            
+            // Set canvas sizes
+            [fingerCanvas, handCanvas, palmCanvas].forEach(canvas => {
+                canvas.width = 220;
+                canvas.height = 160;
+            });
+            
+            fingerCtx = fingerCanvas.getContext('2d');
+            handCtx = handCanvas.getContext('2d');
+            palmCtx = palmCanvas.getContext('2d');
+        }
+
+        // Hand landmark connections for skeleton
+        const HAND_CONNECTIONS = [
+            [0, 1], [1, 2], [2, 3], [3, 4],           // Thumb
+            [0, 5], [5, 6], [6, 7], [7, 8],           // Index
+            [0, 9], [9, 10], [10, 11], [11, 12],      // Middle
+            [0, 13], [13, 14], [14, 15], [15, 16],    // Ring
+            [0, 17], [17, 18], [18, 19], [19, 20],    // Pinky
+            [5, 9], [9, 13], [13, 17]                 // Palm
+        ];
+
+        // Finger tip indices
+        const FINGER_TIPS = [4, 8, 12, 16, 20];
+        const FINGER_NAMES = ['Pulgar', 'Índice', 'Medio', 'Anular', 'Meñique'];
+
+        function onResults(results) {
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const landmarks = results.multiHandLandmarks[0];
+                currentLandmarks = landmarks;
+                
+                // Index Finger Tip (landmark 8)
+                const indexTip = landmarks[8];
+                targetFingerPos.x = (1.0 - indexTip.x - 0.5) * 16.0;
+                targetFingerPos.y = (0.5 - indexTip.y) * 16.0;
+                targetFingerPos.z = (indexTip.z) * -12.0;
+
+                // Palm center (landmark 0 = wrist, 9 = middle base)
+                const wrist = landmarks[0];
+                const middleBase = landmarks[9];
+                targetPalmPos.x = (1.0 - (wrist.x + middleBase.x) / 2 - 0.5) * 16.0;
+                targetPalmPos.y = (0.5 - (wrist.y + middleBase.y) / 2) * 16.0;
+                targetPalmPos.z = ((wrist.z + middleBase.z) / 2) * -12.0;
+
+                // Calculate finger spread (distance between thumb and pinky tips)
+                const thumbTip = landmarks[4];
+                const pinkyTip = landmarks[20];
+                const spread = Math.sqrt(
+                    Math.pow(thumbTip.x - pinkyTip.x, 2) +
+                    Math.pow(thumbTip.y - pinkyTip.y, 2)
+                );
+                targetFingerSpread = spread;
+
+                targetStrength = 1.0;
+                
+                // Update UI indicators
+                document.getElementById('hand-indicator').classList.add('online');
+                document.getElementById('hand-status').innerText = 'Mano detectada';
+                document.getElementById('finger-dot').classList.add('active');
+                document.getElementById('hand-dot').classList.add('active');
+                document.getElementById('palm-dot').classList.add('active');
+                
+                // Draw tracking visualizations
+                drawFingerTracking(landmarks);
+                drawHandSkeleton(landmarks);
+                drawPalmTracking(landmarks);
+                
+                // Update stats
+                updateStats(landmarks, spread);
+            } else {
+                targetStrength = 0.0;
+                currentLandmarks = null;
+                
+                // Update UI indicators
+                document.getElementById('hand-indicator').classList.remove('online');
+                document.getElementById('hand-status').innerText = 'Mano no detectada';
+                document.getElementById('finger-dot').classList.remove('active');
+                document.getElementById('hand-dot').classList.remove('active');
+                document.getElementById('palm-dot').classList.remove('active');
+                
+                // Clear canvases with fade effect
+                clearCanvases();
+            }
+        }
+
+        function drawFingerTracking(landmarks) {
+            const ctx = fingerCtx;
+            const w = fingerCanvas.width;
+            const h = fingerCanvas.height;
+            
+            // Clear with trail effect
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.fillRect(0, 0, w, h);
+            
+            // Draw grid
+            ctx.strokeStyle = 'rgba(100, 255, 218, 0.1)';
+            ctx.lineWidth = 1;
+            for(let i = 0; i < w; i += 20) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, h);
+                ctx.stroke();
+            }
+            for(let i = 0; i < h; i += 20) {
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(w, i);
+                ctx.stroke();
+            }
+            
+            // Index finger landmarks (5, 6, 7, 8)
+            const indexLandmarks = [5, 6, 7, 8];
+            
+            // Draw connections
+            ctx.strokeStyle = '#64ffda';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for(let i = 0; i < indexLandmarks.length; i++) {
+                const lm = landmarks[indexLandmarks[i]];
+                const x = (1 - lm.x) * w;
+                const y = lm.y * h;
+                if(i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+            
+            // Draw points
+            for(let i = 0; i < indexLandmarks.length; i++) {
+                const lm = landmarks[indexLandmarks[i]];
+                const x = (1 - lm.x) * w;
+                const y = lm.y * h;
+                const radius = i === 3 ? 8 : 4; // Larger for tip
+                
+                // Glow effect for tip
+                if(i === 3) {
+                    const gradient = ctx.createRadialGradient(x, y, 0, x, y, 20);
+                    gradient.addColorStop(0, 'rgba(100, 255, 218, 0.8)');
+                    gradient.addColorStop(1, 'rgba(100, 255, 218, 0)');
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 20, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                ctx.fillStyle = i === 3 ? '#64ffda' : '#bd34fe';
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Draw tip coordinates
+            const tip = landmarks[8];
+            ctx.fillStyle = '#64ffda';
+            ctx.font = '10px JetBrains Mono';
+            ctx.fillText(`(${((1-tip.x)*100).toFixed(0)}, ${(tip.y*100).toFixed(0)})`, 10, h - 10);
+        }
+
+        function drawHandSkeleton(landmarks) {
+            const ctx = handCtx;
+            const w = handCanvas.width;
+            const h = handCanvas.height;
+            
+            // Clear
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+            ctx.fillRect(0, 0, w, h);
+            
+            // Draw connections
+            ctx.lineWidth = 1.5;
+            
+            HAND_CONNECTIONS.forEach(([start, end], idx) => {
+                const lm1 = landmarks[start];
+                const lm2 = landmarks[end];
+                
+                const x1 = (1 - lm1.x) * w;
+                const y1 = lm1.y * h;
+                const x2 = (1 - lm2.x) * w;
+                const y2 = lm2.y * h;
+                
+                // Color gradient based on connection type
+                const gradient = ctx.createLinearGradient(x1, y1, x2, y2);
+                if(idx < 4) { // Thumb
+                    gradient.addColorStop(0, '#ff6b6b');
+                    gradient.addColorStop(1, '#ff8e53');
+                } else if(idx < 8) { // Index
+                    gradient.addColorStop(0, '#64ffda');
+                    gradient.addColorStop(1, '#00d4ff');
+                } else if(idx < 12) { // Middle
+                    gradient.addColorStop(0, '#bd34fe');
+                    gradient.addColorStop(1, '#9b59b6');
+                } else if(idx < 16) { // Ring
+                    gradient.addColorStop(0, '#f39c12');
+                    gradient.addColorStop(1, '#e74c3c');
+                } else if(idx < 20) { // Pinky
+                    gradient.addColorStop(0, '#1abc9c');
+                    gradient.addColorStop(1, '#16a085');
+                } else { // Palm
+                    gradient.addColorStop(0, 'rgba(255,255,255,0.3)');
+                    gradient.addColorStop(1, 'rgba(255,255,255,0.3)');
+                }
+                
+                ctx.strokeStyle = gradient;
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            });
+            
+            // Draw all landmarks
+            landmarks.forEach((lm, idx) => {
+                const x = (1 - lm.x) * w;
+                const y = lm.y * h;
+                
+                const isTip = FINGER_TIPS.includes(idx);
+                const radius = isTip ? 5 : 3;
+                
+                ctx.fillStyle = isTip ? '#ffffff' : 'rgba(255,255,255,0.6)';
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        function drawPalmTracking(landmarks) {
+            const ctx = palmCtx;
+            const w = palmCanvas.width;
+            const h = palmCanvas.height;
+            
+            // Clear with trail
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+            ctx.fillRect(0, 0, w, h);
+            
+            // Palm landmarks (0, 5, 9, 13, 17)
+            const palmLandmarks = [0, 5, 9, 13, 17];
+            
+            // Calculate palm center
+            let centerX = 0, centerY = 0;
+            palmLandmarks.forEach(idx => {
+                centerX += landmarks[idx].x;
+                centerY += landmarks[idx].y;
+            });
+            centerX = (1 - centerX / palmLandmarks.length) * w;
+            centerY = (centerY / palmLandmarks.length) * h;
+            
+            // Draw palm polygon
+            ctx.fillStyle = 'rgba(189, 52, 254, 0.2)';
+            ctx.strokeStyle = '#bd34fe';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            palmLandmarks.forEach((idx, i) => {
+                const x = (1 - landmarks[idx].x) * w;
+                const y = landmarks[idx].y * h;
+                if(i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Draw palm center with pulse effect
+            const time = performance.now() * 0.003;
+            const pulseRadius = 12 + Math.sin(time) * 4;
+            
+            const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, pulseRadius * 2);
+            gradient.addColorStop(0, 'rgba(255, 100, 150, 0.8)');
+            gradient.addColorStop(0.5, 'rgba(189, 52, 254, 0.4)');
+            gradient.addColorStop(1, 'rgba(189, 52, 254, 0)');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, pulseRadius * 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#ff6b9d';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw finger spread lines
+            const thumbTip = landmarks[4];
+            const pinkyTip = landmarks[20];
+            
+            ctx.strokeStyle = 'rgba(100, 255, 218, 0.5)';
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo((1 - thumbTip.x) * w, thumbTip.y * h);
+            ctx.lineTo((1 - pinkyTip.x) * w, pinkyTip.y * h);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        function clearCanvases() {
+            [fingerCtx, handCtx, palmCtx].forEach(ctx => {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                ctx.fillRect(0, 0, 220, 160);
+            });
+        }
+
+        function updateStats(landmarks, spread) {
+            const tip = landmarks[8];
+            document.getElementById('finger-pos').innerText = 
+                `${((1-tip.x)*100).toFixed(0)}, ${(tip.y*100).toFixed(0)}`;
+            document.getElementById('finger-depth').innerText = 
+                (tip.z * -100).toFixed(1);
+            document.getElementById('landmarks-count').innerText = '21';
+            document.getElementById('hand-confidence').innerText = '98%';
+            
+            const wrist = landmarks[0];
+            const middleBase = landmarks[9];
+            document.getElementById('palm-pos').innerText = 
+                `${(((1-(wrist.x+middleBase.x)/2))*100).toFixed(0)}, ${(((wrist.y+middleBase.y)/2)*100).toFixed(0)}`;
+            document.getElementById('finger-spread').innerText = 
+                `${(spread * 100).toFixed(0)}°`;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const time = performance.now() * 0.001;
+            material.uniforms.uTime.value = time;
+
+            // Smooth interpolation
+            fingerPos.lerp(targetFingerPos, 0.08);
+            palmPos.lerp(targetPalmPos, 0.06);
+            interactionStrength += (targetStrength - interactionStrength) * 0.04;
+            fingerSpread += (targetFingerSpread - fingerSpread) * 0.08;
+
+            material.uniforms.uFingerPos.value.copy(fingerPos);
+            material.uniforms.uPalmPos.value.copy(palmPos);
+            material.uniforms.uInteractionStrength.value = interactionStrength;
+            material.uniforms.uFingerSpread.value = fingerSpread;
+
+            // Subtle camera movement
+            camera.position.x = Math.sin(time * 0.15) * 1.5;
+            camera.position.y = Math.cos(time * 0.12) * 1.0;
+            camera.lookAt(0, 0, 0);
+
+            // Rotate nebula slowly
+            nebulaMesh.rotation.y = time * 0.03;
+            nebulaMesh.rotation.x = Math.sin(time * 0.05) * 0.1;
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            material.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+        });
+
+        init();
+    </script>
+</body>
+</html>

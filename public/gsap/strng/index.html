@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stranger Things: Ultimate Production</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&display=swap');
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000000;
+            font-family: 'Libre Baskerville', serif;
+        }
+
+        #scene-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* --- UI LAYER --- */
+        #ui-layer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .cta-container {
+            position: relative;
+            cursor: pointer;
+            pointer-events: auto;
+            padding: 40px 80px;
+            opacity: 0; /* Controlado por JS */
+        }
+
+        /* SVG Text Styles */
+        svg.neon-text {
+            width: 700px;
+            height: 120px;
+            overflow: visible;
+        }
+
+        text {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 70px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+        }
+
+        /* Capas de Texto SVG */
+        .text-stroke {
+            fill: none;
+            stroke: #ff0000;
+            stroke-width: 2px;
+            stroke-dasharray: 400; /* Ajustado para Anime.js */
+            stroke-dashoffset: 400;
+        }
+        
+        .text-glow-layer {
+            fill: none;
+            stroke: #ff0000;
+            stroke-width: 4px;
+            filter: blur(8px);
+            opacity: 0;
+        }
+
+        .text-fill {
+            fill: #ffffff;
+            opacity: 0;
+        }
+
+        /* Barras decorativas */
+        .neon-bar {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 3px;
+            background: #ff0000;
+            width: 0%;
+            box-shadow: 0 0 10px #ff0000, 0 0 20px #900000;
+            opacity: 0;
+        }
+        .bar-top { top: 10px; }
+        .bar-bottom { bottom: 10px; }
+
+        /* Start Button & Overlay */
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #ff0000;
+            transition: opacity 1s;
+        }
+        
+        #start-btn {
+            background: transparent;
+            border: 2px solid #ff0000;
+            color: #ff0000;
+            padding: 15px 40px;
+            font-family: 'Libre Baskerville', serif;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 0 15px #ff0000;
+            transition: all 0.3s;
+            letter-spacing: 2px;
+        }
+        #start-btn:hover {
+            background: #ff0000;
+            color: #000;
+            box-shadow: 0 0 30px #ff0000;
+        }
+        
+        .disclaimer {
+            margin-top: 20px;
+            font-family: monospace;
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+    </style>
+    
+    <!-- LIBRERÍAS EXTERNAS -->
+    
+    <!-- Anime.js para animaciones SVG complejas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha512-z4OUqw/ESETjMVqLt8xhFglc43R/Q1GQDN7u+hNfLu9Zl1RMbfHVzfQG9dNdN9l4hJR+fV8p7WfVSQzfZl0pQw==" crossorigin="anonymous"></script>
+    
+    <!-- Tone.js para audio reactivo -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js" integrity="sha512-b/+3m+WxZvyLJbKHWxmpZNTp0fKmqX3LMgAK5L5bphLKQ7bD2z3rZHfLAqVgZ3v3HVX4eMKQMNKt5oeMVPXMHQ==" crossorigin="anonymous"></script>
+    
+    <!-- Lil-GUI para controles de debug -->
+    <script src="https://cdn.jsdelivr.net/npm/lil-gui@0.19.0/dist/lil-gui.umd.min.js" integrity="sha512-GhqFG8KHZ9zlywrMITlPz3rN7OZEvPjlPaGDRdE1Y3DL/g7kLWaCqRx8Y3mKJt9LLqQCM3pjnQVJLCPn0Q5OWQ==" crossorigin="anonymous"></script>
+
+    <!-- Import Map para Three.js y Postprocessing -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "postprocessing": "https://esm.sh/postprocessing@6.35.0"
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <div id="scene-container"></div>
+
+    <div id="overlay">
+        <button id="start-btn">ENTER THE VOID</button>
+        <div class="disclaimer">Sound & High Performance GPU Required</div>
+    </div>
+
+    <div id="ui-layer">
+        <div class="cta-container" id="cta-group">
+            <div class="neon-bar bar-top"></div>
+            
+            <svg class="neon-text" viewBox="0 0 700 120">
+                <!-- Capa de Glow desenfocado -->
+                <text x="50%" y="65%" text-anchor="middle" class="text-glow-layer">STRANGER</text>
+                <!-- Capa de Trazo animado -->
+                <text x="50%" y="65%" text-anchor="middle" class="text-stroke">STRANGER</text>
+                <!-- Capa de Relleno blanco (Flicker) -->
+                <text x="50%" y="65%" text-anchor="middle" class="text-fill">STRANGER</text>
+            </svg>
+            
+            <div class="neon-bar bar-bottom"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        // Importamos la suite completa de post-procesado
+        import { EffectComposer, EffectPass, RenderPass, 
+                 BloomEffect, ChromaticAberrationEffect, NoiseEffect, 
+                 VignetteEffect, GodRaysEffect, SMAAEffect, BlendFunction, KernelSize 
+               } from 'postprocessing';
+
+        // --- 1. SETUP DE ESCENA ---
+        const container = document.getElementById('scene-container');
+        const scene = new THREE.Scene();
+        // Fondo negro puro, la atmósfera la crean las partículas y el post-procesado
+        scene.background = new THREE.Color(0x000000);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 24;
+
+        const renderer = new THREE.WebGLRenderer({ 
+            powerPreference: "high-performance",
+            antialias: false,
+            stencil: false,
+            depth: false
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // Limitar a 1.5 para rendimiento
+        container.appendChild(renderer.domElement);
+
+        // Objeto "Sol" invisible para los God Rays
+        const sunGeo = new THREE.SphereGeometry(2, 32, 32);
+        const sunMat = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0 }); // Invisible al ojo, visible al efecto
+        const sunMesh = new THREE.Mesh(sunGeo, sunMat);
+        sunMesh.position.set(0, 0, -5); // Detrás del texto
+        scene.add(sunMesh);
+
+
+        // --- 2. POST-PROCESSING PIPELINE (PMNDRS) ---
+        
+        const composer = new EffectComposer(renderer, {
+            frameBufferType: THREE.HalfFloatType
+        });
+        
+        // Pase de renderizado base
+        const renderPass = new RenderPass(scene, camera);
+        
+        // Efectos
+        const noiseEffect = new NoiseEffect({ 
+            premultiply: true, 
+            blendFunction: BlendFunction.OVERLAY 
+        });
+        noiseEffect.blendMode.opacity.value = 0.1; // Grano de película
+
+        const chromaticEffect = new ChromaticAberrationEffect({ 
+            offset: new THREE.Vector2(0.002, 0.002) 
+        });
+
+        const vignetteEffect = new VignetteEffect({
+            eskil: false,
+            offset: 0.1,
+            darkness: 0.6
+        });
+
+        const bloomEffect = new BloomEffect({
+            luminanceThreshold: 0.15,
+            intensity: 0.0, // Controlado dinámicamente
+            radius: 0.8,
+            kernelSize: KernelSize.LARGE
+        });
+
+        const godRaysEffect = new GodRaysEffect(camera, sunMesh, {
+            density: 0.96,
+            decay: 0.93,
+            weight: 0.3,
+            samples: 60,
+            clampMax: 1.0
+        });
+
+        // Combinamos efectos atmosféricos en un solo pase para optimizar
+        // Nota: GodRays suele necesitar su propio pase o cuidado especial, 
+        // pero pmndrs maneja bien las cadenas.
+        const effectPass = new EffectPass(
+            camera, 
+            bloomEffect, 
+            godRaysEffect,
+            chromaticEffect, 
+            noiseEffect, 
+            vignetteEffect
+        );
+
+        composer.addPass(renderPass);
+        composer.addPass(effectPass);
+
+
+        // --- 2.B CAPA VHS PRINCIPAL (OVERLAY) ---
+        //
+        // Efecto VHS completo con scanlines, ruido, distorsión y glitch
+
+        const vhsUniforms = {
+            uTime: { value: 0 },
+            uIntensity: { value: 0.85 },
+            uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+        };
+
+        const vhsVertexShader = `
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `;
+
+        const vhsFragmentShader = `
+            uniform float uTime;
+            uniform float uIntensity;
+            uniform vec2 uResolution;
+            varying vec2 vUv;
+
+            // Ruido simple
+            float hash(vec2 p) {
+                return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+            }
+
+            float noise(vec2 p) {
+                vec2 i = floor(p);
+                vec2 f = fract(p);
+                float a = hash(i);
+                float b = hash(i + vec2(1.0, 0.0));
+                float c = hash(i + vec2(0.0, 1.0));
+                float d = hash(i + vec2(1.0, 1.0));
+                vec2 u = f * f * (3.0 - 2.0 * f);
+                return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+            }
+
+            void main() {
+                vec2 uv = vUv;
+                vec2 screenUV = gl_FragCoord.xy / uResolution.xy;
+
+                // --- 1. SCANLINES HORIZONTALES ---
+                float scanline = sin(uv.y * uResolution.y * 0.5) * 0.5 + 0.5;
+                scanline = pow(scanline, 8.0); // Líneas más finas y definidas
+                float scanlineIntensity = mix(1.0, 0.95, scanline);
+
+                // --- 2. RUIDO/ESTÁTICA VHS ---
+                float staticNoise = noise(uv * vec2(200.0, 100.0) + uTime * 10.0);
+                staticNoise = pow(staticNoise, 3.0); // Ruido más agresivo
+                float noiseIntensity = staticNoise * 0.15 * uIntensity;
+
+                // --- 3. DISTORSIÓN DE COLOR (Chromatic Shift) ---
+                float chromaOffset = 0.003 * uIntensity;
+                vec2 chromaUV = uv;
+                chromaUV.x += sin(uv.y * 20.0 + uTime * 2.0) * chromaOffset;
+                
+                // Simular separación RGB (efecto VHS)
+                float rOffset = sin(uTime * 0.5) * chromaOffset * 0.5;
+                float bOffset = cos(uTime * 0.7) * chromaOffset * 0.5;
+
+                // --- 4. GLITCH/TEARING OCASIONAL ---
+                float glitch = 0.0;
+                float glitchLine = floor(uv.y * 20.0 + uTime * 5.0);
+                float glitchNoise = hash(vec2(glitchLine, uTime * 0.1));
+                
+                if(glitchNoise > 0.98) { // 2% de probabilidad de glitch
+                    glitch = (glitchNoise - 0.98) * 50.0;
+                    chromaUV.x += glitch * 0.01;
+                }
+
+                // --- 5. TAPE TRACKING (líneas horizontales que se mueven) ---
+                float tracking = sin(uv.y * 3.0 + uTime * 0.3) * 0.5 + 0.5;
+                tracking = pow(tracking, 4.0);
+                float trackingIntensity = mix(1.0, 0.92, tracking * 0.3);
+
+                // --- 6. VIGNETTE VHS (bordes más oscuros) ---
+                vec2 centeredUV = uv - 0.5;
+                float vignette = 1.0 - smoothstep(0.3, 1.0, length(centeredUV));
+                vignette = mix(0.7, 1.0, vignette);
+
+                // --- COMBINACIÓN FINAL ---
+                float vhsEffect = scanlineIntensity * trackingIntensity * vignette;
+                
+                // Aplicar efecto VHS como overlay (color base blanco con variaciones)
+                vec3 vhsColor = vec3(vhsEffect);
+                
+                // Añadir ruido como variación de color (no solo como adición)
+                vhsColor += (staticNoise - 0.5) * 0.1 * uIntensity;
+                
+                // Añadir tint rojizo sutil (como cintas VHS viejas)
+                vhsColor.r = min(1.0, vhsColor.r * 1.02);
+                vhsColor.b = max(0.0, vhsColor.b * 0.99);
+
+                // Alpha controla la intensidad del efecto
+                gl_FragColor = vec4(vhsColor, uIntensity * 0.7);
+            }
+        `;
+
+        const vhsMaterial = new THREE.ShaderMaterial({
+            uniforms: vhsUniforms,
+            vertexShader: vhsVertexShader,
+            fragmentShader: vhsFragmentShader,
+            transparent: true,
+            depthWrite: false,
+            depthTest: false,
+            blending: THREE.MultiplyBlending
+        });
+
+        // Calcular tamaño del plano para cubrir todo el FOV
+        const distance = 0.5; // Distancia desde la cámara
+        const fov = camera.fov * (Math.PI / 180);
+        const height = 2 * Math.tan(fov / 2) * distance;
+        const width = height * camera.aspect;
+        
+        const vhsPlane = new THREE.Mesh(
+            new THREE.PlaneGeometry(width, height),
+            vhsMaterial
+        );
+        vhsPlane.position.set(0, 0, -distance); // Justo delante de la cámara
+        vhsPlane.renderOrder = 999; // Renderizar al final
+        scene.add(vhsPlane);
+
+
+        // --- 3. SISTEMA DE PARTÍCULAS (UPSIDE DOWN SHADERS) ---
+        
+        const particleCount = 15000;
+        const pGeo = new THREE.BufferGeometry();
+        const pPos = new Float32Array(particleCount * 3);
+        const pRand = new Float32Array(particleCount * 3);
+        const pSize = new Float32Array(particleCount);
+
+        for(let i=0; i<particleCount; i++){
+            // Distribución caótica inicial (capa de ceniza / niebla)
+            // Más comprimido en Z para parecer un fondo denso detrás del texto.
+            pPos[i*3]   = (Math.random() - 0.5) * 80; // Ancho
+            pPos[i*3+1] = (Math.random() - 0.5) * 50; // Altura
+            pPos[i*3+2] = (Math.random() - 0.5) * 30 - 5; // Fondo más cercano a la cámara
+
+            pRand[i*3] = Math.random();   // offset
+            pRand[i*3+1] = Math.random(); // speed
+            pRand[i*3+2] = Math.random(); // type (ash vs ember)
+
+            pSize[i] = Math.random();
+        }
+
+        pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+        pGeo.setAttribute('aRandom', new THREE.BufferAttribute(pRand, 3));
+        pGeo.setAttribute('aSize', new THREE.BufferAttribute(pSize, 1));
+
+        const pMat = new THREE.ShaderMaterial({
+            uniforms: {
+                uTime: { value: 0 },
+                uGather: { value: 0 }, // 0 = Caos, 1 = Orden
+                uAudio: { value: 0 }, // Reactividad de audio
+                uMouse: { value: new THREE.Vector3(999,999,0) },
+                uColorAsh: { value: new THREE.Color(0x222222) },
+                uColorFire: { value: new THREE.Color(0xff2200) }
+            },
+            transparent: true,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending,
+            vertexShader: `
+                uniform float uTime;
+                uniform float uGather;
+                uniform float uAudio;
+                uniform vec3 uMouse;
+                
+                attribute vec3 aRandom;
+                attribute float aSize;
+                
+                varying vec3 vColor;
+                varying float vAlpha;
+
+                // Simple pseudo-noise
+                float noise(vec3 p) {
+                    return fract(sin(dot(p, vec3(12.9898, 78.233, 45.164))) * 43758.5453);
+                }
+
+                void main() {
+                    // --- 1. Movimiento Orgánico ---
+                    float t = uTime * (0.2 + aRandom.y * 0.2);
+                    vec3 pos = position;
+                    
+                    // Deriva de viento/ceniza
+                    pos.x += sin(t + aRandom.x * 10.0) * 2.0;
+                    pos.y += cos(t * 0.8 + aRandom.z * 10.0) * 2.0;
+                    pos.z += sin(t * 0.5) * 2.0;
+
+                    // --- 2. Formación (Gather) ---
+                    // Objetivo: Un rectángulo denso y fino (barra Stranger Things) en el centro
+                    vec3 target = vec3(
+                        (aRandom.x - 0.5) * 22.0, 
+                        (aRandom.y - 0.5) * 2.0, 
+                        (aRandom.z - 0.5) * 1.0
+                    );
+                    
+                    pos = mix(pos, target, uGather);
+
+                    // --- 3. Interacción Mouse (Campo de Fuerza) ---
+                    float dist = distance(pos.xy, uMouse.xy);
+                    float repulsionRadius = 6.0;
+                    if(dist < repulsionRadius && uGather > 0.5) {
+                        vec3 dir = normalize(pos - vec3(uMouse.xy, 0.0));
+                        float force = (repulsionRadius - dist) / repulsionRadius;
+                        pos += dir * force * 6.0;
+                    }
+
+                    // --- 4. Reactividad Audio ---
+                    // Las partículas pulsan con el bajo y "respiran" hacia cámara
+                    pos += normalize(pos) * uAudio * 1.8 * aRandom.z;
+                    pos.z += (aRandom.z - 0.5) * uAudio * 10.0;
+
+                    vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+                    gl_Position = projectionMatrix * mvPosition;
+
+                    // Tamaño dependiente de profundidad y audio
+                    float size = aSize * (1.0 + uAudio * 2.0);
+                    gl_PointSize = size * (30.0 / -mvPosition.z);
+
+                    // Color grading Stranger Things: ceniza fría + ascuas rojas
+                    float isEmber = step(0.85, aRandom.z); // 15% son ascuas brillantes
+                    vec3 ash = vec3(0.06, 0.08, 0.12);      // Azul oscuro frío
+                    vec3 fire = vec3(1.1, 0.18, 0.05);      // Rojo/anaranjado intenso
+                    
+                    // Las ascuas se potencian con el audio
+                    float emberBoost = isEmber * (0.6 + uAudio * 2.0);
+                    vColor = mix(ash, fire, emberBoost);
+                    
+                    // Opacidad ligada a formación (uGather) y audio
+                    float baseAlpha = mix(0.25, 1.0, uGather);
+                    vAlpha = baseAlpha * (0.7 + uAudio * 0.6);
+                }
+            `,
+            fragmentShader: `
+                varying vec3 vColor;
+                varying float vAlpha;
+                
+                void main() {
+                    // Círculo suave
+                    vec2 uv = gl_PointCoord - 0.5;
+                    float d = length(uv);
+                    if(d > 0.5) discard;
+                    
+                    float glow = 1.0 - (d * 2.0);
+                    glow = pow(glow, 2.0);
+
+                    gl_FragColor = vec4(vColor, vAlpha * glow);
+                }
+            `
+        });
+
+        const particles = new THREE.Points(pGeo, pMat);
+        scene.add(particles);
+
+
+        // --- 3.B NIEBLA / NUBES DE FONDO (SHADER 2D) ---
+        //
+        // Dos planos grandes detrás de las partículas que simulan nubes/niebla
+        // del Upside Down con un ruido animado muy suave.
+
+        const fogUniformsNear = {
+            uTime:       { value: 0 },
+            uIntensity:  { value: 1.2 },
+            // Niebla rojiza tipo Upside Down (capa cercana)
+            uColorLow:   { value: new THREE.Color(0x1a0004) },
+            uColorHigh:  { value: new THREE.Color(0x4a0010) }
+        };
+
+        const fogUniformsFar = {
+            uTime:       { value: 0 },
+            uIntensity:  { value: 1.1 },
+            // Capa lejana, un poco más oscura
+            uColorLow:   { value: new THREE.Color(0x100007) },
+            uColorHigh:  { value: new THREE.Color(0x33000c) }
+        };
+
+        const fogVertexShader = `
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                gl_Position = projectionMatrix * mvPosition;
+            }
+        `;
+
+        const fogFragmentShader = `
+            uniform float uTime;
+            uniform float uIntensity;
+            uniform vec3 uColorLow;
+            uniform vec3 uColorHigh;
+            varying vec2 vUv;
+
+            float hash(vec2 p) {
+                return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+            }
+
+            float noise(vec2 p) {
+                vec2 i = floor(p);
+                vec2 f = fract(p);
+                float a = hash(i);
+                float b = hash(i + vec2(1.0, 0.0));
+                float c = hash(i + vec2(0.0, 1.0));
+                float d = hash(i + vec2(1.0, 1.0));
+                vec2 u = f * f * (3.0 - 2.0 * f);
+                return mix(a, b, u.x) +
+                       (c - a) * u.y * (1.0 - u.x) +
+                       (d - b) * u.x * u.y;
+            }
+
+            float fbm(vec2 p) {
+                float value = 0.0;
+                float amp = 0.5;
+                float freq = 1.0;
+                for(int i = 0; i < 4; i++) {
+                    value += amp * noise(p * freq);
+                    freq *= 2.0;
+                    amp *= 0.5;
+                }
+                return value;
+            }
+
+            void main() {
+                // Escala más grande para que las nubes se expandan más
+                vec2 p = vUv * vec2(3.0, 2.5);
+                p.x += uTime * 0.03;
+                p.y += sin(uTime * 0.12) * 0.25;
+
+                float n = fbm(p);
+
+                // Densidad de niebla expandida: más cobertura en toda la pantalla
+                float fog = smoothstep(0.15, 0.95, n) * uIntensity;
+
+                vec3 col = mix(uColorLow, uColorHigh, n);
+
+                // Niebla expandida cubre todo el viewport y más allá
+
+                if(fog < 0.01) discard;
+
+                gl_FragColor = vec4(col, fog);
+            }
+        `;
+
+        const fogMatNear = new THREE.ShaderMaterial({
+            uniforms: fogUniformsNear,
+            transparent: true,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending,
+            vertexShader: fogVertexShader,
+            fragmentShader: fogFragmentShader
+        });
+
+        const fogMatFar = new THREE.ShaderMaterial({
+            uniforms: fogUniformsFar,
+            transparent: true,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending,
+            vertexShader: fogVertexShader,
+            fragmentShader: fogFragmentShader
+        });
+
+        const fogPlaneFar = new THREE.Mesh(
+            // Plano expandido para cubrir mucho más área
+            new THREE.PlaneGeometry(350, 250, 1, 1),
+            fogMatFar
+        );
+        fogPlaneFar.position.set(0, 0, -90);
+        scene.add(fogPlaneFar);
+
+        const fogPlaneNear = new THREE.Mesh(
+            new THREE.PlaneGeometry(320, 220, 1, 1),
+            fogMatNear
+        );
+        fogPlaneNear.position.set(0, 0, -55);
+        scene.add(fogPlaneNear);
+
+
+        // --- 4. AUDIO & INTERACCIÓN ---
+        
+        let analyser;
+        let isAudioActive = false;
+        let osc, filter, lfo;
+
+        // Configuración de Tone.js
+        async function initAudio() {
+            try {
+                // Iniciar AudioContext solo después del gesto del usuario
+                if (Tone.context.state !== 'running') {
+                    await Tone.start();
+                }
+                
+                // Un drone oscuro y bajo para la atmósfera
+                // Simularemos un "Drone" con osciladores ya que no podemos cargar mp3 externos grandes sin CORS
+                
+                filter = new Tone.Filter(200, "lowpass").toDestination();
+                
+                osc = new Tone.FatOscillator("C1", "sawtooth", 40);
+                osc.connect(filter);
+                
+                // LFO para modular el filtro (efecto respiración)
+                lfo = new Tone.LFO("0.2hz", 100, 600);
+                lfo.connect(filter.frequency);
+
+                // Analizador para visuales
+                analyser = new Tone.Analyser("waveform", 256);
+                osc.connect(analyser);
+                
+                // Iniciar los osciladores después de conectar todo
+                osc.start();
+                lfo.start();
+                
+                isAudioActive = true;
+                
+                // Lanzar secuencia visual
+                runTimeline();
+            } catch (error) {
+                console.warn('Error al inicializar audio:', error);
+                // Continuar sin audio si hay problemas
+                isAudioActive = false;
+                runTimeline();
+            }
+        }
+
+
+        // --- 5. LÓGICA DE ANIMACIÓN (TIMELINE & ANIME.JS) ---
+        
+        function runTimeline() {
+            const tl = anime.timeline({
+                easing: 'easeInOutQuad'
+            });
+
+            // ACTO 1: Silencio -> Aparición
+            tl.add({
+                targets: { val: 0 },
+                val: 1,
+                duration: 2000,
+                update: (anim) => {
+                    // Fade in bloom suave
+                    bloomEffect.intensity = anim.animations[0].currentValue * 1.5;
+                }
+            })
+            // ACTO 2: Reunión de partículas
+            .add({
+                targets: pMat.uniforms.uGather,
+                value: 1,
+                duration: 3000,
+                easing: 'easeInOutExpo'
+            }, '-=1000')
+            // ACTO 3: Glitch y Texto
+            .add({
+                targets: '.cta-container',
+                opacity: 1,
+                duration: 500
+            })
+            // Animación de Texto SVG (Stroke)
+            .add({
+                targets: '.text-stroke',
+                strokeDashoffset: [anime.setDashoffset, 0],
+                duration: 2000,
+                delay: anime.stagger(100),
+                easing: 'easeOutSine'
+            })
+            // Animación de Glow Layer
+            .add({
+                targets: '.text-glow-layer',
+                opacity: [0, 1],
+                duration: 1000
+            }, '-=1500')
+            // Animación de Barras
+            .add({
+                targets: '.neon-bar',
+                width: ['0%', '100%'],
+                opacity: [0, 1],
+                duration: 1000,
+                easing: 'easeOutExpo'
+            }, '-=1800')
+            // Flicker final continuo
+            .add({
+                targets: '.text-fill',
+                opacity: [0, 0.4, 0, 0.8, 0],
+                duration: 200,
+                loop: true,
+                direction: 'alternate',
+                easing: 'steps(5)'
+            });
+        }
+
+        // --- 6. GUI (LIL-GUI) ---
+        const gui = new lil.GUI({ title: 'Upside Down Control' });
+        const params = {
+            bloomStrength: 1.5,
+            bloomThreshold: 0.15,
+            noiseIntensity: 0.1,
+            chromaOffset: 0.002,
+            sunIntensity: 0.3,
+            fogIntensity: 0.9,
+            vhsIntensity: 0.85
+        };
+
+        const f1 = gui.addFolder('Post-Processing');
+        f1.add(params, 'bloomStrength', 0, 5).onChange(v => bloomEffect.intensity = v);
+        f1.add(params, 'bloomThreshold', 0, 1).onChange(v => bloomEffect.luminanceMaterial.threshold = v);
+        f1.add(params, 'noiseIntensity', 0, 0.5).onChange(v => noiseEffect.blendMode.opacity.value = v);
+        f1.add(params, 'chromaOffset', 0, 0.01).onChange(v => chromaticEffect.offset.set(v, v));
+        f1.add(params, 'sunIntensity', 0, 1).onChange(v => godRaysEffect.weight = v);
+        f1.add(params, 'fogIntensity', 0, 1).onChange(v => {
+            fogUniformsNear.uIntensity.value = v;
+            fogUniformsFar.uIntensity.value = v * 0.8;
+        });
+        f1.add(params, 'vhsIntensity', 0, 1).onChange(v => {
+            vhsUniforms.uIntensity.value = v;
+        });
+
+
+        // --- 7. INPUT HANDLING ---
+        
+        const mouse = new THREE.Vector2();
+        const planeZ = new THREE.Plane(new THREE.Vector3(0,0,1), 0);
+        const raycaster = new THREE.Raycaster();
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            
+            raycaster.setFromCamera(mouse, camera);
+            const target = new THREE.Vector3();
+            raycaster.ray.intersectPlane(planeZ, target);
+            
+            if(target) {
+                // Lerp suave para el uniforme del mouse
+                pMat.uniforms.uMouse.value.lerp(target, 0.1);
+                
+                // Mover el "Sol" con el mouse para God Rays dinámicos
+                // Invertimos un poco para efecto paralaje
+                sunMesh.position.x = THREE.MathUtils.lerp(sunMesh.position.x, target.x * 0.2, 0.05);
+                sunMesh.position.y = THREE.MathUtils.lerp(sunMesh.position.y, target.y * 0.2, 0.05);
+            }
+        });
+
+        document.getElementById('start-btn').addEventListener('click', async () => {
+            document.getElementById('overlay').style.opacity = 0;
+            setTimeout(() => document.getElementById('overlay').remove(), 1000);
+            // Inicializar audio solo después del clic del usuario
+            await initAudio();
+        });
+
+
+        // --- 8. LOOP DE RENDERIZADO ---
+        
+        const clock = new THREE.Clock();
+        let lastTime = 0;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = clock.getElapsedTime();
+            const delta = time - lastTime;
+            lastTime = time;
+
+            // Uniforms
+            pMat.uniforms.uTime.value = time;
+            fogUniformsNear.uTime.value = time;
+            fogUniformsFar.uTime.value = time * 1.1;
+            vhsUniforms.uTime.value = time;
+
+            // Audio Analysis
+            if(isAudioActive && analyser) {
+                const data = analyser.getValue(); 
+                // data es un array de amplitud. Calculamos un promedio aproximado para "volumen"
+                let sum = 0;
+                for(let i = 0; i < data.length; i++){
+                    sum += Math.abs(data[i]);
+                }
+                const avg = sum / data.length; // Valor entre 0 y 1 aprox
+                
+                // Suavizado del valor de audio
+                pMat.uniforms.uAudio.value = THREE.MathUtils.lerp(pMat.uniforms.uAudio.value, avg * 4.0, 0.2);
+                
+                // Modulación de Bloom con el audio (Beat)
+                bloomEffect.intensity = params.bloomStrength + (avg * 2.0);
+
+                // Glitch suave y grano más agresivo en los picos (fondo que "falla")
+                const glitchStrength = Math.min(avg * 5.0, 1.0);
+                const baseChroma = params.chromaOffset;
+                const baseNoise = params.noiseIntensity;
+                const offset = baseChroma + glitchStrength * 0.004;
+                chromaticEffect.offset.set(offset, offset);
+                noiseEffect.blendMode.opacity.value = baseNoise + glitchStrength * 0.25;
+            } else {
+                // Volver a los valores base cuando no hay audio
+                pMat.uniforms.uAudio.value = THREE.MathUtils.lerp(pMat.uniforms.uAudio.value, 0, 0.1);
+                chromaticEffect.offset.set(params.chromaOffset, params.chromaOffset);
+                noiseEffect.blendMode.opacity.value = params.noiseIntensity;
+            }
+
+            // Movimiento de cámara "Handheld"
+            camera.position.x = Math.sin(time * 0.3) * 0.5;
+            camera.position.y = Math.cos(time * 0.4) * 0.5;
+            camera.rotation.z = Math.sin(time * 0.1) * 0.01;
+
+            composer.render();
+        }
+
+        animate();
+        
+        // Manejo de Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
+            vhsUniforms.uResolution.set(window.innerWidth, window.innerHeight);
+            
+            // Actualizar tamaño del plano VHS
+            const distance = 0.5;
+            const fov = camera.fov * (Math.PI / 180);
+            const height = 2 * Math.tan(fov / 2) * distance;
+            const width = height * camera.aspect;
+            vhsPlane.geometry.dispose();
+            vhsPlane.geometry = new THREE.PlaneGeometry(width, height);
+        });
+
+    </script>
+</body>
+</html>

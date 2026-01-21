@@ -1,0 +1,2749 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeonWave | Reproductor Futurista</title>
+    
+    <!-- FUENTES: Inter y Space Grotesk para un look técnico/moderno -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+
+    <!-- LIBRERÍAS EXTERNAS (CDN) -->
+    <!-- Iconos Phosphor (más modernos y limpios que FontAwesome) -->
+    <script src="https://unpkg.com/@phosphor-icons/web" integrity="sha512-dLxbYzRZTnXF5YQHPmRWPhCJWMO1QFWWCLjRCPMlHvCQ7Z7hGZgQFLqWMmNWOvDLzFnW7e2vbAhX0WQ8Fhb4Lg==" crossorigin="anonymous"></script>
+    <!-- GSAP para animaciones de layout -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" integrity="sha512-16esztaSRplJROstbIIdwX3N97V1+pZvV33ABoG1H2OyTttBxEGkTsoIVsiP1iaTtM8b3+hu2kB6pQ4Clr5yug==" crossorigin="anonymous"></script>
+    <!-- Anime.js para microinteracciones -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha512-z4OUqw/ESETjMVqLt8xhFglc43R/Q1GQDN7u+hNfLu9Zl1RMbfHVzfQG9dNdN9l4hJR+fV8p7WfVSQzfZl0pQw==" crossorigin="anonymous"></script>
+    <!-- Three.js para el visualizador 3D -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" integrity="sha512-dLxUelApnYxpLt6K2iomGngnHO83iUvZytA3YjDUCjT0HDOHKXnVYdf3hU4JjM8uEhxf9nD1/ey98U3t2vZ0qQ==" crossorigin="anonymous"></script>
+
+    <style>
+        /* =========================================
+           1. VARIABLES Y RESET
+           ========================================= */
+        :root {
+            /* Paleta de Colores Dark/Neon */
+            --bg-deep: #050507;
+            --bg-panel: rgba(20, 20, 25, 0.6);
+            --bg-panel-hover: rgba(30, 30, 40, 0.7);
+            --accent-primary: #00f2ff; /* Cian Neón */
+            --accent-secondary: #bd00ff; /* Magenta Neón */
+            --text-main: #ffffff;
+            --text-muted: #8b8b9b;
+            --border-glass: 1px solid rgba(255, 255, 255, 0.08);
+            
+            /* Dimensiones */
+            --sidebar-width: 240px;
+            --right-panel-width: 320px;
+            --player-height: 90px;
+            
+            /* Efectos */
+            --blur-strength: 20px;
+            --transition-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none; /* App-like feel */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden; /* Evitar scroll global */
+        }
+
+        /* Scrollbar personalizado */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Canvas de fondo (Three.js) */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.6;
+            transition: opacity 0.6s, filter 0.6s;
+        }
+
+        /* Aumentar opacidad en modos inmersivos */
+        body.mode-focus-track #bg-canvas,
+        body.mode-visualizer-full #bg-canvas {
+            opacity: 0.9;
+            filter: brightness(1.2);
+        }
+
+        /* Ocultar Three.js en móvil para ahorrar batería */
+        @media (max-width: 768px) {
+            #bg-canvas {
+                display: none;
+            }
+        }
+
+        /* =========================================
+           2. LAYOUT GRID (Escritorio)
+           ========================================= */
+        .app-container {
+            display: grid;
+            grid-template-areas: 
+                "sidebar main right"
+                "footer footer footer";
+            grid-template-columns: var(--sidebar-width) 1fr var(--right-panel-width);
+            grid-template-rows: 1fr var(--player-height);
+            height: 100vh;
+            width: 100%;
+            transition: grid-template-columns 0.6s var(--transition-smooth);
+        }
+
+        /* =========================================
+           MODOS INMERSIVOS AVANZADOS
+           ========================================= */
+        
+        /* Modo Focus Audio - Solo portada, título y progreso */
+        body.mode-focus-track .app-container {
+            grid-template-columns: 0 1fr 0;
+            grid-template-rows: 1fr 0;
+        }
+
+        body.mode-focus-track .sidebar,
+        body.mode-focus-track .right-panel,
+        body.mode-focus-track .player-bar,
+        body.mode-focus-track .hero-controls {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(100%);
+        }
+
+        body.mode-focus-track .main-view {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            padding: 0;
+        }
+
+        body.mode-focus-track .now-playing-hero {
+            max-width: 90%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        body.mode-focus-track .album-cover-container {
+            width: 400px;
+            height: 400px;
+            margin-bottom: 30px;
+        }
+
+        body.mode-focus-track .track-info-hero {
+            margin-bottom: 30px;
+        }
+
+        body.mode-focus-track .track-info-hero h1 {
+            font-size: 3rem;
+        }
+
+        body.mode-focus-track .track-info-hero p {
+            font-size: 1.3rem;
+        }
+
+        /* Barra de progreso flotante en modo focus */
+        .floating-progress {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 600px;
+            background: rgba(20, 20, 25, 0.8);
+            backdrop-filter: blur(20px);
+            border: var(--border-glass);
+            border-radius: 50px;
+            padding: 20px 30px;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        body.mode-focus-track .floating-progress {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .floating-progress .progress-container {
+            flex: 1;
+            margin: 0;
+        }
+
+        .floating-progress .time-display {
+            font-size: 0.9rem;
+            font-family: monospace;
+            color: var(--text-main);
+            min-width: 80px;
+            text-align: center;
+        }
+
+        /* Modo Visualizer Full - Three.js a pantalla completa */
+        body.mode-visualizer-full .app-container {
+            grid-template-columns: 0 1fr 0;
+            grid-template-rows: 1fr 0;
+        }
+
+        body.mode-visualizer-full .sidebar,
+        body.mode-visualizer-full .right-panel,
+        body.mode-visualizer-full .player-bar,
+        body.mode-visualizer-full .main-view > *:not(.album-cover-overlay) {
+            opacity: 0;
+            pointer-events: none;
+            display: none;
+        }
+
+        body.mode-visualizer-full #visualizer-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+            border-radius: 0;
+            background: transparent;
+        }
+
+        /* Portada como overlay pequeño en visualizer full */
+        .album-cover-overlay {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 120px;
+            height: 120px;
+            border-radius: 12px;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.8);
+            transition: all 0.4s var(--transition-smooth);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+        }
+
+        body.mode-visualizer-full .album-cover-overlay {
+            opacity: 1;
+            pointer-events: all;
+            transform: scale(1);
+        }
+
+        .album-cover-overlay img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+
+        /* Botón para cambiar modos */
+        .mode-toggle-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            background: rgba(20, 20, 25, 0.6);
+            backdrop-filter: blur(20px);
+            border: var(--border-glass);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 2000;
+            transition: all 0.3s;
+            color: var(--text-muted);
+        }
+
+        .mode-toggle-btn:hover {
+            background: rgba(30, 30, 40, 0.8);
+            color: var(--accent-primary);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.3);
+        }
+
+        /* Hotspots casi invisibles en modo inmersivo */
+        .glass-tab.immersive-hotspot {
+            opacity: 0;
+            width: 4px;
+            padding: 20px 2px;
+            transition: all 0.3s;
+        }
+
+        .glass-tab.immersive-hotspot:hover {
+            opacity: 1;
+            width: auto;
+            padding: 12px 8px;
+        }
+
+        body.mode-focus-track .glass-tab,
+        body.mode-visualizer-full .glass-tab {
+            opacity: 0;
+        }
+
+        body.mode-focus-track .glass-tab.immersive-hotspot,
+        body.mode-visualizer-full .glass-tab.immersive-hotspot {
+            opacity: 0.1;
+        }
+
+        body.mode-focus-track .glass-tab.immersive-hotspot:hover,
+        body.mode-visualizer-full .glass-tab.immersive-hotspot:hover {
+            opacity: 1;
+        }
+
+        /* =========================================
+           3. PESTAÑAS GLASS (Toggle Paneles)
+           ========================================= */
+        .glass-tab {
+            position: fixed;
+            z-index: 1000;
+            background: rgba(20, 20, 25, 0.4);
+            backdrop-filter: blur(20px);
+            border: var(--border-glass);
+            border-radius: 0 12px 12px 0;
+            padding: 12px 8px;
+            cursor: pointer;
+            transition: all 0.4s var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .glass-tab:hover {
+            background: rgba(30, 30, 40, 0.6);
+            transform: translateX(5px);
+            box-shadow: 0 6px 30px rgba(0, 242, 255, 0.2);
+        }
+
+        .glass-tab.left {
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .glass-tab.right {
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            border-radius: 12px 0 0 12px;
+        }
+
+        .glass-tab.right:hover {
+            transform: translateY(-50%) translateX(-5px);
+        }
+
+        .glass-tab i {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            transition: color 0.3s;
+        }
+
+        .glass-tab:hover i {
+            color: var(--accent-primary);
+        }
+
+        .glass-tab.active {
+            background: rgba(0, 242, 255, 0.1);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.3);
+        }
+
+        .glass-tab.active i {
+            color: var(--accent-primary);
+            animation: pulse-icon 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-icon {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* =========================================
+           4. SIDEBAR (Izquierda)
+           ========================================= */
+        .sidebar {
+            grid-area: sidebar;
+            background: var(--bg-panel);
+            backdrop-filter: blur(var(--blur-strength));
+            border-right: var(--border-glass);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            z-index: 10;
+            transition: all 0.6s var(--transition-smooth);
+            overflow: hidden;
+        }
+
+        .sidebar.hidden {
+            transform: translateX(-100%);
+            opacity: 0;
+            width: 0;
+            padding: 0;
+            border: none;
+            pointer-events: none;
+        }
+
+        .sidebar:not(.hidden) {
+            animation: slideInLeft 0.6s var(--transition-smooth);
+        }
+
+        @keyframes slideInLeft {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .brand {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 12px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-item i {
+            font-size: 1.2rem;
+        }
+
+        .playlist-section {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        
+        .playlist-header {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+
+        /* =========================================
+           4. MAIN CONTENT (Centro)
+           ========================================= */
+        .main-view {
+            grid-area: main;
+            padding: 40px;
+            overflow-y: auto;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .now-playing-hero {
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+            transition: all 0.6s var(--transition-smooth);
+        }
+
+        /* Barra de progreso circular (ring) en modo focus */
+        .progress-ring {
+            position: absolute;
+            width: 450px;
+            height: 450px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            display: none;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        body.mode-focus-track .progress-ring {
+            display: block;
+        }
+
+        .progress-ring-fill {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-top-color: var(--accent-primary);
+            border-right-color: var(--accent-secondary);
+            clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 50% 0%);
+            transform: rotate(-90deg);
+            transition: clip-path 0.1s linear;
+        }
+
+        .album-cover-container {
+            width: 300px;
+            height: 300px;
+            margin: 0 auto 40px;
+            position: relative;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            transition: transform 0.5s var(--transition-smooth);
+            cursor: pointer;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+
+        .album-cover-container:hover {
+            transform: scale(1.05) rotateY(5deg) rotateX(5deg);
+        }
+
+        .album-cover-container.active {
+            transform: scale(1.1) rotateY(0deg) rotateX(0deg);
+            box-shadow: 0 30px 80px rgba(0, 242, 255, 0.4), 
+                        0 0 100px rgba(189, 0, 255, 0.3);
+            animation: breathing-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes breathing-pulse {
+            0%, 100% { 
+                box-shadow: 0 30px 80px rgba(0, 242, 255, 0.4), 
+                            0 0 100px rgba(189, 0, 255, 0.3);
+            }
+            50% { 
+                box-shadow: 0 40px 120px rgba(0, 242, 255, 0.6), 
+                            0 0 150px rgba(189, 0, 255, 0.5);
+            }
+        }
+
+        .album-art {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 20px;
+            z-index: 2;
+            position: relative;
+            transition: filter 0.3s;
+        }
+
+        .album-cover-container:hover .album-art {
+            filter: brightness(1.1) contrast(1.05);
+        }
+
+        /* Partículas interactivas en la portada */
+        .cover-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            z-index: 3;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        /* Efecto de brillo que sigue el cursor */
+        .cover-shine {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, 
+                rgba(255, 255, 255, 0.3) 0%, 
+                rgba(0, 242, 255, 0.2) 30%, 
+                transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 6;
+            opacity: 0;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.3s;
+        }
+
+        .album-cover-container:hover .cover-shine {
+            opacity: 1;
+        }
+
+        /* Efecto de ondas de audio */
+        .audio-waves {
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 4px;
+            display: flex;
+            gap: 3px;
+            align-items: flex-end;
+            z-index: 7;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .album-cover-container.active .audio-waves {
+            opacity: 1;
+        }
+
+        .wave-bar {
+            flex: 1;
+            background: linear-gradient(180deg, 
+                var(--accent-primary) 0%, 
+                var(--accent-secondary) 100%);
+            border-radius: 2px 2px 0 0;
+            min-height: 2px;
+            animation: wave-animation 1.5s infinite ease-in-out;
+        }
+
+        .wave-bar:nth-child(1) { animation-delay: 0s; }
+        .wave-bar:nth-child(2) { animation-delay: 0.1s; }
+        .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(4) { animation-delay: 0.3s; }
+        .wave-bar:nth-child(5) { animation-delay: 0.4s; }
+        .wave-bar:nth-child(6) { animation-delay: 0.5s; }
+        .wave-bar:nth-child(7) { animation-delay: 0.6s; }
+        .wave-bar:nth-child(8) { animation-delay: 0.7s; }
+
+        @keyframes wave-animation {
+            0%, 100% { height: 2px; }
+            50% { height: 20px; }
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            opacity: 0;
+            box-shadow: 0 0 10px var(--accent-primary);
+        }
+
+        /* Efecto de ondas al hacer click */
+        .cover-ripple {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid var(--accent-primary);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 4;
+        }
+
+        /* Overlay interactivo con información */
+        .cover-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, 
+                rgba(0, 242, 255, 0.1) 0%, 
+                rgba(189, 0, 255, 0.1) 100%);
+            border-radius: 20px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .album-cover-container:hover .cover-overlay {
+            opacity: 1;
+        }
+
+        .cover-overlay-content {
+            text-align: center;
+            transform: translateY(20px);
+            transition: transform 0.3s;
+        }
+
+        .album-cover-container:hover .cover-overlay-content {
+            transform: translateY(0);
+        }
+
+        .cover-overlay-content i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* Glow detrás de la portada */
+        .album-glow {
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            width: 80%;
+            height: 80%;
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
+            filter: blur(40px);
+            opacity: 0.6;
+            z-index: 1;
+            border-radius: 50%;
+            animation: pulse-glow 4s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            from { opacity: 0.4; transform: scale(0.9); }
+            to { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        .track-info-hero h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+            letter-spacing: -1px;
+        }
+
+        .track-info-hero p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+        }
+
+        /* Controles Principales Grandes */
+        .hero-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .btn-control {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-control:hover {
+            color: var(--text-main);
+        }
+
+        .btn-play-hero {
+            width: 70px;
+            height: 70px;
+            background: var(--text-main);
+            color: var(--bg-deep);
+            border-radius: 50%;
+            font-size: 2rem;
+            box-shadow: 0 0 20px rgba(255,255,255,0.3);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .btn-play-hero:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(255,255,255,0.5);
+        }
+
+        /* =========================================
+           5. RIGHT PANEL (Visualizador + Info)
+           ========================================= */
+        .right-panel {
+            grid-area: right;
+            background: rgba(10, 10, 15, 0.4);
+            backdrop-filter: blur(var(--blur-strength));
+            border-left: var(--border-glass);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            transition: all 0.6s var(--transition-smooth);
+            overflow: hidden;
+        }
+
+        .right-panel.hidden {
+            transform: translateX(100%);
+            opacity: 0;
+            width: 0;
+            padding: 0;
+            border: none;
+            pointer-events: none;
+        }
+
+        .right-panel:not(.hidden) {
+            animation: slideInRight 0.6s var(--transition-smooth);
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .panel-tabs {
+            display: flex;
+            gap: 20px;
+            border-bottom: var(--border-glass);
+            padding-bottom: 15px;
+        }
+
+        .tab {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .tab.active {
+            color: var(--text-main);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -16px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--accent-primary);
+        }
+
+        /* Contenedor del Visualizador 3D */
+        #visualizer-container {
+            width: 100%;
+            height: 200px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .queue-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+
+        .queue-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .queue-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .queue-item.active .queue-title {
+            color: var(--accent-primary);
+        }
+
+        .queue-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            object-fit: cover;
+        }
+
+        .queue-info {
+            flex: 1;
+            font-size: 0.9rem;
+        }
+
+        .queue-title {
+            font-weight: 600;
+            display: block;
+        }
+
+        .queue-artist {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Animación de barras jugando (falsa en CSS para la lista) */
+        .playing-indicator {
+            display: flex;
+            gap: 2px;
+            height: 12px;
+            align-items: flex-end;
+        }
+        .bar {
+            width: 3px;
+            background: var(--accent-primary);
+            animation: bounce 0.8s infinite ease-in-out alternate;
+        }
+        .bar:nth-child(2) { animation-delay: 0.2s; }
+        .bar:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0% { height: 2px; }
+            100% { height: 12px; }
+        }
+
+        /* =========================================
+           6. FOOTER PLAYER (Fijo abajo)
+           ========================================= */
+        .player-bar {
+            grid-area: footer;
+            background: rgba(15, 15, 20, 0.9);
+            backdrop-filter: blur(30px);
+            border-top: var(--border-glass);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 100;
+        }
+
+        /* Sección Izquierda: Info Mini */
+        .player-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            width: 25%;
+        }
+
+        .mini-cover {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .mini-info h4 {
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+        }
+        .mini-info span {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Sección Centro: Controles + Barra */
+        .player-center {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            max-width: 600px;
+        }
+
+        .player-controls-mini {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .btn-mini {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+        }
+
+        .btn-mini:hover { color: var(--text-main); }
+        .btn-mini.active { color: var(--accent-primary); }
+
+        .btn-play-mini {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: var(--text-main);
+            color: var(--bg-deep);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+        .btn-play-mini:hover { transform: scale(1.05); }
+
+        /* Barra de Progreso */
+        .progress-container {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: monospace; /* Monospace para evitar saltos al cambiar dígitos */
+        }
+
+        .progress-bar-wrapper {
+            flex: 1;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 2px;
+            position: relative;
+        }
+
+        .progress-handle {
+            position: absolute;
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%) scale(0);
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.1s;
+        }
+
+        .progress-bar-wrapper:hover .progress-handle {
+            transform: translateY(-50%) scale(1);
+        }
+
+        /* Sección Derecha: Volumen */
+        .player-right {
+            width: 25%;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .volume-slider {
+            width: 100px;
+            height: 4px;
+            appearance: none;
+            -webkit-appearance: none;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: var(--text-main);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* =========================================
+           7. RESPONSIVIDAD (Mobile)
+           ========================================= */
+        /* Breakpoint intermedio: sidebar solo iconos */
+        @media (max-width: 1100px) and (min-width: 1025px) {
+            .sidebar {
+                width: 80px;
+                align-items: center;
+                padding: 24px 10px;
+            }
+            .brand span,
+            .nav-item span,
+            .playlist-header {
+                display: none;
+            }
+            .nav-item {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .app-container {
+                grid-template-columns: 80px 1fr; /* Sidebar colapsado */
+                grid-template-areas: 
+                    "sidebar main"
+                    "footer footer";
+            }
+            .right-panel { display: none; } /* Ocultar panel derecho en tablet */
+            .brand span { display: none; }
+            .nav-item span { display: none; }
+            .sidebar { width: 80px; align-items: center; padding: 24px 10px; }
+            
+            /* Visualizador 3D como mini-tira en footer */
+            #visualizer-container {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 60px;
+                border-radius: 0;
+            }
+        }
+
+        /* Bottom Sheet para cola en móvil */
+        .queue-bottom-sheet {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            max-height: 70vh;
+            background: rgba(20, 20, 25, 0.95);
+            backdrop-filter: blur(30px);
+            border-top: var(--border-glass);
+            border-radius: 20px 20px 0 0;
+            transform: translateY(100%);
+            transition: transform 0.4s var(--transition-smooth);
+            z-index: 500;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .queue-bottom-sheet.open {
+            transform: translateY(0);
+        }
+
+        .queue-bottom-sheet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: var(--border-glass);
+        }
+
+        .queue-bottom-sheet-header h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .queue-close-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--text-main);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Player mediano móvil */
+        .mobile-player-medium {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(20, 20, 25, 0.95);
+            backdrop-filter: blur(30px);
+            border-top: var(--border-glass);
+            transform: translateY(100%);
+            transition: transform 0.4s var(--transition-smooth);
+            z-index: 400;
+            padding: 20px;
+            display: none;
+        }
+
+        .mobile-player-medium.open {
+            transform: translateY(0);
+            display: block;
+        }
+
+        .mobile-player-medium .album-cover-container {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 20px;
+        }
+
+        /* Player full-focus móvil */
+        body.mobile-full-focus .main-view {
+            height: 100vh;
+            padding: 0;
+        }
+
+        body.mobile-full-focus .album-cover-container {
+            width: 90vw;
+            height: 90vw;
+            max-width: 500px;
+            max-height: 500px;
+        }
+
+        body.mobile-full-focus .player-bar,
+        body.mobile-full-focus .mobile-nav {
+            display: none;
+        }
+
+        body.mobile-full-focus .floating-progress {
+            display: flex;
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                display: block; /* Stack layout */
+            }
+            
+            .sidebar {
+                display: none; /* Navegación inferior en móvil */
+            }
+
+            .main-view {
+                height: calc(100vh - 80px); /* Restar altura del miniplayer */
+                padding: 20px;
+                justify-content: center;
+            }
+
+            /* Desactivar efectos 3D en móvil */
+            .album-cover-container {
+                transform: none !important;
+            }
+
+            .cover-shine {
+                display: none;
+            }
+
+            /* Estilos específicos para player expandido en móvil */
+            .mobile-nav {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                width: 100%;
+                height: 60px;
+                background: var(--bg-deep);
+                justify-content: space-around;
+                align-items: center;
+                z-index: 200;
+                border-top: var(--border-glass);
+            }
+
+            .player-bar {
+                position: fixed;
+                bottom: 60px; /* Encima de la nav */
+                left: 0;
+                width: 100%;
+                height: 60px;
+                padding: 0 15px;
+                background: rgba(20,20,25,0.95);
+            }
+
+            /* Ocultar elementos desktop en barra móvil */
+            .player-center { display: none; } 
+            .player-right { display: none; }
+            .player-left { width: 100%; justify-content: space-between; }
+            
+            /* Botón Play flotante en la barra móvil */
+            .mobile-play-btn {
+                display: flex;
+                width: 40px;
+                height: 40px;
+                background: transparent;
+                border: 2px solid var(--text-muted);
+                border-radius: 50%;
+                align-items: center;
+                justify-content: center;
+                color: var(--text-main);
+                font-size: 1.2rem;
+            }
+
+            /* Fullscreen Player Mode (Clase toggle) */
+            body.fullscreen-mode .player-bar {
+                height: 100vh;
+                bottom: 0;
+                flex-direction: column;
+                justify-content: center;
+                padding: 40px 20px;
+                z-index: 300;
+                background: var(--bg-deep);
+            }
+
+            /* Botón para cerrar modo full-focus móvil */
+            .mobile-close-focus {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                width: 40px;
+                height: 40px;
+                background: rgba(20, 20, 25, 0.8);
+                backdrop-filter: blur(20px);
+                border: var(--border-glass);
+                border-radius: 50%;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                z-index: 2000;
+                color: var(--text-main);
+            }
+
+            body.mobile-full-focus .mobile-close-focus {
+                display: flex;
+            }
+
+            body.fullscreen-mode .player-left {
+                flex-direction: column;
+                width: 100%;
+                text-align: center;
+            }
+
+            body.fullscreen-mode .mini-cover {
+                width: 250px;
+                height: 250px;
+                margin-bottom: 30px;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            }
+
+            body.fullscreen-mode .mini-info h4 { font-size: 1.5rem; margin-bottom: 5px; }
+            body.fullscreen-mode .player-center { display: flex; width: 100%; margin-top: 30px; }
+            body.fullscreen-mode .mobile-play-btn { display: none; }
+            body.fullscreen-mode .mobile-nav { display: none; }
+            
+            /* Botón cerrar fullscreen */
+            .close-fullscreen {
+                display: none;
+                position: absolute;
+                top: 20px;
+                left: 20px;
+                font-size: 1.5rem;
+                color: var(--text-muted);
+            }
+            body.fullscreen-mode .close-fullscreen { display: block; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ELEMENTO DE AUDIO OCULTO -->
+    <!-- Usaremos canciones libres de derechos para el ejemplo -->
+    <audio id="audio-player" crossorigin="anonymous"></audio>
+
+    <!-- FONDO ANIMADO -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- BOTÓN PARA CAMBIAR MODOS -->
+    <button class="mode-toggle-btn" id="mode-toggle-btn" onclick="cycleImmersiveMode()" title="Cambiar modo">
+        <i class="ph ph-focus" id="mode-toggle-icon"></i>
+    </button>
+
+    <!-- PESTAÑAS GLASS PARA TOGGLE -->
+    <div class="glass-tab left immersive-hotspot" id="toggle-sidebar" onclick="toggleSidebar()">
+        <i class="ph ph-sidebar"></i>
+    </div>
+    <div class="glass-tab right immersive-hotspot" id="toggle-right-panel" onclick="toggleRightPanel()">
+        <i class="ph ph-panel"></i>
+    </div>
+
+    <!-- Barra de progreso flotante -->
+    <div class="floating-progress" id="floating-progress">
+        <span class="time-display" id="floating-time-current">0:00</span>
+        <div class="progress-container">
+            <div class="progress-bar-wrapper" id="floating-progress-wrapper">
+                <div class="progress-fill" id="floating-progress-fill"></div>
+                <div class="progress-handle"></div>
+            </div>
+        </div>
+        <span class="time-display" id="floating-time-total">0:00</span>
+    </div>
+
+    <!-- Botón cerrar modo full-focus móvil -->
+    <button class="mobile-close-focus" onclick="exitMobileFullFocus()">
+        <i class="ph ph-x"></i>
+    </button>
+
+    <div class="app-container" id="app-container">
+        
+        <!-- BARRA LATERAL (Sidebar) -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="ph-fill ph-waves"></i>
+                <span>NeonWave</span>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item active"><i class="ph ph-house"></i> <span>Inicio</span></li>
+                <li class="nav-item"><i class="ph ph-magnifying-glass"></i> <span>Buscar</span></li>
+                <li class="nav-item"><i class="ph ph-books"></i> <span>Biblioteca</span></li>
+            </ul>
+
+            <div class="playlist-section">
+                <div class="playlist-header">Tus Playlists</div>
+                <ul class="nav-menu">
+                    <li class="nav-item"><i class="ph-fill ph-heart"></i> <span>Favoritos</span></li>
+                    <li class="nav-item"><i class="ph-fill ph-fire"></i> <span>Gym Motivation</span></li>
+                    <li class="nav-item"><i class="ph-fill ph-moon-stars"></i> <span>Chill Lo-Fi</span></li>
+                    <li class="nav-item"><i class="ph-fill ph-code"></i> <span>Coding Flow</span></li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- CONTENIDO PRINCIPAL (Main) -->
+        <main class="main-view">
+            <div class="now-playing-hero">
+                <div class="album-cover-container" id="album-cover-container" onclick="cycleImmersiveMode()">
+                    <div class="album-glow"></div>
+                    <div class="progress-ring" id="progress-ring">
+                        <div class="progress-ring-fill" id="progress-ring-fill"></div>
+                    </div>
+                    <img src="https://picsum.photos/300/300?random=1" alt="Album Art" class="album-art" id="main-cover">
+                    <div class="cover-particles" id="cover-particles"></div>
+                    <div class="cover-shine" id="cover-shine"></div>
+                    <div class="audio-waves" id="audio-waves">
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                        <div class="wave-bar"></div>
+                    </div>
+                    <div class="cover-overlay">
+                        <div class="cover-overlay-content">
+                            <i class="ph ph-arrows-out" id="mode-icon"></i>
+                            <span id="mode-text">Modo Focus</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Portada overlay para visualizer full -->
+                <div class="album-cover-overlay" id="album-cover-overlay" onclick="cycleImmersiveMode()">
+                    <img src="https://picsum.photos/300/300?random=1" alt="Album Art" id="overlay-cover">
+                </div>
+
+                <div class="track-info-hero">
+                    <h1 id="main-title">Neon Nights</h1>
+                    <p id="main-artist">Future Synth</p>
+                </div>
+
+                <div class="hero-controls">
+                    <button class="btn-control" aria-label="Shuffle" onclick="player.toggleShuffle()"><i class="ph ph-shuffle" id="btn-shuffle-hero"></i></button>
+                    <button class="btn-control" aria-label="Anterior" onclick="player.prev()"><i class="ph-fill ph-skip-back" style="font-size: 2rem;"></i></button>
+                    <button class="btn-play-hero" aria-label="Play/Pause" onclick="player.togglePlay()">
+                        <i class="ph-fill ph-play" id="icon-play-hero"></i>
+                    </button>
+                    <button class="btn-control" aria-label="Siguiente" onclick="player.next()"><i class="ph-fill ph-skip-forward" style="font-size: 2rem;"></i></button>
+                    <button class="btn-control" aria-label="Repeat" onclick="player.toggleRepeat()"><i class="ph ph-repeat" id="btn-repeat-hero"></i></button>
+                </div>
+            </div>
+        </main>
+
+        <!-- PANEL DERECHO (Queue + Visualizer) -->
+        <aside class="right-panel">
+            <div class="panel-tabs">
+                <div class="tab active">Cola</div>
+                <div class="tab">Letra</div>
+                <div class="tab">Visualizador</div>
+            </div>
+
+            <div id="visualizer-container">
+                <!-- Three.js renderer se insertará aquí -->
+            </div>
+
+            <div class="queue-list" id="queue-container">
+                <!-- Se llena dinámicamente con JS -->
+            </div>
+        </aside>
+
+        <!-- BARRA DE REPRODUCCIÓN (Footer) -->
+        <footer class="player-bar" id="player-bar">
+            <!-- Icono cerrar fullscreen (solo móvil) -->
+            <div class="close-fullscreen" onclick="toggleFullscreenPlayer()">
+                <i class="ph ph-caret-down"></i>
+            </div>
+
+            <div class="player-left" onclick="toggleFullscreenPlayer()">
+                <img src="https://picsum.photos/300/300?random=1" class="mini-cover" id="mini-cover">
+                <div class="mini-info">
+                    <h4 id="mini-title">Neon Nights</h4>
+                    <span id="mini-artist">Future Synth</span>
+                </div>
+                <!-- Play button solo móvil -->
+                <button class="mobile-play-btn" onclick="event.stopPropagation(); player.togglePlay()">
+                    <i class="ph-fill ph-play" id="icon-play-mobile"></i>
+                </button>
+            </div>
+
+            <div class="player-center">
+                <div class="player-controls-mini">
+                    <button class="btn-mini" onclick="player.toggleShuffle()"><i class="ph ph-shuffle" id="btn-shuffle-mini"></i></button>
+                    <button class="btn-mini" onclick="player.prev()"><i class="ph-fill ph-skip-back"></i></button>
+                    <button class="btn-play-mini" onclick="player.togglePlay()">
+                        <i class="ph-fill ph-play" id="icon-play-mini"></i>
+                    </button>
+                    <button class="btn-mini" onclick="player.next()"><i class="ph-fill ph-skip-forward"></i></button>
+                    <button class="btn-mini" onclick="player.toggleRepeat()"><i class="ph ph-repeat" id="btn-repeat-mini"></i></button>
+                </div>
+
+                <div class="progress-container">
+                    <span id="time-current">0:00</span>
+                    <div class="progress-bar-wrapper" id="progress-wrapper">
+                        <div class="progress-fill" id="progress-fill"></div>
+                        <div class="progress-handle"></div>
+                    </div>
+                    <span id="time-total">0:00</span>
+                </div>
+            </div>
+
+            <div class="player-right">
+                <i class="ph ph-speaker-high"></i>
+                <input type="range" class="volume-slider" min="0" max="1" step="0.1" value="0.8" oninput="player.setVolume(this.value)">
+            </div>
+        </footer>
+    </div>
+
+    <!-- Navegación Móvil (Solo visible < 768px) -->
+    <nav class="mobile-nav hidden-desktop">
+        <div class="nav-item active"><i class="ph-fill ph-house"></i></div>
+        <div class="nav-item" onclick="toggleMobilePlayerMedium()"><i class="ph ph-music-note"></i></div>
+        <div class="nav-item" onclick="toggleQueueBottomSheet()"><i class="ph ph-list"></i></div>
+    </nav>
+
+    <!-- Bottom Sheet para Cola (Móvil) -->
+    <div class="queue-bottom-sheet" id="queue-bottom-sheet">
+        <div class="queue-bottom-sheet-header">
+            <h3>Cola de Reproducción</h3>
+            <button class="queue-close-btn" onclick="toggleQueueBottomSheet()">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+        <div class="queue-list" id="mobile-queue-container">
+            <!-- Se llena dinámicamente -->
+        </div>
+    </div>
+
+    <!-- Player Mediano Móvil -->
+    <div class="mobile-player-medium" id="mobile-player-medium">
+        <div class="album-cover-container" style="margin: 0 auto 20px;">
+            <div class="album-glow"></div>
+            <img src="https://picsum.photos/300/300?random=1" alt="Album Art" class="album-art" id="mobile-cover">
+        </div>
+        <div class="track-info-hero" style="text-align: center; margin-bottom: 20px;">
+            <h1 id="mobile-title">Neon Nights</h1>
+            <p id="mobile-artist">Future Synth</p>
+        </div>
+        <div class="hero-controls" style="justify-content: center;">
+            <button class="btn-control" onclick="player.toggleShuffle()"><i class="ph ph-shuffle" id="btn-shuffle-mobile"></i></button>
+            <button class="btn-control" onclick="player.prev()"><i class="ph-fill ph-skip-back"></i></button>
+            <button class="btn-play-hero" onclick="player.togglePlay()">
+                <i class="ph-fill ph-play" id="icon-play-mobile-medium"></i>
+            </button>
+            <button class="btn-control" onclick="player.next()"><i class="ph-fill ph-skip-forward"></i></button>
+            <button class="btn-control" onclick="player.toggleRepeat()"><i class="ph ph-repeat" id="btn-repeat-mobile"></i></button>
+        </div>
+        <div class="progress-container" style="margin-top: 20px;">
+            <span id="mobile-time-current">0:00</span>
+            <div class="progress-bar-wrapper" id="mobile-progress-wrapper">
+                <div class="progress-fill" id="mobile-progress-fill"></div>
+                <div class="progress-handle"></div>
+            </div>
+            <span id="mobile-time-total">0:00</span>
+        </div>
+        <button class="queue-close-btn" onclick="toggleMobilePlayerMedium()" style="margin: 20px auto 0; display: block;">
+            <i class="ph ph-caret-down"></i>
+        </button>
+    </div>
+
+    <script>
+        /* =========================================
+           DATA: LISTA DE CANCIONES
+           ========================================= */
+        /* INSTRUCCIONES PARA USAR ARCHIVOS DE AUDIO:
+           
+           Para evitar problemas de CORS, coloca tus archivos MP3 en una carpeta 'audio/'
+           dentro de la misma carpeta que este archivo HTML, y actualiza las rutas abajo.
+           
+           Ejemplo de estructura:
+           public/gsap/mp3/
+           ├── mp3.html
+           └── audio/
+               ├── cyberpunk-city.mp3
+               ├── midnight-drive.mp3
+               ├── code-frequency.mp3
+               └── deep-space.mp3
+           
+           Luego cambia las rutas 'src' a: "audio/nombre-archivo.mp3"
+        */
+        const playlist = [
+            {
+                title: "Cyberpunk City",
+                artist: "Neon Grid",
+                src: "audio/cyberpunk-city.mp3",
+                cover: "https://picsum.photos/seed/cyber1/400/400",
+                theme: {
+                    primary: "#00f2ff",
+                    secondary: "#bd00ff"
+                }
+            },
+            {
+                title: "Midnight Drive",
+                artist: "Synthwave Boy",
+                src: "audio/midnight-drive.mp3",
+                cover: "https://picsum.photos/seed/night2/400/400",
+                theme: {
+                    primary: "#ff6b9d",
+                    secondary: "#c44569"
+                }
+            },
+            {
+                title: "Code Frequency",
+                artist: "Algorithm",
+                src: "audio/code-frequency.mp3",
+                cover: "https://picsum.photos/seed/code3/400/400",
+                theme: {
+                    primary: "#00d4ff",
+                    secondary: "#0099cc"
+                }
+            },
+            {
+                title: "Deep Space",
+                artist: "Stellar Drift",
+                src: "audio/deep-space.mp3",
+                cover: "https://picsum.photos/seed/space4/400/400",
+                theme: {
+                    primary: "#9d4edd",
+                    secondary: "#5a189a"
+                }
+            }
+        ];
+
+        /* =========================================
+           CLASE PLAYER (Lógica de Audio)
+           ========================================= */
+        class MusicPlayer {
+            constructor() {
+                this.audio = document.getElementById('audio-player');
+                this.currentIndex = 0;
+                this.isPlaying = false;
+                this.isShuffle = false;
+                this.isRepeat = false;
+                this._loadingTrack = false;
+                this._errorShown = false;
+                
+                // Elementos UI
+                this.ui = {
+                    titles: [document.getElementById('main-title'), document.getElementById('mini-title')],
+                    artists: [document.getElementById('main-artist'), document.getElementById('mini-artist')],
+                    covers: [document.getElementById('main-cover'), document.getElementById('mini-cover')],
+                    playIcons: [document.getElementById('icon-play-hero'), document.getElementById('icon-play-mini'), document.getElementById('icon-play-mobile')],
+                    progressFill: document.getElementById('progress-fill'),
+                    timeCurrent: document.getElementById('time-current'),
+                    timeTotal: document.getElementById('time-total'),
+                    queueContainer: document.getElementById('queue-container')
+                };
+
+                this.initEvents();
+                this.loadTrack(this.currentIndex);
+                this.renderQueue();
+            }
+
+            initEvents() {
+                // Actualizar barra de progreso
+                this.audio.addEventListener('timeupdate', () => this.updateProgress());
+                
+                // Al terminar canción
+                this.audio.addEventListener('ended', () => {
+                    if(this.isRepeat) {
+                        this.audio.play();
+                    } else {
+                        this.next();
+                    }
+                });
+
+                // Cargar duración total
+                this.audio.addEventListener('loadedmetadata', () => {
+                    this.ui.timeTotal.textContent = this.formatTime(this.audio.duration);
+                });
+
+                // Click en barra de progreso
+                document.getElementById('progress-wrapper').addEventListener('click', (e) => {
+                    const width = e.currentTarget.clientWidth;
+                    const clickX = e.offsetX;
+                    const duration = this.audio.duration;
+                    this.audio.currentTime = (clickX / width) * duration;
+                });
+            }
+
+            loadTrack(index) {
+                // Evitar bucles infinitos si todas las canciones fallan
+                if (this._loadingTrack) return;
+                this._loadingTrack = true;
+                
+                this.currentIndex = index;
+                const track = playlist[this.currentIndex];
+                
+                // Limpiar manejador de error anterior
+                this.audio.onerror = null;
+                
+                // Manejo de errores de carga
+                this.audio.onerror = (e) => {
+                    this._loadingTrack = false;
+                    console.warn(`Error al cargar: ${track.title}`);
+                    
+                    // Mostrar mensaje solo una vez
+                    if (!this._errorShown) {
+                        this._errorShown = true;
+                        const message = 'No se pudieron cargar los archivos de audio.\n\n' +
+                                      'Por favor:\n' +
+                                      '1. Crea una carpeta "audio/" en la misma ubicación que este archivo\n' +
+                                      '2. Coloca tus archivos MP3 allí\n' +
+                                      '3. Actualiza las rutas en el código JavaScript';
+                        alert(message);
+                    }
+                    
+                    this.pause();
+                };
+                
+                // Manejar carga exitosa
+                this.audio.oncanplaythrough = () => {
+                    this._loadingTrack = false;
+                    this._errorShown = false;
+                };
+                
+                this.audio.src = track.src;
+                
+                // Intentar cargar el audio (load() no devuelve Promise en todos los navegadores)
+                try {
+                    this.audio.load();
+                } catch (err) {
+                    this._loadingTrack = false;
+                    console.warn('Error al precargar audio:', err);
+                }
+                
+                // Animación de cambio de texto
+                gsap.fromTo(this.ui.titles, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.5 });
+                gsap.fromTo(this.ui.artists, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.5, delay: 0.1 });
+
+                // Aplicar tema de color de la pista
+                applyTrackTheme(track);
+                
+                // Actualizar textos e imágenes
+                this.ui.titles.forEach(el => el.textContent = track.title);
+                this.ui.artists.forEach(el => el.textContent = track.artist);
+                
+                // Actualizar elementos móviles
+                const mobileTitle = document.getElementById('mobile-title');
+                const mobileArtist = document.getElementById('mobile-artist');
+                const mobileCover = document.getElementById('mobile-cover');
+                
+                if (mobileTitle) mobileTitle.textContent = track.title;
+                if (mobileArtist) mobileArtist.textContent = track.artist;
+                if (mobileCover) {
+                    gsap.to(mobileCover, { opacity: 0, duration: 0.2, onComplete: () => {
+                        mobileCover.src = track.cover;
+                        gsap.to(mobileCover, { opacity: 1, duration: 0.4 });
+                    }});
+                }
+                
+                // Transición suave de portada con efectos especiales
+                this.ui.covers.forEach((img, index) => {
+                    if (index === 0) { // Solo para la portada principal
+                        const coverContainer = document.getElementById('album-cover-container');
+                        const overlayCover = document.getElementById('overlay-cover');
+                        
+                        // Efecto de explosión de partículas al cambiar
+                        createCoverParticles(true);
+                        setTimeout(() => createCoverParticles(currentMode !== 'normal'), 1000);
+                        
+                        // Animación de cambio con rotación 3D (solo desktop)
+                        if (!isMobile) {
+                            gsap.to(coverContainer, {
+                                rotateY: 180,
+                                scale: 0.8,
+                                duration: 0.3,
+                                ease: 'power2.in',
+                                onComplete: () => {
+                                    img.src = track.cover;
+                                    if (overlayCover) overlayCover.src = track.cover;
+                                    gsap.to(coverContainer, {
+                                        rotateY: 0,
+                                        scale: 1,
+                                        duration: 0.5,
+                                        ease: 'power3.out'
+                                    });
+                                }
+                            });
+                        }
+                        
+                        gsap.to(img, { 
+                            opacity: 0, 
+                            scale: 0.9, 
+                            duration: 0.3,
+                            onComplete: () => {
+                                img.src = track.cover;
+                                if (overlayCover) overlayCover.src = track.cover;
+                                gsap.to(img, { 
+                                    opacity: 1, 
+                                    scale: 1, 
+                                    duration: 0.5 
+                                });
+                            }
+                        });
+                    } else {
+                        // Portada mini (sin efectos especiales)
+                        gsap.to(img, { opacity: 0.5, scale: 0.9, duration: 0.2, onComplete: () => {
+                            img.src = track.cover;
+                            gsap.to(img, { opacity: 1, scale: 1, duration: 0.4 });
+                        }});
+                    }
+                });
+
+                this.renderQueue(); // Para actualizar clase active
+                
+                // Actualizar Media Session (para controles nativos del OS/Navegador)
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.metadata = new MediaMetadata({
+                        title: track.title,
+                        artist: track.artist,
+                        artwork: [{ src: track.cover, sizes: '512x512', type: 'image/jpeg' }]
+                    });
+                }
+            }
+
+            togglePlay() {
+                if (this.isPlaying) {
+                    this.pause();
+                } else {
+                    this.play();
+                }
+            }
+
+            play() {
+                this.isPlaying = true;
+                this.audio.play().catch(err => {
+                    console.error('Error al reproducir audio:', err);
+                    this.pause();
+                    alert('No se pudo reproducir el audio. Verifica que el archivo esté disponible y permita CORS.');
+                });
+                this.updatePlayIcons('ph-pause');
+                
+                // Animación Anime.js en botón principal
+                anime({
+                    targets: '.btn-play-hero',
+                    scale: [1, 1.2, 1],
+                    duration: 600,
+                    easing: 'easeOutElastic(1, .8)'
+                });
+
+                // Efectos visuales al reproducir
+                const coverContainer = document.getElementById('album-cover-container');
+                coverContainer.classList.add('active');
+                
+                // Explosión de partículas al iniciar
+                createCoverParticles(true);
+                setTimeout(() => {
+                    if (this.isPlaying) {
+                        createCoverParticles(immersiveMode);
+                    }
+                }, 2000);
+
+                // Iniciar visualizador si no ha empezado
+                if(!visualizerStarted) startVisualizer();
+            }
+
+            pause() {
+                this.isPlaying = false;
+                this.audio.pause();
+                this.updatePlayIcons('ph-play');
+                
+                // Quitar efectos visuales al pausar
+                const coverContainer = document.getElementById('album-cover-container');
+                coverContainer.classList.remove('active');
+                
+                // Reducir partículas
+                if (particleInterval) {
+                    clearInterval(particleInterval);
+                    createCoverParticles(false);
+                }
+            }
+
+            updatePlayIcons(iconClass) {
+                this.ui.playIcons.forEach(icon => {
+                    icon.className = `ph-fill ${iconClass}`;
+                });
+                
+                // Actualizar icono móvil mediano
+                const mobileMediumIcon = document.getElementById('icon-play-mobile-medium');
+                if (mobileMediumIcon) {
+                    mobileMediumIcon.className = `ph-fill ${iconClass}`;
+                }
+            }
+
+            prev() {
+                let index = this.currentIndex - 1;
+                if (index < 0) index = playlist.length - 1;
+                this.loadTrack(index);
+                if (this.isPlaying) this.play();
+            }
+
+            next() {
+                let index;
+                if (this.isShuffle) {
+                    index = Math.floor(Math.random() * playlist.length);
+                } else {
+                    index = this.currentIndex + 1;
+                    if (index >= playlist.length) index = 0;
+                }
+                this.loadTrack(index);
+                if (this.isPlaying) this.play();
+            }
+
+            setVolume(val) {
+                this.audio.volume = val;
+            }
+
+            toggleShuffle() {
+                this.isShuffle = !this.isShuffle;
+                const btns = [document.getElementById('btn-shuffle-hero'), document.getElementById('btn-shuffle-mini')];
+                btns.forEach(btn => btn.parentElement.style.color = this.isShuffle ? 'var(--accent-primary)' : 'var(--text-muted)');
+            }
+
+            toggleRepeat() {
+                this.isRepeat = !this.isRepeat;
+                const btns = [document.getElementById('btn-repeat-hero'), document.getElementById('btn-repeat-mini')];
+                btns.forEach(btn => btn.parentElement.style.color = this.isRepeat ? 'var(--accent-primary)' : 'var(--text-muted)');
+            }
+
+            updateProgress() {
+                const { currentTime, duration } = this.audio;
+                const percent = (currentTime / duration) * 100;
+                this.ui.progressFill.style.width = `${percent}%`;
+                this.ui.timeCurrent.textContent = this.formatTime(currentTime);
+                
+                // Actualizar barra flotante si existe
+                const floatingFill = document.getElementById('floating-progress-fill');
+                const floatingCurrent = document.getElementById('floating-time-current');
+                const floatingTotal = document.getElementById('floating-time-total');
+                
+                if (floatingFill) {
+                    floatingFill.style.width = `${percent}%`;
+                }
+                if (floatingCurrent) {
+                    floatingCurrent.textContent = this.formatTime(currentTime);
+                }
+                if (floatingTotal) {
+                    floatingTotal.textContent = this.formatTime(duration);
+                }
+                
+                // Actualizar elementos móviles
+                const mobileFill = document.getElementById('mobile-progress-fill');
+                const mobileCurrent = document.getElementById('mobile-time-current');
+                const mobileTotal = document.getElementById('mobile-time-total');
+                
+                if (mobileFill) {
+                    mobileFill.style.width = `${percent}%`;
+                }
+                if (mobileCurrent) {
+                    mobileCurrent.textContent = this.formatTime(currentTime);
+                }
+                if (mobileTotal) {
+                    mobileTotal.textContent = this.formatTime(duration);
+                }
+                
+                // Actualizar anillo de progreso circular
+                updateProgressRing(percent);
+            }
+
+            formatTime(seconds) {
+                if(isNaN(seconds)) return "0:00";
+                const min = Math.floor(seconds / 60);
+                const sec = Math.floor(seconds % 60);
+                return `${min}:${sec < 10 ? '0' + sec : sec}`;
+            }
+
+            renderQueue() {
+                this.ui.queueContainer.innerHTML = '';
+                playlist.forEach((track, idx) => {
+                    const item = document.createElement('div');
+                    item.className = `queue-item ${idx === this.currentIndex ? 'active' : ''}`;
+                    item.onclick = () => {
+                        this.loadTrack(idx);
+                        this.play();
+                    };
+                    
+                    // Si está sonando, mostramos animación de barras
+                    const iconOrAnim = idx === this.currentIndex && this.isPlaying 
+                        ? `<div class="playing-indicator"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>`
+                        : `<i class="ph-fill ph-play-circle" style="font-size: 1.2rem; color: var(--text-muted);"></i>`;
+
+                    item.innerHTML = `
+                        <img src="${track.cover}" class="queue-img">
+                        <div class="queue-info">
+                            <span class="queue-title">${track.title}</span>
+                            <span class="queue-artist">${track.artist}</span>
+                        </div>
+                        ${iconOrAnim}
+                    `;
+                    
+                    // Animación de entrada para items
+                    item.style.opacity = 0;
+                    this.ui.queueContainer.appendChild(item);
+                });
+
+                // Stagger animation con Anime.js para la lista
+                anime({
+                    targets: '.queue-item',
+                    opacity: [0, 1],
+                    translateX: [20, 0],
+                    delay: anime.stagger(50)
+                });
+            }
+        }
+
+        const player = new MusicPlayer();
+
+        /* =========================================
+           SISTEMA DE PESTAÑAS GLASS Y PORTADAS INTERACTIVAS
+           ========================================= */
+        let sidebarVisible = true;
+        let rightPanelVisible = true;
+        let immersiveMode = false;
+        let currentMode = 'normal'; // 'normal', 'focus-track', 'visualizer-full'
+        let isMobile = window.innerWidth < 768;
+        let autoHideTimeout = null;
+        let mouseMoveTimeout = null;
+        let currentTrackTheme = null;
+
+        function toggleSidebar() {
+            sidebarVisible = !sidebarVisible;
+            const sidebar = document.querySelector('.sidebar');
+            const tab = document.getElementById('toggle-sidebar');
+            
+            if (sidebarVisible) {
+                sidebar.classList.remove('hidden');
+                tab.classList.remove('active');
+                gsap.to(sidebar, { x: 0, opacity: 1, duration: 0.6, ease: 'power3.out' });
+            } else {
+                sidebar.classList.add('hidden');
+                tab.classList.add('active');
+                gsap.to(sidebar, { x: -100, opacity: 0, duration: 0.6, ease: 'power3.in' });
+            }
+        }
+
+        function toggleRightPanel() {
+            rightPanelVisible = !rightPanelVisible;
+            const panel = document.querySelector('.right-panel');
+            const tab = document.getElementById('toggle-right-panel');
+            
+            if (rightPanelVisible) {
+                panel.classList.remove('hidden');
+                tab.classList.remove('active');
+                gsap.to(panel, { x: 0, opacity: 1, duration: 0.6, ease: 'power3.out' });
+            } else {
+                panel.classList.add('hidden');
+                tab.classList.add('active');
+                gsap.to(panel, { x: 100, opacity: 0, duration: 0.6, ease: 'power3.in' });
+            }
+        }
+
+        /* =========================================
+           CICLO DE MODOS INMERSIVOS
+           ========================================= */
+        function cycleImmersiveMode() {
+            const body = document.body;
+            const container = document.getElementById('app-container');
+            const coverContainer = document.getElementById('album-cover-container');
+            const modeIcon = document.getElementById('mode-toggle-icon');
+            const modeText = document.getElementById('mode-text');
+            const overlayCover = document.getElementById('overlay-cover');
+            
+            // Ciclar entre modos: normal -> focus-track -> visualizer-full -> normal
+            if (currentMode === 'normal') {
+                currentMode = 'focus-track';
+                body.classList.add('mode-focus-track');
+                body.classList.remove('mode-visualizer-full');
+                
+                // Ocultar paneles
+                if (sidebarVisible) toggleSidebar();
+                if (rightPanelVisible) toggleRightPanel();
+                
+                // Animación de entrada
+                gsap.from(coverContainer, {
+                    scale: 0.8,
+                    opacity: 0,
+                    duration: 0.8,
+                    ease: 'power3.out'
+                });
+                
+                // Actualizar icono y texto
+                modeIcon.className = 'ph ph-focus';
+                modeText.textContent = 'Modo Visualizador';
+                
+                // Sincronizar canvas de fondo
+                updateBackgroundCanvas(true);
+                
+            } else if (currentMode === 'focus-track') {
+                currentMode = 'visualizer-full';
+                body.classList.remove('mode-focus-track');
+                body.classList.add('mode-visualizer-full');
+                
+                // Actualizar portada overlay
+                overlayCover.src = document.getElementById('main-cover').src;
+                
+                // Iniciar visualizador si no está iniciado
+                if (!visualizerStarted) startVisualizer();
+                
+                // Actualizar icono y texto
+                modeIcon.className = 'ph ph-house';
+                modeText.textContent = 'Modo Normal';
+                
+                // Sincronizar canvas de fondo
+                updateBackgroundCanvas(true);
+                
+            } else {
+                currentMode = 'normal';
+                body.classList.remove('mode-focus-track', 'mode-visualizer-full');
+                
+                // Mostrar paneles si estaban ocultos
+                if (!sidebarVisible) toggleSidebar();
+                if (!rightPanelVisible) toggleRightPanel();
+                
+                // Animación de salida
+                gsap.to(coverContainer, {
+                    scale: 1,
+                    opacity: 1,
+                    duration: 0.8,
+                    ease: 'power3.out'
+                });
+                
+                // Actualizar icono y texto
+                modeIcon.className = 'ph ph-focus';
+                modeText.textContent = 'Modo Focus';
+                
+                // Sincronizar canvas de fondo
+                updateBackgroundCanvas(false);
+            }
+            
+            // Actualizar intensidad de partículas según modo
+            updateVisualComplexity();
+        }
+
+        function exitMobileFullFocus() {
+            document.body.classList.remove('mobile-full-focus');
+        }
+
+        /* =========================================
+           PARTÍCULAS INTERACTIVAS EN PORTADA
+           ========================================= */
+        let particleInterval = null;
+        
+        function createCoverParticles(intensive = false) {
+            const particlesContainer = document.getElementById('cover-particles');
+            particlesContainer.innerHTML = '';
+            
+            if (particleInterval) clearInterval(particleInterval);
+            
+            const particleCount = intensive ? 30 : 10;
+            const spawnRate = intensive ? 200 : 800;
+            
+            particleInterval = setInterval(() => {
+                for (let i = 0; i < particleCount; i++) {
+                    createParticle(particlesContainer, intensive);
+                }
+            }, spawnRate);
+        }
+
+        function createParticle(container, intensive) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            
+            const size = intensive ? Math.random() * 6 + 2 : Math.random() * 4 + 2;
+            const x = Math.random() * 100;
+            const y = Math.random() * 100;
+            const color = Math.random() > 0.5 ? 'var(--accent-primary)' : 'var(--accent-secondary)';
+            
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            particle.style.left = x + '%';
+            particle.style.top = y + '%';
+            particle.style.background = color;
+            particle.style.boxShadow = `0 0 ${size * 3}px ${color}`;
+            
+            container.appendChild(particle);
+            
+            // Animación con Anime.js
+            anime({
+                targets: particle,
+                opacity: [0, 1, 0],
+                scale: [0, 1.5, 0],
+                translateX: (Math.random() - 0.5) * 100,
+                translateY: (Math.random() - 0.5) * 100,
+                duration: intensive ? 2000 : 3000,
+                easing: 'easeOutQuad',
+                complete: () => particle.remove()
+            });
+        }
+
+        /* =========================================
+           EFECTOS 3D Y PARALLAX EN PORTADA
+           ========================================= */
+        function initCover3DEffects() {
+            const coverContainer = document.getElementById('album-cover-container');
+            const cover = document.getElementById('main-cover');
+            const shine = document.getElementById('cover-shine');
+            
+            coverContainer.addEventListener('mousemove', (e) => {
+                const rect = coverContainer.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateX = ((y - centerY) / centerY) * -10;
+                const rotateY = ((x - centerX) / centerX) * 10;
+                
+                gsap.to(coverContainer, {
+                    rotateX: rotateX,
+                    rotateY: rotateY,
+                    duration: 0.3,
+                    ease: 'power2.out'
+                });
+                
+                // Efecto parallax en la imagen
+                const parallaxX = (x - centerX) * 0.1;
+                const parallaxY = (y - centerY) * 0.1;
+                
+                gsap.to(cover, {
+                    x: parallaxX,
+                    y: parallaxY,
+                    scale: 1.05,
+                    duration: 0.3
+                });
+                
+                // Brillo que sigue el cursor
+                gsap.to(shine, {
+                    left: x + 'px',
+                    top: y + 'px',
+                    duration: 0.2,
+                    ease: 'power2.out'
+                });
+            });
+            
+            coverContainer.addEventListener('mouseleave', () => {
+                gsap.to(coverContainer, {
+                    rotateX: 0,
+                    rotateY: 0,
+                    duration: 0.5,
+                    ease: 'power2.out'
+                });
+                
+                gsap.to(cover, {
+                    x: 0,
+                    y: 0,
+                    scale: 1,
+                    duration: 0.5
+                });
+                
+                gsap.to(shine, {
+                    opacity: 0,
+                    duration: 0.3
+                });
+            });
+        }
+
+        /* =========================================
+           SINCRONIZAR ONDAS DE AUDIO CON REPRODUCCIÓN
+           ========================================= */
+        function syncAudioWaves() {
+            const coverContainer = document.getElementById('album-cover-container');
+            const audio = document.getElementById('audio-player');
+            
+            audio.addEventListener('play', () => {
+                coverContainer.classList.add('active');
+                updateVisualComplexity();
+            });
+            
+            audio.addEventListener('pause', () => {
+                coverContainer.classList.remove('active');
+                updateVisualComplexity();
+            });
+        }
+
+        /* =========================================
+           AUTO-HIDE DE PANELES
+           ========================================= */
+        function initAutoHide() {
+            if (isMobile) return; // No auto-hide en móvil
+            
+            document.addEventListener('mousemove', () => {
+                clearTimeout(mouseMoveTimeout);
+                clearTimeout(autoHideTimeout);
+                
+                // Mostrar paneles si estaban ocultos
+                if (!sidebarVisible || !rightPanelVisible) {
+                    if (!sidebarVisible) {
+                        const sidebar = document.querySelector('.sidebar');
+                        if (sidebar.classList.contains('hidden')) {
+                            sidebar.classList.remove('hidden');
+                            gsap.to(sidebar, { x: 0, opacity: 1, duration: 0.4 });
+                            sidebarVisible = true;
+                        }
+                    }
+                    if (!rightPanelVisible) {
+                        const panel = document.querySelector('.right-panel');
+                        if (panel.classList.contains('hidden')) {
+                            panel.classList.remove('hidden');
+                            gsap.to(panel, { x: 0, opacity: 1, duration: 0.4 });
+                            rightPanelVisible = true;
+                        }
+                    }
+                }
+                
+                // Resetear timer de auto-hide
+                mouseMoveTimeout = setTimeout(() => {
+                    if (currentMode === 'normal' && !document.querySelector('.sidebar:hover') && !document.querySelector('.right-panel:hover')) {
+                        autoHideTimeout = setTimeout(() => {
+                            if (sidebarVisible) toggleSidebar();
+                            if (rightPanelVisible) toggleRightPanel();
+                        }, 3000);
+                    }
+                }, 5000);
+            });
+        }
+
+        /* =========================================
+           COLOR MAPPING POR PISTA
+           ========================================= */
+        function applyTrackTheme(track) {
+            if (!track.theme) return;
+            
+            currentTrackTheme = track.theme;
+            const root = document.documentElement;
+            
+            // Actualizar variables CSS
+            root.style.setProperty('--accent-primary', track.theme.primary);
+            root.style.setProperty('--accent-secondary', track.theme.secondary);
+            
+            // Actualizar glow de portada
+            const glow = document.querySelector('.album-glow');
+            if (glow) {
+                glow.style.background = `linear-gradient(45deg, ${track.theme.primary}, ${track.theme.secondary})`;
+            }
+            
+            // Actualizar colores del visualizador si está activo
+            if (visualizerStarted && window.neonMaterial) {
+                window.neonMaterial.uniforms.uColor1.value.set(track.theme.primary);
+                window.neonMaterial.uniforms.uColor2.value.set(track.theme.secondary);
+            }
+        }
+
+        /* =========================================
+           COMPLEJIDAD VISUAL ADAPTATIVA
+           ========================================= */
+        function updateVisualComplexity() {
+            const audio = document.getElementById('audio-player');
+            const isPlaying = !audio.paused;
+            const bgCanvas = document.getElementById('bg-canvas');
+            
+            if (isPlaying) {
+                // Aumentar intensidad
+                createCoverParticles(true);
+                if (bgCanvas) {
+                    gsap.to(bgCanvas, {
+                        opacity: 0.8,
+                        filter: 'brightness(1.3)',
+                        duration: 1
+                    });
+                }
+            } else {
+                // Reducir intensidad
+                createCoverParticles(false);
+                if (bgCanvas) {
+                    gsap.to(bgCanvas, {
+                        opacity: 0.4,
+                        filter: 'brightness(1)',
+                        duration: 1
+                    });
+                }
+            }
+        }
+
+        /* =========================================
+           ACTUALIZAR CANVAS DE FONDO SEGÚN MODO
+           ========================================= */
+        function updateBackgroundCanvas(intensive = false) {
+            const bgCanvas = document.getElementById('bg-canvas');
+            if (!bgCanvas) return;
+            
+            if (intensive) {
+                gsap.to(bgCanvas, {
+                    opacity: 0.9,
+                    filter: 'brightness(1.2) contrast(1.1)',
+                    duration: 0.8
+                });
+            } else {
+                gsap.to(bgCanvas, {
+                    opacity: 0.6,
+                    filter: 'brightness(1) contrast(1)',
+                    duration: 0.8
+                });
+            }
+        }
+
+        /* =========================================
+           ACTUALIZAR PROGRESO CIRCULAR (RING)
+           ========================================= */
+        function updateProgressRing(percent) {
+            const ringFill = document.getElementById('progress-ring-fill');
+            if (!ringFill) return;
+            
+            const angle = (percent / 100) * 360;
+            ringFill.style.clipPath = `polygon(50% 50%, 50% 0%, ${50 + 50 * Math.cos((angle - 90) * Math.PI / 180)}% ${50 + 50 * Math.sin((angle - 90) * Math.PI / 180)}%, 50% 50%)`;
+        }
+
+        /* =========================================
+           EFECTOS DE ONDAS AL CLICK
+           ========================================= */
+        function createRippleEffect(event, container) {
+            const ripple = document.createElement('div');
+            ripple.className = 'cover-ripple';
+            
+            const rect = container.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = event.clientX - rect.left - size / 2;
+            const y = event.clientY - rect.top - size / 2;
+            
+            ripple.style.width = size + 'px';
+            ripple.style.height = size + 'px';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            
+            container.appendChild(ripple);
+            
+            anime({
+                targets: ripple,
+                scale: [0, 2],
+                opacity: [0.8, 0],
+                duration: 800,
+                easing: 'easeOutQuad',
+                complete: () => ripple.remove()
+            });
+        }
+
+        /* =========================================
+           UI & ANIMACIONES GLOBALES (GSAP)
+           ========================================= */
+        window.onload = () => {
+            // Animación de entrada inicial de la APP
+            const tl = gsap.timeline();
+
+            tl.from('.sidebar', { x: -50, opacity: 0, duration: 0.8, ease: 'power3.out' })
+              .from('.main-view', { y: 20, opacity: 0, duration: 0.8 }, "-=0.6")
+              .from('.right-panel', { x: 50, opacity: 0, duration: 0.8 }, "-=0.6")
+              .from('.player-bar', { y: 50, opacity: 0, duration: 0.8 }, "-=0.6")
+              .from('.glass-tab', { scale: 0, opacity: 0, duration: 0.5, stagger: 0.1 }, "-=0.4");
+            
+            // Inicializar efectos interactivos (solo en desktop)
+            if (!isMobile) {
+                initCover3DEffects();
+                initAutoHide();
+            }
+            
+            createCoverParticles(false);
+            syncAudioWaves();
+            
+            // Agregar efecto de ondas al click (solo en modo normal)
+            const coverContainer = document.getElementById('album-cover-container');
+            coverContainer.addEventListener('click', (e) => {
+                if (currentMode === 'normal' && !isMobile) {
+                    createRippleEffect(e, coverContainer);
+                }
+            });
+            
+            // Efecto de entrada épica para la portada
+            gsap.from(coverContainer, {
+                scale: 0,
+                rotateY: 180,
+                opacity: 0,
+                duration: 1.2,
+                ease: 'back.out(1.7)',
+                delay: 0.5
+            });
+            
+            // Aplicar tema inicial
+            if (playlist[0] && playlist[0].theme) {
+                applyTrackTheme(playlist[0]);
+            }
+            
+            // Detectar cambios de tamaño de ventana
+            window.addEventListener('resize', () => {
+                const wasMobile = isMobile;
+                isMobile = window.innerWidth < 768;
+                
+                if (wasMobile !== isMobile) {
+                    // Reinicializar efectos si cambió el modo
+                    if (!isMobile && !wasMobile) {
+                        initCover3DEffects();
+                        initAutoHide();
+                    }
+                }
+            });
+        };
+
+        // Función para Fullscreen en móvil
+        function toggleFullscreenPlayer() {
+            if (window.innerWidth < 768) {
+                document.body.classList.toggle('fullscreen-mode');
+                document.body.classList.toggle('mobile-full-focus');
+            }
+        }
+
+        function toggleMobilePlayerMedium() {
+            const playerMedium = document.getElementById('mobile-player-medium');
+            playerMedium.classList.toggle('open');
+        }
+
+        function toggleQueueBottomSheet() {
+            const bottomSheet = document.getElementById('queue-bottom-sheet');
+            bottomSheet.classList.toggle('open');
+            
+            // Renderizar cola si está vacía
+            if (bottomSheet.classList.contains('open')) {
+                const container = document.getElementById('mobile-queue-container');
+                if (container.innerHTML === '') {
+                    player.renderQueue();
+                    // Copiar items a móvil
+                    const desktopItems = document.querySelectorAll('.queue-item');
+                    desktopItems.forEach(item => {
+                        const clone = item.cloneNode(true);
+                        container.appendChild(clone);
+                    });
+                }
+            }
+        }
+
+        /* =========================================
+           THREE.JS VISUALIZER (Simulado & Estético)
+           ========================================= */
+        let visualizerStarted = false;
+        
+        function setupThreeJSVisualizer() {
+            const container = document.getElementById('visualizer-container');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+            
+            // Guardar referencia global para poder actualizar colores
+            window.neonMaterial = neonMaterial;
+
+            // Crear barras (cubos)
+            const geometry = new THREE.BoxGeometry(0.5, 1, 0.5);
+            const material = new THREE.MeshNormalMaterial({ wireframe: false }); // Start with simple material
+            
+            // Usaremos un ShaderMaterial simple para efecto neón
+            const primaryColor = currentTrackTheme?.primary || '#00f2ff';
+            const secondaryColor = currentTrackTheme?.secondary || '#bd00ff';
+            
+            const neonMaterial = new THREE.ShaderMaterial({
+                uniforms: {
+                    uTime: { value: 0 },
+                    uColor1: { value: new THREE.Color(primaryColor) },
+                    uColor2: { value: new THREE.Color(secondaryColor) }
+                },
+                vertexShader: `
+                    varying vec2 vUv;
+                    void main() {
+                        vUv = uv;
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                    }
+                `,
+                fragmentShader: `
+                    uniform float uTime;
+                    uniform vec3 uColor1;
+                    uniform vec3 uColor2;
+                    varying vec2 vUv;
+                    void main() {
+                        vec3 color = mix(uColor1, uColor2, vUv.y + sin(uTime) * 0.2);
+                        gl_FragColor = vec4(color, 0.8);
+                    }
+                `,
+                transparent: true
+            });
+
+            const bars = [];
+            const barCount = 16;
+            
+            // Distribución lineal
+            for(let i = 0; i < barCount; i++) {
+                const bar = new THREE.Mesh(geometry, neonMaterial);
+                bar.position.x = (i - barCount/2) * 0.8;
+                bar.position.y = -1; // Base abajo
+                scene.add(bar);
+                bars.push(bar);
+            }
+
+            camera.position.z = 10;
+            camera.position.y = 1;
+            camera.lookAt(0, 0, 0);
+
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                neonMaterial.uniforms.uTime.value += 0.05;
+
+                // Simular datos de audio si está reproduciendo
+                // (Para evitar problemas de CORS y AudioContext user-gesture en demo)
+                const isPlaying = !document.getElementById('audio-player').paused;
+
+                bars.forEach((bar, index) => {
+                    let scaleY = 1;
+                    
+                    if (isPlaying) {
+                        // Crear patrón de onda usando seno + ruido aleatorio
+                        const time = Date.now() * 0.005;
+                        const wave = Math.sin(time + index * 0.5);
+                        scaleY = Math.max(0.5, (wave + 1) * 1.5 + Math.random());
+                    } else {
+                        // Estado "Idle" - respiración suave
+                        const time = Date.now() * 0.002;
+                        scaleY = Math.max(0.5, Math.sin(time + index * 0.5) * 0.5 + 0.8);
+                    }
+
+                    // Lerp para suavizar movimiento
+                    bar.scale.y += (scaleY - bar.scale.y) * 0.1;
+                    bar.position.y = -2 + bar.scale.y / 2; // Mantener base alineada
+                });
+
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+
+            // Resize handle
+            window.addEventListener('resize', () => {
+                if(container.clientWidth > 0 && container.clientHeight > 0) {
+                    camera.aspect = container.clientWidth / container.clientHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(container.clientWidth, container.clientHeight);
+                }
+            });
+        }
+
+        function startVisualizer() {
+            visualizerStarted = true;
+            setupThreeJSVisualizer();
+        }
+
+        /* =========================================
+           FONDO ANIMADO (Background Shader)
+           ========================================= */
+        function initBackground() {
+            const canvas = document.getElementById('bg-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            let width, height;
+            
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            const particles = [];
+            const particleCount = 40;
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.vx = (Math.random() - 0.5) * 0.5;
+                    this.vy = (Math.random() - 0.5) * 0.5;
+                    this.size = Math.random() * 200 + 100;
+                    this.color = Math.random() > 0.5 ? 'rgba(0, 242, 255, 0.03)' : 'rgba(189, 0, 255, 0.03)';
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    if (this.x < -this.size) this.x = width + this.size;
+                    if (this.x > width + this.size) this.x = -this.size;
+                    if (this.y < -this.size) this.y = height + this.size;
+                    if (this.y > height + this.size) this.y = -this.size;
+                }
+
+                draw() {
+                    ctx.beginPath();
+                    // Gradiente radial para efecto suave "orb"
+                    const g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
+                    g.addColorStop(0, this.color);
+                    g.addColorStop(1, 'rgba(0,0,0,0)');
+                    ctx.fillStyle = g;
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+
+            function animateBg() {
+                ctx.clearRect(0, 0, width, height);
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+                requestAnimationFrame(animateBg);
+            }
+            animateBg();
+        }
+
+        initBackground();
+
+    </script>
+</body>
+</html>

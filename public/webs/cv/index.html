@@ -1,0 +1,2921 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV Builder Pro - Local & Seguro</title>
+    
+    <!-- Tailwind CSS (UI Styles) -->
+    <script src="https://cdn.tailwindcss.com" integrity="sha512-GU2tzExCbJF48BhPBn2h9K7mfLSKoX8VqbJcIBmVTLxFfHCPm/ZkbYhPnxRTr3xGDCLxWbvxJVdcWShZhZEzqA==" crossorigin="anonymous"></script>
+    <script>
+        // Suprimir advertencia de Tailwind CDN en producción (aceptable para archivos standalone)
+        if (typeof console !== 'undefined' && console.warn) {
+            const originalWarn = console.warn;
+            console.warn = function(...args) {
+                if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com should not be used in production')) {
+                    return; // Suprimir esta advertencia específica
+                }
+                originalWarn.apply(console, args);
+            };
+        }
+    </script>
+    
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons" integrity="sha512-zIW7KLxV4omFKs2j0g7T/ujwl6yF1wUxDiC8U0pZSoXXSU4UgvL8/DvvGbL0R45zYGgYKOkwL4XeURK8KDVpzg==" crossorigin="anonymous"></script>
+    
+    <!-- SortableJS para Drag & Drop -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js" integrity="sha512-Eezs+g9Lq4TCCq0wae01s9PuNWzHYoCMkE97e2qdkYthpI0pzC3UGB03lgEHn2XM85hDOUF6qgqqszs+iXU4UA==" crossorigin="anonymous"></script>
+
+    <!-- html2pdf para PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous"></script>
+
+    <!-- docx.js para Word Export -->
+    <script src="https://unpkg.com/docx@7.1.0/build/index.js" integrity="sha512-VbGX7s5P+TXl3RLPMhG0dZn+lYBh5mEcm1LW0qoTpQM2EXFH+7VqY1lqDp9S+V1aQQ3FnZxkQ5R3fYiN2BgXfg==" crossorigin="anonymous"></script>
+
+    <style>
+        /* Estilos base y utilidades para la hoja A4 */
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #f3f4f6; }
+        
+        .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            margin: 0 auto;
+            overflow: visible;
+            position: relative;
+        }
+        .a4-page > div {
+            width: 100%;
+        }
+
+        /* Estilos de las plantillas (Templates) */
+        
+        /* 1. Clásico: Serif, elegante, líneas separadoras */
+        .template-classic { font-family: 'Georgia', serif; color: #333; line-height: 1.6; }
+        .template-classic h1 { font-family: 'Helvetica', sans-serif; text-transform: uppercase; letter-spacing: 2px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        .template-classic h2 { font-size: 1.2rem; border-bottom: 1px solid #ccc; margin-top: 20px; margin-bottom: 10px; font-weight: bold; text-transform: uppercase; }
+        .template-classic .section-content { padding-left: 0; }
+
+        /* 2. Moderno: Sidebar izquierda, sans-serif, acento de color */
+        .template-modern { 
+            display: grid; 
+            grid-template-columns: 30% 70%; 
+            font-family: 'Inter', sans-serif; 
+            min-height: 297mm;
+            height: auto;
+            width: 100%;
+        }
+        .template-modern .sidebar { 
+            background-color: #2c3e50; 
+            color: white; 
+            padding: 30px 20px;
+            min-height: 297mm;
+        }
+        .template-modern .main { 
+            padding: 30px; 
+            background-color: #fff;
+            min-height: 297mm;
+        }
+        .template-modern h1 { 
+            font-size: 2.5rem; 
+            font-weight: 800; 
+            line-height: 1; 
+            margin-bottom: 5px; 
+            color: #2c3e50; 
+        }
+        .template-modern .sidebar h1 {
+            color: white;
+            font-size: 1.5rem;
+        }
+        .template-modern .sidebar h2 { 
+            color: #ecf0f1; 
+            border-bottom: 1px solid rgba(255,255,255,0.3); 
+            margin-top: 20px; 
+            font-size: 1.1rem;
+            padding-bottom: 8px;
+        }
+        .template-modern .main h2 { 
+            color: #2980b9; 
+            border-bottom: 2px solid #2980b9; 
+            font-weight: 700; 
+            margin-top: 25px; 
+            text-transform: uppercase; 
+            font-size: 1rem; 
+            letter-spacing: 1px;
+            padding-bottom: 5px;
+        }
+        .template-modern .job-title { 
+            color: #7f8c8d; 
+            font-size: 1.2rem; 
+            margin-bottom: 20px; 
+        }
+
+        /* 3. Creativo: Header grande, colores vibrantes, grid layout en skills */
+        .template-creative { font-family: 'Poppins', sans-serif; }
+        .template-creative .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px; border-radius: 0 0 20px 20px; margin-bottom: 30px; }
+        .template-creative h1 { font-size: 3rem; font-weight: 900; }
+        .template-creative h2 { color: #764ba2; font-size: 1.4rem; font-weight: 700; margin-bottom: 15px; display: inline-block; border-bottom: 3px solid #667eea; }
+        .template-creative .grid-cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+        /* 4. Minimalista: Limpio, mucho espacio en blanco */
+        .template-minimal { font-family: 'Inter', sans-serif; padding: 40px; }
+        .template-minimal h1 { font-size: 2.5rem; font-weight: 300; letter-spacing: -1px; margin-bottom: 8px; }
+        .template-minimal h2 { font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin-top: 30px; margin-bottom: 15px; color: #666; }
+        .template-minimal .divider { height: 1px; background: #e5e5e5; margin: 20px 0; }
+
+        /* 5. Ejecutivo: Formal, profesional, colores corporativos */
+        .template-executive { font-family: 'Times New Roman', serif; padding: 35px; }
+        .template-executive .header-bar { background: #1a1a1a; color: white; padding: 20px 35px; margin: -35px -35px 30px -35px; }
+        .template-executive h1 { font-size: 2.2rem; font-weight: bold; margin-bottom: 5px; }
+        .template-executive h2 { font-size: 1rem; font-weight: bold; border-left: 4px solid #1a1a1a; padding-left: 10px; margin-top: 25px; }
+
+        /* 6. Tech: Moderno, colores tech, sidebar derecho */
+        .template-tech { 
+            display: grid; 
+            grid-template-columns: 70% 30%; 
+            font-family: 'Inter', sans-serif; 
+            min-height: 297mm;
+            height: auto;
+            width: 100%;
+        }
+        .template-tech .main { 
+            padding: 30px;
+            min-height: 297mm;
+        }
+        .template-tech .sidebar { 
+            background: #0f172a; 
+            color: white; 
+            padding: 30px 20px;
+            min-height: 297mm;
+        }
+        .template-tech h1 { 
+            font-size: 2.2rem; 
+            font-weight: 800; 
+            color: #0f172a; 
+        }
+        .template-tech .sidebar h2 { 
+            color: #60a5fa; 
+            font-size: 0.9rem; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            margin-top: 25px; 
+            border-bottom: 1px solid rgba(96,165,250,0.3); 
+            padding-bottom: 8px; 
+        }
+
+        /* 7. Colorido: Colores vibrantes, diseño alegre */
+        .template-colorful { font-family: 'Inter', sans-serif; padding: 30px; }
+        .template-colorful .header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #4facfe 100%); color: white; padding: 30px; border-radius: 10px; margin-bottom: 25px; }
+        .template-colorful h1 { font-size: 2.5rem; font-weight: 900; }
+        .template-colorful h2 { font-size: 1.1rem; font-weight: 700; color: #f5576c; margin-top: 20px; padding-bottom: 5px; border-bottom: 3px solid #4facfe; }
+
+        /* 8. Elegante: Tipografía serif, espaciado generoso */
+        .template-elegant { font-family: 'Georgia', serif; padding: 45px; line-height: 1.8; }
+        .template-elegant h1 { font-family: 'Times New Roman', serif; font-size: 2.8rem; font-weight: normal; text-align: center; border-bottom: 3px double #333; padding-bottom: 15px; margin-bottom: 10px; }
+        .template-elegant h2 { font-size: 1.3rem; font-weight: normal; font-style: italic; text-align: center; color: #666; margin-bottom: 30px; }
+        .template-elegant .section-title { font-size: 1.1rem; font-weight: bold; text-transform: uppercase; letter-spacing: 3px; margin-top: 30px; margin-bottom: 15px; }
+
+        /* 9. Timeline: Diseño cronológico con línea de tiempo */
+        .template-timeline { font-family: 'Inter', sans-serif; padding: 35px; }
+        .template-timeline .header-section { text-align: center; margin-bottom: 40px; }
+        .template-timeline h1 { font-size: 2.5rem; font-weight: 700; }
+        .template-timeline .timeline-item { position: relative; padding-left: 40px; margin-bottom: 30px; }
+        .template-timeline .timeline-dot { position: absolute; left: 0; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: #3b82f6; border: 3px solid white; box-shadow: 0 0 0 2px #3b82f6; }
+        .template-timeline .timeline-line { position: absolute; left: 5px; top: 17px; width: 2px; height: calc(100% + 10px); background: #e5e7eb; }
+
+        /* 10. Grid: Layout en cuadrícula */
+        .template-grid { font-family: 'Inter', sans-serif; padding: 25px; display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        .template-grid .header { grid-column: 1 / -1; text-align: center; padding-bottom: 20px; border-bottom: 2px solid #e5e7eb; margin-bottom: 20px; }
+        .template-grid h1 { font-size: 2.2rem; font-weight: 800; }
+        .template-grid h2 { font-size: 0.95rem; font-weight: 700; text-transform: uppercase; color: #3b82f6; margin-bottom: 12px; }
+
+        /* 11. Sidebar Derecho: Sidebar a la derecha */
+        .template-sidebar-right { 
+            display: grid; 
+            grid-template-columns: 70% 30%; 
+            font-family: 'Inter', sans-serif; 
+            min-height: 297mm;
+            height: auto;
+            width: 100%;
+        }
+        .template-sidebar-right .main { 
+            padding: 30px;
+            min-height: 297mm;
+        }
+        .template-sidebar-right .sidebar { 
+            background: #1e293b; 
+            color: white; 
+            padding: 30px 20px;
+            min-height: 297mm;
+        }
+        .template-sidebar-right h1 { 
+            font-size: 2.3rem; 
+            font-weight: 800; 
+            color: #1e293b; 
+        }
+        .template-sidebar-right .sidebar h2 { 
+            color: #94a3b8; 
+            font-size: 1rem; 
+            margin-top: 25px; 
+            border-bottom: 1px solid rgba(148,163,184,0.3); 
+            padding-bottom: 8px; 
+        }
+
+        /* 12. Una Columna: Diseño simple de una columna */
+        .template-single { font-family: 'Inter', sans-serif; padding: 40px; max-width: 100%; }
+        .template-single .header { text-align: center; margin-bottom: 35px; }
+        .template-single h1 { font-size: 2.8rem; font-weight: 700; margin-bottom: 8px; }
+        .template-single h2 { font-size: 1rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #3b82f6; margin-top: 25px; padding-bottom: 8px; border-bottom: 2px solid #3b82f6; }
+
+        /* 13. Acento Azul: Acentos azules en diseño limpio */
+        .template-blue-accent { font-family: 'Inter', sans-serif; padding: 35px; }
+        .template-blue-accent h1 { font-size: 2.4rem; font-weight: 800; color: #1e40af; border-left: 5px solid #3b82f6; padding-left: 15px; margin-bottom: 10px; }
+        .template-blue-accent h2 { font-size: 1rem; font-weight: 700; color: #1e40af; text-transform: uppercase; letter-spacing: 1px; margin-top: 25px; }
+
+        /* 14. Acento Verde: Acentos verdes */
+        .template-green-accent { font-family: 'Inter', sans-serif; padding: 35px; }
+        .template-green-accent h1 { font-size: 2.4rem; font-weight: 800; color: #065f46; border-left: 5px solid #10b981; padding-left: 15px; margin-bottom: 10px; }
+        .template-green-accent h2 { font-size: 1rem; font-weight: 700; color: #065f46; text-transform: uppercase; letter-spacing: 1px; margin-top: 25px; }
+
+        /* 15. Acento Rojo: Acentos rojos */
+        .template-red-accent { font-family: 'Inter', sans-serif; padding: 35px; }
+        .template-red-accent h1 { font-size: 2.4rem; font-weight: 800; color: #991b1b; border-left: 5px solid #ef4444; padding-left: 15px; margin-bottom: 10px; }
+        .template-red-accent h2 { font-size: 1rem; font-weight: 700; color: #991b1b; text-transform: uppercase; letter-spacing: 1px; margin-top: 25px; }
+
+        /* 16. Acento Púrpura: Acentos púrpura */
+        .template-purple-accent { font-family: 'Inter', sans-serif; padding: 35px; }
+        .template-purple-accent h1 { font-size: 2.4rem; font-weight: 800; color: #6b21a8; border-left: 5px solid #a855f7; padding-left: 15px; margin-bottom: 10px; }
+        .template-purple-accent h2 { font-size: 1rem; font-weight: 700; color: #6b21a8; text-transform: uppercase; letter-spacing: 1px; margin-top: 25px; }
+
+        /* 17. Startup: Diseño moderno para startups */
+        .template-startup { font-family: 'Inter', sans-serif; padding: 30px; }
+        .template-startup .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 35px; border-radius: 15px; margin-bottom: 30px; }
+        .template-startup h1 { font-size: 2.8rem; font-weight: 900; }
+        .template-startup h2 { font-size: 1.1rem; font-weight: 700; color: #667eea; margin-top: 25px; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* 18. Corporativo: Diseño corporativo formal */
+        .template-corporate { font-family: 'Arial', sans-serif; padding: 30px; }
+        .template-corporate .top-bar { background: #1e3a8a; color: white; padding: 15px 30px; margin: -30px -30px 25px -30px; }
+        .template-corporate h1 { font-size: 2rem; font-weight: bold; color: #1e3a8a; }
+        .template-corporate h2 { font-size: 0.95rem; font-weight: bold; color: #1e3a8a; text-transform: uppercase; margin-top: 20px; border-bottom: 2px solid #1e3a8a; padding-bottom: 5px; }
+
+        /* 19. Moderno Gradiente: Gradientes modernos */
+        .template-gradient { font-family: 'Inter', sans-serif; padding: 0; }
+        .template-gradient .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%); color: white; padding: 40px 35px; }
+        .template-gradient .content { padding: 35px; }
+        .template-gradient h1 { font-size: 2.6rem; font-weight: 900; }
+        .template-gradient h2 { font-size: 1rem; font-weight: 700; color: #667eea; text-transform: uppercase; margin-top: 25px; }
+
+        /* 20. Clásico Moderno: Clásico con toque moderno */
+        .template-classic-modern { font-family: 'Georgia', serif; padding: 40px; }
+        .template-classic-modern .header { text-align: center; border-bottom: 3px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
+        .template-classic-modern h1 { font-size: 2.6rem; font-weight: normal; font-style: italic; }
+        .template-classic-modern h2 { font-size: 1.2rem; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; margin-top: 25px; border-bottom: 1px solid #ccc; padding-bottom: 8px; }
+
+        /* 21. Minimalista Color: Minimalista con toque de color */
+        .template-minimal-color { font-family: 'Inter', sans-serif; padding: 40px; }
+        .template-minimal-color .header { border-left: 4px solid #3b82f6; padding-left: 20px; margin-bottom: 30px; }
+        .template-minimal-color h1 { font-size: 2.5rem; font-weight: 300; letter-spacing: -1px; }
+        .template-minimal-color h2 { font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 3px; color: #3b82f6; margin-top: 35px; }
+
+        /* 22. Tech Dark: Tema oscuro tech */
+        .template-tech-dark { 
+            display: grid; 
+            grid-template-columns: 30% 70%; 
+            font-family: 'Inter', sans-serif; 
+            min-height: 297mm;
+            height: auto;
+            width: 100%;
+            background: #0f172a; 
+            color: #e2e8f0; 
+        }
+        .template-tech-dark .sidebar { 
+            background: #1e293b; 
+            padding: 30px 20px;
+            min-height: 297mm;
+        }
+        .template-tech-dark .main { 
+            padding: 30px;
+            min-height: 297mm;
+        }
+        .template-tech-dark h1 { 
+            font-size: 2.2rem; 
+            font-weight: 800; 
+            color: #60a5fa; 
+        }
+        .template-tech-dark .sidebar h2 { 
+            color: #94a3b8; 
+            font-size: 0.95rem; 
+            text-transform: uppercase; 
+            margin-top: 25px; 
+            border-bottom: 1px solid rgba(148,163,184,0.3); 
+            padding-bottom: 8px; 
+        }
+        .template-tech-dark .main h2 { 
+            color: #60a5fa; 
+            font-size: 1rem; 
+            font-weight: 700; 
+            margin-top: 25px; 
+            text-transform: uppercase; 
+        }
+
+        /* 23. Profesional Azul: Profesional con azul corporativo */
+        .template-professional-blue { font-family: 'Arial', sans-serif; padding: 35px; }
+        .template-professional-blue .header { background: #1e40af; color: white; padding: 25px 35px; margin: -35px -35px 30px -35px; }
+        .template-professional-blue h1 { font-size: 2.3rem; font-weight: bold; }
+        .template-professional-blue h2 { font-size: 1rem; font-weight: bold; color: #1e40af; text-transform: uppercase; margin-top: 25px; border-left: 4px solid #1e40af; padding-left: 10px; }
+
+        /* 24. Moderno Limpio: Moderno y limpio */
+        .template-clean { font-family: 'Inter', sans-serif; padding: 40px; }
+        .template-clean .header { text-align: center; margin-bottom: 40px; }
+        .template-clean h1 { font-size: 2.6rem; font-weight: 700; color: #111827; }
+        .template-clean h2 { font-size: 1rem; font-weight: 600; color: #4b5563; text-transform: uppercase; letter-spacing: 2px; margin-top: 30px; }
+
+        /* 25. Elegante Serif: Elegante con serif */
+        .template-elegant-serif { font-family: 'Times New Roman', serif; padding: 45px; line-height: 1.9; }
+        .template-elegant-serif .header { text-align: center; border-top: 2px solid #333; border-bottom: 2px solid #333; padding: 20px 0; margin-bottom: 35px; }
+        .template-elegant-serif h1 { font-size: 2.7rem; font-weight: normal; font-style: italic; }
+        .template-elegant-serif h2 { font-size: 1.15rem; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; margin-top: 30px; }
+
+        /* 26. Bold: Diseño en negrita y llamativo */
+        .template-bold { font-family: 'Inter', sans-serif; padding: 30px; }
+        .template-bold .header { background: #000; color: white; padding: 30px; margin: -30px -30px 30px -30px; }
+        .template-bold h1 { font-size: 3rem; font-weight: 900; }
+        .template-bold h2 { font-size: 1.1rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; margin-top: 25px; color: #000; }
+
+        /* 27. Suave: Diseño suave y delicado */
+        .template-soft { font-family: 'Inter', sans-serif; padding: 40px; background: #fafafa; }
+        .template-soft .header { background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%); padding: 30px; border-radius: 10px; margin-bottom: 30px; }
+        .template-soft h1 { font-size: 2.4rem; font-weight: 600; color: #2d3436; }
+        .template-soft h2 { font-size: 1rem; font-weight: 600; color: #636e72; margin-top: 25px; }
+
+        /* 28. Compacto: Diseño compacto para máximo contenido */
+        .template-compact { font-family: 'Inter', sans-serif; padding: 25px; font-size: 0.85rem; }
+        .template-compact .header { text-align: center; border-bottom: 2px solid #e5e7eb; padding-bottom: 15px; margin-bottom: 20px; }
+        .template-compact h1 { font-size: 2rem; font-weight: 800; }
+        .template-compact h2 { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; color: #3b82f6; margin-top: 20px; }
+
+        /* 29. Espacioso: Diseño con mucho espacio */
+        .template-spacious { font-family: 'Inter', sans-serif; padding: 50px; }
+        .template-spacious .header { text-align: center; margin-bottom: 50px; }
+        .template-spacious h1 { font-size: 3rem; font-weight: 300; letter-spacing: -1px; }
+        .template-spacious h2 { font-size: 1rem; font-weight: 600; text-transform: uppercase; letter-spacing: 3px; color: #6b7280; margin-top: 40px; }
+
+        /* 30. Moderno Vertical: Layout vertical moderno */
+        .template-vertical { font-family: 'Inter', sans-serif; padding: 35px; }
+        .template-vertical .header { border-left: 6px solid #3b82f6; padding-left: 20px; margin-bottom: 35px; }
+        .template-vertical h1 { font-size: 2.5rem; font-weight: 800; color: #1e293b; }
+        .template-vertical h2 { font-size: 1rem; font-weight: 700; color: #3b82f6; text-transform: uppercase; margin-top: 30px; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; }
+
+        /* 31. Profesional Sidebar: Diseño con sidebar azul oscuro y foto */
+        .template-professional-sidebar { 
+            display: grid; 
+            grid-template-columns: 35% 65%; 
+            font-family: 'Inter', sans-serif; 
+            min-height: 297mm;
+            height: auto;
+            width: 100%;
+        }
+        .template-professional-sidebar .sidebar { 
+            background: #1e3a5f; 
+            color: white; 
+            padding: 30px 20px;
+            min-height: 297mm;
+        }
+        .template-professional-sidebar .main { 
+            padding: 30px; 
+            background-color: #fff;
+            min-height: 297mm;
+        }
+        .template-professional-sidebar .profile-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 3px solid rgba(255,255,255,0.3);
+            margin: 0 auto 20px;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .template-professional-sidebar .profile-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .template-professional-sidebar .header-right {
+            background: #1e3a5f;
+            color: white;
+            padding: 25px 30px;
+            margin: -30px -30px 30px -30px;
+        }
+        .template-professional-sidebar .header-right h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: white;
+        }
+        .template-professional-sidebar .header-right .contact-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        .template-professional-sidebar .sidebar h2 { 
+            color: #fff; 
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 25px; 
+            margin-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 8px;
+        }
+        .template-professional-sidebar .sidebar .section-content {
+            font-size: 12px;
+            line-height: 1.6;
+            color: rgba(255,255,255,0.9);
+        }
+        .template-professional-sidebar .main h2 { 
+            color: #1e3a5f; 
+            font-size: 1rem;
+            font-weight: 700; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 25px; 
+            margin-bottom: 12px;
+            border-bottom: 2px solid #1e3a5f;
+            padding-bottom: 5px;
+        }
+        .template-professional-sidebar .skill-bar {
+            margin-bottom: 12px;
+        }
+        .template-professional-sidebar .skill-bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            margin-bottom: 4px;
+            color: #333;
+        }
+        .template-professional-sidebar .skill-bar-progress {
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .template-professional-sidebar .skill-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #1e3a5f, #3b82f6);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        .template-professional-sidebar .course-item,
+        .template-professional-sidebar .practice-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .template-professional-sidebar .course-item:last-child,
+        .template-professional-sidebar .practice-item:last-child {
+            border-bottom: none;
+        }
+        .template-professional-sidebar .item-title {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        .template-professional-sidebar .item-date {
+            font-size: 11px;
+            opacity: 0.8;
+            font-style: italic;
+        }
+        .template-professional-sidebar .item-description {
+            font-size: 11px;
+            margin-top: 6px;
+            line-height: 1.5;
+        }
+        
+        /* Ajustes para impresión */
+        @media print {
+            body * { visibility: hidden; }
+            #preview-container, #preview-container * { visibility: visible; }
+            #preview-container { position: absolute; left: 0; top: 0; margin: 0; padding: 0; width: 100%; box-shadow: none; }
+            .no-print { display: none !important; }
+        }
+
+        /* Estilos del editor (drag & drop) */
+        .sortable-ghost { opacity: 0.4; background: #e2e8f0; }
+        .draggable-item { cursor: move; }
+        
+        /* Utilidades */
+        .hidden { display: none !important; }
+        .tab-active { border-bottom: 2px solid #2563eb; color: #2563eb; font-weight: 600; }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+            max-width: 300px;
+        }
+        .toast-success { background: #10b981; color: white; }
+        .toast-error { background: #ef4444; color: white; }
+        .toast-info { background: #3b82f6; color: white; }
+        .toast-warning { background: #f59e0b; color: white; }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Spinner de carga */
+        .spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            main { flex-direction: column; }
+            aside { width: 100% !important; max-height: 50vh; }
+            #preview-container { transform: scale(0.7) !important; }
+            header { flex-wrap: wrap; height: auto; padding: 0.5rem; }
+            header > div:last-child { flex-wrap: wrap; gap: 0.25rem; }
+        }
+
+        /* Modal de confirmación */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        /* Modo Oscuro */
+        body.dark-mode {
+            background-color: #111827;
+            color: #f3f4f6;
+        }
+        body.dark-mode header {
+            background-color: #1f2937 !important;
+            border-color: #374151 !important;
+        }
+        body.dark-mode aside {
+            background-color: #1f2937 !important;
+            border-color: #374151 !important;
+            color: #f3f4f6;
+        }
+        body.dark-mode .bg-white {
+            background-color: #1f2937 !important;
+        }
+        body.dark-mode .bg-gray-50 {
+            background-color: #374151 !important;
+        }
+        body.dark-mode .bg-gray-100 {
+            background-color: #4b5563 !important;
+        }
+        body.dark-mode .bg-gray-200 {
+            background-color: #6b7280 !important;
+        }
+        body.dark-mode .text-gray-900 {
+            color: #f3f4f6 !important;
+        }
+        body.dark-mode .text-gray-800 {
+            color: #e5e7eb !important;
+        }
+        body.dark-mode .text-gray-700 {
+            color: #d1d5db !important;
+        }
+        body.dark-mode .text-gray-600 {
+            color: #9ca3af !important;
+        }
+        body.dark-mode .text-gray-500 {
+            color: #6b7280 !important;
+        }
+        body.dark-mode .text-gray-400 {
+            color: #9ca3af !important;
+        }
+        body.dark-mode .text-gray-300 {
+            color: #d1d5db !important;
+        }
+        body.dark-mode .border-gray-200 {
+            border-color: #4b5563 !important;
+        }
+        body.dark-mode .border-gray-300 {
+            border-color: #6b7280 !important;
+        }
+        body.dark-mode input,
+        body.dark-mode textarea,
+        body.dark-mode select {
+            background-color: #374151 !important;
+            border-color: #4b5563 !important;
+            color: #f3f4f6 !important;
+        }
+        body.dark-mode input:focus,
+        body.dark-mode textarea:focus,
+        body.dark-mode select:focus {
+            border-color: #60a5fa !important;
+            background-color: #4b5563 !important;
+            outline-color: #60a5fa !important;
+        }
+        body.dark-mode input::placeholder,
+        body.dark-mode textarea::placeholder {
+            color: #9ca3af !important;
+        }
+        body.dark-mode #preview-scroll {
+            background-color: #111827 !important;
+        }
+        body.dark-mode .bg-gray-50.draggable-item {
+            background-color: #374151 !important;
+            border-color: #4b5563 !important;
+        }
+        body.dark-mode .tab-active {
+            border-color: #60a5fa !important;
+            color: #60a5fa !important;
+        }
+        body.dark-mode hr {
+            border-color: #4b5563 !important;
+        }
+        body.dark-mode .modal-content {
+            background-color: #1f2937 !important;
+            color: #f3f4f6 !important;
+        }
+        body.dark-mode .modal-overlay {
+            background: rgba(0,0,0,0.7) !important;
+        }
+        body.dark-mode #modal-cover-letter .bg-white {
+            background-color: #1f2937 !important;
+            color: #f3f4f6;
+        }
+        body.dark-mode #modal-cover-letter input,
+        body.dark-mode #modal-cover-letter textarea {
+            background-color: #374151 !important;
+            border-color: #4b5563 !important;
+            color: #f3f4f6 !important;
+        }
+        body.dark-mode .bg-blue-50 {
+            background-color: #1e3a8a !important;
+        }
+        body.dark-mode .bg-red-50 {
+            background-color: #7f1d1d !important;
+        }
+        body.dark-mode .bg-purple-50 {
+            background-color: #581c87 !important;
+        }
+        body.dark-mode button:hover {
+            opacity: 0.9;
+        }
+        body.dark-mode select {
+            background-color: #374151 !important;
+            color: #f3f4f6 !important;
+        }
+        body.dark-mode .a4-page {
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        body.dark-mode #dark-mode-btn {
+            color: #d1d5db !important;
+        }
+        body.dark-mode #dark-mode-btn:hover {
+            background-color: #4b5563 !important;
+            color: #f3f4f6 !important;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden text-sm text-slate-800">
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Navbar -->
+    <header class="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-6 z-20 shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="bg-blue-600 text-white p-2 rounded-lg">
+                <i data-feather="file-text" aria-hidden="true"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg leading-tight">CV Builder Pro</h1>
+                <p class="text-xs text-gray-500" id="last-saved-msg">Local & Seguro</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <!-- Selector de CV -->
+            <select id="cv-selector" class="border rounded px-2 py-1 bg-gray-50 text-xs" onchange="app.switchCV(this.value)" aria-label="Seleccionar CV">
+                <!-- Llenado dinámicamente -->
+            </select>
+            
+            <button onclick="app.createNewCV()" class="p-2 hover:bg-gray-100 rounded text-gray-600" title="Nuevo CV" aria-label="Crear nuevo CV">
+                <i data-feather="plus-circle" class="w-4 h-4" aria-hidden="true"></i>
+            </button>
+
+            <button onclick="app.duplicateCV()" class="p-2 hover:bg-gray-100 rounded text-gray-600" title="Duplicar CV" aria-label="Duplicar CV actual">
+                <i data-feather="copy" class="w-4 h-4" aria-hidden="true"></i>
+            </button>
+
+            <button onclick="app.deleteCurrentCV()" class="p-2 hover:bg-red-100 rounded text-red-600" title="Eliminar CV" aria-label="Eliminar CV actual">
+                <i data-feather="trash-2" class="w-4 h-4" aria-hidden="true"></i>
+            </button>
+            
+            <div class="h-6 w-px bg-gray-300 mx-1"></div>
+
+            <!-- Acciones -->
+            <button onclick="app.saveData()" class="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded text-xs font-medium transition" aria-label="Guardar CV">
+                <i data-feather="save" class="w-3 h-3" aria-hidden="true"></i> <span data-i18n="save">Guardar</span>
+            </button>
+            
+            <button onclick="app.exportPDF()" class="flex items-center gap-1 bg-red-50 text-red-600 hover:bg-red-100 px-3 py-2 rounded text-xs font-medium transition" aria-label="Exportar PDF">
+                <i data-feather="download" class="w-3 h-3" aria-hidden="true"></i> PDF
+            </button>
+            
+            <button onclick="app.exportDOCX()" class="flex items-center gap-1 bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-2 rounded text-xs font-medium transition" aria-label="Exportar DOCX">
+                <i data-feather="file" class="w-3 h-3" aria-hidden="true"></i> DOCX
+            </button>
+
+            <button onclick="app.toggleCoverLetter()" class="flex items-center gap-1 bg-purple-50 text-purple-600 hover:bg-purple-100 px-3 py-2 rounded text-xs font-medium transition" aria-label="Carta de presentación">
+                <i data-feather="mail" class="w-3 h-3" aria-hidden="true"></i> <span data-i18n="coverLetter">Carta</span>
+            </button>
+            
+            <!-- Settings Dropdown Trigger (Simplificado) -->
+            <button onclick="document.getElementById('fileInput').click()" class="text-gray-500 hover:text-gray-700" title="Importar JSON" aria-label="Importar JSON">
+                <i data-feather="upload" class="w-4 h-4" aria-hidden="true"></i>
+            </button>
+            <input type="file" id="fileInput" class="hidden" accept=".json" onchange="app.importJSON(this)">
+            
+            <button onclick="app.downloadJSON()" class="text-gray-500 hover:text-gray-700" title="Exportar JSON Backup" aria-label="Exportar JSON">
+                <i data-feather="code" class="w-4 h-4" aria-hidden="true"></i>
+            </button>
+
+            <button onclick="app.toggleDarkMode()" class="p-2 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700 transition" title="Modo Oscuro" aria-label="Alternar modo oscuro" id="dark-mode-btn">
+                <i data-feather="moon" class="w-4 h-4" aria-hidden="true" id="dark-mode-icon"></i>
+            </button>
+
+            <button onclick="app.toggleLanguage()" class="border rounded px-2 py-1 text-xs font-bold uppercase w-8 text-center" id="lang-btn" aria-label="Cambiar idioma">ES</button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex overflow-hidden relative">
+        
+        <!-- Columna Izquierda: Editor -->
+        <aside class="w-full md:w-1/2 lg:w-5/12 bg-white overflow-y-auto border-r border-gray-200 flex flex-col z-10">
+            <!-- Tabs del Editor -->
+            <div class="sticky top-0 bg-white z-10 border-b flex px-4 pt-2 gap-4 text-xs font-medium text-gray-500" role="tablist">
+                <button class="pb-2 tab-active" onclick="ui.switchTab('content')" id="tab-content" data-i18n="tabContent" role="tab" aria-selected="true">Contenido</button>
+                <button class="pb-2 hover:text-blue-600" onclick="ui.switchTab('design')" id="tab-design" data-i18n="tabDesign" role="tab" aria-selected="false">Diseño</button>
+            </div>
+
+            <!-- Panel Contenido -->
+            <div id="panel-content" class="p-6 space-y-8" role="tabpanel">
+                
+                <!-- Datos Personales -->
+                <section>
+                    <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <i data-feather="user" class="w-4 h-4" aria-hidden="true"></i> <span data-i18n="personalInfo">Datos Personales</span>
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2">
+                            <label class="block text-xs text-gray-500 mb-1" for="inp-name">Nombre Completo</label>
+                            <input type="text" id="inp-name" class="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Juan Pérez" required>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs text-gray-500 mb-1" for="inp-title">Título / Cargo</label>
+                            <input type="text" id="inp-title" class="w-full border rounded p-2 outline-none" placeholder="Desarrollador Web Full Stack">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1" for="inp-email">Email</label>
+                            <input type="email" id="inp-email" class="w-full border rounded p-2 outline-none" placeholder="juan@ejemplo.com" pattern="[^\s@]+@[^\s@]+\.[^\s@]+">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1" for="inp-phone">Teléfono</label>
+                            <input type="tel" id="inp-phone" class="w-full border rounded p-2 outline-none" placeholder="+34 600 000 000">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1" for="inp-city">Ciudad/País</label>
+                            <input type="text" id="inp-city" class="w-full border rounded p-2 outline-none" placeholder="Madrid, España">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1" for="inp-website">Web/Portfolio</label>
+                            <input type="text" id="inp-website" class="w-full border rounded p-2 outline-none" placeholder="www.juanperez.com">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs text-gray-500 mb-1" for="inp-summary">Perfil Profesional</label>
+                            <textarea id="inp-summary" rows="4" class="w-full border rounded p-2 outline-none resize-none" placeholder="Breve descripción de tu perfil..."></textarea>
+                        </div>
+                    </div>
+                </section>
+
+                <hr>
+
+                <!-- Experiencia -->
+                <section>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-gray-900 flex items-center gap-2">
+                            <i data-feather="briefcase" class="w-4 h-4" aria-hidden="true"></i> <span data-i18n="experience">Experiencia</span>
+                        </h3>
+                        <button onclick="app.addItem('experience')" class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded hover:bg-blue-100" data-i18n="add">+ Añadir</button>
+                    </div>
+                    <ul id="list-experience" class="space-y-4">
+                        <!-- Items generados dinámicamente -->
+                    </ul>
+                </section>
+
+                <hr>
+
+                <!-- Educación -->
+                <section>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-gray-900 flex items-center gap-2">
+                            <i data-feather="book" class="w-4 h-4" aria-hidden="true"></i> <span data-i18n="education">Educación</span>
+                        </h3>
+                        <button onclick="app.addItem('education')" class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded hover:bg-blue-100" data-i18n="add">+ Añadir</button>
+                    </div>
+                    <ul id="list-education" class="space-y-4">
+                        <!-- Items generados dinámicamente -->
+                    </ul>
+                </section>
+
+                <hr>
+
+                <!-- Habilidades -->
+                <section>
+                     <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-gray-900 flex items-center gap-2">
+                            <i data-feather="cpu" class="w-4 h-4" aria-hidden="true"></i> <span data-i18n="skills">Habilidades</span>
+                        </h3>
+                        <button onclick="app.addItem('skills')" class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded hover:bg-blue-100" data-i18n="add">+ Añadir</button>
+                    </div>
+                    <ul id="list-skills" class="grid grid-cols-1 gap-2">
+                        <!-- Items generados dinámicamente -->
+                    </ul>
+                </section>
+
+                 <hr>
+
+                <!-- Proyectos (Opcional) -->
+                <section>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-gray-900 flex items-center gap-2">
+                            <i data-feather="github" class="w-4 h-4" aria-hidden="true"></i> <span data-i18n="projects">Proyectos</span>
+                        </h3>
+                        <button onclick="app.addItem('projects')" class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded hover:bg-blue-100" data-i18n="add">+ Añadir</button>
+                    </div>
+                    <ul id="list-projects" class="space-y-4"></ul>
+                </section>
+            </div>
+
+            <!-- Panel Diseño -->
+            <div id="panel-design" class="hidden p-6 space-y-6 overflow-y-auto" role="tabpanel">
+                <div>
+                    <h3 class="font-bold mb-3" data-i18n="selectTemplate">Selecciona Plantilla</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-[70vh] overflow-y-auto pr-2">
+                        <button onclick="app.setTemplate('classic')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition" aria-label="Plantilla Clásica">
+                            <div class="h-16 bg-white border mb-1 flex flex-col p-1 shadow-sm">
+                                <div class="h-2 bg-gray-800 w-full mb-1"></div>
+                                <div class="h-1 bg-gray-300 w-3/4"></div>
+                            </div>
+                            <span class="text-xs font-bold">Clásico</span>
+                        </button>
+                        <button onclick="app.setTemplate('modern')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition" aria-label="Plantilla Moderna">
+                            <div class="h-16 bg-white border mb-1 flex p-0 shadow-sm overflow-hidden">
+                                <div class="w-1/3 bg-slate-700 h-full"></div>
+                                <div class="w-2/3 p-1"><div class="h-2 bg-blue-500 w-full mb-1"></div></div>
+                            </div>
+                            <span class="text-xs font-bold">Moderno</span>
+                        </button>
+                        <button onclick="app.setTemplate('creative')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition" aria-label="Plantilla Creativa">
+                            <div class="h-16 bg-white border mb-1 flex flex-col shadow-sm overflow-hidden">
+                                <div class="h-1/3 bg-gradient-to-r from-blue-500 to-purple-500 w-full"></div>
+                                <div class="p-1"><div class="h-1 bg-gray-300 w-1/2"></div></div>
+                            </div>
+                            <span class="text-xs font-bold">Creativo</span>
+                        </button>
+                        <button onclick="app.setTemplate('minimal')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-white border mb-1 flex flex-col p-2 shadow-sm">
+                                <div class="h-3 bg-gray-200 w-2/3 mb-1"></div>
+                                <div class="h-1 bg-gray-100 w-full"></div>
+                    </div>
+                            <span class="text-xs font-bold">Minimalista</span>
+                        </button>
+                        <button onclick="app.setTemplate('executive')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-white border mb-1 flex flex-col shadow-sm overflow-hidden">
+                                <div class="h-1/4 bg-black w-full"></div>
+                                <div class="p-1"><div class="h-2 bg-gray-800 w-full mb-1"></div></div>
+                            </div>
+                            <span class="text-xs font-bold">Ejecutivo</span>
+                        </button>
+                        <button onclick="app.setTemplate('tech')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-white border mb-1 flex shadow-sm overflow-hidden">
+                                <div class="w-2/3 p-1"><div class="h-2 bg-slate-900 w-full mb-1"></div></div>
+                                <div class="w-1/3 bg-slate-900 h-full"></div>
+                            </div>
+                            <span class="text-xs font-bold">Tech</span>
+                        </button>
+                        <button onclick="app.setTemplate('colorful')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-white border mb-1 flex flex-col shadow-sm overflow-hidden">
+                                <div class="h-1/2 bg-gradient-to-r from-pink-400 via-red-400 to-blue-400 w-full"></div>
+                                <div class="p-1"><div class="h-1 bg-gray-300 w-3/4"></div></div>
+                            </div>
+                            <span class="text-xs font-bold">Colorido</span>
+                        </button>
+                        <button onclick="app.setTemplate('elegant')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-white border mb-1 flex flex-col p-2 shadow-sm">
+                                <div class="h-2 border-t-2 border-b-2 border-gray-800 w-full mb-1"></div>
+                                <div class="h-1 bg-gray-300 w-2/3 mx-auto"></div>
+                            </div>
+                            <span class="text-xs font-bold">Elegante</span>
+                        </button>
+                        <button onclick="app.setTemplate('timeline')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-white border mb-1 flex p-2 shadow-sm">
+                                <div class="w-1 bg-blue-500 mr-2"></div>
+                                <div class="flex-1"><div class="h-2 bg-gray-800 w-full mb-1"></div><div class="h-1 bg-gray-300 w-3/4"></div></div>
+                            </div>
+                            <span class="text-xs font-bold">Timeline</span>
+                        </button>
+                        <button onclick="app.setTemplate('grid')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-white border mb-1 grid grid-cols-2 gap-1 p-1 shadow-sm">
+                                <div class="h-2 bg-blue-500 w-full"></div>
+                                <div class="h-2 bg-gray-300 w-full"></div>
+                            </div>
+                            <span class="text-xs font-bold">Grid</span>
+                        </button>
+                        <button onclick="app.setTemplate('sidebar-right')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-white border mb-1 flex shadow-sm overflow-hidden">
+                                <div class="w-2/3 p-1"><div class="h-2 bg-slate-800 w-full mb-1"></div></div>
+                                <div class="w-1/3 bg-slate-800 h-full"></div>
+                            </div>
+                            <span class="text-xs font-bold">Sidebar Dcho</span>
+                        </button>
+                        <button onclick="app.setTemplate('single')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-white border mb-1 flex flex-col p-2 shadow-sm">
+                                <div class="h-3 bg-gray-800 w-full mb-1"></div>
+                                <div class="h-1 bg-gray-300 w-full"></div>
+                            </div>
+                            <span class="text-xs font-bold">Una Columna</span>
+                        </button>
+                        <button onclick="app.setTemplate('blue-accent')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-white border mb-1 flex shadow-sm">
+                                <div class="w-1 bg-blue-600"></div>
+                                <div class="flex-1 p-1"><div class="h-2 bg-gray-800 w-full mb-1"></div></div>
+                            </div>
+                            <span class="text-xs font-bold">Acento Azul</span>
+                        </button>
+                        <button onclick="app.setTemplate('green-accent')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-white border mb-1 flex shadow-sm">
+                                <div class="w-1 bg-green-600"></div>
+                                <div class="flex-1 p-1"><div class="h-2 bg-gray-800 w-full mb-1"></div></div>
+                            </div>
+                            <span class="text-xs font-bold">Acento Verde</span>
+                        </button>
+                        <button onclick="app.setTemplate('red-accent')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-white border mb-1 flex shadow-sm">
+                                <div class="w-1 bg-red-600"></div>
+                                <div class="flex-1 p-1"><div class="h-2 bg-gray-800 w-full mb-1"></div></div>
+                            </div>
+                            <span class="text-xs font-bold">Acento Rojo</span>
+                        </button>
+                        <button onclick="app.setTemplate('purple-accent')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-white border mb-1 flex shadow-sm">
+                                <div class="w-1 bg-purple-600"></div>
+                                <div class="flex-1 p-1"><div class="h-2 bg-gray-800 w-full mb-1"></div></div>
+                            </div>
+                            <span class="text-xs font-bold">Acento Púrpura</span>
+                        </button>
+                        <button onclick="app.setTemplate('startup')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-white border mb-1 flex flex-col shadow-sm overflow-hidden">
+                                <div class="h-1/2 bg-gradient-to-r from-purple-500 to-pink-500 w-full"></div>
+                                <div class="p-1"><div class="h-1 bg-gray-300 w-2/3"></div></div>
+                            </div>
+                            <span class="text-xs font-bold">Startup</span>
+                        </button>
+                        <button onclick="app.setTemplate('corporate')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-white border mb-1 flex flex-col shadow-sm overflow-hidden">
+                                <div class="h-1/4 bg-blue-900 w-full"></div>
+                                <div class="p-1"><div class="h-2 bg-gray-800 w-full mb-1"></div></div>
+                            </div>
+                            <span class="text-xs font-bold">Corporativo</span>
+                        </button>
+                        <button onclick="app.setTemplate('gradient')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-white border mb-1 flex flex-col shadow-sm overflow-hidden">
+                                <div class="h-1/2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 w-full"></div>
+                                <div class="p-1"><div class="h-1 bg-gray-300 w-3/4"></div></div>
+                            </div>
+                            <span class="text-xs font-bold">Gradiente</span>
+                        </button>
+                        <button onclick="app.setTemplate('classic-modern')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-white border mb-1 flex flex-col p-2 shadow-sm">
+                                <div class="h-2 border-t-2 border-b-2 border-gray-800 w-full mb-1"></div>
+                                <div class="h-1 bg-gray-400 w-2/3 mx-auto"></div>
+                            </div>
+                            <span class="text-xs font-bold">Clásico Mod</span>
+                        </button>
+                        <button onclick="app.setTemplate('minimal-color')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-white border mb-1 flex shadow-sm">
+                                <div class="w-1 bg-blue-500"></div>
+                                <div class="flex-1 p-1"><div class="h-2 bg-gray-200 w-2/3 mb-1"></div></div>
+                            </div>
+                            <span class="text-xs font-bold">Minimal Color</span>
+                        </button>
+                        <button onclick="app.setTemplate('tech-dark')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-slate-900 border mb-1 flex shadow-sm overflow-hidden">
+                                <div class="w-1/3 bg-slate-800 h-full"></div>
+                                <div class="w-2/3 p-1"><div class="h-2 bg-blue-400 w-full mb-1"></div></div>
+                            </div>
+                            <span class="text-xs font-bold">Tech Dark</span>
+                        </button>
+                        <button onclick="app.setTemplate('professional-blue')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-white border mb-1 flex flex-col shadow-sm overflow-hidden">
+                                <div class="h-1/3 bg-blue-900 w-full"></div>
+                                <div class="p-1"><div class="h-2 bg-gray-800 w-full mb-1"></div></div>
+                            </div>
+                            <span class="text-xs font-bold">Prof Azul</span>
+                        </button>
+                        <button onclick="app.setTemplate('clean')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-white border mb-1 flex flex-col p-2 shadow-sm">
+                                <div class="h-3 bg-gray-900 w-3/4 mx-auto mb-1"></div>
+                                <div class="h-1 bg-gray-300 w-full"></div>
+                            </div>
+                            <span class="text-xs font-bold">Limpio</span>
+                        </button>
+                        <button onclick="app.setTemplate('elegant-serif')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-white border mb-1 flex flex-col p-2 shadow-sm">
+                                <div class="h-2 border-t border-b border-gray-800 w-full mb-1"></div>
+                                <div class="h-1 bg-gray-400 w-1/2 mx-auto"></div>
+                            </div>
+                            <span class="text-xs font-bold">Elegante Serif</span>
+                        </button>
+                        <button onclick="app.setTemplate('bold')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-white border mb-1 flex flex-col shadow-sm overflow-hidden">
+                                <div class="h-1/2 bg-black w-full"></div>
+                                <div class="p-1"><div class="h-2 bg-gray-900 w-full mb-1"></div></div>
+                            </div>
+                            <span class="text-xs font-bold">Bold</span>
+                        </button>
+                        <button onclick="app.setTemplate('soft')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-white border mb-1 flex flex-col shadow-sm overflow-hidden">
+                                <div class="h-1/2 bg-gradient-to-r from-yellow-200 to-orange-300 w-full"></div>
+                                <div class="p-1"><div class="h-1 bg-gray-300 w-2/3"></div></div>
+                            </div>
+                            <span class="text-xs font-bold">Suave</span>
+                        </button>
+                        <button onclick="app.setTemplate('compact')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-white border mb-1 flex flex-col p-1 shadow-sm">
+                                <div class="h-2 bg-gray-800 w-full mb-0.5"></div>
+                                <div class="h-1 bg-gray-300 w-full mb-0.5"></div>
+                                <div class="h-1 bg-gray-200 w-3/4"></div>
+                            </div>
+                            <span class="text-xs font-bold">Compacto</span>
+                        </button>
+                        <button onclick="app.setTemplate('spacious')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-white border mb-1 flex flex-col p-3 shadow-sm">
+                                <div class="h-2 bg-gray-200 w-1/2 mb-2"></div>
+                                <div class="h-1 bg-gray-100 w-1/3"></div>
+                            </div>
+                            <span class="text-xs font-bold">Espacioso</span>
+                        </button>
+                        <button onclick="app.setTemplate('vertical')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition">
+                            <div class="h-16 bg-white border mb-1 flex shadow-sm">
+                                <div class="w-1.5 bg-blue-500"></div>
+                                <div class="flex-1 p-1"><div class="h-2 bg-gray-800 w-full mb-1"></div></div>
+                            </div>
+                            <span class="text-xs font-bold">Vertical</span>
+                        </button>
+                        <button onclick="app.setTemplate('professional-sidebar')" class="border-2 border-transparent hover:border-blue-500 rounded p-2 bg-gray-50 text-left transition" aria-label="Plantilla Profesional Sidebar">
+                            <div class="h-16 bg-white border mb-1 flex shadow-sm overflow-hidden">
+                                <div class="w-2/5 bg-blue-900 h-full"></div>
+                                <div class="w-3/5 p-1"><div class="h-2 bg-blue-900 w-full mb-1"></div><div class="h-1 bg-gray-300 w-3/4"></div></div>
+                            </div>
+                            <span class="text-xs font-bold">Profesional Sidebar</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Columna Derecha: Previsualización -->
+        <main class="w-full md:w-1/2 lg:w-7/12 bg-gray-100 flex justify-center overflow-y-auto p-4 md:p-8" id="preview-scroll">
+            
+            <!-- Contenedor Hoja A4 -->
+            <div id="preview-container" class="a4-page template-modern origin-top transform scale-100 transition-transform duration-200">
+                <!-- El contenido se renderiza aquí vía JS -->
+            </div>
+
+            <!-- Controles flotantes de Zoom (Móvil/Desktop) -->
+            <div class="fixed bottom-6 right-6 flex flex-col gap-2 bg-white rounded shadow p-1 z-20">
+                <button onclick="ui.zoom(0.1)" class="p-2 hover:bg-gray-100" aria-label="Acercar"><i data-feather="zoom-in" class="w-4 h-4" aria-hidden="true"></i></button>
+                <button onclick="ui.zoom(-0.1)" class="p-2 hover:bg-gray-100" aria-label="Alejar"><i data-feather="zoom-out" class="w-4 h-4" aria-hidden="true"></i></button>
+                <div class="text-xs text-center px-2 py-1 text-gray-600" id="zoom-indicator">100%</div>
+            </div>
+        </main>
+    </main>
+
+    <!-- Modal Carta Presentación -->
+    <div id="modal-cover-letter" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl flex flex-col max-h-[90vh]">
+            <div class="p-4 border-b flex justify-between items-center">
+                <h3 class="font-bold" data-i18n="coverLetterTitle">Generador de Carta de Presentación</h3>
+                <button onclick="app.toggleCoverLetter()" class="text-gray-500 hover:text-red-500" aria-label="Cerrar"><i data-feather="x" aria-hidden="true"></i></button>
+            </div>
+            <div class="p-4 overflow-y-auto flex-1 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="cl-company" placeholder="Empresa Destino" class="border p-2 rounded text-sm w-full">
+                    <input type="text" id="cl-role" placeholder="Puesto Solicitado" class="border p-2 rounded text-sm w-full">
+                    <input type="text" id="cl-manager" placeholder="Responsable de Selección (Opcional)" class="border p-2 rounded text-sm w-full col-span-2">
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="coverLetter.generateText()" class="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded hover:bg-blue-200" data-i18n="autoGenerate">✨ Autogenerar Texto</button>
+                </div>
+                <textarea id="cl-body" class="w-full border p-3 rounded h-64 text-sm leading-relaxed" placeholder="Escribe tu carta aquí..."></textarea>
+            </div>
+            <div class="p-4 border-t bg-gray-50 flex justify-end gap-2">
+                <button onclick="coverLetter.exportDOCX()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700" data-i18n="downloadDOCX">Descargar DOCX</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts de Lógica -->
+    <script>
+        // --- 1. UTILIDADES Y SEGURIDAD ---
+        const UTILS = {
+            uuid: () => Date.now().toString(36) + Math.random().toString(36).substring(2),
+            debounce: (func, wait) => {
+                let timeout;
+                return function(...args) {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(this, args), wait);
+                };
+            },
+            escapeHTML: (str) => {
+                if (!str) return '';
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            },
+            validateEmail: (email) => {
+                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            },
+            validateURL: (url) => {
+                if (!url) return true;
+                try {
+                    new URL(url.startsWith('http') ? url : `https://${url}`);
+                    return true;
+                } catch { return false; }
+            }
+        };
+
+        // --- 2. SISTEMA DE NOTIFICACIONES ---
+        const Toast = {
+            show: (message, type = 'info', duration = 3000) => {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                toast.className = `toast toast-${type}`;
+                toast.textContent = message;
+                container.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.style.animation = 'slideIn 0.3s ease-out reverse';
+                    setTimeout(() => toast.remove(), 300);
+                }, duration);
+            },
+            success: (msg) => Toast.show(msg, 'success'),
+            error: (msg) => Toast.show(msg, 'error'),
+            info: (msg) => Toast.show(msg, 'info'),
+            warning: (msg) => Toast.show(msg, 'warning')
+        };
+
+        // --- 3. MODAL DE CONFIRMACIÓN ---
+        const Modal = {
+            confirm: (message, onConfirm, onCancel) => {
+                const overlay = document.createElement('div');
+                overlay.className = 'modal-overlay';
+                overlay.innerHTML = `
+                    <div class="modal-content">
+                        <h3 class="font-bold mb-4">${UTILS.escapeHTML(message)}</h3>
+                        <div class="flex gap-2 justify-end">
+                            <button class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
+                            <button class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700" onclick="this.closest('.modal-overlay').remove(); (${onConfirm.toString()})()">Confirmar</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) overlay.remove();
+                });
+            }
+        };
+
+        // --- 4. INTERNACIONALIZACIÓN COMPLETA ---
+        const TEXTS = {
+            es: {
+                personalInfo: "Datos Personales",
+                experience: "Experiencia Laboral",
+                education: "Educación",
+                skills: "Habilidades",
+                projects: "Proyectos",
+                save: "Guardar",
+                coverLetter: "Carta",
+                tabContent: "Contenido",
+                tabDesign: "Diseño",
+                selectTemplate: "Selecciona Plantilla",
+                present: "Actualidad",
+                contact: "Contacto",
+                languages: "Idiomas",
+                add: "+ Añadir",
+                deleteConfirm: "¿Eliminar este elemento?",
+                deleteCVConfirm: "¿Eliminar este CV? Esta acción no se puede deshacer.",
+                generatingPDF: "Generando PDF...",
+                generatingDOCX: "Generando DOCX...",
+                saved: "Guardado",
+                savedSuccess: "CV guardado correctamente",
+                importSuccess: "CV importado correctamente",
+                importError: "Error al leer el archivo JSON. Verifica el formato.",
+                exportError: "Error al exportar. Revisa tu conexión.",
+                duplicateSuccess: "CV duplicado correctamente",
+                deleteSuccess: "CV eliminado correctamente",
+                coverLetterTitle: "Generador de Carta de Presentación",
+                autoGenerate: "✨ Autogenerar Texto",
+                downloadDOCX: "Descargar DOCX",
+                storageError: "Espacio de almacenamiento lleno. Elimina CVs antiguos.",
+                invalidData: "Datos inválidos. Verifica el formato.",
+                currentJob: "Trabajo actual"
+            },
+            en: {
+                personalInfo: "Personal Details",
+                experience: "Work Experience",
+                education: "Education",
+                skills: "Skills",
+                projects: "Projects",
+                save: "Save",
+                coverLetter: "Cover Letter",
+                tabContent: "Content",
+                tabDesign: "Design",
+                selectTemplate: "Select Template",
+                present: "Present",
+                contact: "Contact",
+                languages: "Languages",
+                add: "+ Add",
+                deleteConfirm: "Delete this item?",
+                deleteCVConfirm: "Delete this CV? This action cannot be undone.",
+                generatingPDF: "Generating PDF...",
+                generatingDOCX: "Generating DOCX...",
+                saved: "Saved",
+                savedSuccess: "CV saved successfully",
+                importSuccess: "CV imported successfully",
+                importError: "Error reading JSON file. Check the format.",
+                exportError: "Export error. Check your connection.",
+                duplicateSuccess: "CV duplicated successfully",
+                deleteSuccess: "CV deleted successfully",
+                coverLetterTitle: "Cover Letter Generator",
+                autoGenerate: "✨ Auto-generate Text",
+                downloadDOCX: "Download DOCX",
+                storageError: "Storage space full. Delete old CVs.",
+                invalidData: "Invalid data. Check the format.",
+                currentJob: "Current job"
+            }
+        };
+
+        const t = (key) => {
+            const lang = state.data?.lang || 'es';
+            return TEXTS[lang][key] || key;
+        };
+
+        // --- 5. DATOS POR DEFECTO ---
+        const defaultData = {
+            id: UTILS.uuid(),
+            title: "Mi CV Profesional",
+            template: "modern",
+            lang: "es",
+            meta: { created: new Date().toISOString() },
+            personal: {
+                name: "Alex Dev",
+                title: "Senior Frontend Engineer",
+                email: "alex@example.com",
+                phone: "+34 655 123 456",
+                city: "Barcelona, España",
+                website: "github.com/alexdev",
+                summary: "Desarrollador apasionado con más de 5 años de experiencia creando aplicaciones web escalables y accesibles. Especialista en React, JavaScript moderno y optimización de rendimiento."
+            },
+            experience: [
+                {
+                    id: "exp1",
+                    company: "Tech Solutions Inc.",
+                    role: "Senior Developer",
+                    start: "2021-03",
+                    end: "",
+                    current: true,
+                    description: "Liderazgo técnico del equipo frontend. Implementación de CI/CD y mejora del rendimiento de la app principal en un 40%."
+                },
+                {
+                    id: "exp2",
+                    company: "Web Agency",
+                    role: "Frontend Developer",
+                    start: "2018-06",
+                    end: "2021-02",
+                    current: false,
+                    description: "Desarrollo de sitios web corporativos para clientes internacionales. Uso intensivo de HTML5, CSS3 y Vanilla JS."
+                }
+            ],
+            education: [
+                {
+                    id: "edu1",
+                    school: "Universidad Politécnica",
+                    degree: "Ingeniería Informática",
+                    start: "2014",
+                    end: "2018",
+                    description: "Mención de honor en Proyecto Final de Carrera."
+                }
+            ],
+            skills: [
+                { id: "sk1", name: "JavaScript / ES6+", level: "Avanzado" },
+                { id: "sk2", name: "React & Redux", level: "Avanzado" },
+                { id: "sk3", name: "Tailwind CSS", level: "Medio" },
+                { id: "sk4", name: "Node.js", level: "Básico" }
+            ],
+            projects: []
+        };
+
+        // --- 6. ESTADO GLOBAL ---
+        let state = {
+            cvs: [],
+            currentId: null,
+            data: JSON.parse(JSON.stringify(defaultData)),
+            zoom: 1
+        };
+
+        // --- 7. LÓGICA DE APLICACIÓN ---
+        const app = {
+            init: () => {
+                try {
+                app.loadFromStorage();
+                app.initDarkMode(); // Inicializar modo oscuro
+                feather.replace();
+                ui.initDragAndDrop();
+                
+                // Binding de inputs a estado con debounce
+                const inputs = document.querySelectorAll('input, textarea');
+                inputs.forEach(input => {
+                    input.addEventListener('input', UTILS.debounce(app.handleInput, 300));
+                });
+
+                    // Auto-guardado
+                    setInterval(() => {
+                        if (state.currentId) app.saveData();
+                    }, 30000); // Auto-guardar cada 30 segundos
+
+                // Render inicial
+                app.renderEditor();
+                app.renderPreview();
+                app.updateCVSelector();
+                    ui.updateZoomIndicator();
+                } catch (error) {
+                    console.error('Error inicializando app:', error);
+                    Toast.error('Error al inicializar la aplicación');
+                }
+            },
+
+            initDarkMode: () => {
+                const darkMode = localStorage.getItem('darkMode') === 'true';
+                if (darkMode) {
+                    document.body.classList.add('dark-mode');
+                    const icon = document.getElementById('dark-mode-icon');
+                    if (icon) {
+                        icon.setAttribute('data-feather', 'sun');
+                    }
+                }
+            },
+
+            toggleDarkMode: () => {
+                const isDark = document.body.classList.toggle('dark-mode');
+                localStorage.setItem('darkMode', isDark.toString());
+                
+                const icon = document.getElementById('dark-mode-icon');
+                if (icon) {
+                    icon.setAttribute('data-feather', isDark ? 'sun' : 'moon');
+                    feather.replace();
+                }
+                
+                Toast.info(isDark ? 'Modo oscuro activado' : 'Modo claro activado');
+            },
+
+            loadFromStorage: () => {
+                try {
+                const stored = localStorage.getItem('cv_builder_data');
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                    state.cvs = parsed;
+                            state.data = JSON.parse(JSON.stringify(parsed[0]));
+                        state.currentId = state.data.id;
+                    } else {
+                        state.cvs = [state.data];
+                        state.currentId = state.data.id;
+                    }
+                } else {
+                    state.cvs = [state.data];
+                    state.currentId = state.data.id;
+                    app.saveData();
+                    }
+                } catch (error) {
+                    console.error('Error cargando desde storage:', error);
+                    Toast.error('Error al cargar datos guardados');
+                    state.cvs = [state.data];
+                    state.currentId = state.data.id;
+                }
+            },
+
+            saveData: () => {
+                try {
+                    // Validar datos antes de guardar
+                    if (!state.data.personal.name) {
+                        Toast.warning('El nombre es requerido');
+                        return;
+                    }
+
+                // Actualizar timestamp
+                    if (!state.data.meta) state.data.meta = {};
+                state.data.meta.updated = new Date().toISOString();
+                
+                // Actualizar array global
+                const index = state.cvs.findIndex(c => c.id === state.data.id);
+                if (index >= 0) {
+                        state.cvs[index] = JSON.parse(JSON.stringify(state.data));
+                } else {
+                        state.cvs.push(JSON.parse(JSON.stringify(state.data)));
+                }
+
+                localStorage.setItem('cv_builder_data', JSON.stringify(state.cvs));
+                
+                // Feedback visual
+                const msg = document.getElementById('last-saved-msg');
+                const now = new Date();
+                    msg.textContent = `${t('saved')}: ${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
+                
+                // Re-render select
+                app.updateCVSelector();
+                } catch (error) {
+                    if (error.name === 'QuotaExceededError') {
+                        Toast.error(t('storageError'));
+                    } else {
+                        console.error('Error guardando:', error);
+                        Toast.error('Error al guardar');
+                    }
+                }
+            },
+
+            handleInput: (e) => {
+                try {
+                const id = e.target.id;
+                const val = e.target.value;
+
+                    // Validación de email
+                    if (id === 'inp-email' && val && !UTILS.validateEmail(val)) {
+                        e.target.setCustomValidity('Email inválido');
+                        return;
+                    } else {
+                        e.target.setCustomValidity('');
+                    }
+
+                    // Validación de URL
+                    if (id === 'inp-website' && val && !UTILS.validateURL(val)) {
+                        e.target.setCustomValidity('URL inválida');
+                        return;
+                    } else if (id === 'inp-website') {
+                        e.target.setCustomValidity('');
+                    }
+
+                if (id.startsWith('inp-')) {
+                    const key = id.replace('inp-', '');
+                    state.data.personal[key] = val;
+                } else if (id.startsWith('list-inp-')) {
+                        const parts = id.split('-');
+                        if (parts.length >= 4) {
+                            const section = parts[2];
+                            const field = parts[3];
+                            const itemId = parts.slice(4).join('-');
+                    const list = state.data[section];
+                            if (list) {
+                    const item = list.find(i => i.id === itemId);
+                    if (item) item[field] = val;
+                            }
+                        }
+                }
+                
+                app.renderPreview();
+                    app.saveData();
+                } catch (error) {
+                    console.error('Error en handleInput:', error);
+                }
+            },
+
+            addItem: (section) => {
+                const newItem = { id: UTILS.uuid() };
+                if (section === 'experience') {
+                    newItem.company = ""; 
+                    newItem.role = ""; 
+                    newItem.start = ""; 
+                    newItem.current = false; 
+                    newItem.description = "";
+                } else if (section === 'education') {
+                    newItem.school = ""; 
+                    newItem.degree = ""; 
+                    newItem.start = ""; 
+                    newItem.end = "";
+                    newItem.description = "";
+                } else if (section === 'skills') {
+                    newItem.name = ""; 
+                    newItem.level = "Medio";
+                } else if (section === 'projects') {
+                    newItem.title = ""; 
+                    newItem.description = ""; 
+                    newItem.link = "";
+                }
+                
+                if (!state.data[section]) state.data[section] = [];
+                state.data[section].push(newItem);
+                app.renderEditor();
+                app.renderPreview();
+                app.saveData();
+            },
+
+            removeItem: (section, id) => {
+                Modal.confirm(t('deleteConfirm'), () => {
+                    state.data[section] = state.data[section].filter(i => i.id !== id);
+                    app.renderEditor();
+                    app.renderPreview();
+                    app.saveData();
+                });
+            },
+
+            updateOrder: (section, newOrderIds) => {
+                const oldList = state.data[section];
+                const newList = [];
+                newOrderIds.forEach(id => {
+                    const item = oldList.find(i => i.id === id);
+                    if (item) newList.push(item);
+                });
+                state.data[section] = newList;
+                app.renderPreview();
+                app.saveData();
+            },
+
+            setTemplate: (tpl) => {
+                state.data.template = tpl;
+                app.renderPreview();
+                app.saveData();
+                ui.switchTab('design');
+            },
+
+            createNewCV: () => {
+                const newCV = JSON.parse(JSON.stringify(defaultData));
+                newCV.id = UTILS.uuid();
+                newCV.title = `${t('newCV')} ${state.cvs.length + 1}`;
+                newCV.personal.name = "";
+                newCV.meta.created = new Date().toISOString();
+                state.data = newCV;
+                state.currentId = newCV.id;
+                state.cvs.push(newCV);
+                app.renderEditor();
+                app.renderPreview();
+                app.saveData();
+                app.updateCVSelector();
+                Toast.success(t('savedSuccess'));
+            },
+
+            duplicateCV: () => {
+                const duplicated = JSON.parse(JSON.stringify(state.data));
+                duplicated.id = UTILS.uuid();
+                duplicated.title = `${state.data.title || state.data.personal.name || 'CV'} (Copia)`;
+                duplicated.meta.created = new Date().toISOString();
+                state.cvs.push(duplicated);
+                state.data = duplicated;
+                state.currentId = duplicated.id;
+                app.renderEditor();
+                app.renderPreview();
+                app.saveData();
+                app.updateCVSelector();
+                Toast.success(t('duplicateSuccess'));
+            },
+
+            deleteCurrentCV: () => {
+                if (state.cvs.length <= 1) {
+                    Toast.warning('No puedes eliminar el último CV');
+                    return;
+                }
+                Modal.confirm(t('deleteCVConfirm'), () => {
+                    state.cvs = state.cvs.filter(c => c.id !== state.currentId);
+                    if (state.cvs.length > 0) {
+                        state.data = JSON.parse(JSON.stringify(state.cvs[0]));
+                        state.currentId = state.data.id;
+                    } else {
+                        state.data = JSON.parse(JSON.stringify(defaultData));
+                        state.currentId = state.data.id;
+                        state.cvs = [state.data];
+                    }
+                    app.renderEditor();
+                    app.renderPreview();
+                    app.saveData();
+                    app.updateCVSelector();
+                    Toast.success(t('deleteSuccess'));
+                });
+            },
+
+            switchCV: (id) => {
+                const cv = state.cvs.find(c => c.id === id);
+                if (cv) {
+                    state.data = JSON.parse(JSON.stringify(cv));
+                    state.currentId = id;
+                    app.renderEditor();
+                    app.renderPreview();
+                }
+            },
+            
+            updateCVSelector: () => {
+                const sel = document.getElementById('cv-selector');
+                if (!sel) return;
+                sel.innerHTML = '';
+                state.cvs.forEach(cv => {
+                    const opt = document.createElement('option');
+                    opt.value = cv.id;
+                    opt.text = cv.title || cv.personal.name || "Sin Título";
+                    if (cv.id === state.currentId) opt.selected = true;
+                    sel.appendChild(opt);
+                });
+            },
+
+            toggleLanguage: () => {
+                state.data.lang = state.data.lang === 'es' ? 'en' : 'es';
+                document.getElementById('lang-btn').textContent = state.data.lang.toUpperCase();
+                
+                // Actualizar labels de UI
+                document.querySelectorAll('[data-i18n]').forEach(el => {
+                    const key = el.getAttribute('data-i18n');
+                    if(TEXTS[state.data.lang][key]) {
+                        el.textContent = TEXTS[state.data.lang][key];
+                    }
+                });
+                
+                app.renderPreview();
+                app.saveData();
+            },
+
+            // --- EXPORTACIÓN ---
+            
+            exportPDF: async () => {
+                try {
+                const element = document.getElementById('preview-container');
+                    const btn = event.target.closest('button');
+                    const originalHTML = btn.innerHTML;
+                    
+                    btn.disabled = true;
+                    btn.innerHTML = `<span class="spinner"></span> ${t('generatingPDF')}`;
+                    
+                const opt = {
+                    margin: 0,
+                        filename: `${(state.data.personal.name || 'CV').replace(/\s/g,'_')}_CV.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                        html2canvas: { scale: 2, useCORS: true, logging: false },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+                
+                    await html2pdf().set(opt).from(element).save();
+                    Toast.success('PDF generado correctamente');
+                } catch (error) {
+                    console.error('Error exportando PDF:', error);
+                    Toast.error(t('exportError'));
+                } finally {
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = originalHTML;
+                        feather.replace();
+                    }
+                }
+            },
+
+            exportDOCX: async () => {
+                try {
+                if (!window.docx) {
+                        Toast.error('Librería docx no cargada. Revisa tu conexión.');
+                    return;
+                }
+                    
+                    const btn = event.target.closest('button');
+                    const originalHTML = btn.innerHTML;
+                    
+                    btn.disabled = true;
+                    btn.innerHTML = `<span class="spinner"></span> ${t('generatingDOCX')}`;
+                    
+                    const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } = docx;
+                const children = [];
+
+                // Nombre
+                children.push(new Paragraph({
+                        text: state.data.personal.name || 'CV',
+                    heading: HeadingLevel.HEADING_1,
+                    alignment: AlignmentType.CENTER
+                }));
+
+                // Contacto
+                    const contactInfo = [
+                        state.data.personal.email,
+                        state.data.personal.phone,
+                        state.data.personal.city
+                    ].filter(Boolean).join(' | ');
+                    
+                    if (contactInfo) {
+                children.push(new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                            children: [new TextRun(contactInfo)]
+                }));
+                    }
+
+                    children.push(new Paragraph({ text: "" }));
+
+                // Perfil
+                if(state.data.personal.summary) {
+                    children.push(new Paragraph({
+                            text: t('personalInfo').toUpperCase(),
+                        heading: HeadingLevel.HEADING_2,
+                        thematicBreak: true
+                    }));
+                    children.push(new Paragraph({ text: state.data.personal.summary }));
+                     children.push(new Paragraph({ text: "" }));
+                }
+
+                // Experiencia
+                if(state.data.experience.length > 0) {
+                     children.push(new Paragraph({
+                            text: t('experience').toUpperCase(),
+                        heading: HeadingLevel.HEADING_2,
+                        thematicBreak: true
+                    }));
+                    
+                    state.data.experience.forEach(exp => {
+                         children.push(new Paragraph({
+                            children: [
+                                    new TextRun({ text: exp.role || '', bold: true, size: 24 }),
+                                    new TextRun({ text: exp.company ? ` en ${exp.company}` : '', italics: true })
+                            ]
+                        }));
+                            const period = `${exp.start || ''} - ${exp.current ? t('present') : (exp.end || '')}`;
+                            children.push(new Paragraph({ text: period, color: "666666" }));
+                            if (exp.description) {
+                                children.push(new Paragraph({ text: exp.description }));
+                            }
+                            children.push(new Paragraph({ text: "" }));
+                        });
+                    }
+
+                    // Educación
+                    if(state.data.education.length > 0) {
+                        children.push(new Paragraph({
+                            text: t('education').toUpperCase(),
+                            heading: HeadingLevel.HEADING_2,
+                            thematicBreak: true
+                        }));
+                        
+                        state.data.education.forEach(edu => {
+                            children.push(new Paragraph({
+                                children: [
+                                    new TextRun({ text: edu.school || '', bold: true }),
+                                    new TextRun({ text: ` - ${edu.degree || ''}`, italics: true })
+                                ]
+                            }));
+                            if (edu.start || edu.end) {
+                                children.push(new Paragraph({ text: `${edu.start || ''} - ${edu.end || ''}`, color: "666666" }));
+                            }
+                            if (edu.description) {
+                                children.push(new Paragraph({ text: edu.description }));
+                            }
+                        children.push(new Paragraph({ text: "" }));
+                    });
+                }
+
+                    // Habilidades
+                    if(state.data.skills.length > 0) {
+                        children.push(new Paragraph({
+                            text: t('skills').toUpperCase(),
+                            heading: HeadingLevel.HEADING_2,
+                            thematicBreak: true
+                        }));
+                        const skillsText = state.data.skills.map(s => `${s.name} (${s.level})`).join(', ');
+                        children.push(new Paragraph({ text: skillsText }));
+                    }
+
+                const doc = new Document({
+                        sections: [{ properties: {}, children: children }],
+                });
+
+                    const blob = await Packer.toBlob(doc);
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    document.body.appendChild(a);
+                    a.style = "display: none";
+                    a.href = url;
+                    a.download = `${(state.data.personal.name || 'CV').replace(/\s/g,'_')}.docx`;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    Toast.success('DOCX generado correctamente');
+                } catch (error) {
+                    console.error('Error exportando DOCX:', error);
+                    Toast.error(t('exportError'));
+                } finally {
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = originalHTML;
+                        feather.replace();
+                    }
+                }
+            },
+
+            downloadJSON: () => {
+                try {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.data, null, 2));
+                const a = document.createElement('a');
+                a.href = dataStr;
+                    a.download = `cv_backup_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                    Toast.success('JSON exportado correctamente');
+                } catch (error) {
+                    console.error('Error exportando JSON:', error);
+                    Toast.error('Error al exportar JSON');
+                }
+            },
+
+            importJSON: (input) => {
+                const file = input.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const json = JSON.parse(e.target.result);
+                        if (!json.personal || !json.personal.name) {
+                            throw new Error(t('invalidData'));
+                        }
+                        
+                        // Asegurar ID único
+                        if(state.cvs.find(c => c.id === json.id)) {
+                             json.id = UTILS.uuid();
+                        }
+                        
+                        // Validar estructura básica
+                        if (!json.experience) json.experience = [];
+                        if (!json.education) json.education = [];
+                        if (!json.skills) json.skills = [];
+                        if (!json.projects) json.projects = [];
+                        if (!json.meta) json.meta = { created: new Date().toISOString() };
+                        
+                        json.meta.imported = new Date().toISOString();
+                        state.cvs.push(json);
+                        state.data = json;
+                        state.currentId = json.id;
+                        app.saveData();
+                        app.renderEditor();
+                        app.renderPreview();
+                        app.updateCVSelector();
+                        Toast.success(t('importSuccess'));
+                    } catch (err) {
+                        console.error('Error importando:', err);
+                        Toast.error(t('importError'));
+                    }
+                };
+                reader.onerror = () => Toast.error('Error al leer el archivo');
+                reader.readAsText(file);
+                input.value = '';
+            },
+
+            // --- RENDERIZADO DEL EDITOR ---
+            renderEditor: () => {
+                try {
+                // Rellenar campos estáticos
+                    const setValue = (id, val) => {
+                        const el = document.getElementById(id);
+                        if (el) el.value = val || '';
+                    };
+                    
+                    setValue('inp-name', state.data.personal.name);
+                    setValue('inp-title', state.data.personal.title);
+                    setValue('inp-email', state.data.personal.email);
+                    setValue('inp-phone', state.data.personal.phone);
+                    setValue('inp-city', state.data.personal.city);
+                    setValue('inp-website', state.data.personal.website);
+                    setValue('inp-summary', state.data.personal.summary);
+
+                // Rellenar listas
+                const renderList = (containerId, items, type) => {
+                    const container = document.getElementById(containerId);
+                        if (!container) return;
+                    container.innerHTML = '';
+                        
+                        if (!items || !Array.isArray(items)) return;
+                    
+                    items.forEach(item => {
+                        const li = document.createElement('li');
+                        li.className = 'bg-gray-50 p-3 rounded border border-gray-200 draggable-item group';
+                        li.setAttribute('data-id', item.id);
+                        
+                        let fieldsHTML = '';
+                        
+                        if (type === 'experience') {
+                            fieldsHTML = `
+                                <div class="grid grid-cols-2 gap-2 mb-2">
+                                        <input placeholder="Empresa" class="border p-1 rounded text-sm w-full" value="${UTILS.escapeHTML(item.company || '')}" oninput="app.handleInput({target:{id:'list-inp-experience-company-${item.id}', value:this.value}})">
+                                        <input placeholder="Cargo" class="border p-1 rounded text-sm w-full" value="${UTILS.escapeHTML(item.role || '')}" oninput="app.handleInput({target:{id:'list-inp-experience-role-${item.id}', value:this.value}})">
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 mb-2">
+                                        <input type="month" class="border p-1 rounded text-sm w-full" value="${item.start || ''}" oninput="app.handleInput({target:{id:'list-inp-experience-start-${item.id}', value:this.value}})">
+                                        <input type="month" class="border p-1 rounded text-sm w-full" value="${item.end || ''}" ${item.current ? 'disabled' : ''} oninput="app.handleInput({target:{id:'list-inp-experience-end-${item.id}', value:this.value}})">
+                                </div>
+                                <div class="flex items-center gap-2 mb-2 text-xs">
+                                        <input type="checkbox" ${item.current ? 'checked' : ''} onchange="app.toggleCurrentExp('${item.id}', this.checked)"> <span class="text-gray-500">${t('currentJob')}</span>
+                                </div>
+                                    <textarea placeholder="Descripción y logros" class="border p-1 rounded text-sm w-full h-20 resize-none" oninput="app.handleInput({target:{id:'list-inp-experience-description-${item.id}', value:this.value}})">${UTILS.escapeHTML(item.description || '')}</textarea>
+                            `;
+                        } else if (type === 'education') {
+                            fieldsHTML = `
+                                <div class="grid grid-cols-2 gap-2 mb-2">
+                                        <input placeholder="Institución" class="border p-1 rounded text-sm w-full" value="${UTILS.escapeHTML(item.school || '')}" oninput="app.handleInput({target:{id:'list-inp-education-school-${item.id}', value:this.value}})">
+                                        <input placeholder="Título/Grado" class="border p-1 rounded text-sm w-full" value="${UTILS.escapeHTML(item.degree || '')}" oninput="app.handleInput({target:{id:'list-inp-education-degree-${item.id}', value:this.value}})">
+                                </div>
+                                    <div class="grid grid-cols-2 gap-2 mb-2">
+                                        <input placeholder="Inicio" class="border p-1 rounded text-sm w-full" value="${UTILS.escapeHTML(item.start || '')}" oninput="app.handleInput({target:{id:'list-inp-education-start-${item.id}', value:this.value}})">
+                                        <input placeholder="Fin" class="border p-1 rounded text-sm w-full" value="${UTILS.escapeHTML(item.end || '')}" oninput="app.handleInput({target:{id:'list-inp-education-end-${item.id}', value:this.value}})">
+                                </div>
+                                    ${item.description ? `<textarea placeholder="Descripción" class="border p-1 rounded text-sm w-full h-16 resize-none mt-2" oninput="app.handleInput({target:{id:'list-inp-education-description-${item.id}', value:this.value}})">${UTILS.escapeHTML(item.description)}</textarea>` : ''}
+                            `;
+                        } else if (type === 'skills') {
+                                const levels = ['Básico', 'Medio', 'Avanzado'];
+                                const levelOptions = levels.map(l => 
+                                    `<option value="${l}" ${item.level === l ? 'selected' : ''}>${l}</option>`
+                                ).join('');
+                            fieldsHTML = `
+                                <div class="flex gap-2">
+                                        <input placeholder="Habilidad" class="border p-1 rounded text-sm flex-1" value="${UTILS.escapeHTML(item.name || '')}" oninput="app.handleInput({target:{id:'list-inp-skills-name-${item.id}', value:this.value}})">
+                                    <select class="border p-1 rounded text-sm" onchange="app.handleInput({target:{id:'list-inp-skills-level-${item.id}', value:this.value}})">
+                                            ${levelOptions}
+                                    </select>
+                                </div>
+                            `;
+                        } else if (type === 'projects') {
+                             fieldsHTML = `
+                                    <input placeholder="Título Proyecto" class="border p-1 rounded text-sm w-full mb-1" value="${UTILS.escapeHTML(item.title || '')}" oninput="app.handleInput({target:{id:'list-inp-projects-title-${item.id}', value:this.value}})">
+                                    <textarea placeholder="Descripción" class="border p-1 rounded text-sm w-full h-16 resize-none" oninput="app.handleInput({target:{id:'list-inp-projects-description-${item.id}', value:this.value}})">${UTILS.escapeHTML(item.description || '')}</textarea>
+                                    ${item.link !== undefined ? `<input placeholder="URL (opcional)" class="border p-1 rounded text-sm w-full mt-1" value="${UTILS.escapeHTML(item.link || '')}" oninput="app.handleInput({target:{id:'list-inp-projects-link-${item.id}', value:this.value}})">` : ''}
+                            `;
+                        }
+
+                        li.innerHTML = `
+                            <div class="flex justify-between items-start mb-2 cursor-move handle">
+                                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Drag to reorder</span>
+                                    <button onclick="app.removeItem('${type}', '${item.id}')" class="text-red-400 hover:text-red-600" aria-label="${t('deleteConfirm')}"><i data-feather="trash-2" class="w-3 h-3" aria-hidden="true"></i></button>
+                            </div>
+                            ${fieldsHTML}
+                        `;
+                        container.appendChild(li);
+                    });
+                    
+                        // Reinicializar Sortable
+                        if (container.children.length > 0) {
+                            const sectionName = containerId.replace('list-', '');
+                            new Sortable(container, {
+                                handle: '.handle',
+                                animation: 150,
+                                ghostClass: 'sortable-ghost',
+                                onEnd: () => {
+                                    const newOrderIds = Array.from(container.children).map(li => li.getAttribute('data-id'));
+                                    app.updateOrder(sectionName, newOrderIds);
+                                }
+                            });
+                        }
+                };
+
+                renderList('list-experience', state.data.experience, 'experience');
+                renderList('list-education', state.data.education, 'education');
+                renderList('list-skills', state.data.skills, 'skills');
+                renderList('list-projects', state.data.projects, 'projects');
+                    
+                    feather.replace();
+                } catch (error) {
+                    console.error('Error renderizando editor:', error);
+                }
+            },
+            
+            toggleCurrentExp: (id, checked) => {
+                 const item = state.data.experience.find(i => i.id === id);
+                 if (item) {
+                     item.current = checked;
+                    if (checked) item.end = '';
+                     app.renderEditor();
+                     app.renderPreview();
+                    app.saveData();
+                 }
+            },
+
+            // --- RENDERIZADO DE PREVISUALIZACIÓN ---
+            renderPreview: () => {
+                try {
+                const container = document.getElementById('preview-container');
+                    if (!container) return;
+                    
+                    const tpl = state.data.template || 'modern';
+                const d = state.data;
+                    const i18n = TEXTS[d.lang || 'es'];
+                
+                // Limpiar clases de template previas
+                container.className = `a4-page template-${tpl}`;
+
+                let html = '';
+
+                // Helper para fechas
+                const period = (start, end, current) => {
+                        const e = current ? i18n.present : (end || '');
+                        return `${start || ''} - ${e}`;
+                };
+
+                // Helper para renderizar iconos
+                const icon = (name) => `<i data-feather="${name}" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"></i>`;
+
+                    // Helper para escapar HTML en preview
+                    const safe = (str) => UTILS.escapeHTML(str || '');
+
+                // --- LÓGICA DE PLANTILLAS ---
+                
+                    if (tpl === 'modern') {
+                        html = `
+                        <div class="template-modern">
+                            <div class="sidebar">
+                                <div class="mb-6">
+                                    <h1 class="text-white font-bold text-xl leading-none mb-4">${safe(d.personal.name || 'Tu Nombre')}</h1>
+                                    <p class="text-blue-200 text-sm mb-6">${safe(d.personal.title || 'Título Profesional')}</p>
+                                    
+                                    <h2>${i18n.contact}</h2>
+                                    <ul class="text-xs space-y-2 mt-2 opacity-90">
+                                        ${d.personal.email ? `<li>${icon('mail')} ${safe(d.personal.email)}</li>` : ''}
+                                        ${d.personal.phone ? `<li>${icon('phone')} ${safe(d.personal.phone)}</li>` : ''}
+                                        ${d.personal.city ? `<li>${icon('map-pin')} ${safe(d.personal.city)}</li>` : ''}
+                                        ${d.personal.website ? `<li>${icon('globe')} ${safe(d.personal.website)}</li>` : ''}
+                                    </ul>
+                                </div>
+
+                                ${d.skills && d.skills.length > 0 ? `
+                                    <h2>${i18n.skills}</h2>
+                                    <div class="mt-3 flex flex-wrap gap-2">
+                                        ${d.skills.map(s => `<span class="bg-slate-600 text-xs px-2 py-1 rounded text-white block w-full flex justify-between"><span>${safe(s.name)}</span> <span class="opacity-50 text-[10px]">${safe(s.level)}</span></span>`).join('')}
+                                    </div>
+                                ` : ''}
+                                
+                                ${d.education && d.education.length > 0 ? `
+                                    <h2>${i18n.education}</h2>
+                                    <div class="mt-3 space-y-4">
+                                        ${d.education.map(e => `
+                                            <div>
+                                                <div class="font-bold text-sm text-white">${safe(e.school)}</div>
+                                                <div class="text-xs text-blue-200">${safe(e.degree)}</div>
+                                                <div class="text-[10px] opacity-70">${safe(e.start)} - ${safe(e.end)}</div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                ` : ''}
+                            </div>
+                            
+                            <div class="main">
+                                ${d.personal.summary ? `
+                                    <div class="mb-6">
+                                        <h2 style="margin-top:0">Perfil</h2>
+                                        <p class="text-sm text-gray-600 mt-2 text-justify">${safe(d.personal.summary).replace(/\n/g, '<br>')}</p>
+                                    </div>
+                                ` : ''}
+
+                                ${d.experience && d.experience.length > 0 ? `
+                                    <div class="mb-6">
+                                        <h2>${i18n.experience}</h2>
+                                        <div class="mt-4 space-y-5">
+                                            ${d.experience.map(exp => `
+                                                <div>
+                                                    <div class="flex justify-between items-baseline">
+                                                        <h3 class="font-bold text-gray-800 text-sm uppercase">${safe(exp.role)}</h3>
+                                                        <span class="text-xs text-gray-500 font-mono">${period(exp.start, exp.end, exp.current)}</span>
+                                                    </div>
+                                                    <div class="text-blue-600 font-semibold text-xs mb-1">${safe(exp.company)}</div>
+                                                    <p class="text-xs text-gray-600 whitespace-pre-line">${safe(exp.description).replace(/\n/g, '<br>')}</p>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                ` : ''}
+
+                                ${d.projects && d.projects.length > 0 ? `
+                                    <div class="mb-6">
+                                        <h2>${i18n.projects}</h2>
+                                        <div class="mt-4 space-y-4">
+                                            ${d.projects.map(p => `
+                                                <div>
+                                                    <h3 class="font-bold text-gray-800 text-sm">${safe(p.title)}</h3>
+                                                    <p class="text-xs text-gray-600">${safe(p.description).replace(/\n/g, '<br>')}</p>
+                                                    ${p.link ? `<a href="${safe(p.link)}" class="text-xs text-blue-600" target="_blank">${safe(p.link)}</a>` : ''}
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                        `;
+                } else if (tpl === 'creative') {
+                     html = `
+                     <div class="p-0 h-full">
+                        <div class="header">
+                                <h1>${safe(d.personal.name)}</h1>
+                                <p class="text-xl opacity-90">${safe(d.personal.title)}</p>
+                            <div class="flex gap-4 mt-4 text-xs opacity-80">
+                                    ${d.personal.email ? `<span>${icon('mail')} ${safe(d.personal.email)}</span>` : ''}
+                                    ${d.personal.phone ? `<span>${icon('phone')} ${safe(d.personal.phone)}</span>` : ''}
+                                    ${d.personal.city ? `<span>${icon('map-pin')} ${safe(d.personal.city)}</span>` : ''}
+                            </div>
+                        </div>
+                        
+                        <div class="px-8 grid grid-cols-3 gap-8">
+                             <div class="col-span-2 space-y-6">
+                                ${d.personal.summary ? `
+                                        <p class="text-sm text-gray-600 italic border-l-4 border-purple-500 pl-4 py-2 bg-gray-50">${safe(d.personal.summary).replace(/\n/g, '<br>')}</p>
+                                ` : ''}
+
+                                    ${d.experience && d.experience.length > 0 ? `
+                                <div>
+                                    <h2>${i18n.experience}</h2>
+                                    <div class="mt-4 space-y-6">
+                                        ${d.experience.map(exp => `
+                                            <div class="relative pl-4 border-l-2 border-gray-200">
+                                                <div class="absolute -left-[5px] top-1 w-2 h-2 rounded-full bg-purple-500"></div>
+                                                        <h3 class="font-bold text-gray-800">${safe(exp.role)}</h3>
+                                                        <div class="text-purple-600 text-xs font-bold">${safe(exp.company)} <span class="text-gray-400 font-normal">| ${period(exp.start, exp.end, exp.current)}</span></div>
+                                                        <p class="text-xs text-gray-600 mt-1">${safe(exp.description).replace(/\n/g, '<br>')}</p>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                    ` : ''}
+                             </div>
+
+                             <div class="col-span-1 space-y-6">
+                                    ${d.skills && d.skills.length > 0 ? `
+                                <div>
+                                    <h2>${i18n.skills}</h2>
+                                    <div class="mt-2 space-y-2">
+                                                ${d.skills.map(s => {
+                                                    const width = s.level === 'Avanzado' ? '90%' : s.level === 'Medio' ? '60%' : '30%';
+                                                    return `
+                                            <div>
+                                                <div class="flex justify-between text-xs mb-1">
+                                                                <span class="font-bold text-gray-700">${safe(s.name)}</span>
+                                                </div>
+                                                <div class="h-1 bg-gray-200 rounded overflow-hidden">
+                                                                <div class="h-full bg-purple-500" style="width: ${width}"></div>
+                                                </div>
+                                            </div>
+                                                    `;
+                                                }).join('')}
+                                    </div>
+                                </div>
+                                    ` : ''}
+
+                                    ${d.education && d.education.length > 0 ? `
+                                <div>
+                                    <h2>${i18n.education}</h2>
+                                    <div class="mt-2 space-y-4">
+                                        ${d.education.map(e => `
+                                            <div class="bg-gray-50 p-2 rounded">
+                                                        <div class="font-bold text-xs text-gray-800">${safe(e.school)}</div>
+                                                        <div class="text-xs text-purple-600">${safe(e.degree)}</div>
+                                                        <div class="text-[10px] text-gray-400">${safe(e.start)} - ${safe(e.end)}</div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                    ` : ''}
+                             </div>
+                        </div>
+                     </div>
+                     `;
+                    } else if (tpl === 'minimal') {
+                        html = `
+                        <div class="p-10 h-full">
+                            <div class="header mb-8">
+                                <h1>${safe(d.personal.name || 'Tu Nombre')}</h1>
+                                <p class="text-sm text-gray-600 mt-2">${safe(d.personal.title || 'Título Profesional')}</p>
+                                <div class="flex gap-4 mt-4 text-xs text-gray-500">
+                                    ${d.personal.email ? `<span>${icon('mail')} ${safe(d.personal.email)}</span>` : ''}
+                                    ${d.personal.phone ? `<span>${icon('phone')} ${safe(d.personal.phone)}</span>` : ''}
+                                    ${d.personal.city ? `<span>${icon('map-pin')} ${safe(d.personal.city)}</span>` : ''}
+                                </div>
+                            </div>
+                            ${d.personal.summary ? `<div class="divider"></div><div class="mb-6"><p class="text-sm">${safe(d.personal.summary).replace(/\n/g, '<br>')}</p></div>` : ''}
+                            ${d.experience && d.experience.length > 0 ? `<div class="divider"></div><div class="mb-6"><h2>${i18n.experience}</h2>${d.experience.map(exp => `<div class="mt-4"><h3 class="font-bold text-sm">${safe(exp.role)} - ${safe(exp.company)}</h3><p class="text-xs text-gray-500">${period(exp.start, exp.end, exp.current)}</p><p class="text-xs mt-1">${safe(exp.description).replace(/\n/g, '<br>')}</p></div>`).join('')}</div>` : ''}
+                            ${d.education && d.education.length > 0 ? `<div class="divider"></div><div class="mb-6"><h2>${i18n.education}</h2>${d.education.map(e => `<div class="mt-3"><div class="font-bold text-sm">${safe(e.school)}</div><div class="text-xs text-gray-600">${safe(e.degree)}</div><div class="text-xs text-gray-400">${safe(e.start)} - ${safe(e.end)}</div></div>`).join('')}</div>` : ''}
+                            ${d.skills && d.skills.length > 0 ? `<div class="divider"></div><div class="mb-6"><h2>${i18n.skills}</h2><div class="mt-2">${d.skills.map(s => `<span class="inline-block text-xs bg-gray-100 px-2 py-1 rounded mr-2 mb-2">${safe(s.name)}</span>`).join('')}</div></div>` : ''}
+                        </div>
+                        `;
+                    } else if (tpl === 'executive') {
+                        html = `
+                        <div class="p-0 h-full">
+                            <div class="header-bar">
+                                <h1>${safe(d.personal.name)}</h1>
+                                <p class="text-sm opacity-90 mt-1">${safe(d.personal.title)}</p>
+                                <div class="flex gap-4 mt-3 text-xs opacity-80">
+                                    ${d.personal.email ? `<span>${icon('mail')} ${safe(d.personal.email)}</span>` : ''}
+                                    ${d.personal.phone ? `<span>${icon('phone')} ${safe(d.personal.phone)}</span>` : ''}
+                                    ${d.personal.city ? `<span>${icon('map-pin')} ${safe(d.personal.city)}</span>` : ''}
+                                </div>
+                            </div>
+                            <div class="p-9">
+                                ${d.personal.summary ? `<div class="mb-6"><h2>Perfil</h2><p class="text-sm mt-2">${safe(d.personal.summary).replace(/\n/g, '<br>')}</p></div>` : ''}
+                                ${d.experience && d.experience.length > 0 ? `<div class="mb-6"><h2>${i18n.experience}</h2>${d.experience.map(exp => `<div class="mt-4"><h3 class="font-bold text-sm">${safe(exp.role)}</h3><div class="text-xs text-gray-600">${safe(exp.company)} | ${period(exp.start, exp.end, exp.current)}</div><p class="text-xs mt-1">${safe(exp.description).replace(/\n/g, '<br>')}</p></div>`).join('')}</div>` : ''}
+                                ${d.education && d.education.length > 0 ? `<div class="mb-6"><h2>${i18n.education}</h2>${d.education.map(e => `<div class="mt-3"><div class="font-bold text-sm">${safe(e.school)}</div><div class="text-xs text-gray-600">${safe(e.degree)}</div><div class="text-xs text-gray-400">${safe(e.start)} - ${safe(e.end)}</div></div>`).join('')}</div>` : ''}
+                                ${d.skills && d.skills.length > 0 ? `<div class="mb-6"><h2>${i18n.skills}</h2><p class="text-sm mt-2">${d.skills.map(s => safe(s.name)).join(' • ')}</p></div>` : ''}
+                            </div>
+                        </div>
+                        `;
+                    } else if (tpl === 'tech') {
+                        html = `
+                        <div class="template-tech">
+                            <div class="main">
+                                <h1>${safe(d.personal.name)}</h1>
+                                <p class="text-lg text-gray-600 mb-6">${safe(d.personal.title)}</p>
+                                ${d.personal.summary ? `<div class="mb-6"><p class="text-sm text-gray-700">${safe(d.personal.summary).replace(/\n/g, '<br>')}</p></div>` : ''}
+                                ${d.experience && d.experience.length > 0 ? `<div class="mb-6"><h2>${i18n.experience}</h2>${d.experience.map(exp => `<div class="mt-4"><h3 class="font-bold text-sm text-gray-900">${safe(exp.role)}</h3><div class="text-xs text-blue-600 font-semibold">${safe(exp.company)} | ${period(exp.start, exp.end, exp.current)}</div><p class="text-xs text-gray-700 mt-1">${safe(exp.description).replace(/\n/g, '<br>')}</p></div>`).join('')}</div>` : ''}
+                                ${d.projects && d.projects.length > 0 ? `<div class="mb-6"><h2>${i18n.projects}</h2>${d.projects.map(p => `<div class="mt-3"><h3 class="font-bold text-sm">${safe(p.title)}</h3><p class="text-xs text-gray-600">${safe(p.description).replace(/\n/g, '<br>')}</p></div>`).join('')}</div>` : ''}
+                            </div>
+                            <div class="sidebar">
+                                <h2>${i18n.contact}</h2>
+                                <ul class="text-xs space-y-2 mt-2 opacity-90">
+                                    ${d.personal.email ? `<li>${icon('mail')} ${safe(d.personal.email)}</li>` : ''}
+                                    ${d.personal.phone ? `<li>${icon('phone')} ${safe(d.personal.phone)}</li>` : ''}
+                                    ${d.personal.city ? `<li>${icon('map-pin')} ${safe(d.personal.city)}</li>` : ''}
+                                    ${d.personal.website ? `<li>${icon('globe')} ${safe(d.personal.website)}</li>` : ''}
+                                </ul>
+                                ${d.skills && d.skills.length > 0 ? `<h2>${i18n.skills}</h2><div class="mt-3 space-y-2">${d.skills.map(s => `<div class="text-xs">${safe(s.name)} <span class="opacity-60">(${safe(s.level)})</span></div>`).join('')}</div>` : ''}
+                                ${d.education && d.education.length > 0 ? `<h2>${i18n.education}</h2><div class="mt-3 space-y-3">${d.education.map(e => `<div><div class="font-bold text-sm">${safe(e.school)}</div><div class="text-xs text-blue-300">${safe(e.degree)}</div><div class="text-[10px] opacity-70">${safe(e.start)} - ${safe(e.end)}</div></div>`).join('')}</div>` : ''}
+                            </div>
+                        </div>
+                        `;
+                    } else if (tpl === 'colorful') {
+                        html = `
+                        <div class="p-0 h-full">
+                            <div class="header">
+                                <h1>${safe(d.personal.name)}</h1>
+                                <p class="text-xl opacity-90">${safe(d.personal.title)}</p>
+                                <div class="flex gap-4 mt-4 text-xs opacity-80">
+                                    ${d.personal.email ? `<span>${icon('mail')} ${safe(d.personal.email)}</span>` : ''}
+                                    ${d.personal.phone ? `<span>${icon('phone')} ${safe(d.personal.phone)}</span>` : ''}
+                                    ${d.personal.city ? `<span>${icon('map-pin')} ${safe(d.personal.city)}</span>` : ''}
+                                </div>
+                            </div>
+                            <div class="p-8">
+                                ${d.personal.summary ? `<div class="mb-6"><p class="text-sm bg-white p-4 rounded-lg shadow-sm">${safe(d.personal.summary).replace(/\n/g, '<br>')}</p></div>` : ''}
+                                ${d.experience && d.experience.length > 0 ? `<div class="mb-6"><h2>${i18n.experience}</h2>${d.experience.map(exp => `<div class="mt-4 bg-white p-4 rounded-lg shadow-sm"><h3 class="font-bold text-sm text-gray-900">${safe(exp.role)}</h3><div class="text-xs text-f5576c font-bold">${safe(exp.company)} | ${period(exp.start, exp.end, exp.current)}</div><p class="text-xs text-gray-700 mt-2">${safe(exp.description).replace(/\n/g, '<br>')}</p></div>`).join('')}</div>` : ''}
+                                ${d.education && d.education.length > 0 ? `<div class="mb-6"><h2>${i18n.education}</h2>${d.education.map(e => `<div class="mt-3 bg-white p-3 rounded-lg shadow-sm"><div class="font-bold text-sm">${safe(e.school)}</div><div class="text-xs text-f5576c">${safe(e.degree)}</div><div class="text-xs text-gray-500">${safe(e.start)} - ${safe(e.end)}</div></div>`).join('')}</div>` : ''}
+                                ${d.skills && d.skills.length > 0 ? `<div class="mb-6"><h2>${i18n.skills}</h2><div class="mt-2 flex flex-wrap gap-2">${d.skills.map(s => `<span class="bg-white px-3 py-1 rounded-full text-xs shadow-sm">${safe(s.name)}</span>`).join('')}</div></div>` : ''}
+                            </div>
+                        </div>
+                        `;
+                    } else if (tpl === 'elegant') {
+                        html = `
+                        <div class="p-12 h-full">
+                            <div class="header">
+                                <h1>${safe(d.personal.name)}</h1>
+                                <h2>${safe(d.personal.title)}</h2>
+                                <div class="text-xs text-gray-500 flex justify-center gap-4 mt-4">
+                                    ${d.personal.email ? `<span>${safe(d.personal.email)}</span>` : ''}
+                                    ${d.personal.phone ? `<span>${safe(d.personal.phone)}</span>` : ''}
+                                    ${d.personal.city ? `<span>${safe(d.personal.city)}</span>` : ''}
+                                </div>
+                            </div>
+                            ${d.personal.summary ? `<div class="mb-8"><div class="section-title">Perfil</div><p class="text-sm text-justify">${safe(d.personal.summary).replace(/\n/g, '<br>')}</p></div>` : ''}
+                            ${d.experience && d.experience.length > 0 ? `<div class="mb-8"><div class="section-title">${i18n.experience}</div>${d.experience.map(exp => `<div class="mb-4"><h3 class="font-bold text-base">${safe(exp.role)}</h3><div class="text-sm text-gray-600 italic">${safe(exp.company)} | ${period(exp.start, exp.end, exp.current)}</div><p class="text-sm mt-1">${safe(exp.description).replace(/\n/g, '<br>')}</p></div>`).join('')}</div>` : ''}
+                            ${d.education && d.education.length > 0 ? `<div class="mb-8"><div class="section-title">${i18n.education}</div>${d.education.map(e => `<div class="mb-3"><div class="font-bold text-sm">${safe(e.school)}</div><div class="text-sm italic">${safe(e.degree)}</div><div class="text-xs text-gray-500">${safe(e.start)} - ${safe(e.end)}</div></div>`).join('')}</div>` : ''}
+                            ${d.skills && d.skills.length > 0 ? `<div class="mb-8"><div class="section-title">${i18n.skills}</div><p class="text-sm">${d.skills.map(s => safe(s.name)).join(', ')}</p></div>` : ''}
+                        </div>
+                        `;
+                    } else if (tpl === 'timeline') {
+                        html = `
+                        <div class="p-9 h-full">
+                            <div class="header-section">
+                                <h1>${safe(d.personal.name)}</h1>
+                                <p class="text-sm text-gray-600 mt-2">${safe(d.personal.title)}</p>
+                                <div class="flex justify-center gap-4 mt-4 text-xs text-gray-500">
+                                    ${d.personal.email ? `<span>${icon('mail')} ${safe(d.personal.email)}</span>` : ''}
+                                    ${d.personal.phone ? `<span>${icon('phone')} ${safe(d.personal.phone)}</span>` : ''}
+                                    ${d.personal.city ? `<span>${icon('map-pin')} ${safe(d.personal.city)}</span>` : ''}
+                                </div>
+                            </div>
+                            ${d.personal.summary ? `<div class="mb-8 text-center"><p class="text-sm italic">${safe(d.personal.summary).replace(/\n/g, '<br>')}</p></div>` : ''}
+                            ${d.experience && d.experience.length > 0 ? `<div class="mb-8"><h2 class="text-lg font-bold mb-4">${i18n.experience}</h2>${d.experience.map((exp, idx) => `<div class="timeline-item ${idx < d.experience.length - 1 ? 'timeline-line' : ''}"><div class="timeline-dot"></div><h3 class="font-bold text-sm">${safe(exp.role)}</h3><div class="text-xs text-blue-600 font-semibold">${safe(exp.company)} | ${period(exp.start, exp.end, exp.current)}</div><p class="text-xs text-gray-700 mt-1">${safe(exp.description).replace(/\n/g, '<br>')}</p></div>`).join('')}</div>` : ''}
+                            ${d.education && d.education.length > 0 ? `<div class="mb-8"><h2 class="text-lg font-bold mb-4">${i18n.education}</h2>${d.education.map((e, idx) => `<div class="timeline-item ${idx < d.education.length - 1 ? 'timeline-line' : ''}"><div class="timeline-dot"></div><div class="font-bold text-sm">${safe(e.school)}</div><div class="text-xs text-gray-600">${safe(e.degree)}</div><div class="text-xs text-gray-400">${safe(e.start)} - ${safe(e.end)}</div></div>`).join('')}</div>` : ''}
+                            ${d.skills && d.skills.length > 0 ? `<div class="mb-8"><h2 class="text-lg font-bold mb-4">${i18n.skills}</h2><div class="flex flex-wrap gap-2">${d.skills.map(s => `<span class="bg-blue-100 text-blue-800 px-3 py-1 rounded text-xs">${safe(s.name)}</span>`).join('')}</div></div>` : ''}
+                        </div>
+                        `;
+                    } else if (tpl === 'grid') {
+                        html = `
+                        <div class="template-grid">
+                            <div class="header">
+                                <h1>${safe(d.personal.name)}</h1>
+                                <p class="text-sm text-gray-600 mt-1">${safe(d.personal.title)}</p>
+                                <div class="text-xs text-gray-500 flex justify-center gap-3 mt-2">
+                                    ${d.personal.email ? `<span>${safe(d.personal.email)}</span>` : ''}
+                                    ${d.personal.phone ? `<span>${safe(d.personal.phone)}</span>` : ''}
+                                    ${d.personal.city ? `<span>${safe(d.personal.city)}</span>` : ''}
+                                </div>
+                            </div>
+                            ${d.personal.summary ? `<div class="col-span-2"><h2>Perfil</h2><p class="text-xs mt-1">${safe(d.personal.summary).replace(/\n/g, '<br>')}</p></div>` : ''}
+                            ${d.experience && d.experience.length > 0 ? `<div><h2>${i18n.experience}</h2>${d.experience.map(exp => `<div class="mt-3"><h3 class="font-bold text-xs">${safe(exp.role)}</h3><div class="text-[10px] text-gray-600">${safe(exp.company)}</div><div class="text-[10px] text-gray-400">${period(exp.start, exp.end, exp.current)}</div><p class="text-[10px] mt-1">${safe(exp.description).replace(/\n/g, '<br>')}</p></div>`).join('')}</div>` : ''}
+                            ${d.education && d.education.length > 0 ? `<div><h2>${i18n.education}</h2>${d.education.map(e => `<div class="mt-3"><div class="font-bold text-xs">${safe(e.school)}</div><div class="text-[10px] text-gray-600">${safe(e.degree)}</div><div class="text-[10px] text-gray-400">${safe(e.start)} - ${safe(e.end)}</div></div>`).join('')}</div>` : ''}
+                            ${d.skills && d.skills.length > 0 ? `<div class="col-span-2"><h2>${i18n.skills}</h2><div class="mt-2 flex flex-wrap gap-1">${d.skills.map(s => `<span class="text-[10px] bg-gray-100 px-2 py-0.5 rounded">${safe(s.name)}</span>`).join('')}</div></div>` : ''}
+                        </div>
+                        `;
+                    } else if (tpl === 'sidebar-right') {
+                        html = `
+                        <div class="template-sidebar-right">
+                            <div class="main">
+                                <h1>${safe(d.personal.name)}</h1>
+                                <p class="text-lg text-gray-600 mb-6">${safe(d.personal.title)}</p>
+                                ${d.personal.summary ? `<div class="mb-6"><p class="text-sm text-gray-700">${safe(d.personal.summary).replace(/\n/g, '<br>')}</p></div>` : ''}
+                                ${d.experience && d.experience.length > 0 ? `<div class="mb-6"><h2>${i18n.experience}</h2>${d.experience.map(exp => `<div class="mt-4"><h3 class="font-bold text-sm">${safe(exp.role)}</h3><div class="text-xs text-gray-600">${safe(exp.company)} | ${period(exp.start, exp.end, exp.current)}</div><p class="text-xs text-gray-700 mt-1">${safe(exp.description).replace(/\n/g, '<br>')}</p></div>`).join('')}</div>` : ''}
+                                ${d.projects && d.projects.length > 0 ? `<div class="mb-6"><h2>${i18n.projects}</h2>${d.projects.map(p => `<div class="mt-3"><h3 class="font-bold text-sm">${safe(p.title)}</h3><p class="text-xs text-gray-600">${safe(p.description).replace(/\n/g, '<br>')}</p></div>`).join('')}</div>` : ''}
+                            </div>
+                            <div class="sidebar">
+                                <h2>${i18n.contact}</h2>
+                                <ul class="text-xs space-y-2 mt-2 opacity-90">
+                                    ${d.personal.email ? `<li>${icon('mail')} ${safe(d.personal.email)}</li>` : ''}
+                                    ${d.personal.phone ? `<li>${icon('phone')} ${safe(d.personal.phone)}</li>` : ''}
+                                    ${d.personal.city ? `<li>${icon('map-pin')} ${safe(d.personal.city)}</li>` : ''}
+                                </ul>
+                                ${d.skills && d.skills.length > 0 ? `<h2>${i18n.skills}</h2><div class="mt-3 space-y-2">${d.skills.map(s => `<div class="text-xs">${safe(s.name)} <span class="opacity-60">(${safe(s.level)})</span></div>`).join('')}</div>` : ''}
+                                ${d.education && d.education.length > 0 ? `<h2>${i18n.education}</h2><div class="mt-3 space-y-3">${d.education.map(e => `<div><div class="font-bold text-sm">${safe(e.school)}</div><div class="text-xs opacity-80">${safe(e.degree)}</div><div class="text-[10px] opacity-60">${safe(e.start)} - ${safe(e.end)}</div></div>`).join('')}</div>` : ''}
+                            </div>
+                        </div>
+                        `;
+                    } else if (tpl === 'single') {
+                        html = `
+                        <div class="p-10 h-full">
+                            <div class="header">
+                                <h1>${safe(d.personal.name)}</h1>
+                                <p class="text-sm text-gray-600 mt-2">${safe(d.personal.title)}</p>
+                                <div class="flex justify-center gap-4 mt-4 text-xs text-gray-500">
+                                    ${d.personal.email ? `<span>${icon('mail')} ${safe(d.personal.email)}</span>` : ''}
+                                    ${d.personal.phone ? `<span>${icon('phone')} ${safe(d.personal.phone)}</span>` : ''}
+                                    ${d.personal.city ? `<span>${icon('map-pin')} ${safe(d.personal.city)}</span>` : ''}
+                                </div>
+                            </div>
+                            ${d.personal.summary ? `<div class="mb-6"><h2>Perfil</h2><p class="text-sm mt-2">${safe(d.personal.summary).replace(/\n/g, '<br>')}</p></div>` : ''}
+                            ${d.experience && d.experience.length > 0 ? `<div class="mb-6"><h2>${i18n.experience}</h2>${d.experience.map(exp => `<div class="mt-4"><h3 class="font-bold text-sm">${safe(exp.role)}</h3><div class="text-xs text-3b82f6 font-semibold">${safe(exp.company)} | ${period(exp.start, exp.end, exp.current)}</div><p class="text-xs text-gray-600 mt-1">${safe(exp.description).replace(/\n/g, '<br>')}</p></div>`).join('')}</div>` : ''}
+                            ${d.education && d.education.length > 0 ? `<div class="mb-6"><h2>${i18n.education}</h2>${d.education.map(e => `<div class="mt-3"><div class="font-bold text-sm">${safe(e.school)}</div><div class="text-xs text-gray-600">${safe(e.degree)}</div><div class="text-xs text-gray-400">${safe(e.start)} - ${safe(e.end)}</div></div>`).join('')}</div>` : ''}
+                            ${d.skills && d.skills.length > 0 ? `<div class="mb-6"><h2>${i18n.skills}</h2><div class="mt-2 flex flex-wrap gap-2">${d.skills.map(s => `<span class="bg-blue-50 text-blue-700 px-3 py-1 rounded text-xs">${safe(s.name)}</span>`).join('')}</div></div>` : ''}
+                        </div>
+                        `;
+                    } else if (['blue-accent', 'green-accent', 'red-accent', 'purple-accent'].includes(tpl)) {
+                        const accentColor = tpl === 'blue-accent' ? '#1e40af' : tpl === 'green-accent' ? '#065f46' : tpl === 'red-accent' ? '#991b1b' : '#6b21a8';
+                        const accentBorder = tpl === 'blue-accent' ? '#3b82f6' : tpl === 'green-accent' ? '#10b981' : tpl === 'red-accent' ? '#ef4444' : '#a855f7';
+                        html = `
+                        <div class="p-9 h-full">
+                            <div class="mb-6">
+                                <h1>${safe(d.personal.name)}</h1>
+                                <p class="text-sm text-gray-600 mt-1">${safe(d.personal.title)}</p>
+                                <div class="flex gap-4 mt-3 text-xs text-gray-500">
+                                    ${d.personal.email ? `<span>${icon('mail')} ${safe(d.personal.email)}</span>` : ''}
+                                    ${d.personal.phone ? `<span>${icon('phone')} ${safe(d.personal.phone)}</span>` : ''}
+                                    ${d.personal.city ? `<span>${icon('map-pin')} ${safe(d.personal.city)}</span>` : ''}
+                                </div>
+                            </div>
+                            ${d.personal.summary ? `<div class="mb-6"><h2>Perfil</h2><p class="text-sm mt-2">${safe(d.personal.summary).replace(/\n/g, '<br>')}</p></div>` : ''}
+                            ${d.experience && d.experience.length > 0 ? `<div class="mb-6"><h2>${i18n.experience}</h2>${d.experience.map(exp => `<div class="mt-4"><h3 class="font-bold text-sm" style="color: ${accentColor}">${safe(exp.role)}</h3><div class="text-xs text-gray-600">${safe(exp.company)} | ${period(exp.start, exp.end, exp.current)}</div><p class="text-xs text-gray-700 mt-1">${safe(exp.description).replace(/\n/g, '<br>')}</p></div>`).join('')}</div>` : ''}
+                            ${d.education && d.education.length > 0 ? `<div class="mb-6"><h2>${i18n.education}</h2>${d.education.map(e => `<div class="mt-3"><div class="font-bold text-sm">${safe(e.school)}</div><div class="text-xs text-gray-600">${safe(e.degree)}</div><div class="text-xs text-gray-400">${safe(e.start)} - ${safe(e.end)}</div></div>`).join('')}</div>` : ''}
+                            ${d.skills && d.skills.length > 0 ? `<div class="mb-6"><h2>${i18n.skills}</h2><div class="mt-2 flex flex-wrap gap-2">${d.skills.map(s => `<span class="text-xs px-3 py-1 rounded" style="background: ${accentBorder}20; color: ${accentColor}">${safe(s.name)}</span>`).join('')}</div></div>` : ''}
+                        </div>
+                        `;
+                    } else if (tpl === 'startup') {
+                        html = `
+                        <div class="p-0 h-full">
+                            <div class="header">
+                                <h1>${safe(d.personal.name)}</h1>
+                                <p class="text-xl opacity-90">${safe(d.personal.title)}</p>
+                                <div class="flex gap-4 mt-4 text-xs opacity-80">
+                                    ${d.personal.email ? `<span>${icon('mail')} ${safe(d.personal.email)}</span>` : ''}
+                                    ${d.personal.phone ? `<span>${icon('phone')} ${safe(d.personal.phone)}</span>` : ''}
+                                    ${d.personal.city ? `<span>${icon('map-pin')} ${safe(d.personal.city)}</span>` : ''}
+                                </div>
+                            </div>
+                            <div class="p-8">
+                                ${d.personal.summary ? `<div class="mb-6"><p class="text-sm bg-white p-4 rounded-lg">${safe(d.personal.summary).replace(/\n/g, '<br>')}</p></div>` : ''}
+                                ${d.experience && d.experience.length > 0 ? `<div class="mb-6"><h2>${i18n.experience}</h2>${d.experience.map(exp => `<div class="mt-4 bg-white p-4 rounded-lg"><h3 class="font-bold text-sm">${safe(exp.role)}</h3><div class="text-xs text-667eea font-bold">${safe(exp.company)} | ${period(exp.start, exp.end, exp.current)}</div><p class="text-xs text-gray-700 mt-2">${safe(exp.description).replace(/\n/g, '<br>')}</p></div>`).join('')}</div>` : ''}
+                                ${d.education && d.education.length > 0 ? `<div class="mb-6"><h2>${i18n.education}</h2>${d.education.map(e => `<div class="mt-3 bg-white p-3 rounded-lg"><div class="font-bold text-sm">${safe(e.school)}</div><div class="text-xs text-667eea">${safe(e.degree)}</div></div>`).join('')}</div>` : ''}
+                                ${d.skills && d.skills.length > 0 ? `<div class="mb-6"><h2>${i18n.skills}</h2><div class="mt-2 flex flex-wrap gap-2">${d.skills.map(s => `<span class="bg-667eea20 text-667eea px-3 py-1 rounded-full text-xs">${safe(s.name)}</span>`).join('')}</div></div>` : ''}
+                            </div>
+                        </div>
+                        `;
+                    } else if (tpl === 'corporate') {
+                        html = `
+                        <div class="p-0 h-full">
+                            <div class="top-bar">
+                                <h1>${safe(d.personal.name)}</h1>
+                                <p class="text-sm opacity-90 mt-1">${safe(d.personal.title)}</p>
+                                <div class="flex gap-4 mt-3 text-xs opacity-80">
+                                    ${d.personal.email ? `<span>${icon('mail')} ${safe(d.personal.email)}</span>` : ''}
+                                    ${d.personal.phone ? `<span>${icon('phone')} ${safe(d.personal.phone)}</span>` : ''}
+                                    ${d.personal.city ? `<span>${icon('map-pin')} ${safe(d.personal.city)}</span>` : ''}
+                                </div>
+                            </div>
+                            <div class="p-8">
+                                ${d.personal.summary ? `<div class="mb-6"><h2>Perfil</h2><p class="text-sm mt-2">${safe(d.personal.summary).replace(/\n/g, '<br>')}</p></div>` : ''}
+                                ${d.experience && d.experience.length > 0 ? `<div class="mb-6"><h2>${i18n.experience}</h2>${d.experience.map(exp => `<div class="mt-4"><h3 class="font-bold text-sm">${safe(exp.role)}</h3><div class="text-xs text-gray-600">${safe(exp.company)} | ${period(exp.start, exp.end, exp.current)}</div><p class="text-xs text-gray-700 mt-1">${safe(exp.description).replace(/\n/g, '<br>')}</p></div>`).join('')}</div>` : ''}
+                                ${d.education && d.education.length > 0 ? `<div class="mb-6"><h2>${i18n.education}</h2>${d.education.map(e => `<div class="mt-3"><div class="font-bold text-sm">${safe(e.school)}</div><div class="text-xs text-gray-600">${safe(e.degree)}</div><div class="text-xs text-gray-400">${safe(e.start)} - ${safe(e.end)}</div></div>`).join('')}</div>` : ''}
+                                ${d.skills && d.skills.length > 0 ? `<div class="mb-6"><h2>${i18n.skills}</h2><p class="text-sm mt-2">${d.skills.map(s => safe(s.name)).join(' • ')}</p></div>` : ''}
+                            </div>
+                        </div>
+                        `;
+                    } else if (tpl === 'gradient') {
+                        html = `
+                        <div class="p-0 h-full">
+                            <div class="header">
+                                <h1>${safe(d.personal.name)}</h1>
+                                <p class="text-xl opacity-90">${safe(d.personal.title)}</p>
+                                <div class="flex gap-4 mt-4 text-xs opacity-80">
+                                    ${d.personal.email ? `<span>${icon('mail')} ${safe(d.personal.email)}</span>` : ''}
+                                    ${d.personal.phone ? `<span>${icon('phone')} ${safe(d.personal.phone)}</span>` : ''}
+                                    ${d.personal.city ? `<span>${icon('map-pin')} ${safe(d.personal.city)}</span>` : ''}
+                                </div>
+                            </div>
+                            <div class="content">
+                                ${d.personal.summary ? `<div class="mb-6"><p class="text-sm">${safe(d.personal.summary).replace(/\n/g, '<br>')}</p></div>` : ''}
+                                ${d.experience && d.experience.length > 0 ? `<div class="mb-6"><h2>${i18n.experience}</h2>${d.experience.map(exp => `<div class="mt-4"><h3 class="font-bold text-sm">${safe(exp.role)}</h3><div class="text-xs text-667eea font-semibold">${safe(exp.company)} | ${period(exp.start, exp.end, exp.current)}</div><p class="text-xs text-gray-700 mt-1">${safe(exp.description).replace(/\n/g, '<br>')}</p></div>`).join('')}</div>` : ''}
+                                ${d.education && d.education.length > 0 ? `<div class="mb-6"><h2>${i18n.education}</h2>${d.education.map(e => `<div class="mt-3"><div class="font-bold text-sm">${safe(e.school)}</div><div class="text-xs text-667eea">${safe(e.degree)}</div></div>`).join('')}</div>` : ''}
+                                ${d.skills && d.skills.length > 0 ? `<div class="mb-6"><h2>${i18n.skills}</h2><div class="mt-2 flex flex-wrap gap-2">${d.skills.map(s => `<span class="bg-667eea20 text-667eea px-3 py-1 rounded text-xs">${safe(s.name)}</span>`).join('')}</div></div>` : ''}
+                            </div>
+                        </div>
+                        `;
+                    } else if (tpl === 'classic-modern') {
+                        html = `
+                        <div class="p-10 h-full">
+                            <div class="header">
+                                <h1>${safe(d.personal.name)}</h1>
+                                <h2>${safe(d.personal.title)}</h2>
+                                <div class="text-xs text-gray-500 flex justify-center gap-4 mt-4">
+                                    ${d.personal.email ? `<span>${safe(d.personal.email)}</span>` : ''}
+                                    ${d.personal.phone ? `<span>${safe(d.personal.phone)}</span>` : ''}
+                                    ${d.personal.city ? `<span>${safe(d.personal.city)}</span>` : ''}
+                                </div>
+                            </div>
+                            ${d.personal.summary ? `<div class="mb-8"><div class="section-title">Perfil</div><p class="text-sm text-justify">${safe(d.personal.summary).replace(/\n/g, '<br>')}</p></div>` : ''}
+                            ${d.experience && d.experience.length > 0 ? `<div class="mb-8"><div class="section-title">${i18n.experience}</div>${d.experience.map(exp => `<div class="mb-4"><h3 class="font-bold text-base">${safe(exp.role)}</h3><div class="text-sm text-gray-600 italic">${safe(exp.company)} | ${period(exp.start, exp.end, exp.current)}</div><p class="text-sm mt-1">${safe(exp.description).replace(/\n/g, '<br>')}</p></div>`).join('')}</div>` : ''}
+                            ${d.education && d.education.length > 0 ? `<div class="mb-8"><div class="section-title">${i18n.education}</div>${d.education.map(e => `<div class="mb-3"><div class="font-bold text-sm">${safe(e.school)}</div><div class="text-sm italic">${safe(e.degree)}</div><div class="text-xs text-gray-500">${safe(e.start)} - ${safe(e.end)}</div></div>`).join('')}</div>` : ''}
+                            ${d.skills && d.skills.length > 0 ? `<div class="mb-8"><div class="section-title">${i18n.skills}</div><p class="text-sm">${d.skills.map(s => safe(s.name)).join(' • ')}</p></div>` : ''}
+                        </div>
+                        `;
+                    } else if (tpl === 'minimal-color') {
+                        html = `
+                        <div class="p-10 h-full">
+                            <div class="header mb-8">
+                                <h1>${safe(d.personal.name)}</h1>
+                                <p class="text-sm text-gray-600 mt-2">${safe(d.personal.title)}</p>
+                                <div class="flex gap-4 mt-4 text-xs text-gray-500">
+                                    ${d.personal.email ? `<span>${icon('mail')} ${safe(d.personal.email)}</span>` : ''}
+                                    ${d.personal.phone ? `<span>${icon('phone')} ${safe(d.personal.phone)}</span>` : ''}
+                                    ${d.personal.city ? `<span>${icon('map-pin')} ${safe(d.personal.city)}</span>` : ''}
+                                </div>
+                            </div>
+                            ${d.personal.summary ? `<div class="mb-8"><p class="text-sm">${safe(d.personal.summary).replace(/\n/g, '<br>')}</p></div>` : ''}
+                            ${d.experience && d.experience.length > 0 ? `<div class="mb-8"><h2>${i18n.experience}</h2>${d.experience.map(exp => `<div class="mt-4"><h3 class="font-bold text-sm">${safe(exp.role)} - ${safe(exp.company)}</h3><p class="text-xs text-gray-500">${period(exp.start, exp.end, exp.current)}</p><p class="text-xs mt-1">${safe(exp.description).replace(/\n/g, '<br>')}</p></div>`).join('')}</div>` : ''}
+                            ${d.education && d.education.length > 0 ? `<div class="mb-8"><h2>${i18n.education}</h2>${d.education.map(e => `<div class="mt-3"><div class="font-bold text-sm">${safe(e.school)}</div><div class="text-xs text-gray-600">${safe(e.degree)}</div></div>`).join('')}</div>` : ''}
+                            ${d.skills && d.skills.length > 0 ? `<div class="mb-8"><h2>${i18n.skills}</h2><div class="mt-2">${d.skills.map(s => `<span class="inline-block text-xs bg-gray-100 px-2 py-1 rounded mr-2 mb-2">${safe(s.name)}</span>`).join('')}</div></div>` : ''}
+                        </div>
+                        `;
+                    } else if (tpl === 'tech-dark') {
+                        html = `
+                        <div class="template-tech-dark">
+                            <div class="sidebar">
+                                <h1 class="mb-4">${safe(d.personal.name)}</h1>
+                                <p class="text-sm text-60a5fa mb-6">${safe(d.personal.title)}</p>
+                                <h2>${i18n.contact}</h2>
+                                <ul class="text-xs space-y-2 mt-2 opacity-90">
+                                    ${d.personal.email ? `<li>${icon('mail')} ${safe(d.personal.email)}</li>` : ''}
+                                    ${d.personal.phone ? `<li>${icon('phone')} ${safe(d.personal.phone)}</li>` : ''}
+                                    ${d.personal.city ? `<li>${icon('map-pin')} ${safe(d.personal.city)}</li>` : ''}
+                                </ul>
+                                ${d.skills && d.skills.length > 0 ? `<h2>${i18n.skills}</h2><div class="mt-3 space-y-2">${d.skills.map(s => `<div class="text-xs">${safe(s.name)} <span class="opacity-60">(${safe(s.level)})</span></div>`).join('')}</div>` : ''}
+                                ${d.education && d.education.length > 0 ? `<h2>${i18n.education}</h2><div class="mt-3 space-y-3">${d.education.map(e => `<div><div class="font-bold text-sm">${safe(e.school)}</div><div class="text-xs text-60a5fa">${safe(e.degree)}</div></div>`).join('')}</div>` : ''}
+                            </div>
+                            <div class="main">
+                                ${d.personal.summary ? `<div class="mb-6"><p class="text-sm text-e2e8f0">${safe(d.personal.summary).replace(/\n/g, '<br>')}</p></div>` : ''}
+                                ${d.experience && d.experience.length > 0 ? `<div class="mb-6"><h2>${i18n.experience}</h2>${d.experience.map(exp => `<div class="mt-4"><h3 class="font-bold text-sm text-60a5fa">${safe(exp.role)}</h3><div class="text-xs text-94a3b8">${safe(exp.company)} | ${period(exp.start, exp.end, exp.current)}</div><p class="text-xs text-e2e8f0 mt-1">${safe(exp.description).replace(/\n/g, '<br>')}</p></div>`).join('')}</div>` : ''}
+                            </div>
+                        </div>
+                        `;
+                    } else if (tpl === 'professional-blue') {
+                        html = `
+                        <div class="p-0 h-full">
+                            <div class="header">
+                                <h1>${safe(d.personal.name)}</h1>
+                                <p class="text-sm opacity-90 mt-1">${safe(d.personal.title)}</p>
+                                <div class="flex gap-4 mt-3 text-xs opacity-80">
+                                    ${d.personal.email ? `<span>${icon('mail')} ${safe(d.personal.email)}</span>` : ''}
+                                    ${d.personal.phone ? `<span>${icon('phone')} ${safe(d.personal.phone)}</span>` : ''}
+                                    ${d.personal.city ? `<span>${icon('map-pin')} ${safe(d.personal.city)}</span>` : ''}
+                                </div>
+                            </div>
+                            <div class="p-9">
+                                ${d.personal.summary ? `<div class="mb-6"><h2>Perfil</h2><p class="text-sm mt-2">${safe(d.personal.summary).replace(/\n/g, '<br>')}</p></div>` : ''}
+                                ${d.experience && d.experience.length > 0 ? `<div class="mb-6"><h2>${i18n.experience}</h2>${d.experience.map(exp => `<div class="mt-4"><h3 class="font-bold text-sm">${safe(exp.role)}</h3><div class="text-xs text-gray-600">${safe(exp.company)} | ${period(exp.start, exp.end, exp.current)}</div><p class="text-xs text-gray-700 mt-1">${safe(exp.description).replace(/\n/g, '<br>')}</p></div>`).join('')}</div>` : ''}
+                                ${d.education && d.education.length > 0 ? `<div class="mb-6"><h2>${i18n.education}</h2>${d.education.map(e => `<div class="mt-3"><div class="font-bold text-sm">${safe(e.school)}</div><div class="text-xs text-gray-600">${safe(e.degree)}</div></div>`).join('')}</div>` : ''}
+                                ${d.skills && d.skills.length > 0 ? `<div class="mb-6"><h2>${i18n.skills}</h2><p class="text-sm mt-2">${d.skills.map(s => safe(s.name)).join(' • ')}</p></div>` : ''}
+                            </div>
+                        </div>
+                        `;
+                    } else if (tpl === 'professional-sidebar') {
+                        // Función helper para calcular porcentaje de skill
+                        const getSkillPercent = (level) => {
+                            if (level === 'Avanzado') return 90;
+                            if (level === 'Medio') return 70;
+                            if (level === 'Básico') return 40;
+                            return 50;
+                        };
+                        
+                        html = `
+                        <div class="template-professional-sidebar">
+                            <div class="sidebar">
+                                <div class="profile-photo">
+                                    <div style="width: 100%; height: 100%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; color: white; font-size: 48px;">👤</div>
+                                </div>
+                                
+                                ${d.personal.summary ? `
+                                <div class="section-content">
+                                    <h2>Perfil</h2>
+                                    <p>${safe(d.personal.summary).replace(/\n/g, '<br>')}</p>
+                                </div>
+                                ` : ''}
+                                
+                                ${d.education && d.education.length > 0 ? `
+                                <div class="section-content">
+                                    <h2>Cursos</h2>
+                                    ${d.education.map(edu => `
+                                        <div class="course-item">
+                                            <div class="item-title">${safe(edu.degree || edu.school)}</div>
+                                            <div class="item-date">${safe(edu.start)}${edu.end ? ` - ${safe(edu.end)}` : ''}</div>
+                                            ${edu.description ? `<div class="item-description">${safe(edu.description).replace(/\n/g, '<br>')}</div>` : ''}
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                ` : ''}
+                                
+                                ${d.experience && d.experience.length > 0 ? `
+                                <div class="section-content">
+                                    <h2>Prácticas</h2>
+                                    ${d.experience.map(exp => `
+                                        <div class="practice-item">
+                                            <div class="item-title">${safe(exp.role)}</div>
+                                            <div class="item-date">${safe(exp.company)} | ${period(exp.start, exp.end, exp.current)}</div>
+                                            ${exp.description ? `<div class="item-description">${safe(exp.description).replace(/\n/g, '<br>')}</div>` : ''}
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                ` : ''}
+                                
+                                ${d.projects && d.projects.length > 0 ? `
+                                <div class="section-content">
+                                    <h2>Certificados</h2>
+                                    ${d.projects.map(proj => `
+                                        <div class="course-item">
+                                            <div class="item-title">${safe(proj.title)}</div>
+                                            ${proj.description ? `<div class="item-description">${safe(proj.description).replace(/\n/g, '<br>')}</div>` : ''}
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                ` : ''}
+                            </div>
+                            
+                            <div class="main">
+                                <div class="header-right">
+                                    <h1>${safe(d.personal.name || 'Tu Nombre')}</h1>
+                                    <div class="contact-info">
+                                        ${d.personal.email ? `<span>${icon('mail')} ${safe(d.personal.email)}</span>` : ''}
+                                        ${d.personal.phone ? `<span>${icon('phone')} ${safe(d.personal.phone)}</span>` : ''}
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <h2>Datos personales</h2>
+                                    <div style="font-size: 12px; line-height: 1.8;">
+                                        ${d.personal.website ? `<div><strong>Sitio web:</strong> ${safe(d.personal.website)}</div>` : ''}
+                                        ${d.personal.website ? `<div><strong>LinkedIn:</strong> ${safe(d.personal.website)}</div>` : ''}
+                                    </div>
+                                </div>
+                                
+                                ${d.skills && d.skills.length > 0 ? `
+                                <div>
+                                    <h2>Competencias</h2>
+                                    <div style="margin-top: 12px;">
+                                        ${d.skills.map(skill => {
+                                            const percent = getSkillPercent(skill.level);
+                                            return `
+                                            <div class="skill-bar">
+                                                <div class="skill-bar-label">
+                                                    <span>${safe(skill.name)}</span>
+                                                </div>
+                                                <div class="skill-bar-progress">
+                                                    <div class="skill-bar-fill" style="width: ${percent}%"></div>
+                                                </div>
+                                            </div>
+                                            `;
+                                        }).join('')}
+                                    </div>
+                                </div>
+                                ` : ''}
+                                
+                                <div>
+                                    <h2>Idiomas</h2>
+                                    <div style="margin-top: 12px;">
+                                        <div class="skill-bar">
+                                            <div class="skill-bar-label">
+                                                <span>Español</span>
+                                            </div>
+                                            <div class="skill-bar-progress">
+                                                <div class="skill-bar-fill" style="width: 90%"></div>
+                                            </div>
+                                        </div>
+                                        <div class="skill-bar">
+                                            <div class="skill-bar-label">
+                                                <span>Inglés</span>
+                                            </div>
+                                            <div class="skill-bar-progress">
+                                                <div class="skill-bar-fill" style="width: 40%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <h2>Pasatiempos e intereses</h2>
+                                    <div style="font-size: 12px; line-height: 1.8; margin-top: 12px;">
+                                        ${d.projects && d.projects.length > 0 ? d.projects.map(p => safe(p.description || p.title)).join(', ') : 'Programación en Python y JavaScript, diseño de dashboards y páginas web con efectos visuales, exploración de nuevas herramientas de ciberseguridad y automatización, mantenimiento y personalización de equipos tecnológicos.'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        `;
+                    } else if (['clean', 'elegant-serif', 'bold', 'soft', 'compact', 'spacious', 'vertical'].includes(tpl)) {
+                        // Plantillas simples con variaciones de estilo
+                        const isBold = tpl === 'bold';
+                        const isSoft = tpl === 'soft';
+                        const isCompact = tpl === 'compact';
+                        const isSpacious = tpl === 'spacious';
+                        const headerClass = isBold ? 'bg-black text-white p-6' : isSoft ? 'bg-gradient-to-r from-yellow-200 to-orange-300 p-6 rounded-lg' : 'text-center mb-8';
+                        const textSize = isCompact ? 'text-xs' : isSpacious ? 'text-base' : 'text-sm';
+                        html = `
+                        <div class="${isCompact ? 'p-6' : isSpacious ? 'p-12' : 'p-10'} h-full">
+                            <div class="${headerClass}">
+                                <h1>${safe(d.personal.name)}</h1>
+                                <p class="${textSize} ${isBold ? 'opacity-90' : 'text-gray-600'} mt-2">${safe(d.personal.title)}</p>
+                                <div class="flex ${isSpacious ? 'justify-center' : ''} gap-4 mt-4 ${textSize} ${isBold ? 'opacity-80' : 'text-gray-500'}">
+                                    ${d.personal.email ? `<span>${icon('mail')} ${safe(d.personal.email)}</span>` : ''}
+                                    ${d.personal.phone ? `<span>${icon('phone')} ${safe(d.personal.phone)}</span>` : ''}
+                                    ${d.personal.city ? `<span>${icon('map-pin')} ${safe(d.personal.city)}</span>` : ''}
+                                </div>
+                            </div>
+                            ${d.personal.summary ? `<div class="mb-6"><h2>Perfil</h2><p class="${textSize} mt-2">${safe(d.personal.summary).replace(/\n/g, '<br>')}</p></div>` : ''}
+                            ${d.experience && d.experience.length > 0 ? `<div class="mb-6"><h2>${i18n.experience}</h2>${d.experience.map(exp => `<div class="mt-4"><h3 class="font-bold ${textSize}">${safe(exp.role)}</h3><div class="${textSize} text-gray-600">${safe(exp.company)} | ${period(exp.start, exp.end, exp.current)}</div><p class="${textSize} text-gray-700 mt-1">${safe(exp.description).replace(/\n/g, '<br>')}</p></div>`).join('')}</div>` : ''}
+                            ${d.education && d.education.length > 0 ? `<div class="mb-6"><h2>${i18n.education}</h2>${d.education.map(e => `<div class="mt-3"><div class="font-bold ${textSize}">${safe(e.school)}</div><div class="${textSize} text-gray-600">${safe(e.degree)}</div></div>`).join('')}</div>` : ''}
+                            ${d.skills && d.skills.length > 0 ? `<div class="mb-6"><h2>${i18n.skills}</h2><div class="mt-2 flex flex-wrap gap-2">${d.skills.map(s => `<span class="${textSize} bg-gray-100 px-3 py-1 rounded">${safe(s.name)}</span>`).join('')}</div></div>` : ''}
+                        </div>
+                        `;
+                    } else if (tpl === 'classic') {
+                    // Clásico
+                    html = `
+                    <div class="p-12 h-full">
+                        <div class="text-center mb-8">
+                                <h1 class="text-3xl font-bold uppercase tracking-widest mb-2">${safe(d.personal.name)}</h1>
+                                <p class="text-sm font-bold text-gray-600 uppercase mb-4">${safe(d.personal.title)}</p>
+                            <div class="text-xs text-gray-500 flex justify-center gap-4 border-t border-b border-gray-300 py-2">
+                                    ${d.personal.email ? `<span>${safe(d.personal.email)}</span>` : ''}
+                                    ${d.personal.phone ? `<span>${safe(d.personal.phone)}</span>` : ''}
+                                    ${d.personal.city ? `<span>${safe(d.personal.city)}</span>` : ''}
+                                    ${d.personal.website ? `<span>${safe(d.personal.website)}</span>` : ''}
+                            </div>
+                        </div>
+
+                        ${d.personal.summary ? `
+                            <div class="mb-6">
+                                <h2>Perfil</h2>
+                                    <p class="text-sm text-justify">${safe(d.personal.summary).replace(/\n/g, '<br>')}</p>
+                            </div>
+                        ` : ''}
+
+                            ${d.experience && d.experience.length > 0 ? `
+                         <div class="mb-6">
+                            <h2>${i18n.experience}</h2>
+                            ${d.experience.map(exp => `
+                                <div class="mb-4">
+                                    <div class="flex justify-between items-baseline mb-1">
+                                                <h3 class="font-bold text-md">${safe(exp.company)}</h3>
+                                        <span class="text-xs font-bold">${period(exp.start, exp.end, exp.current)}</span>
+                                    </div>
+                                            <div class="text-sm text-gray-600 italic mb-1">${safe(exp.role)}</div>
+                                            <p class="text-sm text-gray-800">${safe(exp.description).replace(/\n/g, '<br>')}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                            ` : ''}
+
+                            ${d.education && d.education.length > 0 ? `
+                        <div class="mb-6">
+                            <h2>${i18n.education}</h2>
+                            ${d.education.map(e => `
+                                <div class="mb-2">
+                                    <div class="flex justify-between">
+                                                <span class="font-bold text-sm">${safe(e.school)}</span>
+                                                <span class="text-xs">${safe(e.start)} - ${safe(e.end)}</span>
+                                    </div>
+                                            <div class="text-sm italic">${safe(e.degree)}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                            ` : ''}
+                        
+                            ${d.skills && d.skills.length > 0 ? `
+                         <div class="mb-6">
+                            <h2>${i18n.skills}</h2>
+                                    <p class="text-sm">${d.skills.map(s => safe(s.name)).join(' • ')}</p>
+                        </div>
+                            ` : ''}
+                        </div>
+                        `;
+                    } else {
+                        // Plantilla por defecto (minimal) si no se encuentra
+                        html = `
+                        <div class="p-10 h-full">
+                            <div class="header mb-8">
+                                <h1>${safe(d.personal.name || 'Tu Nombre')}</h1>
+                                <p class="text-sm text-gray-600 mt-2">${safe(d.personal.title || 'Título Profesional')}</p>
+                                <div class="flex gap-4 mt-4 text-xs text-gray-500">
+                                    ${d.personal.email ? `<span>${icon('mail')} ${safe(d.personal.email)}</span>` : ''}
+                                    ${d.personal.phone ? `<span>${icon('phone')} ${safe(d.personal.phone)}</span>` : ''}
+                                    ${d.personal.city ? `<span>${icon('map-pin')} ${safe(d.personal.city)}</span>` : ''}
+                                </div>
+                            </div>
+                            ${d.personal.summary ? `<div class="divider"></div><div class="mb-6"><p class="text-sm">${safe(d.personal.summary).replace(/\n/g, '<br>')}</p></div>` : ''}
+                            ${d.experience && d.experience.length > 0 ? `<div class="divider"></div><div class="mb-6"><h2>${i18n.experience}</h2>${d.experience.map(exp => `<div class="mt-4"><h3 class="font-bold text-sm">${safe(exp.role)} - ${safe(exp.company)}</h3><p class="text-xs text-gray-500">${period(exp.start, exp.end, exp.current)}</p><p class="text-xs mt-1">${safe(exp.description).replace(/\n/g, '<br>')}</p></div>`).join('')}</div>` : ''}
+                            ${d.education && d.education.length > 0 ? `<div class="divider"></div><div class="mb-6"><h2>${i18n.education}</h2>${d.education.map(e => `<div class="mt-3"><div class="font-bold text-sm">${safe(e.school)}</div><div class="text-xs text-gray-600">${safe(e.degree)}</div><div class="text-xs text-gray-400">${safe(e.start)} - ${safe(e.end)}</div></div>`).join('')}</div>` : ''}
+                            ${d.skills && d.skills.length > 0 ? `<div class="divider"></div><div class="mb-6"><h2>${i18n.skills}</h2><div class="mt-2">${d.skills.map(s => `<span class="inline-block text-xs bg-gray-100 px-2 py-1 rounded mr-2 mb-2">${safe(s.name)}</span>`).join('')}</div></div>` : ''}
+                    </div>
+                    `;
+                }
+
+                container.innerHTML = html;
+                feather.replace();
+                } catch (error) {
+                    console.error('Error renderizando preview:', error);
+                    Toast.error('Error al renderizar la vista previa');
+                }
+            },
+
+            // --- CARTA DE PRESENTACIÓN ---
+            toggleCoverLetter: () => {
+                const modal = document.getElementById('modal-cover-letter');
+                modal.classList.toggle('hidden');
+                if (!modal.classList.contains('hidden')) {
+                    feather.replace();
+                }
+            }
+        };
+
+        // Lógica de Carta de Presentación
+        const coverLetter = {
+            generateText: () => {
+                const company = document.getElementById('cl-company').value || "[Nombre de la Empresa]";
+                const role = document.getElementById('cl-role').value || "[Puesto]";
+                const name = state.data.personal.name || 'Tu Nombre';
+                
+                const skillsText = state.data.skills && state.data.skills.length > 0 
+                    ? state.data.skills.slice(0,3).map(s=>s.name).join(', ')
+                    : 'habilidades técnicas';
+                
+                const expText = state.data.experience && state.data.experience.length > 0
+                    ? state.data.experience[0].company || 'mi trabajo anterior'
+                    : 'mi trabajo anterior';
+                
+                const descText = state.data.experience && state.data.experience.length > 0 && state.data.experience[0].description
+                    ? state.data.experience[0].description.substring(0, 50) + '...'
+                    : 'resultados significativos';
+                
+                const text = `Estimado/a responsable de selección,\n\nMe pongo en contacto con usted para expresarle mi firme interés en la posición de ${role} en ${company}, tal como se anuncia en su portal de empleo. Con mi experiencia en el sector y mi pasión por el desarrollo profesional continuo, estoy convencido de que puedo aportar valor inmediato a su equipo.\n\nA lo largo de mi trayectoria, he desarrollado habilidades clave como ${skillsText}, que considero fundamentales para el éxito en este rol. En mi última experiencia en ${expText}, logré ${descText}, lo que demuestra mi capacidad para alcanzar objetivos.\n\nEstoy muy entusiasmado con la posibilidad de unirme a ${company} y contribuir a sus futuros éxitos. Agradezco de antemano su tiempo y consideración.\n\nAtentamente,\n\n${name}\n${state.data.personal.phone || ''}\n${state.data.personal.email || ''}`;
+                
+                document.getElementById('cl-body').value = text;
+            },
+            
+            exportDOCX: async () => {
+                try {
+                    if (!window.docx) {
+                        Toast.error('Error cargando librería DOCX');
+                        return;
+                    }
+                    
+                    const { Document, Packer, Paragraph, HeadingLevel } = docx;
+                 const bodyText = document.getElementById('cl-body').value;
+                 
+                 const doc = new Document({
+                    sections: [{
+                        children: [
+                                new Paragraph({ text: state.data.personal.name || 'CV', heading: HeadingLevel.HEADING_1 }),
+                                new Paragraph({ text: state.data.personal.email || '' }),
+                                new Paragraph({ text: state.data.personal.phone || '' }),
+                            new Paragraph({ text: "" }),
+                            new Paragraph({ text: new Date().toLocaleDateString() }),
+                            new Paragraph({ text: "" }),
+                            ...bodyText.split('\n').map(line => new Paragraph({ text: line })),
+                        ],
+                    }],
+                });
+
+                    const blob = await Packer.toBlob(doc);
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `Carta_Presentacion_${(state.data.personal.name || 'CV').replace(/\s/g,'_')}.docx`;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    Toast.success('Carta de presentación generada');
+                } catch (error) {
+                    console.error('Error exportando carta:', error);
+                    Toast.error('Error al generar la carta');
+                }
+            }
+        };
+
+        // --- UI HELPERS ---
+        const ui = {
+            switchTab: (tabName) => {
+                document.getElementById('panel-content').classList.add('hidden');
+                document.getElementById('panel-design').classList.add('hidden');
+                document.getElementById('tab-content').classList.remove('tab-active');
+                document.getElementById('tab-design').classList.remove('tab-active');
+                document.getElementById('tab-content').setAttribute('aria-selected', 'false');
+                document.getElementById('tab-design').setAttribute('aria-selected', 'false');
+
+                document.getElementById(`panel-${tabName}`).classList.remove('hidden');
+                document.getElementById(`tab-${tabName}`).classList.add('tab-active');
+                document.getElementById(`tab-${tabName}`).setAttribute('aria-selected', 'true');
+            },
+            
+            zoom: (amount) => {
+                state.zoom += amount;
+                if(state.zoom < 0.5) state.zoom = 0.5;
+                if(state.zoom > 1.5) state.zoom = 1.5;
+                const container = document.getElementById('preview-container');
+                if (container) {
+                    container.style.transform = `scale(${state.zoom})`;
+                }
+                ui.updateZoomIndicator();
+            },
+            
+            updateZoomIndicator: () => {
+                const indicator = document.getElementById('zoom-indicator');
+                if (indicator) {
+                    indicator.textContent = `${Math.round(state.zoom * 100)}%`;
+                }
+            },
+            
+            initDragAndDrop: () => {
+                // Se inicializa en renderEditor ahora
+            }
+        };
+
+        // Iniciar App
+        window.addEventListener('DOMContentLoaded', app.init);
+
+    </script>
+</body>
+</html>

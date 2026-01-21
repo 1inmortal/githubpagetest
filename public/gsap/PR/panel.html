@@ -1,0 +1,4819 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+<title>Video Sync Panel - Mejorado</title>
+
+<style>
+
+/* ------------ RESET ------------ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ------------ LAYOUT BASE ------------ */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Prevenir scroll en toda la página */
+  box-sizing: border-box;
+}
+
+body {
+  background: linear-gradient(135deg, #0d0d0f 0%, #1a1a1f 100%);
+  color: #d9d9d9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* Usar dvh (dynamic viewport height) para móvil, fallback a vh */
+  height: 100dvh;
+  height: 100vh; /* Fallback para navegadores que no soportan dvh */
+  width: 100vw;
+  padding: 16px;
+  padding-top: max(16px, env(safe-area-inset-top));
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+  overflow: hidden;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* Soporte para safe areas en iOS */
+@supports (padding: max(0px)) {
+  body {
+    padding-top: max(16px, env(safe-area-inset-top));
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+}
+
+/* Overlay de fondo para transición suave */
+.page-transition-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, #0d0d0f 0%, #1a1a1f 100%);
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  pointer-events: none;
+}
+
+body.page-entering .page-transition-backdrop,
+body.page-exiting .page-transition-backdrop {
+  opacity: 1;
+}
+
+/* Animación de entrada: zoom desde el panel pequeño - Optimizada con GPU */
+body.page-entering .video-sync-module {
+  animation: panelEnterAnimation 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+/* Animación de salida: zoom hacia el panel pequeño - Optimizada con GPU */
+body.page-exiting .video-sync-module {
+  animation: panelExitAnimation 0.6s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+/* Animación de entrada alternativa (sin datos del panel) */
+body.page-entering-no-origin .video-sync-module {
+  animation: panelEnterFade 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes panelEnterFade {
+  0% {
+    transform: translate3d(0, 20px, 0) scale(0.95);
+    opacity: 0;
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes panelEnterAnimation {
+  0% {
+    transform: translate3d(var(--origin-x, 0), var(--origin-y, 0), 0) scale(0.08);
+    opacity: 0;
+    filter: blur(20px);
+    border-radius: 12px;
+  }
+  25% {
+    transform: translate3d(calc(var(--origin-x, 0) * 0.6), calc(var(--origin-y, 0) * 0.6), 0) scale(0.4);
+    opacity: 0.3;
+    filter: blur(10px);
+  }
+  50% {
+    transform: translate3d(calc(var(--origin-x, 0) * 0.3), calc(var(--origin-y, 0) * 0.3), 0) scale(0.75);
+    opacity: 0.7;
+    filter: blur(4px);
+  }
+  75% {
+    transform: translate3d(calc(var(--origin-x, 0) * 0.1), calc(var(--origin-y, 0) * 0.1), 0) scale(1.02);
+    opacity: 0.95;
+    filter: blur(1px);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+    filter: blur(0);
+    border-radius: 16px;
+  }
+}
+
+@keyframes panelExitAnimation {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+    filter: blur(0);
+    border-radius: 16px;
+  }
+  25% {
+    transform: translate3d(calc(var(--origin-x, 0) * 0.1), calc(var(--origin-y, 0) * 0.1), 0) scale(0.98);
+    opacity: 0.95;
+    filter: blur(1px);
+  }
+  50% {
+    transform: translate3d(calc(var(--origin-x, 0) * 0.3), calc(var(--origin-y, 0) * 0.3), 0) scale(0.75);
+    opacity: 0.7;
+    filter: blur(4px);
+  }
+  75% {
+    transform: translate3d(calc(var(--origin-x, 0) * 0.6), calc(var(--origin-y, 0) * 0.6), 0) scale(0.4);
+    opacity: 0.3;
+    filter: blur(10px);
+  }
+  100% {
+    transform: translate3d(var(--origin-x, 0), var(--origin-y, 0), 0) scale(0.08);
+    opacity: 0;
+    filter: blur(20px);
+    border-radius: 12px;
+  }
+}
+
+/* Optimización para móviles: reducir blur */
+@media (max-width: 768px) {
+  @keyframes panelEnterAnimation {
+    0% {
+      transform: translate3d(var(--origin-x, 0), var(--origin-y, 0), 0) scale(0.08);
+      opacity: 0;
+      filter: blur(8px);
+      border-radius: 12px;
+    }
+    50% {
+      transform: translate3d(calc(var(--origin-x, 0) * 0.3), calc(var(--origin-y, 0) * 0.3), 0) scale(0.75);
+      opacity: 0.7;
+      filter: blur(2px);
+    }
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+      opacity: 1;
+      filter: blur(0);
+      border-radius: 16px;
+    }
+  }
+  
+  @keyframes panelExitAnimation {
+    0% {
+      transform: translate3d(0, 0, 0) scale(1);
+      opacity: 1;
+      filter: blur(0);
+      border-radius: 16px;
+    }
+    50% {
+      transform: translate3d(calc(var(--origin-x, 0) * 0.3), calc(var(--origin-y, 0) * 0.3), 0) scale(0.75);
+      opacity: 0.7;
+      filter: blur(2px);
+    }
+    100% {
+      transform: translate3d(var(--origin-x, 0), var(--origin-y, 0), 0) scale(0.08);
+      opacity: 0;
+      filter: blur(8px);
+      border-radius: 12px;
+    }
+  }
+}
+
+/* ------------ CONTENEDOR PRINCIPAL ------------ */
+.video-sync-module {
+  width: 100%;
+  max-width: 1400px;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  background: linear-gradient(145deg, #111114, #0f0f12);
+  padding: 16px;
+  border-radius: 16px;
+  box-shadow: 0 8px 60px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-sizing: border-box;
+  overflow: hidden;
+  margin: auto;
+  /* Asegurar que el contenido quepa en la pantalla con safe areas */
+  max-height: calc(100dvh - 32px);
+  max-height: calc(100vh - 32px); /* Fallback */
+  height: calc(100dvh - 32px);
+  height: calc(100vh - 32px); /* Fallback */
+  align-content: start;
+  overflow-y: auto; /* Permitir scroll interno si es necesario */
+  overflow-x: hidden;
+  /* Mejorar scroll en móvil */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  transform-origin: center center;
+  position: relative;
+  z-index: 1;
+  /* Optimizaciones de rendimiento */
+  contain: layout style paint;
+  isolation: isolate;
+  /* GPU acceleration */
+  transform: translateZ(0);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ------------ PANEL DE VIDEO ------------ */
+.video-panel {
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(160deg, #141416, #0c0c0d);
+  border-radius: 12px;
+  padding: 20px;
+  position: relative;
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+  min-height: 0; /* Permite que el flex se ajuste */
+  overflow: hidden;
+}
+
+.video-wrapper {
+  position: relative;
+  width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.7);
+}
+
+video {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: 60vh; /* Ajustar según el espacio disponible */
+  display: block;
+  outline: none;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-sizing: border-box;
+  object-fit: contain; /* Mantener proporción sin recortar */
+}
+
+/* ------------ CONTROLES DE VIDEO ------------ */
+.video-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.speed-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.speed-control label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.7);
+  white-space: nowrap;
+}
+
+.speed-select {
+  background: rgba(154, 255, 0, 0.15);
+  color: #9AFF00;
+  border: 1px solid rgba(154, 255, 0, 0.3);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.speed-select:hover {
+  background: rgba(154, 255, 0, 0.25);
+  border-color: rgba(154, 255, 0, 0.5);
+}
+
+.speed-select:focus {
+  border-color: #9AFF00;
+  box-shadow: 0 0 0 2px rgba(154, 255, 0, 0.2);
+}
+
+.autoplay-controls {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 8px;
+  border: 1px solid rgba(154, 255, 0, 0.1);
+}
+
+.autoplay-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 13px;
+  color: rgba(255,255,255,0.9);
+  font-weight: 500;
+}
+
+.autoplay-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #9AFF00;
+}
+
+.autoplay-settings {
+  display: none;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(154, 255, 0, 0.1);
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.7);
+}
+
+.autoplay-settings.active {
+  display: flex;
+}
+
+.autoplay-settings input[type="number"] {
+  background: rgba(154, 255, 0, 0.1);
+  color: #9AFF00;
+  border: 1px solid rgba(154, 255, 0, 0.3);
+  padding: 4px 8px;
+  border-radius: 4px;
+  width: 60px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  outline: none;
+}
+
+.autoplay-settings input[type="number"]:focus {
+  border-color: #9AFF00;
+  box-shadow: 0 0 0 2px rgba(154, 255, 0, 0.2);
+}
+
+.control-btn {
+  background: rgba(154, 255, 0, 0.15);
+  color: #9AFF00;
+  border: 1px solid rgba(154, 255, 0, 0.3);
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  min-width: 80px;
+}
+
+.control-btn:hover {
+  background: rgba(154, 255, 0, 0.25);
+  transform: translateY(-1px);
+}
+
+.control-btn:active {
+  transform: translateY(0);
+}
+
+.time-display {
+  font-size: 12px;
+  color: rgba(255,255,255,0.7);
+  font-variant-numeric: tabular-nums;
+  margin-left: auto;
+}
+
+/* ------------ TIMELINE MEJORADO ------------ */
+.timeline-container {
+  margin-top: 16px;
+  position: relative;
+}
+
+#timeline {
+  position: relative;
+  height: 10px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 5px;
+  cursor: pointer;
+  overflow: visible;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.timeline-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #9AFF00, #7FE000);
+  border-radius: 5px;
+  width: 0%;
+  transition: width 0.1s linear;
+  box-shadow: 0 0 10px rgba(154, 255, 0, 0.4);
+  z-index: 1;
+}
+
+/* Barra de progreso de checkpoints completados */
+.timeline-checkpoints-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(127, 224, 0, 0.5), rgba(154, 255, 0, 0.4));
+  border-radius: 5px;
+  width: 0%;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 0;
+  border-right: 3px solid rgba(154, 255, 0, 0.8);
+  box-shadow: 0 0 8px rgba(127, 224, 0, 0.3);
+  opacity: 0.8;
+}
+
+.timeline-marker {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  background: #9AFF00;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid #111114;
+  box-shadow: 0 2px 8px rgba(154, 255, 0, 0.4), 0 0 0 0 rgba(154, 255, 0, 0);
+  z-index: 2;
+}
+
+.timeline-marker:hover {
+  transform: translate(-50%, -50%) scale(1.5);
+  box-shadow: 0 4px 16px rgba(154, 255, 0, 0.6), 0 0 0 4px rgba(154, 255, 0, 0.2);
+}
+
+.timeline-marker.completed {
+  background: #7FE000;
+  box-shadow: 0 2px 8px rgba(127, 224, 0, 0.3);
+}
+
+.timeline-marker.active {
+  background: #BFFF40;
+  box-shadow: 0 0 20px rgba(191, 255, 64, 0.8);
+  animation: pulse 2s infinite;
+}
+
+.timeline-marker.pending {
+  background: rgba(154, 255, 0, 0.4);
+  border-color: rgba(154, 255, 0, 0.6);
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(191, 255, 64, 0.8); }
+  50% { box-shadow: 0 0 30px rgba(191, 255, 64, 1); }
+}
+
+.marker-tooltip {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.9);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  border: 1px solid rgba(154, 255, 0, 0.3);
+  z-index: 3;
+}
+
+.timeline-marker:hover .marker-tooltip,
+.timeline-marker.tooltip-visible .marker-tooltip {
+  opacity: 1;
+}
+
+/* En móvil, mostrar tooltip siempre que el marcador esté activo */
+@media (max-width: 768px) {
+  .timeline-marker.active .marker-tooltip,
+  .timeline-marker.completed .marker-tooltip {
+    opacity: 1;
+  }
+}
+
+/* ------------ PANEL INFO MEJORADO ------------ */
+.info-panel {
+  background: linear-gradient(180deg, #131316, #0b0b0c);
+  border-radius: 12px;
+  padding: 24px;
+  border: 1px solid rgba(255,255,255,0.07);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+  min-height: 0; /* Permite que el flex se ajuste */
+  overflow-y: auto; /* Scroll interno si es necesario */
+  overflow-x: hidden;
+  max-height: 100%;
+}
+
+#infoContent {
+  flex: 1;
+  padding: 16px;
+  opacity: 0;
+  transform: translateY(20px) scale(0.95);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+}
+
+#infoContent.active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  background: rgba(154, 255, 0, 0.05);
+  border: 1px solid rgba(154, 255, 0, 0.15);
+}
+
+#infoContent h2 {
+  font-size: 24px;
+  margin-bottom: 12px;
+  color: #9AFF00;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+#infoContent p {
+  font-size: 15px;
+  line-height: 1.7;
+  opacity: 0.9;
+  color: #e0e0e0;
+}
+
+.checkpoint-counter {
+  font-size: 12px;
+  color: rgba(154, 255, 0, 0.6);
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+/* Información contextual (mientras el video corre) */
+#infoContent.contextual {
+  background: rgba(154, 255, 0, 0.03);
+  border: 1px solid rgba(154, 255, 0, 0.1);
+  opacity: 0.7;
+}
+
+#infoContent.contextual p {
+  font-size: 14px;
+  opacity: 0.85;
+  color: rgba(255, 255, 255, 0.8);
+  font-style: italic;
+}
+
+/* Mensaje de bienvenida */
+.welcome-message {
+  animation: fadeInUp 0.5s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.welcome-message ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.welcome-message ul li {
+  position: relative;
+  padding-left: 20px;
+}
+
+.welcome-message ul li::before {
+  content: "▸";
+  position: absolute;
+  left: 0;
+  color: #9AFF00;
+  font-weight: bold;
+}
+
+/* Contador de auto-skip */
+#autoSkipDisplay {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(154, 255, 0, 0.2);
+  border: 2px solid #9AFF00;
+  color: #9AFF00;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: bold;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  white-space: nowrap;
+}
+
+/* ------------ PANEL "PRÓXIMAMENTE" ------------ */
+.upcoming-panel {
+  margin-top: 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(154, 255, 0, 0.08), rgba(127, 224, 0, 0.05));
+  border: 1px solid rgba(154, 255, 0, 0.2);
+  border-radius: 10px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.4s ease;
+}
+
+.upcoming-panel.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.upcoming-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.upcoming-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(154, 255, 0, 0.7);
+  font-weight: 600;
+}
+
+.countdown-display {
+  font-size: 32px;
+  font-weight: 700;
+  color: #9AFF00;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 20px rgba(154, 255, 0, 0.5);
+  animation: countdownPulse 1s ease-in-out infinite;
+  min-width: 60px;
+  text-align: right;
+}
+
+@keyframes countdownPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.upcoming-content h3 {
+  font-size: 16px;
+  color: #9AFF00;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.upcoming-content p {
+  font-size: 13px;
+  color: rgba(255,255,255,0.8);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.upcoming-progress-bar {
+  height: 4px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.upcoming-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #9AFF00, #7FE000);
+  width: 0%;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 8px rgba(154, 255, 0, 0.5);
+}
+
+/* ------------ PANEL DE ESTADÍSTICAS ------------ */
+.stats-panel {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.05);
+  opacity: 0;
+  transform: translateY(5px);
+  transition: all 0.3s ease;
+}
+
+.stats-panel.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 8px;
+  background: rgba(154, 255, 0, 0.05);
+  border-radius: 6px;
+  border: 1px solid rgba(154, 255, 0, 0.1);
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #9AFF00;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 10px;
+  color: rgba(255,255,255,0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ------------ PANEL DE TIPS ROTATIVOS ------------ */
+.tips-panel {
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, rgba(154, 255, 0, 0.06), rgba(127, 224, 0, 0.03));
+  border-left: 3px solid rgba(154, 255, 0, 0.4);
+  border-radius: 6px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.4s ease;
+}
+
+.tips-panel.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.tip-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  animation: tipIconFloat 3s ease-in-out infinite;
+}
+
+@keyframes tipIconFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.tip-content {
+  flex: 1;
+}
+
+.tip-content p {
+  font-size: 12px;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.6;
+  margin: 0;
+  font-style: italic;
+}
+
+/* ------------ SISTEMA DE LOGROS ------------ */
+.achievements-container {
+  position: fixed;
+  top: max(20px, env(safe-area-inset-top));
+  right: max(20px, env(safe-area-inset-right));
+  z-index: 9997;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.achievement-badge {
+  background: linear-gradient(135deg, #9AFF00, #7FE000);
+  color: #111;
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(154, 255, 0, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 250px;
+  opacity: 0;
+  transform: translateX(100px);
+  animation: achievementSlideIn 0.5s ease forwards;
+  pointer-events: auto;
+}
+
+@keyframes achievementSlideIn {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.achievement-badge.fade-out {
+  animation: achievementFadeOut 0.5s ease forwards;
+}
+
+@keyframes achievementFadeOut {
+  to {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+}
+
+.achievement-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.achievement-text {
+  flex: 1;
+}
+
+.achievement-title {
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+
+.achievement-desc {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+/* Animaciones de fondo sutiles */
+.info-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+.info-panel::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(154, 255, 0, 0.03) 0%, transparent 70%);
+  animation: backgroundPulse 8s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes backgroundPulse {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+  50% { transform: translate(10px, 10px) scale(1.1); opacity: 0.5; }
+}
+
+.info-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ------------ BOTONES MEJORADOS ------------ */
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+button {
+  background: linear-gradient(135deg, #9AFF00, #7FE000);
+  color: #111;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(154, 255, 0, 0.3);
+  flex: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(154, 255, 0, 0.4);
+  background: linear-gradient(135deg, #BFFF40, #9AFF00);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+button.secondary {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+button.secondary:hover {
+  background: rgba(255,255,255,0.15);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ------------ MENSAJES DE ERROR ------------ */
+.error-message {
+  background: rgba(255, 50, 50, 0.1);
+  border: 1px solid rgba(255, 50, 50, 0.3);
+  color: #ff6b6b;
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 12px;
+  font-size: 13px;
+  display: none;
+}
+
+.error-message.show {
+  display: block;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ------------ LOADING STATE ------------ */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: rgba(255,255,255,0.5);
+  font-size: 14px;
+}
+
+/* ------------ RESPONSIVE MEJORADO ------------ */
+@media(max-width: 1000px) {
+  .video-sync-module {
+    grid-template-columns: 1fr;
+    padding: 16px;
+    max-height: calc(100vh - 32px);
+    height: calc(100vh - 32px);
+  }
+  
+  video {
+    max-height: 50vh;
+  }
+  
+  .button-group {
+    flex-direction: column;
+  }
+  
+  #infoContent h2 {
+    font-size: 20px;
+  }
+  
+  .video-controls {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .speed-control {
+    order: 3;
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 8px;
+  }
+  
+  .time-display {
+    order: 4;
+    width: 100%;
+    text-align: center;
+    margin-top: 4px;
+  }
+}
+
+@media(max-width: 768px) {
+  .video-sync-module {
+    padding: 12px;
+    gap: 12px;
+    max-height: calc(100vh - 24px);
+    height: calc(100vh - 24px);
+  }
+  
+  video {
+    max-height: 45vh;
+  }
+  
+  .video-panel,
+  .info-panel {
+    padding: 12px;
+  }
+  
+  .autoplay-controls {
+    padding: 10px;
+  }
+  
+  .autoplay-settings {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  
+  .autoplay-settings input[type="number"] {
+    width: 50px;
+  }
+  
+  #infoContent h2 {
+    font-size: 20px;
+  }
+  
+  #infoContent p {
+    font-size: 14px;
+  }
+}
+
+@media(max-width: 600px) {
+  body {
+    padding: 0;
+  }
+  
+  .video-sync-module {
+    padding: 10px;
+    gap: 10px;
+    border-radius: 12px;
+    max-height: 100vh;
+    height: 100vh;
+  }
+  
+  video {
+    max-height: 40vh;
+  }
+  
+  .video-panel,
+  .info-panel {
+    padding: 12px;
+    border-radius: 10px;
+  }
+  
+  .video-controls {
+    padding: 6px 10px;
+    gap: 6px;
+  }
+  
+  .control-btn {
+    padding: 10px 14px;
+    font-size: 13px;
+    min-width: 80px;
+    flex: 1;
+    min-height: 44px; /* Área táctil mínima recomendada */
+  }
+  
+  .speed-control {
+    width: 100%;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  
+  .speed-control label {
+    font-size: 12px;
+  }
+  
+  .speed-select {
+    padding: 8px 12px;
+    font-size: 13px;
+    flex: 1;
+    min-height: 44px;
+  }
+  
+  .time-display {
+    font-size: 11px;
+    width: 100%;
+    text-align: center;
+    margin-top: 8px;
+  }
+  
+  .autoplay-controls {
+    padding: 10px;
+    font-size: 12px;
+  }
+  
+  .autoplay-toggle {
+    font-size: 13px;
+  }
+  
+  .autoplay-toggle input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    min-height: 20px;
+  }
+  
+  .autoplay-settings {
+    font-size: 11px;
+    gap: 6px;
+  }
+  
+  .autoplay-settings input[type="number"] {
+    width: 55px;
+    padding: 6px;
+    font-size: 13px;
+    min-height: 36px;
+  }
+  
+  .timeline-container {
+    margin-top: 12px;
+  }
+  
+  #timeline {
+    height: 12px; /* Más alto para mejor interacción táctil */
+  }
+  
+  .timeline-marker {
+    width: 18px;
+    height: 18px;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+  
+  .timeline-marker:hover {
+    transform: translate(-50%, -50%) scale(1.3);
+  }
+  
+  #infoContent {
+    padding: 12px;
+  }
+  
+  #infoContent h2 {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+  
+  #infoContent p {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  
+  .checkpoint-counter {
+    font-size: 11px;
+    margin-top: 6px;
+  }
+  
+  button {
+    padding: 12px 16px;
+    font-size: 13px;
+    min-height: 44px; /* Área táctil mínima */
+    letter-spacing: 0.3px;
+  }
+  
+  .button-group {
+    gap: 8px;
+    margin-top: 16px;
+  }
+  
+  /* Contador de auto-skip más pequeño en móvil */
+  #autoSkipDisplay {
+    top: 8px !important;
+    right: 8px !important;
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+  }
+}
+
+@media(max-width: 400px) {
+  .video-sync-module {
+    padding: 10px;
+    gap: 10px;
+  }
+  
+  .video-panel,
+  .info-panel {
+    padding: 10px;
+  }
+  
+  .control-btn {
+    font-size: 12px;
+    padding: 8px 12px;
+    min-width: 70px;
+  }
+  
+  #infoContent h2 {
+    font-size: 16px;
+  }
+  
+  #infoContent p {
+    font-size: 12px;
+  }
+  
+  button {
+    font-size: 12px;
+    padding: 10px 14px;
+  }
+}
+
+/* Mejoras para orientación landscape en móvil */
+@media(max-width: 900px) and (orientation: landscape) {
+  .video-sync-module {
+    grid-template-columns: 1fr;
+    max-height: 100vh;
+    overflow-y: auto;
+  }
+  
+  .video-panel {
+    max-height: 50vh;
+  }
+  
+  video {
+    max-height: 40vh;
+    object-fit: contain;
+  }
+}
+
+/* Mejoras para tablets */
+@media(min-width: 601px) and (max-width: 1024px) {
+  .video-sync-module {
+    padding: 20px;
+  }
+  
+  .control-btn {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+  
+  .speed-select {
+    padding: 8px 12px;
+  }
+}
+
+/* ------------ NUEVAS FUNCIONALIDADES AVANZADAS ------------ */
+
+/* Instant Preview en marcadores */
+.marker-preview-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.3);
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.marker-preview-backdrop.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.marker-preview-card {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #1a1a1f, #0f0f12);
+  border: 2px solid rgba(154, 255, 0, 0.4);
+  border-radius: 12px;
+  padding: 16px;
+  min-width: 280px;
+  max-width: 320px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(154, 255, 0, 0.2);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+.marker-preview-card.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(-4px);
+}
+
+.marker-preview-card h4 {
+  font-size: 14px;
+  color: #9AFF00;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.marker-preview-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: rgba(255,255,255,0.85);
+}
+
+.marker-preview-card ul li {
+  padding-left: 16px;
+  position: relative;
+  margin-bottom: 4px;
+}
+
+.marker-preview-card ul li::before {
+  content: "▸";
+  position: absolute;
+  left: 0;
+  color: #9AFF00;
+  font-size: 10px;
+}
+
+.marker-preview-card .preview-action {
+  background: rgba(154, 255, 0, 0.15);
+  color: #9AFF00;
+  border: 1px solid rgba(154, 255, 0, 0.3);
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.marker-preview-card .preview-action:hover {
+  background: rgba(154, 255, 0, 0.25);
+  transform: translateY(-1px);
+}
+
+/* Command Palette */
+.command-palette {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, #1a1a1f, #0f0f12);
+  border: 2px solid rgba(154, 255, 0, 0.4);
+  border-radius: 16px;
+  padding: 24px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 70vh;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+  z-index: 10001;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(20px);
+}
+
+.command-palette.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.command-palette-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.7);
+  z-index: 10000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.command-palette-backdrop.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.command-palette-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 10002;
+}
+
+.command-palette-close:hover {
+  background: rgba(154, 255, 0, 0.2);
+  border-color: #9AFF00;
+  color: #9AFF00;
+}
+
+/* Botón para abrir Command Palette en móvil */
+.command-palette-trigger {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #9AFF00, #7FE000);
+  color: #111;
+  border: none;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(154, 255, 0, 0.4);
+  z-index: 9998;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.command-palette-trigger:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 30px rgba(154, 255, 0, 0.6);
+}
+
+@media (max-width: 768px) {
+  .command-palette-trigger {
+    display: flex;
+  }
+}
+
+.command-palette input {
+  width: 100%;
+  background: rgba(0,0,0,0.4);
+  border: 2px solid rgba(154, 255, 0, 0.3);
+  border-radius: 8px;
+  padding: 14px 18px;
+  color: #fff;
+  font-size: 16px;
+  margin-bottom: 16px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.command-palette input:focus {
+  border-color: #9AFF00;
+  box-shadow: 0 0 0 3px rgba(154, 255, 0, 0.2);
+}
+
+.command-palette-results {
+  max-height: calc(70vh - 120px);
+  overflow-y: auto;
+}
+
+.command-palette-item {
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.command-palette-item:hover,
+.command-palette-item.selected {
+  background: rgba(154, 255, 0, 0.15);
+  transform: translateX(4px);
+}
+
+.command-palette-item-title {
+  font-weight: 600;
+  color: #9AFF00;
+  font-size: 14px;
+}
+
+.command-palette-item-time {
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+  margin-left: auto;
+}
+
+/* Cards apilables */
+.checkpoint-cards-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.checkpoint-card {
+  background: linear-gradient(135deg, rgba(154, 255, 0, 0.1), rgba(127, 224, 0, 0.05));
+  border: 2px solid rgba(154, 255, 0, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.checkpoint-card:not(.active) {
+  opacity: 0.6;
+  transform: scale(0.95);
+  max-height: 80px;
+  padding: 12px;
+}
+
+.checkpoint-card.active {
+  opacity: 1;
+  transform: scale(1);
+  max-height: none;
+  border-color: rgba(154, 255, 0, 0.5);
+  box-shadow: 0 4px 20px rgba(154, 255, 0, 0.2);
+}
+
+.checkpoint-card:not(.active):hover {
+  opacity: 0.8;
+  transform: scale(0.98);
+}
+
+.checkpoint-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.checkpoint-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #9AFF00;
+}
+
+.checkpoint-card-time {
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+}
+
+.checkpoint-card-content {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(255,255,255,0.9);
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.checkpoint-card:not(.active) .checkpoint-card-content {
+  max-height: 0;
+  opacity: 0;
+}
+
+/* Lectura por capas */
+.content-layers {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.layer-btn {
+  background: rgba(154, 255, 0, 0.1);
+  border: 1px solid rgba(154, 255, 0, 0.3);
+  color: #9AFF00;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.layer-btn.active {
+  background: rgba(154, 255, 0, 0.25);
+  border-color: #9AFF00;
+}
+
+.layer-btn:hover {
+  background: rgba(154, 255, 0, 0.2);
+}
+
+.content-layer {
+  display: none;
+  margin-top: 12px;
+}
+
+.content-layer.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Quick Actions */
+.quick-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.quick-action-btn {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.quick-action-btn:hover {
+  background: rgba(154, 255, 0, 0.15);
+  border-color: rgba(154, 255, 0, 0.4);
+  color: #9AFF00;
+  transform: translateY(-1px);
+}
+
+/* Modo Presentador */
+body.presenter-mode .video-sync-module {
+  max-width: 100%;
+  padding: 24px;
+}
+
+body.presenter-mode #infoContent h2 {
+  font-size: 32px;
+  margin-bottom: 20px;
+}
+
+body.presenter-mode #infoContent p {
+  font-size: 20px;
+  line-height: 1.8;
+}
+
+body.presenter-mode .video-controls {
+  padding: 12px 16px;
+}
+
+body.presenter-mode .control-btn {
+  padding: 16px 24px;
+  font-size: 18px;
+}
+
+body.presenter-mode .autoplay-controls,
+body.presenter-mode .stats-panel,
+body.presenter-mode .tips-panel {
+  display: none;
+}
+
+/* Mapa de calor en timeline */
+.timeline-heatmap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  border-radius: 5px;
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.timeline-heatmap-segment {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(154, 255, 0, 0.1), rgba(127, 224, 0, 0.2));
+  border-radius: 5px;
+  transition: opacity 0.3s ease;
+}
+
+/* Scrub inteligente */
+.timeline-scrub-preview {
+  position: absolute;
+  bottom: calc(100% + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.95);
+  border: 2px solid rgba(154, 255, 0, 0.5);
+  border-radius: 8px;
+  padding: 12px;
+  min-width: 200px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+.timeline-scrub-preview.show {
+  opacity: 1;
+}
+
+.timeline-scrub-preview-time {
+  font-size: 14px;
+  font-weight: 700;
+  color: #9AFF00;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.timeline-scrub-preview-checkpoint {
+  font-size: 12px;
+  color: rgba(255,255,255,0.8);
+  text-align: center;
+}
+
+/* Highlights Mode */
+.highlights-mode-indicator {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: linear-gradient(135deg, #9AFF00, #7FE000);
+  color: #111;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  z-index: 2000;
+  box-shadow: 0 4px 20px rgba(154, 255, 0, 0.4);
+  display: none;
+  align-items: center;
+  gap: 8px;
+}
+
+.highlights-mode-indicator.active {
+  display: none; /* Oculto permanentemente */
+}
+
+/* Comparación A/B */
+.comparison-ab {
+  margin-top: 16px;
+  padding: 16px;
+  background: rgba(154, 255, 0, 0.05);
+  border: 1px solid rgba(154, 255, 0, 0.2);
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.comparison-item {
+  text-align: center;
+}
+
+.comparison-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.6);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.comparison-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #9AFF00;
+}
+
+.comparison-change {
+  font-size: 12px;
+  margin-top: 4px;
+  color: rgba(255,255,255,0.7);
+}
+
+.comparison-change.positive {
+  color: #7FE000;
+}
+
+.comparison-change.negative {
+  color: #ff6b6b;
+}
+
+/* Píldoras contextuales clicables */
+.contextual-pill {
+  display: inline-block;
+  background: rgba(154, 255, 0, 0.15);
+  border: 1px solid rgba(154, 255, 0, 0.3);
+  color: #9AFF00;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  margin: 4px;
+  transition: all 0.2s ease;
+}
+
+.contextual-pill:hover {
+  background: rgba(154, 255, 0, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(154, 255, 0, 0.3);
+}
+
+/* Gestos táctiles */
+.touch-gesture-hint {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 12px;
+  z-index: 3000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.touch-gesture-hint.show {
+  opacity: 1;
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
+}
+
+/* Responsive mejorado para nuevas funcionalidades */
+@media(max-width: 768px) {
+  .marker-preview-card {
+    min-width: 240px;
+    max-width: 280px;
+    padding: 12px;
+  }
+  
+  .command-palette {
+    width: 95%;
+    padding: 16px;
+    max-height: calc(100dvh - 40px);
+    max-height: calc(100vh - 40px); /* Fallback */
+  }
+  
+  .command-palette-results {
+    max-height: calc(100dvh - 180px);
+    max-height: calc(100vh - 180px); /* Fallback */
+  }
+  
+  /* Ajustar botón trigger para safe areas */
+  .command-palette-trigger {
+    bottom: max(20px, env(safe-area-inset-bottom));
+    right: max(20px, env(safe-area-inset-right));
+  }
+  
+  .checkpoint-card {
+    padding: 12px;
+  }
+  
+  .quick-actions {
+    flex-direction: column;
+  }
+  
+  .quick-action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  body.presenter-mode #infoContent h2 {
+    font-size: 24px;
+  }
+  
+  body.presenter-mode #infoContent p {
+    font-size: 16px;
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+<section class="video-sync-module">
+
+  <!-- PANEL VIDEO -->
+  <div class="video-panel">
+    <div class="video-wrapper">
+      <video id="mainVideo" preload="metadata"></video>
+    </div>
+    
+    <div class="video-controls">
+      <button class="control-btn" id="playPauseBtn">▶ Reproducir</button>
+      <button class="control-btn secondary" id="resetBtn">↻ Reiniciar</button>
+      <div class="speed-control">
+        <label for="speedSelect">Velocidad:</label>
+        <select id="speedSelect" class="speed-select">
+          <option value="0.5">0.5x</option>
+          <option value="1" selected>1x</option>
+          <option value="1.5">1.5x</option>
+          <option value="2">2x</option>
+        </select>
+      </div>
+      <div class="time-display">
+        <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+      </div>
+    </div>
+    
+    <div class="autoplay-controls">
+      <label class="autoplay-toggle">
+        <input type="checkbox" id="autoplayToggle">
+        <span>Modo Auto-play</span>
+      </label>
+      <div class="autoplay-settings" id="autoplaySettings">
+        <label for="autoSkipTime">Auto-skip después de:</label>
+        <input type="number" id="autoSkipTime" min="0" max="60" value="5" step="1">
+        <span>segundos</span>
+      </div>
+    </div>
+    
+    <div class="timeline-container">
+      <div id="timeline">
+        <div class="timeline-progress" id="timelineProgress"></div>
+      </div>
+    </div>
+    
+    <div class="error-message" id="errorMessage"></div>
+  </div>
+
+  <!-- PANEL INFO -->
+  <div class="info-panel">
+    <div id="infoContent">
+      <div class="loading">Cargando video...</div>
+    </div>
+    
+    <!-- Cards apilables para historial -->
+    <div id="checkpointCardsStack" class="checkpoint-cards-stack hidden"></div>
+    
+    <!-- Panel "Próximamente" - Se muestra mientras se reproduce -->
+    <div id="upcomingPanel" class="upcoming-panel hidden">
+      <div class="upcoming-header">
+        <span class="upcoming-label">Próximamente</span>
+        <div class="countdown-display" id="countdownDisplay">--</div>
+      </div>
+      <div class="upcoming-content">
+        <h3 id="upcomingTitle">Cargando...</h3>
+        <p id="upcomingDescription">Preparando siguiente checkpoint...</p>
+        <div class="upcoming-progress-bar">
+          <div class="upcoming-progress-fill" id="upcomingProgressFill"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Panel de estadísticas -->
+    <div id="statsPanel" class="stats-panel hidden">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value" id="statCheckpoints">0/0</div>
+          <div class="stat-label">Checkpoints</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="statProgress">0%</div>
+          <div class="stat-label">Progreso</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="statTimeWatched">0:00</div>
+          <div class="stat-label">Tiempo visto</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Panel de tips rotativos -->
+    <div id="tipsPanel" class="tips-panel hidden">
+      <div class="tip-icon">💡</div>
+      <div class="tip-content">
+        <p id="tipText">Cargando tips...</p>
+      </div>
+    </div>
+    
+    <!-- Sistema de logros -->
+    <div id="achievementsContainer" class="achievements-container"></div>
+    
+    <div class="button-group">
+      <button id="nextBtn" class="hidden">Siguiente punto</button>
+      <button id="replayBtn" class="hidden secondary">Repetir</button>
+    </div>
+  </div>
+
+</section>
+
+<!-- Command Palette -->
+<div id="commandPaletteBackdrop" class="command-palette-backdrop"></div>
+<div id="commandPalette" class="command-palette" role="dialog" aria-label="Buscador de checkpoints" aria-modal="true">
+  <button class="command-palette-close" aria-label="Cerrar búsqueda" id="commandPaletteClose">✕</button>
+  <input type="text" id="commandPaletteInput" placeholder="Buscar checkpoint... (ej: Oclusión, Iluminación)" autocomplete="off">
+  <div id="commandPaletteResults" class="command-palette-results"></div>
+</div>
+
+<!-- Botón para abrir Command Palette en móvil -->
+<button id="commandPaletteTrigger" class="command-palette-trigger" aria-label="Buscar checkpoint" title="Buscar checkpoint (Ctrl+K)">
+  🔍
+</button>
+
+<!-- Highlights Mode Indicator -->
+<div id="highlightsModeIndicator" class="highlights-mode-indicator">
+  <span>⚡</span>
+  <span>Modo Highlights Activo</span>
+</div>
+
+<!-- Touch Gesture Hint -->
+<div id="touchGestureHint" class="touch-gesture-hint"></div>
+
+
+<script>
+
+/* ----------------------------------------------------
+   ANIMACIONES DE ENTRADA/SALIDA
+   ---------------------------------------------------- */
+(function() {
+  // Obtener información del panel original desde sessionStorage
+  const panelOriginData = sessionStorage.getItem('panelOrigin');
+  
+  const body = document.body;
+  const module = document.querySelector('.video-sync-module');
+  
+  // Crear backdrop de transición
+  const backdrop = document.createElement('div');
+  backdrop.className = 'page-transition-backdrop';
+  document.body.appendChild(backdrop);
+  
+  // Detectar si es móvil para optimizaciones
+  const isMobile = window.innerWidth < 768;
+  
+  function initAnimation() {
+    if (panelOriginData) {
+      try {
+        const origin = JSON.parse(panelOriginData);
+        
+        if (module) {
+          // Calcular posición relativa desde el centro de la pantalla
+          const screenCenterX = window.innerWidth / 2;
+          const screenCenterY = window.innerHeight / 2;
+          
+          // Calcular offset desde el centro hasta el panel original
+          const originX = origin.x - screenCenterX;
+          const originY = origin.y - screenCenterY;
+          
+          // Aplicar variables CSS para la animación
+          document.documentElement.style.setProperty('--origin-x', `${originX}px`);
+          document.documentElement.style.setProperty('--origin-y', `${originY}px`);
+          
+          // Activar backdrop primero
+          requestAnimationFrame(() => {
+            backdrop.style.opacity = '1';
+            
+            // Agregar clase de entrada en el siguiente frame para mejor sincronización
+            requestAnimationFrame(() => {
+              body.classList.add('page-entering');
+              
+              // Remover will-change después de la animación para mejor rendimiento
+              setTimeout(() => {
+                body.classList.remove('page-entering');
+                module.style.willChange = 'auto';
+                backdrop.style.opacity = '0';
+              }, 700);
+            });
+          });
+        }
+      } catch (e) {
+        console.warn('Error al procesar datos del panel original:', e);
+        // Fallback: animación simple
+        if (module) {
+          requestAnimationFrame(() => {
+            backdrop.style.opacity = '1';
+            body.classList.add('page-entering-no-origin');
+            setTimeout(() => {
+              body.classList.remove('page-entering-no-origin');
+              module.style.willChange = 'auto';
+              backdrop.style.opacity = '0';
+            }, 500);
+          });
+        }
+      }
+    } else {
+      // Si no hay datos del panel, usar animación simple
+      if (module) {
+        requestAnimationFrame(() => {
+          backdrop.style.opacity = '1';
+          body.classList.add('page-entering-no-origin');
+          setTimeout(() => {
+            body.classList.remove('page-entering-no-origin');
+            module.style.willChange = 'auto';
+            backdrop.style.opacity = '0';
+          }, 500);
+        });
+      }
+    }
+  }
+  
+  // Limpiar cualquier estado residual al cargar
+  cleanupPageState();
+  
+  // Inicializar cuando el DOM esté listo
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAnimation);
+  } else {
+    initAnimation();
+  }
+  
+  // Limpiar estado cuando la página se oculta (pestaña cambia, etc.)
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      cleanupPageState();
+    }
+  }, { passive: true });
+  
+  // Función para limpiar el estado de la página
+  function cleanupPageState() {
+    body.classList.remove('page-exiting', 'page-entering', 'page-entering-no-origin');
+    backdrop.style.opacity = '0';
+    document.body.style.pointerEvents = '';
+    if (module) {
+      module.style.willChange = 'auto';
+    }
+  }
+  
+  // Detectar cuando se va a salir de la página - Optimizado
+  window.addEventListener('beforeunload', () => {
+    // Limpiar estado antes de cerrar para evitar que quede bloqueado
+    cleanupPageState();
+  }, { passive: true });
+  
+  // También detectar navegación hacia atrás
+  let isNavigating = false;
+  window.addEventListener('popstate', (e) => {
+    if (isNavigating) return; // Evitar loops
+    if (module && panelOriginData) {
+      isNavigating = true;
+      requestAnimationFrame(() => {
+        backdrop.style.opacity = '1';
+        body.classList.add('page-exiting');
+        if (module) {
+          module.style.willChange = 'transform, opacity, filter';
+        }
+        
+        // No hacer history.back() aquí porque ya se ejecutó el popstate
+        // Solo limpiar después de un tiempo
+        setTimeout(() => {
+          cleanupPageState();
+          isNavigating = false;
+        }, 600);
+      });
+    } else {
+      cleanupPageState();
+    }
+  }, { passive: true });
+  
+  // Optimización: Preload de recursos críticos
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(() => {
+      // Pre-cargar recursos si están disponibles
+      const video = document.getElementById('mainVideo');
+      if (video && video.src) {
+        video.preload = 'metadata';
+      }
+    });
+  }
+  
+  // Optimización: Reducir repaints durante scroll
+  let scrollTimeout;
+  const scrollModule = document.querySelector('.video-sync-module');
+  if (scrollModule) {
+    scrollModule.addEventListener('scroll', () => {
+      if (!scrollTimeout) {
+        scrollModule.style.willChange = 'scroll-position';
+      }
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        scrollModule.style.willChange = 'auto';
+        scrollTimeout = null;
+      }, 150);
+    }, { passive: true });
+  }
+  
+  // Botón de cerrar/volver
+  function createCloseButton() {
+    // Verificar si ya existe
+    if (document.getElementById('panel-close-btn')) return;
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.id = 'panel-close-btn';
+    closeBtn.innerHTML = '✕';
+    closeBtn.setAttribute('aria-label', 'Cerrar panel');
+    // Calcular posición respetando safe areas
+    const safeTop = CSS.supports('padding', 'env(safe-area-inset-top)') ? 
+      `calc(20px + env(safe-area-inset-top))` : '20px';
+    const safeRight = CSS.supports('padding', 'env(safe-area-inset-right)') ? 
+      `calc(20px + env(safe-area-inset-right))` : '20px';
+    
+    closeBtn.style.cssText = `
+      position: fixed;
+      top: ${safeTop};
+      right: ${safeRight};
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      min-height: 44px;
+      background: rgba(15, 15, 15, 0.9);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: #9AFF00;
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 10002;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      font-family: Arial, sans-serif;
+      line-height: 1;
+      touch-action: manipulation;
+    `;
+    
+    // Optimización: usar transform3d para mejor rendimiento
+    closeBtn.addEventListener('mouseenter', () => {
+      requestAnimationFrame(() => {
+        closeBtn.style.background = 'rgba(154, 255, 0, 0.2)';
+        closeBtn.style.borderColor = '#9AFF00';
+        closeBtn.style.transform = 'translate3d(0, 0, 0) rotate(90deg) scale(1.1)';
+        closeBtn.style.boxShadow = '0 6px 20px rgba(154, 255, 0, 0.4)';
+      });
+    });
+    
+    closeBtn.addEventListener('mouseleave', () => {
+      requestAnimationFrame(() => {
+        closeBtn.style.background = 'rgba(15, 15, 15, 0.9)';
+        closeBtn.style.borderColor = 'rgba(255,255,255,0.1)';
+        closeBtn.style.transform = 'translate3d(0, 0, 0) rotate(0deg) scale(1)';
+        closeBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+      });
+    });
+    
+    // Soporte táctil mejorado para móviles
+    let touchStartTime = 0;
+    closeBtn.addEventListener('touchstart', (e) => {
+      touchStartTime = Date.now();
+      closeBtn.style.transform = 'translate3d(0, 0, 0) scale(0.95)';
+    }, { passive: true });
+    
+    closeBtn.addEventListener('touchend', (e) => {
+      const touchDuration = Date.now() - touchStartTime;
+      if (touchDuration < 200) { // Tap rápido
+        closeBtn.click();
+      }
+      closeBtn.style.transform = 'translate3d(0, 0, 0) scale(1)';
+    }, { passive: true });
+    
+    closeBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const body = document.body;
+      const module = document.querySelector('.video-sync-module');
+      
+      // Prevenir múltiples clicks
+      if (body.classList.contains('page-exiting')) return;
+      
+      // Activar backdrop y animación de salida
+      requestAnimationFrame(() => {
+        backdrop.style.opacity = '1';
+        body.classList.add('page-exiting');
+        
+        // Prevenir interacciones durante la animación
+        document.body.style.pointerEvents = 'none';
+        
+        // Asegurar will-change para mejor rendimiento
+        if (module) {
+          module.style.willChange = 'transform, opacity, filter';
+        }
+        
+        setTimeout(() => {
+          // Calcular la URL del index
+          const origin = window.location.origin;
+          const pathname = window.location.pathname;
+          
+          // Detectar si estamos en GitHub Pages con subdirectorio (validación segura)
+          let basePath = '';
+          const pathParts = pathname.split('/').filter(Boolean);
+          if (pathParts.length > 0 && pathParts[0] === 'githubpagetest') {
+            basePath = '/githubpagetest';
+          } else {
+            // Extraer el nombre del repositorio si está en la URL
+            // La ruta es: /reponame/public/gsap/PR/panel.html
+            const pathParts = pathname.split('/').filter(p => p && p !== 'public' && p !== 'gsap' && p !== 'PR' && p !== 'panel.html');
+            if (pathParts.length > 0) {
+              basePath = '/' + pathParts[0];
+            }
+          }
+          
+          // Construir URL del index (siempre incluir /index.html)
+          const indexUrl = origin + basePath + '/index.html';
+          
+          // Limpiar estado antes de navegar
+          cleanupPageState();
+          
+          // Navegar al index - usar replace para no dejar historial
+          window.location.replace(indexUrl);
+        }, 600);
+      });
+    });
+    
+    document.body.appendChild(closeBtn);
+  }
+  
+  // Crear botón cuando el DOM esté listo
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', createCloseButton);
+  } else {
+    createCloseButton();
+  }
+})();
+
+/* ----------------------------------------------------
+   CHECKPOINTS: aquí defines los tiempos y el contenido
+   ---------------------------------------------------- */
+const checkpoints = [
+  {
+    time: 10,
+    title: "Inicialización del Sistema",
+    text: "El sistema de Visión por Computadora inicia la detección de objetos multiclase. Observa los cuadros delimitadores de colores: 🟨 Amarillo (Autos), 🟧 Naranja (Camiones), 🟩 Verde (Motocicletas), ⬜ Blanco (Autobuses). Cada vehículo recibe un ID único para seguimiento continuo."
+  },
+  {
+    time: 45,
+    title: "Detección de Oclusión",
+    text: "El sistema demuestra su capacidad para detectar vehículos parcialmente ocultos detrás de postes o estructuras de la gasolinera JOMAR. Los vectores rojos muestran la dirección y velocidad de desplazamiento en tiempo real."
+  },
+  {
+    time: 60,
+    title: "Seguimiento de Tráfico Pesado",
+    text: "Vista de la rotonda: el sistema detecta con precisión vehículos largos (autobuses y camiones). Los cuadros delimitadores se ajustan dinámicamente al tamaño del objeto. El ID tracking mantiene la identidad de los vehículos incluso cuando giran en la rotonda."
+  },
+  {
+    time: 90,
+    title: "Robustez ante Cambios de Iluminación",
+    text: "El algoritmo demuestra robustez ante cambios de luz y sombras alargadas. No confunde las sombras de los postes con vehículos, manteniendo la detección precisa sobre los objetos físicos. Se observa el monitoreo de la entrada y salida de la tienda de conveniencia."
+  },
+  {
+    time: 135,
+    title: "Vista de Gran Angular y Alta Densidad",
+    text: "El dron toma altura mostrando una vista más amplia. El sistema procesa decenas de vehículos simultáneamente en ambos carriles sin lag aparente (59-60 FPS estables). El panel derecho muestra el radar 360 con mapa de calor de la densidad de objetos."
+  },
+  {
+    time: 180,
+    title: "Clasificación Avanzada",
+    text: "El sistema distingue entre vehículos estacionados vs. vehículos en movimiento. Las estadísticas en vivo (panel izquierdo) muestran contadores dinámicos de camiones, autos, semáforos y motocicletas detectados. Sistema de vigilancia aérea de grado industrial."
+  }
+];
+
+
+/* ----------------------------------------------------
+   VARIABLES GLOBALES
+   ---------------------------------------------------- */
+let currentCheckpoint = 0;
+let checkpointTriggered = new Set();
+let isPausedByCheckpoint = false;
+let markers = [];
+
+const video = document.getElementById("mainVideo");
+
+// Detectar ruta base automáticamente para el video - Optimizado
+(function() {
+  const DEBUG = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const currentPath = window.location.pathname;
+  const videoFileName = 'captura.mp4';
+  
+  // Detectar entorno y construir rutas prioritarias (URL segura con validación)
+  const hostname = window.location.hostname;
+  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+  // Validar hostname contra lista blanca para GitHub Pages
+  const isGitHubPages = /^[\w-]+\.github\.io$/.test(hostname);
+  const lastSlashIndex = currentPath.lastIndexOf('/');
+  const currentDir = lastSlashIndex >= 0 ? currentPath.substring(0, lastSlashIndex + 1) : '/';
+  
+  // Detectar basePath para GitHub Pages
+  let basePath = '';
+  if (isGitHubPages) {
+    const pathParts = currentPath.split('/').filter(p => p);
+    // Validar pathParts de forma segura contra lista blanca
+    if (pathParts.length > 0) {
+      const firstPart = pathParts[0];
+      // Solo aceptar nombres de repositorio válidos (alphanumeric + guiones)
+      if (/^[a-z0-9-]+$/i.test(firstPart) && firstPart !== 'public' && firstPart !== 'gsap') {
+        basePath = '/' + firstPart;
+      }
+      // Validar específicamente githubpagetest
+      if (firstPart === 'githubpagetest') {
+        basePath = '/githubpagetest';
+      }
+    }
+  }
+  
+  // Construir lista de rutas optimizada (orden de prioridad)
+  const videoPaths = [];
+  
+  // 1. Rutas relativas (más rápidas y confiables)
+  videoPaths.push('mp4/' + videoFileName);
+  videoPaths.push('./mp4/' + videoFileName);
+  videoPaths.push(currentDir + 'mp4/' + videoFileName);
+  
+  // 2. Rutas absolutas según entorno
+  if (basePath) {
+    videoPaths.push(basePath + '/public/gsap/PR/mp4/' + videoFileName);
+  }
+  videoPaths.push('/public/gsap/PR/mp4/' + videoFileName);
+  
+  // 3. Rutas con origin completo (solo si es necesario)
+  if (!isLocalhost && basePath) {
+    videoPaths.push(window.location.origin + basePath + '/public/gsap/PR/mp4/' + videoFileName);
+  }
+  
+  // Variables de estado
+  let currentPathIndex = 0;
+  let isLoading = false;
+  
+  // Función para logging condicional
+  function debugLog(...args) {
+    if (DEBUG) console.log(...args);
+  }
+  
+  function debugWarn(...args) {
+    if (DEBUG) console.warn(...args);
+  }
+  
+  function tryLoadVideo() {
+    if (currentPathIndex >= videoPaths.length) {
+      // Error: no se pudo cargar desde ninguna ruta
+      const errorDetails = {
+        rutas: videoPaths.map((p, i) => `${i + 1}. ${p}`).join('\n'),
+        url: window.location.href,
+        hostname: window.location.hostname,
+        pathname: window.location.pathname,
+        basePath: basePath || 'ninguno'
+      };
+      
+      console.error('❌ No se pudo cargar el video desde ninguna ruta.');
+      if (DEBUG) {
+        console.error('📋 Rutas probadas:', '\n' + errorDetails.rutas);
+        console.error('🔍 Diagnóstico:', errorDetails);
+      }
+      
+      // Mostrar error al usuario
+      if (typeof showError === 'function') {
+        showError('No se pudo cargar el video. Verifica que el archivo existe en: public/gsap/PR/mp4/captura.mp4');
+      } else {
+        const errorDiv = document.createElement('div');
+        errorDiv.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #ff6b6b; color: white; padding: 20px; border-radius: 8px; z-index: 10000; max-width: 90%; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+        errorDiv.innerHTML = `
+          <strong>Error al cargar el video</strong><br>
+          <small>Verifica que el archivo existe en: public/gsap/PR/mp4/captura.mp4</small>
+        `;
+        document.body.appendChild(errorDiv);
+        setTimeout(() => errorDiv.remove(), 8000);
+      }
+      return;
+    }
+    
+    if (isLoading) return;
+    isLoading = true;
+    
+    const pathToTry = videoPaths[currentPathIndex];
+    debugLog(`Intentando cargar video desde: ${pathToTry}`);
+    
+    // Configurar listeners
+    video.removeEventListener('error', onVideoError);
+    video.removeEventListener('loadeddata', onVideoLoaded);
+    video.addEventListener('error', onVideoError, { once: true });
+    video.addEventListener('loadeddata', onVideoLoaded, { once: true });
+    
+    video.src = pathToTry;
+    video.load();
+  }
+  
+  function onVideoError(e) {
+    isLoading = false;
+    const failedPath = videoPaths[currentPathIndex];
+    const errorCode = video.error ? video.error.code : 'unknown';
+    
+    debugWarn(`❌ Error al cargar desde: ${failedPath} (código: ${errorCode})`);
+    
+    currentPathIndex++;
+    setTimeout(() => {
+      tryLoadVideo();
+    }, 50); // Reducido de 100ms a 50ms para carga más rápida
+  }
+  
+  function onVideoLoaded() {
+    isLoading = false;
+    const successfulPath = video.src;
+    debugLog('✓ Video cargado exitosamente desde:', successfulPath);
+    
+    // Limpiar listeners después de carga exitosa
+    video.removeEventListener('error', onVideoError);
+    video.removeEventListener('loadeddata', onVideoLoaded);
+  }
+  
+  // Iniciar carga
+  if (DEBUG) {
+    debugLog('🔍 Iniciando carga de video. Rutas a probar:', videoPaths.length);
+    debugLog(`📍 URL actual: ${window.location.href}`);
+    debugLog(`📂 Directorio actual: ${currentDir}`);
+  }
+  
+  tryLoadVideo();
+})();
+
+const info = document.getElementById("infoContent");
+const nextBtn = document.getElementById("nextBtn");
+const replayBtn = document.getElementById("replayBtn");
+const timeline = document.getElementById("timeline");
+const timelineProgress = document.getElementById("timelineProgress");
+const playPauseBtn = document.getElementById("playPauseBtn");
+const resetBtn = document.getElementById("resetBtn");
+const currentTimeDisplay = document.getElementById("currentTime");
+const durationDisplay = document.getElementById("duration");
+const errorMessage = document.getElementById("errorMessage");
+const speedSelect = document.getElementById("speedSelect");
+const autoplayToggle = document.getElementById("autoplayToggle");
+const autoplaySettings = document.getElementById("autoplaySettings");
+const autoSkipTimeInput = document.getElementById("autoSkipTime");
+
+// Variables de auto-play
+let autoplayEnabled = false;
+let autoSkipTimer = null;
+let autoSkipTime = 5; // segundos por defecto
+
+// Variables para paneles de entretenimiento
+const upcomingPanel = document.getElementById("upcomingPanel");
+const countdownDisplay = document.getElementById("countdownDisplay");
+const upcomingTitle = document.getElementById("upcomingTitle");
+const upcomingDescription = document.getElementById("upcomingDescription");
+const upcomingProgressFill = document.getElementById("upcomingProgressFill");
+const statsPanel = document.getElementById("statsPanel");
+const statCheckpoints = document.getElementById("statCheckpoints");
+const statProgress = document.getElementById("statProgress");
+const statTimeWatched = document.getElementById("statTimeWatched");
+const tipsPanel = document.getElementById("tipsPanel");
+const tipText = document.getElementById("tipText");
+const achievementsContainer = document.getElementById("achievementsContainer");
+
+// Variables para tips y estadísticas
+let tipsIndex = 0;
+let statsUpdateInterval = null;
+let countdownInterval = null;
+let startTime = null;
+let totalTimeWatched = 0;
+
+// Variables para persistencia
+let totalTimeWatchedAccumulated = 0; // Tiempo total acumulado entre sesiones
+let lastCheckpointReached = 0; // Último checkpoint alcanzado
+const STORAGE_KEY = 'videoSyncProgress';
+
+// Tips relacionados con visión por computadora y drones
+const tips = [
+  "💡 Los sistemas de visión por computadora pueden procesar hasta 60 FPS en tiempo real.",
+  "🔍 La detección de objetos multiclase permite identificar diferentes tipos de vehículos simultáneamente.",
+  "📊 El ID tracking mantiene la identidad de objetos incluso cuando se ocultan parcialmente.",
+  "🎯 Los vectores de movimiento muestran dirección y velocidad estimada de los objetos detectados.",
+  "🌐 El radar 360 proporciona una vista abstracta de la densidad de objetos sin ruido visual.",
+  "⚡ Los algoritmos modernos son robustos ante cambios de iluminación y sombras.",
+  "🚁 Los drones tácticos pueden monitorear áreas extensas desde el aire sin ser detectados.",
+  "📈 Las estadísticas en tiempo real permiten análisis inmediato del tráfico y movimiento.",
+  "🎨 Los colores en los cuadros delimitadores ayudan a clasificar rápidamente los objetos.",
+  "🔬 La visión por computadora combina aprendizaje automático y procesamiento de imágenes."
+];
+
+// Logros disponibles
+const achievements = [
+  { id: "first", icon: "🎯", title: "Primer Checkpoint", desc: "Completaste tu primer análisis" },
+  { id: "halfway", icon: "📊", title: "A mitad de camino", desc: "Completaste la mitad de los checkpoints" },
+  { id: "expert", icon: "🏆", title: "Experto en CV", desc: "Completaste todos los checkpoints" },
+  { id: "speed", icon: "⚡", title: "Velocidad", desc: "Completaste un checkpoint en menos de 30 segundos" }
+];
+
+
+/* ----------------------------------------------------
+   UTILIDADES
+   ---------------------------------------------------- */
+function formatTime(seconds) {
+  if (!isFinite(seconds) || isNaN(seconds)) return "0:00";
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+function showError(message) {
+  errorMessage.textContent = message;
+  errorMessage.classList.add("show");
+  setTimeout(() => {
+    errorMessage.classList.remove("show");
+  }, 5000);
+}
+
+function updateTimeDisplay() {
+  currentTimeDisplay.textContent = formatTime(video.currentTime);
+  if (video.duration) {
+    durationDisplay.textContent = formatTime(video.duration);
+  }
+}
+
+/* ----------------------------------------------------
+   SISTEMA DE PERSISTENCIA (LOCALSTORAGE)
+   ---------------------------------------------------- */
+function saveProgress() {
+  try {
+    // Calcular tiempo total visto (acumulado de sesiones anteriores + tiempo actual de esta sesión)
+    const currentSessionTime = video.currentTime || 0;
+    const totalTimeToSave = totalTimeWatchedAccumulated + currentSessionTime;
+    
+    const progressData = {
+      checkpointsCompleted: Array.from(checkpointTriggered),
+      achievementsUnlocked: Array.from(achievementsShown),
+      totalTimeWatched: totalTimeToSave,
+      lastCheckpointReached: currentCheckpoint,
+      lastUpdate: Date.now(),
+      videoDuration: video.duration || 0
+    };
+    
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(progressData));
+  } catch (e) {
+    console.warn('No se pudo guardar el progreso:', e);
+  }
+}
+
+function loadProgress() {
+  try {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (!savedData) return null;
+    
+    const progressData = JSON.parse(savedData);
+    return progressData;
+  } catch (e) {
+    console.warn('No se pudo cargar el progreso:', e);
+    return null;
+  }
+}
+
+function restoreProgress() {
+  const savedData = loadProgress();
+  if (!savedData) return false;
+  
+  // Restaurar checkpoints completados
+  if (savedData.checkpointsCompleted && Array.isArray(savedData.checkpointsCompleted)) {
+    savedData.checkpointsCompleted.forEach(index => {
+      if (index >= 0 && index < checkpoints.length) {
+        checkpointTriggered.add(index);
+      }
+    });
+  }
+  
+  // Restaurar logros
+  if (savedData.achievementsUnlocked && Array.isArray(savedData.achievementsUnlocked)) {
+    savedData.achievementsUnlocked.forEach(achievementId => {
+      achievementsShown.add(achievementId);
+    });
+  }
+  
+  // Restaurar tiempo total visto acumulado
+  // El tiempo guardado es el total acumulado hasta ahora
+  if (savedData.totalTimeWatched !== undefined) {
+    totalTimeWatchedAccumulated = savedData.totalTimeWatched;
+  }
+  
+  // Restaurar último checkpoint alcanzado
+  if (savedData.lastCheckpointReached !== undefined) {
+    lastCheckpointReached = savedData.lastCheckpointReached;
+    currentCheckpoint = Math.max(0, savedData.lastCheckpointReached);
+  }
+  
+  return true;
+}
+
+function showProgressRestored() {
+  const savedData = loadProgress();
+  if (!savedData) return;
+  
+  const completed = savedData.checkpointsCompleted ? savedData.checkpointsCompleted.length : 0;
+  const total = checkpoints.length;
+  const progressPercent = total > 0 ? Math.round((completed / total) * 100) : 0;
+  
+  if (completed > 0) {
+    // Mostrar notificación de progreso restaurado
+    const notification = document.createElement("div");
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #9AFF00, #7FE000);
+      color: #111;
+      padding: 16px 24px;
+      border-radius: 10px;
+      box-shadow: 0 8px 30px rgba(154, 255, 0, 0.4);
+      z-index: 3000;
+      font-weight: 600;
+      font-size: 14px;
+      text-align: center;
+      animation: slideDown 0.5s ease;
+      max-width: 90%;
+    `;
+    notification.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 20px;">📊</span>
+        <div>
+          <div style="font-weight: 700; margin-bottom: 4px;">Progreso Restaurado</div>
+          <div style="font-size: 12px; opacity: 0.8;">
+            Has completado ${completed} de ${total} checkpoints (${progressPercent}%)
+          </div>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Remover después de 4 segundos
+    setTimeout(() => {
+      notification.style.animation = 'slideUp 0.5s ease';
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 500);
+    }, 4000);
+  }
+}
+
+// Agregar animaciones CSS para la notificación
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateX(-50%) translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+  
+  @keyframes slideUp {
+    from {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(-50%) translateY(-20px);
+    }
+  }
+`;
+document.head.appendChild(style);
+
+function updateTimelineProgress() {
+  if (video.duration) {
+    const percent = (video.currentTime / video.duration) * 100;
+    const progressBar = document.getElementById("timelineProgress");
+    if (progressBar) {
+      progressBar.style.width = percent + "%";
+    }
+  }
+}
+
+function updateMarkerStates() {
+  markers.forEach((marker, index) => {
+    marker.element.classList.remove("active", "completed", "pending");
+    
+    if (index < currentCheckpoint) {
+      marker.element.classList.add("completed");
+    } else if (index === currentCheckpoint && checkpointTriggered.has(index)) {
+      marker.element.classList.add("active");
+    } else {
+      marker.element.classList.add("pending");
+    }
+  });
+  
+  // Actualizar progreso de checkpoints
+  updateCheckpointsProgress();
+}
+
+/* ----------------------------------------------------
+   ACTUALIZAR PROGRESO DE CHECKPOINTS EN TIMELINE
+   ---------------------------------------------------- */
+function updateCheckpointsProgress() {
+  if (!video.duration || checkpoints.length === 0) return;
+  
+  const checkpointsProgress = document.getElementById("timelineCheckpointsProgress");
+  if (!checkpointsProgress) return;
+  
+  // Calcular cuántos checkpoints se han completado
+  const completedCount = checkpointTriggered.size;
+  const totalCount = checkpoints.length;
+  
+  if (completedCount === 0) {
+    checkpointsProgress.style.width = "0%";
+    return;
+  }
+  
+  // Si todos están completados, mostrar hasta el final
+  if (completedCount >= totalCount) {
+    checkpointsProgress.style.width = "100%";
+    return;
+  }
+  
+  // Calcular la posición del último checkpoint completado
+  // Encontrar el checkpoint completado más avanzado
+  let lastCompletedTime = 0;
+  let lastCompletedIndex = -1;
+  
+  for (let i = 0; i < checkpoints.length; i++) {
+    if (checkpointTriggered.has(i)) {
+      if (checkpoints[i].time > lastCompletedTime) {
+        lastCompletedTime = checkpoints[i].time;
+        lastCompletedIndex = i;
+      }
+    }
+  }
+  
+  // Si hay un checkpoint activo actualmente, incluir su posición también
+  if (currentCheckpoint < checkpoints.length && checkpointTriggered.has(currentCheckpoint)) {
+    const currentTime = checkpoints[currentCheckpoint].time;
+    if (currentTime > lastCompletedTime) {
+      lastCompletedTime = currentTime;
+      lastCompletedIndex = currentCheckpoint;
+    }
+  }
+  
+  // Si encontramos un checkpoint completado, calcular el porcentaje
+  if (lastCompletedIndex >= 0) {
+    // Calcular el porcentaje basado en el tiempo del último checkpoint completado
+    const percent = (lastCompletedTime / video.duration) * 100;
+    checkpointsProgress.style.width = Math.min(percent, 100) + "%";
+  } else {
+    checkpointsProgress.style.width = "0%";
+  }
+}
+
+
+/* ----------------------------------------------------
+   PANEL "PRÓXIMAMENTE" Y CONTADOR REGRESIVO
+   ---------------------------------------------------- */
+let lastCheckpointForUpcoming = -1;
+
+function updateUpcomingPanel() {
+  // Determinar qué checkpoint mostrar
+  let nextCp = null;
+  let nextIndex = -1;
+  
+  // Si el checkpoint actual aún no se ha activado, mostrar ese checkpoint
+  if (currentCheckpoint < checkpoints.length && !checkpointTriggered.has(currentCheckpoint)) {
+    nextCp = checkpoints[currentCheckpoint];
+    nextIndex = currentCheckpoint;
+  } 
+  // Si el checkpoint actual ya se activó, mostrar el siguiente
+  else if (currentCheckpoint < checkpoints.length - 1) {
+    nextCp = checkpoints[currentCheckpoint + 1];
+    nextIndex = currentCheckpoint + 1;
+  }
+  
+  // Si no hay siguiente checkpoint, ocultar panel
+  if (!nextCp || nextIndex >= checkpoints.length) {
+    upcomingPanel.classList.add("hidden");
+    upcomingPanel.classList.remove("show");
+    stopCountdown();
+    lastCheckpointForUpcoming = -1;
+    return;
+  }
+  
+  // Si cambió el checkpoint a mostrar, actualizar contenido y reiniciar contador
+  const checkpointChanged = lastCheckpointForUpcoming !== nextIndex;
+  if (checkpointChanged) {
+    upcomingTitle.textContent = nextCp.title;
+    upcomingDescription.textContent = nextCp.text.substring(0, 100) + "...";
+    lastCheckpointForUpcoming = nextIndex;
+    // Reiniciar contador cuando cambia el checkpoint
+    stopCountdown();
+  }
+  
+  // Mostrar/ocultar panel según el estado del video
+  if (!video.paused && !isPausedByCheckpoint) {
+    upcomingPanel.classList.remove("hidden");
+    upcomingPanel.classList.add("show");
+    // Iniciar contador si no está corriendo o si cambió el checkpoint
+    if (!countdownInterval || checkpointChanged) {
+      startCountdown();
+    }
+  } else {
+    upcomingPanel.classList.add("hidden");
+    upcomingPanel.classList.remove("show");
+    stopCountdown();
+  }
+}
+
+function startCountdown() {
+  // Asegurar que no haya múltiples intervalos
+  stopCountdown();
+  
+  // Función para obtener el checkpoint objetivo
+  const getTargetCheckpoint = () => {
+    // Si el checkpoint actual aún no se ha activado, mostrar ese checkpoint
+    if (currentCheckpoint < checkpoints.length && !checkpointTriggered.has(currentCheckpoint)) {
+      return { cp: checkpoints[currentCheckpoint], index: currentCheckpoint };
+    } 
+    // Si el checkpoint actual ya se activó, mostrar el siguiente
+    else if (currentCheckpoint < checkpoints.length - 1) {
+      return { cp: checkpoints[currentCheckpoint + 1], index: currentCheckpoint + 1 };
+    }
+    return null;
+  };
+  
+  // Verificar condiciones antes de iniciar
+  const target = getTargetCheckpoint();
+  if (!target) {
+    return;
+  }
+  
+  // Función para actualizar el contador
+  const updateCountdown = () => {
+    // Verificar si el video está pausado o hay un checkpoint activo
+    if (video.paused || isPausedByCheckpoint) {
+      stopCountdown();
+      return;
+    }
+    
+    // Obtener el checkpoint objetivo actualizado
+    const currentTarget = getTargetCheckpoint();
+    if (!currentTarget) {
+      stopCountdown();
+      return;
+    }
+    
+    const nextCheckpoint = currentTarget.cp;
+    const nextTime = nextCheckpoint.time;
+    
+    // Calcular tiempo exacto hasta el checkpoint objetivo
+    const currentTime = video.currentTime;
+    const timeUntilNext = nextTime - currentTime;
+    
+    // Si ya pasamos el checkpoint, detener
+    if (timeUntilNext <= 0) {
+      countdownDisplay.textContent = "0";
+      stopCountdown();
+      return;
+    }
+    
+    // Usar Math.floor para mostrar el tiempo más preciso
+    const seconds = Math.max(0, Math.floor(timeUntilNext));
+    countdownDisplay.textContent = seconds.toString();
+    
+    // Calcular barra de progreso correctamente
+    // Punto de inicio: tiempo del checkpoint anterior (o 0 si es el primero)
+    let startTime = 0;
+    if (currentTarget.index > 0) {
+      startTime = checkpoints[currentTarget.index - 1].time;
+    }
+    
+    // Tiempo total entre checkpoints
+    const totalTime = nextTime - startTime;
+    
+    // Tiempo transcurrido desde el punto de inicio
+    const elapsed = Math.max(0, currentTime - startTime);
+    
+    // Calcular porcentaje (asegurar que no sea negativo ni mayor a 100)
+    const progress = totalTime > 0 ? Math.min(Math.max((elapsed / totalTime) * 100, 0), 100) : 0;
+    upcomingProgressFill.style.width = progress + "%";
+    
+    // Cambiar color según se acerca
+    if (seconds <= 3) {
+      countdownDisplay.style.color = "#ff6b6b";
+      countdownDisplay.style.textShadow = "0 0 20px rgba(255, 107, 107, 0.8)";
+    } else if (seconds <= 10) {
+      countdownDisplay.style.color = "#ffd93d";
+      countdownDisplay.style.textShadow = "0 0 20px rgba(255, 217, 61, 0.8)";
+    } else {
+      countdownDisplay.style.color = "#9AFF00";
+      countdownDisplay.style.textShadow = "0 0 20px rgba(154, 255, 0, 0.5)";
+    }
+  };
+  
+  // Actualizar inmediatamente
+  updateCountdown();
+  
+  // Actualizar cada 100ms para suavidad
+  countdownInterval = setInterval(updateCountdown, 100);
+}
+
+function stopCountdown() {
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+    countdownInterval = null;
+  }
+}
+
+
+/* ----------------------------------------------------
+   ESTADÍSTICAS EN TIEMPO REAL
+   ---------------------------------------------------- */
+function updateStats() {
+  const completed = checkpointTriggered.size;
+  const total = checkpoints.length;
+  const progressPercent = video.duration ? Math.round((video.currentTime / video.duration) * 100) : 0;
+  
+  statCheckpoints.textContent = `${completed}/${total}`;
+  statProgress.textContent = `${progressPercent}%`;
+  
+  // Calcular tiempo visto (incluyendo tiempo acumulado de sesiones anteriores)
+  if (startTime) {
+    totalTimeWatched = video.currentTime;
+  }
+  const totalTime = totalTimeWatchedAccumulated + totalTimeWatched;
+  statTimeWatched.textContent = formatTime(totalTime);
+  
+  // Mostrar panel si el video está reproduciéndose
+  if (!video.paused && !isPausedByCheckpoint) {
+    statsPanel.classList.remove("hidden");
+    statsPanel.classList.add("show");
+  } else {
+    statsPanel.classList.remove("show");
+  }
+}
+
+function startStatsUpdates() {
+  stopStatsUpdates();
+  statsUpdateInterval = setInterval(updateStats, 500);
+}
+
+function stopStatsUpdates() {
+  if (statsUpdateInterval) {
+    clearInterval(statsUpdateInterval);
+    statsUpdateInterval = null;
+  }
+}
+
+
+/* ----------------------------------------------------
+   TIPS ROTATIVOS
+   ---------------------------------------------------- */
+function showNextTip() {
+  if (tips.length === 0) return;
+  
+  tipText.textContent = tips[tipsIndex];
+  tipsIndex = (tipsIndex + 1) % tips.length;
+  
+  // Mostrar panel si el video está reproduciéndose
+  if (!video.paused && !isPausedByCheckpoint) {
+    tipsPanel.classList.remove("hidden");
+    tipsPanel.classList.add("show");
+  } else {
+    tipsPanel.classList.remove("show");
+  }
+}
+
+let tipsInterval = null;
+
+function startTipsRotation() {
+  if (tipsInterval) return; // Ya está iniciado
+  showNextTip();
+  tipsInterval = setInterval(showNextTip, 8000); // Cambiar tip cada 8 segundos
+}
+
+function stopTipsRotation() {
+  if (tipsInterval) {
+    clearInterval(tipsInterval);
+    tipsInterval = null;
+  }
+}
+
+
+/* ----------------------------------------------------
+   SISTEMA DE LOGROS
+   ---------------------------------------------------- */
+function checkAchievements() {
+  const completed = checkpointTriggered.size;
+  const total = checkpoints.length;
+  
+  // Primer checkpoint
+  if (completed === 1 && !achievementsShown.has("first")) {
+    showAchievement(achievements[0]);
+    achievementsShown.add("first");
+  }
+  
+  // Mitad de camino
+  if (completed >= Math.ceil(total / 2) && !achievementsShown.has("halfway")) {
+    showAchievement(achievements[1]);
+    achievementsShown.add("halfway");
+  }
+  
+  // Todos completados
+  if (completed >= total && !achievementsShown.has("expert")) {
+    showAchievement(achievements[2]);
+    achievementsShown.add("expert");
+  }
+}
+
+let achievementsShown = new Set();
+
+function showAchievement(achievement) {
+  const badge = document.createElement("div");
+  badge.className = "achievement-badge";
+  badge.innerHTML = `
+    <div class="achievement-icon">${achievement.icon}</div>
+    <div class="achievement-text">
+      <div class="achievement-title">${achievement.title}</div>
+      <div class="achievement-desc">${achievement.desc}</div>
+    </div>
+  `;
+  
+  achievementsContainer.appendChild(badge);
+  
+  // Guardar progreso cuando se desbloquea un logro
+  saveProgress();
+  
+  // Remover después de 4 segundos
+  setTimeout(() => {
+    badge.classList.add("fade-out");
+    setTimeout(() => {
+      if (badge.parentNode) {
+        badge.parentNode.removeChild(badge);
+      }
+    }, 500);
+  }, 4000);
+}
+
+
+/* ----------------------------------------------------
+   CREAR MARCADORES EN TIMELINE
+   ---------------------------------------------------- */
+function createTimelineMarkers() {
+  if (!video.duration || video.duration === 0) {
+    setTimeout(createTimelineMarkers, 100);
+    return;
+  }
+
+  timeline.innerHTML = `
+    <div class="timeline-checkpoints-progress" id="timelineCheckpointsProgress"></div>
+    <div class="timeline-progress" id="timelineProgress"></div>
+  `;
+  // Actualizar referencia después de recrear
+  const newTimelineProgress = document.getElementById("timelineProgress");
+  if (newTimelineProgress) {
+    // timelineProgress ya está definido como const, necesitamos usar el elemento directamente
+  }
+  markers = [];
+
+  checkpoints.forEach((cp, index) => {
+    const marker = document.createElement("div");
+    marker.classList.add("timeline-marker", "pending");
+    marker.style.left = (cp.time / video.duration * 100) + "%";
+    marker.setAttribute("data-index", index);
+    marker.setAttribute("aria-label", `Checkpoint: ${cp.title} en ${formatTime(cp.time)}`);
+    marker.setAttribute("role", "button");
+    marker.setAttribute("tabindex", "0");
+    
+    const tooltip = document.createElement("div");
+    tooltip.classList.add("marker-tooltip");
+    tooltip.textContent = `${cp.title} (${formatTime(cp.time)})`;
+    tooltip.setAttribute("role", "tooltip");
+    marker.appendChild(tooltip);
+    
+    // Mostrar tooltip en móvil al hacer tap
+    let tooltipTimeout;
+    marker.addEventListener("touchstart", () => {
+      marker.classList.add("tooltip-visible");
+      clearTimeout(tooltipTimeout);
+      tooltipTimeout = setTimeout(() => {
+        marker.classList.remove("tooltip-visible");
+      }, 3000);
+    }, { passive: true });
+    
+    marker.addEventListener("click", () => jumpToCheckpoint(index));
+    
+    // Soporte de teclado
+    marker.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        jumpToCheckpoint(index);
+      }
+    });
+    
+    timeline.appendChild(marker);
+    markers.push({ element: marker, checkpoint: cp, index });
+  });
+
+  updateMarkerStates();
+}
+
+video.addEventListener("loadedmetadata", () => {
+  // Restaurar progreso guardado
+  const progressRestored = restoreProgress();
+  if (progressRestored) {
+    showProgressRestored();
+    updateMarkerStates();
+  }
+  
+  createTimelineMarkers();
+  updateTimeDisplay();
+  showWelcomeMessage();
+  startTipsRotation();
+});
+
+/* ----------------------------------------------------
+   MENSAJE DE BIENVENIDA INICIAL
+   ---------------------------------------------------- */
+function showWelcomeMessage() {
+  const duration = formatTime(video.duration);
+  const totalCheckpoints = checkpoints.length;
+  
+  // Obtener progreso guardado
+  const savedData = loadProgress();
+  const completed = savedData ? (savedData.checkpointsCompleted ? savedData.checkpointsCompleted.length : 0) : checkpointTriggered.size;
+  const progressPercent = totalCheckpoints > 0 ? Math.round((completed / totalCheckpoints) * 100) : 0;
+  const hasProgress = completed > 0;
+  
+  info.innerHTML = `
+    <div class="welcome-message">
+      <h2 style="color: #9AFF00; margin-bottom: 16px; font-size: 24px;">
+        🎯 Sistema de Visión por Computadora
+      </h2>
+      <p style="margin-bottom: 12px; line-height: 1.7; opacity: 0.9;">
+        ${hasProgress ? '¡Bienvenido de nuevo! Tu progreso ha sido restaurado.' : 'Bienvenido al análisis interactivo de detección y seguimiento de objetos en tiempo real.'}
+      </p>
+      ${hasProgress ? `
+      <div style="background: linear-gradient(135deg, rgba(154, 255, 0, 0.15), rgba(127, 224, 0, 0.1)); padding: 14px; border-radius: 8px; border: 2px solid rgba(154, 255, 0, 0.3); margin: 16px 0;">
+        <p style="margin: 0 0 10px 0; font-weight: 700; color: #9AFF00; font-size: 15px; display: flex; align-items: center; gap: 8px;">
+          <span>📈</span> Tu Progreso
+        </p>
+        <div style="margin-bottom: 10px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px; opacity: 0.8;">
+            <span>Progreso General</span>
+            <strong style="color: #9AFF00;">${progressPercent}%</strong>
+          </div>
+          <div style="height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+            <div style="height: 100%; width: ${progressPercent}%; background: linear-gradient(90deg, #9AFF00, #7FE000); border-radius: 4px; transition: width 0.3s ease;"></div>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; margin-top: 8px;">
+          <div>
+            <span style="opacity: 0.7;">Checkpoints:</span>
+            <strong style="color: #9AFF00; margin-left: 4px;">${completed}/${totalCheckpoints}</strong>
+          </div>
+          <div>
+            <span style="opacity: 0.7;">Logros:</span>
+            <strong style="color: #9AFF00; margin-left: 4px;">${savedData && savedData.achievementsUnlocked ? savedData.achievementsUnlocked.length : achievementsShown.size}</strong>
+          </div>
+        </div>
+      </div>
+      ` : ''}
+      <div style="background: rgba(154, 255, 0, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #9AFF00; margin: 16px 0;">
+        <p style="margin: 0 0 8px 0; font-weight: 600; color: #9AFF00; font-size: 14px;">
+          📊 Información del Video
+        </p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px;">
+          <div>
+            <span style="opacity: 0.7;">Duración:</span>
+            <strong style="color: #9AFF00; margin-left: 6px;">${duration}</strong>
+          </div>
+          <div>
+            <span style="opacity: 0.7;">Checkpoints:</span>
+            <strong style="color: #9AFF00; margin-left: 6px;">${totalCheckpoints}</strong>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1);">
+        <p style="margin: 0 0 12px 0; font-size: 13px; opacity: 0.8;">
+          <strong style="color: #9AFF00;">💡 Características del Sistema:</strong>
+        </p>
+        <ul style="margin: 0; padding-left: 20px; font-size: 12px; line-height: 1.8; opacity: 0.85;">
+          <li>Detección multiclase de vehículos</li>
+          <li>Seguimiento con ID único por objeto</li>
+          <li>Vectores de movimiento y velocidad</li>
+          <li>Radar 360 con mapa de calor</li>
+          <li>Estadísticas en tiempo real</li>
+        </ul>
+      </div>
+      <div style="margin-top: 16px; padding: 10px; background: rgba(154, 255, 0, 0.05); border-radius: 6px; text-align: center;">
+        <p style="margin: 0; font-size: 13px; color: #9AFF00; font-weight: 600;">
+          ▶ Haz clic en Reproducir para comenzar el análisis
+        </p>
+      </div>
+    </div>
+  `;
+  
+  info.classList.add("active");
+}
+
+video.addEventListener("error", (e) => {
+  showError("Error al cargar el video. Verifica que el archivo existe y el formato es compatible.");
+  info.innerHTML = '<div class="loading" style="color: #ff6b6b;">Error al cargar el video</div>';
+});
+
+
+/* ----------------------------------------------------
+   INFORMACIÓN CONTEXTUAL ENTRE CHECKPOINTS
+   ---------------------------------------------------- */
+function getContextualInfo(currentTime) {
+  // Información contextual que aparece mientras el video corre
+  const contextualMessages = [
+    { range: [0, 10], text: "Sistema iniciando detección de objetos en tiempo real..." },
+    { range: [10, 45], text: "Observa los IDs únicos asignados a cada vehículo. El sistema mantiene el seguimiento incluso con oclusión parcial." },
+    { range: [45, 60], text: "Los vectores rojos indican dirección y velocidad estimada. El radar 360 muestra la densidad de objetos detectados." },
+    { range: [60, 90], text: "Seguimiento preciso de vehículos largos. El sistema ajusta dinámicamente los cuadros delimitadores al tamaño real." },
+    { range: [90, 135], text: "Robustez ante cambios de iluminación. El algoritmo distingue entre sombras y objetos reales." },
+    { range: [135, 180], text: "Procesamiento de alta densidad: múltiples vehículos simultáneos sin pérdida de rendimiento." },
+    { range: [180, 999], text: "Clasificación avanzada: distingue entre vehículos estacionados y en movimiento." }
+  ];
+
+  for (const msg of contextualMessages) {
+    if (currentTime >= msg.range[0] && currentTime < msg.range[1]) {
+      return msg.text;
+    }
+  }
+  return null;
+}
+
+function updateContextualInfo() {
+  if (isPausedByCheckpoint) return; // No mostrar info contextual si hay un checkpoint activo
+  
+  const contextualText = getContextualInfo(video.currentTime);
+  if (contextualText) {
+    // Solo actualizar si no hay información de checkpoint activa
+    const hasCheckpointInfo = info.querySelector("h2");
+    const hasWelcomeMessage = info.querySelector(".welcome-message");
+    
+    // Si hay mensaje de bienvenida o no hay checkpoint activo, mostrar info contextual
+    if (!hasCheckpointInfo || hasWelcomeMessage) {
+      info.innerHTML = `
+        <p style="margin: 0;">💡 ${contextualText}</p>
+      `;
+      info.classList.add("active", "contextual");
+    }
+  }
+}
+
+/* ----------------------------------------------------
+   SINCRONIZACIÓN VIDEO > CHECKPOINT (MEJORADA)
+   ---------------------------------------------------- */
+video.addEventListener("timeupdate", () => {
+  updateTimeDisplay();
+  updateTimelineProgress();
+  updateContextualInfo();
+  updateUpcomingPanel();
+  updateStats();
+
+  // Buscar TODOS los checkpoints pendientes, no solo el siguiente
+  // Esto permite que funcione incluso si el usuario navega manualmente
+  for (let i = 0; i < checkpoints.length; i++) {
+    if (checkpointTriggered.has(i)) continue;
+    
+    const cp = checkpoints[i];
+    const tolerance = 0.5; // Tolerancia aumentada
+    
+    if (video.currentTime >= cp.time - tolerance) {
+      checkpointTriggered.add(i);
+      
+      // Si es el checkpoint actual o uno que viene después, activarlo
+      if (i >= currentCheckpoint) {
+        currentCheckpoint = i;
+        isPausedByCheckpoint = true;
+        video.pause();
+        showContent(cp, i);
+        updateMarkerStates();
+        break; // Solo activar un checkpoint a la vez
+      }
+    }
+  }
+});
+
+
+/* ----------------------------------------------------
+   MOSTRAR PANEL DE INFORMACIÓN (MEJORADO)
+   ---------------------------------------------------- */
+function showContent(cp, index) {
+  const counter = `${index + 1} de ${checkpoints.length}`;
+  const nextCp = index < checkpoints.length - 1 ? checkpoints[index + 1] : null;
+  const nextTime = nextCp ? formatTime(nextCp.time) : "Final";
+  
+  // Obtener contenido por capas
+  const layers = createContentLayers(cp, index);
+  const currentLayerContent = layers[currentLayer] || layers.detail;
+  
+  // Construir HTML con nuevas funcionalidades
+  let contentHTML = `
+    <h2>${cp.title}</h2>
+    <p>${currentLayerContent}</p>
+    <div class="checkpoint-counter">${counter}</div>
+  `;
+  
+  // Agregar lectura por capas
+  contentHTML += `
+    <div class="content-layers">
+      <button class="layer-btn ${currentLayer === 'summary' ? 'active' : ''}" data-layer="summary">Resumen</button>
+      <button class="layer-btn ${currentLayer === 'detail' ? 'active' : ''}" data-layer="detail">Detalle</button>
+      <button class="layer-btn ${currentLayer === 'technical' ? 'active' : ''}" data-layer="technical">Técnico</button>
+    </div>
+    <div class="content-layer ${currentLayer === 'summary' ? 'active' : ''}" data-layer="summary">${layers.summary}</div>
+    <div class="content-layer ${currentLayer === 'detail' ? 'active' : ''}" data-layer="detail">${layers.detail}</div>
+    <div class="content-layer ${currentLayer === 'technical' ? 'active' : ''}" data-layer="technical">${layers.technical}</div>
+  `;
+  
+  // Agregar comparación A/B si no es el primer checkpoint
+  if (index > 0) {
+    contentHTML += createComparisonAB(index);
+  }
+  
+  // Agregar quick actions
+  contentHTML += createQuickActions(cp, index);
+  
+  // Agregar próximo checkpoint
+  if (nextCp) {
+    contentHTML += `<div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(154, 255, 0, 0.2); font-size: 12px; opacity: 0.7;">
+      <strong>Próximo:</strong> ${nextCp.title} (${nextTime})
+    </div>`;
+  }
+  
+  info.innerHTML = contentHTML;
+
+  // Remover clase contextual y agregar active
+  info.classList.remove("contextual");
+  info.classList.add("active");
+  nextBtn.classList.remove("hidden");
+  
+  if (index === checkpoints.length - 1) {
+    replayBtn.classList.remove("hidden");
+    nextBtn.textContent = "Finalizar";
+  } else {
+    replayBtn.classList.add("hidden");
+    nextBtn.textContent = `Continuar →`;
+  }
+  
+  playPauseBtn.textContent = "▶ Reproducir";
+  
+  // Configurar listeners para capas
+  setTimeout(() => {
+    document.querySelectorAll('.layer-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const layer = e.target.dataset.layer;
+        currentLayer = layer;
+        
+        // Actualizar botones
+        document.querySelectorAll('.layer-btn').forEach(b => {
+          b.classList.toggle('active', b.dataset.layer === layer);
+        });
+        
+        // Mostrar capa correspondiente
+        document.querySelectorAll('.content-layer').forEach(l => {
+          l.classList.toggle('active', l.dataset.layer === layer);
+        });
+        
+        // Actualizar contenido principal
+        const layerContent = layers[layer];
+        const mainP = info.querySelector('p');
+        if (mainP) {
+          mainP.textContent = layerContent;
+        }
+        
+        saveUserPreferences();
+      });
+    });
+  }, 100);
+  
+  // Agregar al historial
+  addCheckpointToHistory(cp, index);
+  
+  // Iniciar auto-skip si está habilitado y estamos en checkpoint pause
+  // Usar función de verificación para evitar conflictos
+  checkAndRestartAutoSkip();
+  
+  // Verificar logros
+  checkAchievements();
+  
+  // Guardar progreso
+  saveProgress();
+  
+  // Ocultar paneles de entretenimiento cuando hay checkpoint activo
+  upcomingPanel.classList.remove("show");
+  statsPanel.classList.remove("show");
+  tipsPanel.classList.remove("show");
+  stopCountdown();
+  
+  // Anuncio ARIA para accesibilidad
+  const announcement = document.createElement('div');
+  announcement.setAttribute('role', 'status');
+  announcement.setAttribute('aria-live', 'polite');
+  announcement.className = 'sr-only';
+  announcement.style.cssText = 'position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0;';
+  announcement.textContent = `Checkpoint ${index + 1}: ${cp.title}`;
+  document.body.appendChild(announcement);
+  setTimeout(() => announcement.remove(), 1000);
+}
+
+
+/* ----------------------------------------------------
+   SALTAR A CHECKPOINT ESPECÍFICO
+   ---------------------------------------------------- */
+function jumpToCheckpoint(index) {
+  if (index < 0 || index >= checkpoints.length) return;
+  
+  const cp = checkpoints[index];
+  video.currentTime = cp.time;
+  currentCheckpoint = index;
+  
+  // Marcar todos los checkpoints anteriores como completados
+  for (let i = 0; i < index; i++) {
+    checkpointTriggered.add(i);
+  }
+  
+  checkpointTriggered.add(index);
+  isPausedByCheckpoint = true;
+  video.pause();
+  showContent(cp, index);
+  updateMarkerStates();
+  playPauseBtn.textContent = "▶ Reproducir";
+}
+
+
+/* ----------------------------------------------------
+   BOTÓN "SIGUIENTE"
+   ---------------------------------------------------- */
+nextBtn.addEventListener("click", () => {
+  // Cancelar auto-skip cuando el usuario hace clic manualmente
+  cancelAutoSkip();
+  
+  currentCheckpoint++;
+
+  if (currentCheckpoint >= checkpoints.length) {
+    nextBtn.classList.add("hidden");
+    replayBtn.classList.remove("hidden");
+    // Mantener la información visible pero con mensaje de finalización
+    info.innerHTML = `
+      <h2>Análisis Completado</h2>
+      <p style="opacity: 0.8; text-align: center;">¡Has completado todos los checkpoints! El sistema ha demostrado sus capacidades de detección y seguimiento en tiempo real.</p>
+      <div class="checkpoint-counter">${checkpoints.length} de ${checkpoints.length}</div>
+    `;
+    info.classList.add("active");
+    isPausedByCheckpoint = false;
+    cancelAutoSkip(); // Asegurar que está cancelado
+    video.play();
+    playPauseBtn.textContent = "⏸ Pausar";
+    return;
+  }
+
+  isPausedByCheckpoint = false;
+  // No ocultar la información inmediatamente, permitir que se actualice con info contextual
+  // La información se mantendrá visible hasta el próximo checkpoint
+  nextBtn.classList.add("hidden");
+  cancelAutoSkip(); // Asegurar que está cancelado antes de reproducir
+  video.play();
+  playPauseBtn.textContent = "⏸ Pausar";
+  updateMarkerStates();
+  
+  // Mostrar información contextual mientras se reproduce
+  setTimeout(() => {
+    updateContextualInfo();
+  }, 500);
+});
+
+
+/* ----------------------------------------------------
+   BOTÓN "REPETIR"
+   ---------------------------------------------------- */
+replayBtn.addEventListener("click", () => {
+  resetVideo();
+});
+
+
+/* ----------------------------------------------------
+   CONTROLES DE VIDEO
+   ---------------------------------------------------- */
+playPauseBtn.addEventListener("click", () => {
+  if (video.paused) {
+    if (isPausedByCheckpoint) {
+      // Si está pausado por checkpoint, cancelar auto-skip y avanzar al siguiente
+      cancelAutoSkip();
+      nextBtn.click();
+    } else {
+      // Si se reproduce manualmente (no desde checkpoint), cancelar auto-skip
+      cancelAutoSkip();
+      video.play();
+      playPauseBtn.textContent = "⏸ Pausar";
+      // Mantener información visible con contexto
+      setTimeout(() => {
+        updateContextualInfo();
+      }, 300);
+    }
+  } else {
+    // Pausar manualmente cancela auto-skip
+    cancelAutoSkip();
+    video.pause();
+    playPauseBtn.textContent = "▶ Reproducir";
+  }
+});
+
+resetBtn.addEventListener("click", () => {
+  resetVideo();
+});
+
+function clearProgress() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    totalTimeWatchedAccumulated = 0;
+    achievementsShown.clear();
+    checkpointTriggered.clear();
+    currentCheckpoint = 0;
+    lastCheckpointReached = 0;
+  } catch (e) {
+    console.warn('No se pudo limpiar el progreso:', e);
+  }
+}
+
+function resetVideo() {
+  // Guardar progreso antes de resetear
+  saveProgress();
+  
+  video.pause();
+  video.currentTime = 0;
+  currentCheckpoint = 0;
+  checkpointTriggered.clear();
+  isPausedByCheckpoint = false;
+  nextBtn.classList.add("hidden");
+  replayBtn.classList.add("hidden");
+  playPauseBtn.textContent = "▶ Reproducir";
+  updateMarkerStates();
+  updateTimeDisplay();
+  updateTimelineProgress();
+  cancelAutoSkip(); // Cancelar auto-skip si está activo
+  stopCountdown(); // Detener contador
+  lastCheckpointForUpcoming = -1; // Resetear checkpoint de upcoming
+  startTime = null; // Resetear tiempo de inicio
+  totalTimeWatched = 0; // Resetear tiempo visto (solo de esta sesión)
+  // Mostrar mensaje de bienvenida
+  showWelcomeMessage();
+}
+
+
+/* ----------------------------------------------------
+   CONTROL DE VELOCIDAD DE REPRODUCCIÓN
+   ---------------------------------------------------- */
+speedSelect.addEventListener("change", (e) => {
+  const speed = parseFloat(e.target.value);
+  video.playbackRate = speed;
+});
+
+
+/* ----------------------------------------------------
+   MODO AUTO-PLAY
+   ---------------------------------------------------- */
+autoplayToggle.addEventListener("change", (e) => {
+  autoplayEnabled = e.target.checked;
+  if (autoplayEnabled) {
+    autoplaySettings.classList.add("active");
+  } else {
+    autoplaySettings.classList.remove("active");
+    cancelAutoSkip();
+  }
+});
+
+autoSkipTimeInput.addEventListener("change", (e) => {
+  autoSkipTime = parseInt(e.target.value) || 5;
+  // Si hay un timer activo y estamos en checkpoint pause, reiniciarlo con el nuevo tiempo
+  if (autoSkipTimer && isPausedByCheckpoint && autoplayEnabled) {
+    checkAndRestartAutoSkip();
+  } else {
+    cancelAutoSkip();
+  }
+});
+
+function startAutoSkip() {
+  // Verificar condiciones: debe estar habilitado, tener tiempo válido, y estar en checkpoint pause
+  if (!autoplayEnabled || autoSkipTime <= 0 || !isPausedByCheckpoint) {
+    cancelAutoSkip();
+    return;
+  }
+  
+  // Verificar que realmente hay un botón "Siguiente" visible
+  if (!nextBtn || nextBtn.classList.contains("hidden")) {
+    cancelAutoSkip();
+    return;
+  }
+  
+  cancelAutoSkip(); // Cancelar cualquier timer existente para evitar duplicados
+  
+  // Mostrar contador visual
+  updateAutoSkipDisplay(autoSkipTime);
+  
+  let remaining = autoSkipTime;
+  autoSkipTimer = setInterval(() => {
+    // Verificar estado en cada iteración para evitar timers fantasma
+    if (!autoplayEnabled || !isPausedByCheckpoint || !nextBtn || nextBtn.classList.contains("hidden")) {
+      cancelAutoSkip();
+      return;
+    }
+    
+    remaining--;
+    updateAutoSkipDisplay(remaining);
+    
+    if (remaining <= 0) {
+      cancelAutoSkip();
+      // Avanzar automáticamente al siguiente checkpoint solo si las condiciones se cumplen
+      if (nextBtn && !nextBtn.classList.contains("hidden") && isPausedByCheckpoint) {
+        nextBtn.click();
+      }
+    }
+  }, 1000);
+}
+
+function cancelAutoSkip() {
+  // Limpiar timer
+  if (autoSkipTimer) {
+    clearInterval(autoSkipTimer);
+    autoSkipTimer = null;
+  }
+  
+  // Ocultar contador visual de forma segura
+  const skipDisplay = document.getElementById("autoSkipDisplay");
+  if (skipDisplay && skipDisplay.parentNode) {
+    skipDisplay.remove();
+  }
+}
+
+// Función para verificar y reiniciar auto-skip si es necesario
+function checkAndRestartAutoSkip() {
+  // Solo reiniciar si está en checkpoint pause y autoplay está habilitado
+  if (isPausedByCheckpoint && autoplayEnabled && autoSkipTime > 0) {
+    // Pequeño delay para asegurar que el estado se haya actualizado
+    setTimeout(() => {
+      if (isPausedByCheckpoint && autoplayEnabled) {
+        startAutoSkip();
+      }
+    }, 100);
+  } else {
+    cancelAutoSkip();
+  }
+}
+
+function updateAutoSkipDisplay(seconds) {
+  // Remover display anterior si existe
+  const existingDisplay = document.getElementById("autoSkipDisplay");
+  if (existingDisplay) {
+    existingDisplay.remove();
+  }
+  
+  // Crear o actualizar display
+  const display = document.createElement("div");
+  display.id = "autoSkipDisplay";
+  display.textContent = `Auto-continuar en ${seconds}s`;
+  
+  const infoPanel = document.querySelector(".info-panel");
+  if (infoPanel) {
+    infoPanel.style.position = "relative";
+    infoPanel.appendChild(display);
+  }
+}
+
+
+/* ----------------------------------------------------
+   CLIC EN TIMELINE PARA SALTAR
+   ---------------------------------------------------- */
+timeline.addEventListener("click", (e) => {
+  if (e.target === timeline || e.target === timelineProgress) {
+    // Cancelar auto-skip cuando el usuario interactúa con la timeline
+    cancelAutoSkip();
+    
+    const rect = timeline.getBoundingClientRect();
+    const percent = (e.clientX - rect.left) / rect.width;
+    const targetTime = percent * video.duration;
+    video.currentTime = targetTime;
+    
+    // Encontrar el checkpoint más cercano
+    let nearestIndex = 0;
+    let minDiff = Infinity;
+    checkpoints.forEach((cp, index) => {
+      const diff = Math.abs(cp.time - targetTime);
+      if (diff < minDiff) {
+        minDiff = diff;
+        nearestIndex = index;
+      }
+    });
+    
+    // Si estamos cerca de un checkpoint, saltar a él
+    if (minDiff < 2) {
+      jumpToCheckpoint(nearestIndex);
+    } else {
+      isPausedByCheckpoint = false;
+      video.pause();
+      playPauseBtn.textContent = "▶ Reproducir";
+    }
+  }
+});
+
+
+/* ----------------------------------------------------
+   EVENTOS ADICIONALES
+   ---------------------------------------------------- */
+video.addEventListener("play", () => {
+  playPauseBtn.textContent = "⏸ Pausar";
+  if (!startTime) {
+    startTime = Date.now();
+  }
+  startStatsUpdates();
+  updateUpcomingPanel();
+  startTipsRotation();
+  
+  // Si se hace play pero NO está en checkpoint pause, cancelar auto-skip
+  // (porque el usuario está reproduciendo manualmente)
+  if (!isPausedByCheckpoint) {
+    cancelAutoSkip();
+  }
+});
+
+video.addEventListener("pause", () => {
+  if (!isPausedByCheckpoint) {
+    playPauseBtn.textContent = "▶ Reproducir";
+    // Cancelar auto-skip si se pausa manualmente (no por checkpoint)
+    cancelAutoSkip();
+    stopStatsUpdates();
+    stopCountdown();
+  } else {
+    // Si está pausado por checkpoint, verificar y reiniciar auto-skip si es necesario
+    checkAndRestartAutoSkip();
+  }
+});
+
+// Detectar cambios manuales en el tiempo del video (arrastre, teclado, etc.)
+let lastKnownTime = 0;
+video.addEventListener("timeupdate", () => {
+  const currentTime = video.currentTime;
+  const timeDiff = Math.abs(currentTime - lastKnownTime);
+  
+  // Si el cambio de tiempo es muy grande (>2 segundos), probablemente fue manual
+  if (timeDiff > 2 && !video.paused) {
+    // Cancelar auto-skip si el usuario saltó manualmente
+    cancelAutoSkip();
+  }
+  
+  lastKnownTime = currentTime;
+}, { passive: true });
+
+// Detectar cambios directos en currentTime (arrastre de timeline, etc.)
+let seekingTimeout = null;
+video.addEventListener("seeking", () => {
+  // Cancelar auto-skip cuando el usuario busca manualmente
+  cancelAutoSkip();
+  
+  // Limpiar timeout anterior
+  if (seekingTimeout) {
+    clearTimeout(seekingTimeout);
+  }
+  
+  // Después de buscar, verificar si debería reiniciar auto-skip
+  seekingTimeout = setTimeout(() => {
+    if (video.paused && isPausedByCheckpoint) {
+      checkAndRestartAutoSkip();
+    }
+  }, 500);
+}, { passive: true });
+
+video.addEventListener("ended", () => {
+  playPauseBtn.textContent = "▶ Reproducir";
+  if (currentCheckpoint < checkpoints.length) {
+    nextBtn.click();
+  }
+});
+
+// Soporte para teclado
+document.addEventListener("keydown", (e) => {
+  if (e.code === "Space" && document.activeElement !== video) {
+    e.preventDefault();
+    playPauseBtn.click();
+  } else if (e.code === "ArrowRight") {
+    video.currentTime = Math.min(video.currentTime + 5, video.duration);
+  } else if (e.code === "ArrowLeft") {
+    video.currentTime = Math.max(video.currentTime - 5, 0);
+  }
+});
+
+// Guardar progreso antes de cerrar la página
+window.addEventListener("beforeunload", () => {
+  saveProgress();
+});
+
+// Guardar progreso periódicamente (cada 30 segundos)
+setInterval(() => {
+  if (!video.paused) {
+    saveProgress();
+  }
+}, 30000);
+
+
+/* ----------------------------------------------------
+   NUEVAS FUNCIONALIDADES AVANZADAS
+   ---------------------------------------------------- */
+
+// Variables globales para nuevas funcionalidades
+let highlightsMode = false;
+let presenterMode = false;
+let checkpointHistory = [];
+let currentLayer = 'summary'; // summary, detail, technical
+let scrubPreviewTimeout = null;
+let touchStartX = 0;
+let touchStartY = 0;
+
+/* ----------------------------------------------------
+   INSTANT PREVIEW EN MARCADORES
+   ---------------------------------------------------- */
+function setupInstantPreview() {
+  // Crear backdrop global para previews (se reutiliza)
+  let previewBackdrop = document.getElementById('markerPreviewBackdrop');
+  if (!previewBackdrop) {
+    previewBackdrop = document.createElement('div');
+    previewBackdrop.id = 'markerPreviewBackdrop';
+    previewBackdrop.className = 'marker-preview-backdrop';
+    document.body.appendChild(previewBackdrop);
+    
+    // Cerrar preview al hacer clic en backdrop
+    previewBackdrop.addEventListener('click', () => {
+      closeAllPreviews();
+    });
+  }
+  
+  let activePreviewCard = null;
+  
+  function closeAllPreviews() {
+    document.querySelectorAll('.marker-preview-card.show').forEach(card => {
+      card.classList.remove('show');
+    });
+    previewBackdrop.classList.remove('show');
+    activePreviewCard = null;
+  }
+  
+  markers.forEach((markerData, index) => {
+    const marker = markerData.element;
+    const cp = markerData.checkpoint;
+    
+    // Crear card de preview
+    const previewCard = document.createElement('div');
+    previewCard.className = 'marker-preview-card';
+    
+    // Extraer bullets del texto (primeras 2 líneas o puntos clave)
+    const bullets = cp.text.split('.').slice(0, 2).filter(b => b.trim().length > 0);
+    
+    previewCard.innerHTML = `
+      <h4>${cp.title}</h4>
+      <ul>
+        ${bullets.map(b => `<li>${b.trim()}</li>`).join('')}
+      </ul>
+      <button class="preview-action" data-index="${index}">Ver momento clave</button>
+    `;
+    
+    marker.appendChild(previewCard);
+    
+    function showPreview() {
+      // Cerrar cualquier preview abierto
+      closeAllPreviews();
+      
+      // Mostrar este preview
+      previewCard.classList.add('show');
+      previewBackdrop.classList.add('show');
+      activePreviewCard = previewCard;
+    }
+    
+    function hidePreview() {
+      previewCard.classList.remove('show');
+      if (activePreviewCard === previewCard) {
+        previewBackdrop.classList.remove('show');
+        activePreviewCard = null;
+      }
+    }
+    
+    // Mostrar preview al hover (desktop)
+    let showTimeout;
+    marker.addEventListener('mouseenter', () => {
+      showTimeout = setTimeout(() => {
+        showPreview();
+      }, 200);
+    });
+    
+    marker.addEventListener('mouseleave', () => {
+      clearTimeout(showTimeout);
+      hidePreview();
+    });
+    
+    // Soporte táctil: tap para abrir/cerrar
+    marker.addEventListener('touchstart', (e) => {
+      e.stopPropagation();
+      if (previewCard.classList.contains('show')) {
+        hidePreview();
+      } else {
+        showPreview();
+      }
+    }, { passive: true });
+    
+    // Botón de acción
+    previewCard.querySelector('.preview-action').addEventListener('click', (e) => {
+      e.stopPropagation();
+      jumpToCheckpoint(index);
+      closeAllPreviews();
+    });
+    
+    // Prevenir que el click en la card cierre el preview
+    previewCard.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+  });
+  
+  // Cerrar previews al hacer scroll o interactuar con timeline
+  timeline.addEventListener('click', closeAllPreviews);
+  document.addEventListener('scroll', closeAllPreviews, { passive: true });
+}
+
+/* ----------------------------------------------------
+   COMMAND PALETTE (Ctrl+K)
+   ---------------------------------------------------- */
+const commandPalette = document.getElementById('commandPalette');
+const commandPaletteBackdrop = document.getElementById('commandPaletteBackdrop');
+const commandPaletteInput = document.getElementById('commandPaletteInput');
+const commandPaletteResults = document.getElementById('commandPaletteResults');
+const commandPaletteClose = document.getElementById('commandPaletteClose');
+const commandPaletteTrigger = document.getElementById('commandPaletteTrigger');
+let selectedCommandIndex = -1;
+
+function openCommandPalette() {
+  commandPalette.classList.add('show');
+  commandPaletteBackdrop.classList.add('show');
+  commandPaletteInput.value = '';
+  commandPaletteInput.focus();
+  updateCommandPaletteResults('');
+  selectedCommandIndex = -1;
+  
+  // Prevenir scroll del body cuando está abierto
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCommandPalette() {
+  commandPalette.classList.remove('show');
+  commandPaletteBackdrop.classList.remove('show');
+  commandPaletteInput.blur();
+  selectedCommandIndex = -1;
+  
+  // Restaurar scroll del body
+  document.body.style.overflow = '';
+}
+
+function updateCommandPaletteResults(query) {
+  const searchTerm = query.toLowerCase().trim();
+  commandPaletteResults.innerHTML = '';
+  
+  if (searchTerm === '') {
+    // Mostrar todos los checkpoints
+    checkpoints.forEach((cp, index) => {
+      const item = createCommandPaletteItem(cp, index);
+      commandPaletteResults.appendChild(item);
+    });
+  } else {
+    // Filtrar por búsqueda
+    checkpoints.forEach((cp, index) => {
+      if (cp.title.toLowerCase().includes(searchTerm) || 
+          cp.text.toLowerCase().includes(searchTerm)) {
+        const item = createCommandPaletteItem(cp, index);
+        commandPaletteResults.appendChild(item);
+      }
+    });
+  }
+  
+  selectedCommandIndex = -1;
+}
+
+function createCommandPaletteItem(cp, index) {
+  const item = document.createElement('div');
+  item.className = 'command-palette-item';
+  item.innerHTML = `
+    <div class="command-palette-item-title">${cp.title}</div>
+    <div class="command-palette-item-time">${formatTime(cp.time)}</div>
+  `;
+  
+  item.addEventListener('click', () => {
+    jumpToCheckpoint(index);
+    closeCommandPalette();
+  });
+  
+  return item;
+}
+
+// Atajo de teclado Ctrl+K o Cmd+K
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    if (commandPalette.classList.contains('show')) {
+      closeCommandPalette();
+    } else {
+      openCommandPalette();
+    }
+  }
+  
+  // Navegación en command palette
+  if (commandPalette.classList.contains('show')) {
+    const items = commandPaletteResults.querySelectorAll('.command-palette-item');
+    
+    if (e.key === 'Escape') {
+      closeCommandPalette();
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      selectedCommandIndex = Math.min(selectedCommandIndex + 1, items.length - 1);
+      updateSelectedCommandItem(items);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      selectedCommandIndex = Math.max(selectedCommandIndex - 1, -1);
+      updateSelectedCommandItem(items);
+    } else if (e.key === 'Enter' && selectedCommandIndex >= 0) {
+      e.preventDefault();
+      items[selectedCommandIndex].click();
+    }
+  }
+});
+
+function updateSelectedCommandItem(items) {
+  items.forEach((item, index) => {
+    if (index === selectedCommandIndex) {
+      item.classList.add('selected');
+      item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    } else {
+      item.classList.remove('selected');
+    }
+  });
+}
+
+commandPaletteInput.addEventListener('input', (e) => {
+  updateCommandPaletteResults(e.target.value);
+});
+
+commandPaletteBackdrop.addEventListener('click', closeCommandPalette);
+
+// Botón de cerrar
+if (commandPaletteClose) {
+  commandPaletteClose.addEventListener('click', closeCommandPalette);
+}
+
+// Botón trigger para móvil
+if (commandPaletteTrigger) {
+  commandPaletteTrigger.addEventListener('click', () => {
+    openCommandPalette();
+  });
+}
+
+/* ----------------------------------------------------
+   HIGHLIGHTS MODE
+   ---------------------------------------------------- */
+const highlightsModeIndicator = document.getElementById('highlightsModeIndicator');
+
+function toggleHighlightsMode() {
+  highlightsMode = !highlightsMode;
+  
+  if (highlightsMode) {
+    highlightsModeIndicator.classList.add('active');
+    startHighlightsMode();
+  } else {
+    highlightsModeIndicator.classList.remove('active');
+    stopHighlightsMode();
+  }
+  
+  // Guardar preferencia
+  saveUserPreferences();
+}
+
+function startHighlightsMode() {
+  // Calcular segmentos importantes (alrededor de checkpoints)
+  const segments = [];
+  checkpoints.forEach((cp, index) => {
+    const startTime = Math.max(0, cp.time - 5); // 5 segundos antes
+    const endTime = Math.min(video.duration, cp.time + 10); // 10 segundos después
+    segments.push({ start: startTime, end: endTime, checkpoint: index });
+  });
+  
+  // Reproducir solo segmentos importantes
+  let currentSegmentIndex = 0;
+  
+  function playNextSegment() {
+    if (!highlightsMode || currentSegmentIndex >= segments.length) {
+      highlightsMode = false;
+      highlightsModeIndicator.classList.remove('active');
+      return;
+    }
+    
+    const segment = segments[currentSegmentIndex];
+    video.currentTime = segment.start;
+    video.play();
+    
+    const checkSegment = () => {
+      if (video.currentTime >= segment.end) {
+        video.pause();
+        // Mostrar checkpoint
+        jumpToCheckpoint(segment.checkpoint);
+        currentSegmentIndex++;
+        
+        // Auto-continuar después de 3 segundos
+        setTimeout(() => {
+          if (highlightsMode) {
+            playNextSegment();
+          }
+        }, 3000);
+      } else if (!video.paused) {
+        requestAnimationFrame(checkSegment);
+      }
+    };
+    
+    checkSegment();
+  }
+  
+  // Iniciar desde el principio o desde el checkpoint actual
+  const currentTime = video.currentTime;
+  for (let i = 0; i < segments.length; i++) {
+    if (currentTime < segments[i].end) {
+      currentSegmentIndex = i;
+      break;
+    }
+  }
+  
+  playNextSegment();
+}
+
+function stopHighlightsMode() {
+  // El modo se detiene automáticamente cuando se pausa o cambia manualmente
+}
+
+// Agregar botón para activar highlights mode
+function addHighlightsModeButton() {
+  const controls = document.querySelector('.video-controls');
+  if (!controls) return;
+  
+  const highlightsBtn = document.createElement('button');
+  highlightsBtn.className = 'control-btn secondary';
+  highlightsBtn.id = 'highlightsModeBtn';
+  highlightsBtn.innerHTML = '⚡ Highlights';
+  highlightsBtn.title = 'Reproducir solo segmentos importantes';
+  highlightsBtn.addEventListener('click', toggleHighlightsMode);
+  
+  controls.insertBefore(highlightsBtn, controls.firstChild);
+}
+
+/* ----------------------------------------------------
+   SCRUB INTELIGENTE EN TIMELINE
+   ---------------------------------------------------- */
+const timelineScrubPreview = document.createElement('div');
+timelineScrubPreview.className = 'timeline-scrub-preview';
+timeline.appendChild(timelineScrubPreview);
+
+let isScrubbing = false;
+
+timeline.addEventListener('mousedown', (e) => {
+  if (e.target === timeline || e.target.classList.contains('timeline-progress') || 
+      e.target.classList.contains('timeline-checkpoints-progress')) {
+    isScrubbing = true;
+    updateScrubPreview(e);
+  }
+});
+
+timeline.addEventListener('mousemove', (e) => {
+  if (isScrubbing) {
+    updateScrubPreview(e);
+  }
+});
+
+document.addEventListener('mouseup', () => {
+  isScrubbing = false;
+  timelineScrubPreview.classList.remove('show');
+});
+
+function updateScrubPreview(e) {
+  const rect = timeline.getBoundingClientRect();
+  const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  const targetTime = percent * video.duration;
+  
+  // Encontrar checkpoint más cercano
+  let nearestCp = null;
+  let minDiff = Infinity;
+  checkpoints.forEach(cp => {
+    const diff = Math.abs(cp.time - targetTime);
+    if (diff < minDiff) {
+      minDiff = diff;
+      nearestCp = cp;
+    }
+  });
+  
+  timelineScrubPreview.innerHTML = `
+    <div class="timeline-scrub-preview-time">${formatTime(targetTime)}</div>
+    ${nearestCp ? `<div class="timeline-scrub-preview-checkpoint">${nearestCp.title}</div>` : ''}
+  `;
+  
+  timelineScrubPreview.style.left = percent * 100 + '%';
+  timelineScrubPreview.classList.add('show');
+}
+
+/* ----------------------------------------------------
+   CARDS APILABLES (HISTORIAL)
+   ---------------------------------------------------- */
+const checkpointCardsStack = document.getElementById('checkpointCardsStack');
+
+function addCheckpointToHistory(cp, index) {
+  checkpointHistory.push({ checkpoint: cp, index, timestamp: Date.now() });
+  
+  // Mantener solo últimos 5
+  if (checkpointHistory.length > 5) {
+    checkpointHistory.shift();
+  }
+  
+  updateCheckpointCards();
+}
+
+function updateCheckpointCards() {
+  if (checkpointHistory.length === 0) {
+    checkpointCardsStack.classList.add('hidden');
+    return;
+  }
+  
+  checkpointCardsStack.classList.remove('hidden');
+  checkpointCardsStack.innerHTML = '';
+  
+  // Mostrar en orden inverso (más reciente primero)
+  const reversed = [...checkpointHistory].reverse();
+  
+  reversed.forEach((item, stackIndex) => {
+    const card = document.createElement('div');
+    card.className = 'checkpoint-card';
+    if (stackIndex === 0) {
+      card.classList.add('active');
+    }
+    
+    card.innerHTML = `
+      <div class="checkpoint-card-header">
+        <div class="checkpoint-card-title">${item.checkpoint.title}</div>
+        <div class="checkpoint-card-time">${formatTime(item.checkpoint.time)}</div>
+      </div>
+      <div class="checkpoint-card-content">${item.checkpoint.text}</div>
+    `;
+    
+    card.addEventListener('click', () => {
+      // Hacer esta card activa
+      checkpointCardsStack.querySelectorAll('.checkpoint-card').forEach(c => {
+        c.classList.remove('active');
+      });
+      card.classList.add('active');
+      jumpToCheckpoint(item.index);
+    });
+    
+    checkpointCardsStack.appendChild(card);
+  });
+}
+
+/* ----------------------------------------------------
+   LECTURA POR CAPAS (RESUMEN/DETALLE/TÉCNICO)
+   ---------------------------------------------------- */
+function createContentLayers(cp, index) {
+  // Dividir contenido en capas
+  const summary = cp.title + '. ' + cp.text.split('.')[0] + '.';
+  const detail = cp.text;
+  const technical = `Checkpoint ${index + 1}/${checkpoints.length} | Timestamp: ${formatTime(cp.time)} | ` +
+    `Duración estimada: ${index < checkpoints.length - 1 ? formatTime(checkpoints[index + 1].time - cp.time) : 'Final'}`;
+  
+  return {
+    summary,
+    detail,
+    technical
+  };
+}
+
+/* ----------------------------------------------------
+   QUICK ACTIONS
+   ---------------------------------------------------- */
+function createQuickActions(cp, index) {
+  const actionsHTML = `
+    <div class="quick-actions">
+      <button class="quick-action-btn" data-action="repeat-5s" title="Repetir 5 segundos antes">
+        ↺ Repetir 5s antes
+      </button>
+      <button class="quick-action-btn" data-action="slow-motion" title="Ver en cámara lenta">
+        🐌 0.5x
+      </button>
+      <button class="quick-action-btn" data-action="share-link" title="Copiar link al timestamp">
+        🔗 Compartir
+      </button>
+      <button class="quick-action-btn" data-action="favorite" title="Marcar como favorito">
+        ⭐ Favorito
+      </button>
+    </div>
+  `;
+  
+  // Agregar listeners después de insertar HTML
+  setTimeout(() => {
+    document.querySelectorAll('.quick-action-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const action = e.target.closest('.quick-action-btn').dataset.action;
+        handleQuickAction(action, cp, index);
+      });
+    });
+  }, 100);
+  
+  return actionsHTML;
+}
+
+function handleQuickAction(action, cp, index) {
+  switch(action) {
+    case 'repeat-5s':
+      video.currentTime = Math.max(0, cp.time - 5);
+      video.play();
+      break;
+    case 'slow-motion':
+      video.playbackRate = 0.5;
+      speedSelect.value = '0.5';
+      break;
+    case 'share-link':
+      const url = window.location.href.split('#')[0] + `#t=${cp.time}`;
+      navigator.clipboard.writeText(url).then(() => {
+        showTemporaryMessage('Link copiado al portapapeles');
+      });
+      break;
+    case 'favorite':
+      const favorites = JSON.parse(localStorage.getItem('checkpointFavorites') || '[]');
+      if (!favorites.includes(index)) {
+        favorites.push(index);
+        localStorage.setItem('checkpointFavorites', JSON.stringify(favorites));
+        showTemporaryMessage('Checkpoint marcado como favorito');
+      } else {
+        showTemporaryMessage('Ya está en favoritos');
+      }
+      break;
+  }
+}
+
+function showTemporaryMessage(message) {
+  const msg = document.createElement('div');
+  msg.style.cssText = `
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(154, 255, 0, 0.9);
+    color: #111;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    z-index: 10000;
+    animation: slideDown 0.3s ease;
+  `;
+  msg.textContent = message;
+  document.body.appendChild(msg);
+  
+  setTimeout(() => {
+    msg.style.animation = 'slideUp 0.3s ease';
+    setTimeout(() => msg.remove(), 300);
+  }, 2000);
+}
+
+/* ----------------------------------------------------
+   MODO PRESENTADOR
+   ---------------------------------------------------- */
+function togglePresenterMode() {
+  presenterMode = !presenterMode;
+  document.body.classList.toggle('presenter-mode', presenterMode);
+  saveUserPreferences();
+  
+  if (presenterMode) {
+    showTemporaryMessage('Modo Presentador activado');
+  } else {
+    showTemporaryMessage('Modo Presentador desactivado');
+  }
+}
+
+// Agregar botón para modo presentador
+function addPresenterModeButton() {
+  const controls = document.querySelector('.video-controls');
+  if (!controls) return;
+  
+  const presenterBtn = document.createElement('button');
+  presenterBtn.className = 'control-btn secondary';
+  presenterBtn.id = 'presenterModeBtn';
+  presenterBtn.innerHTML = '📺 Presentador';
+  presenterBtn.title = 'Modo presentación (tipografía grande, controles mínimos)';
+  presenterBtn.addEventListener('click', togglePresenterMode);
+  
+  controls.appendChild(presenterBtn);
+}
+
+/* ----------------------------------------------------
+   MAPA DE CALOR EN TIMELINE
+   ---------------------------------------------------- */
+function createTimelineHeatmap() {
+  const heatmap = document.createElement('div');
+  heatmap.className = 'timeline-heatmap';
+  heatmap.id = 'timelineHeatmap';
+  
+  // Crear segmentos de calor basados en densidad de checkpoints
+  checkpoints.forEach((cp, index) => {
+    const segment = document.createElement('div');
+    segment.className = 'timeline-heatmap-segment';
+    
+    const startPercent = index > 0 ? (checkpoints[index - 1].time / video.duration * 100) : 0;
+    const endPercent = (cp.time / video.duration * 100);
+    
+    segment.style.left = startPercent + '%';
+    segment.style.width = (endPercent - startPercent) + '%';
+    
+    // Intensidad basada en proximidad a checkpoints
+    const intensity = 0.3 + (index % 3) * 0.1;
+    segment.style.opacity = intensity;
+    
+    heatmap.appendChild(segment);
+  });
+  
+  timeline.insertBefore(heatmap, timeline.firstChild);
+}
+
+/* ----------------------------------------------------
+   GESTOS TÁCTILES MEJORADOS
+   ---------------------------------------------------- */
+const touchGestureHint = document.getElementById('touchGestureHint');
+
+function setupTouchGestures() {
+  const videoWrapper = document.querySelector('.video-wrapper');
+  if (!videoWrapper) return;
+  
+  let touchStartTime = 0;
+  let touchStartX = 0;
+  let touchStartY = 0;
+  
+  videoWrapper.addEventListener('touchstart', (e) => {
+    touchStartTime = Date.now();
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+  
+  videoWrapper.addEventListener('touchend', (e) => {
+    const touchDuration = Date.now() - touchStartTime;
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+    
+    const deltaX = touchEndX - touchStartX;
+    const deltaY = touchEndY - touchStartY;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    
+    // Swipe horizontal (más de 50px)
+    if (distance > 50 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      if (deltaX > 0) {
+        // Swipe derecho: checkpoint anterior
+        if (currentCheckpoint > 0) {
+          jumpToCheckpoint(currentCheckpoint - 1);
+          showTouchHint('← Checkpoint anterior');
+        }
+      } else {
+        // Swipe izquierdo: siguiente checkpoint
+        if (currentCheckpoint < checkpoints.length - 1) {
+          jumpToCheckpoint(currentCheckpoint + 1);
+          showTouchHint('→ Siguiente checkpoint');
+        }
+      }
+    }
+  }, { passive: true });
+}
+
+function showTouchHint(message) {
+  touchGestureHint.textContent = message;
+  touchGestureHint.classList.add('show');
+  
+  setTimeout(() => {
+    touchGestureHint.classList.remove('show');
+  }, 2000);
+}
+
+/* ----------------------------------------------------
+   COMPARACIÓN A/B (ANTES/DESPUÉS)
+   ---------------------------------------------------- */
+function createComparisonAB(currentIndex) {
+  if (currentIndex === 0) return ''; // No hay anterior para comparar
+  
+  const current = checkpoints[currentIndex];
+  const previous = checkpoints[currentIndex - 1];
+  
+  // Simular métricas (en producción vendrían de datos reales)
+  const metrics = {
+    density: Math.floor(Math.random() * 20) + 10,
+    fps: 58 + Math.random() * 2,
+    classes: Math.floor(Math.random() * 5) + 3,
+    occlusion: Math.random() * 100
+  };
+  
+  const prevMetrics = {
+    density: metrics.density - Math.floor(Math.random() * 5),
+    fps: metrics.fps - Math.random(),
+    classes: metrics.classes - 1,
+    occlusion: metrics.occlusion - Math.random() * 20
+  };
+  
+  const comparisonHTML = `
+    <div class="comparison-ab">
+      <div class="comparison-item">
+        <div class="comparison-label">Densidad</div>
+        <div class="comparison-value">${metrics.density}</div>
+        <div class="comparison-change ${metrics.density > prevMetrics.density ? 'positive' : 'negative'}">
+          ${metrics.density > prevMetrics.density ? '+' : ''}${(metrics.density - prevMetrics.density).toFixed(0)}
+        </div>
+      </div>
+      <div class="comparison-item">
+        <div class="comparison-label">FPS</div>
+        <div class="comparison-value">${metrics.fps.toFixed(1)}</div>
+        <div class="comparison-change ${metrics.fps > prevMetrics.fps ? 'positive' : 'negative'}">
+          ${metrics.fps > prevMetrics.fps ? '+' : ''}${(metrics.fps - prevMetrics.fps).toFixed(1)}
+        </div>
+      </div>
+      <div class="comparison-item">
+        <div class="comparison-label">Clases</div>
+        <div class="comparison-value">${metrics.classes}</div>
+        <div class="comparison-change ${metrics.classes > prevMetrics.classes ? 'positive' : 'negative'}">
+          ${metrics.classes > prevMetrics.classes ? '+' : ''}${metrics.classes - prevMetrics.classes}
+        </div>
+      </div>
+      <div class="comparison-item">
+        <div class="comparison-label">Oclusión</div>
+        <div class="comparison-value">${metrics.occlusion.toFixed(0)}%</div>
+        <div class="comparison-change ${metrics.occlusion < prevMetrics.occlusion ? 'positive' : 'negative'}">
+          ${metrics.occlusion < prevMetrics.occlusion ? '-' : '+'}${Math.abs(metrics.occlusion - prevMetrics.occlusion).toFixed(0)}%
+        </div>
+      </div>
+    </div>
+  `;
+  
+  return comparisonHTML;
+}
+
+/* ----------------------------------------------------
+   PÍLDORAS CONTEXTUALES CLICABLES
+   ---------------------------------------------------- */
+function createContextualPills(currentTime) {
+  const pills = [];
+  
+  // Crear píldoras basadas en el tiempo actual
+  if (currentTime >= 10 && currentTime < 45) {
+    pills.push({ text: 'Ver detección de oclusión', time: 45 });
+  }
+  if (currentTime >= 45 && currentTime < 90) {
+    pills.push({ text: 'Ver seguimiento de tráfico pesado', time: 60 });
+  }
+  if (currentTime >= 90 && currentTime < 135) {
+    pills.push({ text: 'Ver robustez ante iluminación', time: 90 });
+  }
+  
+  if (pills.length === 0) return '';
+  
+  const pillsHTML = pills.map(pill => 
+    `<span class="contextual-pill" data-time="${pill.time}">${pill.text}</span>`
+  ).join('');
+  
+  // Agregar listeners después de insertar
+  setTimeout(() => {
+    document.querySelectorAll('.contextual-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        const time = parseFloat(pill.dataset.time);
+        video.currentTime = time;
+        video.play();
+      });
+    });
+  }, 100);
+  
+  return `<div style="margin-top: 12px;">${pillsHTML}</div>`;
+}
+
+/* ----------------------------------------------------
+   GUARDAR/CARGAR PREFERENCIAS DE USUARIO
+   ---------------------------------------------------- */
+function saveUserPreferences() {
+  try {
+    const preferences = {
+      highlightsMode,
+      presenterMode,
+      autoplayEnabled,
+      playbackSpeed: video.playbackRate,
+      currentLayer,
+      lastUpdate: Date.now()
+    };
+    localStorage.setItem('videoSyncPreferences', JSON.stringify(preferences));
+  } catch (e) {
+    console.warn('No se pudieron guardar las preferencias:', e);
+  }
+}
+
+function loadUserPreferences() {
+  try {
+    const saved = localStorage.getItem('videoSyncPreferences');
+    if (!saved) return;
+    
+    const preferences = JSON.parse(saved);
+    
+    if (preferences.highlightsMode) {
+      highlightsMode = true;
+      highlightsModeIndicator.classList.add('active');
+    }
+    
+    if (preferences.presenterMode) {
+      presenterMode = true;
+      document.body.classList.add('presenter-mode');
+    }
+    
+    if (preferences.currentLayer) {
+      currentLayer = preferences.currentLayer;
+    }
+    
+    if (preferences.playbackSpeed) {
+      video.playbackRate = preferences.playbackSpeed;
+      speedSelect.value = preferences.playbackSpeed.toString();
+    }
+  } catch (e) {
+    console.warn('No se pudieron cargar las preferencias:', e);
+  }
+}
+
+/* ----------------------------------------------------
+   INTEGRACIÓN CON FUNCIONES EXISTENTES
+   ---------------------------------------------------- */
+
+// Modificar createTimelineMarkers para agregar preview y heatmap
+const originalCreateTimelineMarkers = createTimelineMarkers;
+createTimelineMarkers = function() {
+  originalCreateTimelineMarkers();
+  setupInstantPreview();
+  createTimelineHeatmap();
+};
+
+// Inicializar cuando el video esté listo
+video.addEventListener('loadedmetadata', () => {
+  addHighlightsModeButton();
+  addPresenterModeButton();
+  setupTouchGestures();
+  loadUserPreferences();
+  
+  // Guardar preferencias cuando cambien
+  video.addEventListener('ratechange', saveUserPreferences);
+  autoplayToggle.addEventListener('change', saveUserPreferences);
+});
+
+// Guardar preferencias antes de cerrar
+window.addEventListener('beforeunload', saveUserPreferences);
+
+</script>
+
+</body>
+</html>
