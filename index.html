@@ -6559,15 +6559,60 @@
             transitionOverlay.className = 'page-transition-overlay';
             document.body.appendChild(transitionOverlay);
 
+            // Función de sanitización de URL para prevenir XSS
+            function sanitizeUrl(urlString) {
+                if (!urlString || urlString === '#') return null;
+                
+                try {
+                    // Crear objeto URL para validación
+                    const url = new URL(urlString, window.location.origin);
+                    
+                    // Lista blanca de protocolos seguros
+                    const safeProtocols = ['http:', 'https:'];
+                    if (!safeProtocols.includes(url.protocol)) {
+                        console.warn('Protocolo no permitido:', url.protocol);
+                        return null;
+                    }
+                    
+                    // Validar que sea del mismo origen (dominio)
+                    if (url.origin !== window.location.origin) {
+                        console.warn('Origen diferente no permitido:', url.origin);
+                        return null;
+                    }
+                    
+                    // Lista blanca de extensiones permitidas (rutas relativas)
+                    const allowedExtensions = ['.html', '.htm', ''];
+                    const hasAllowedExtension = allowedExtensions.some(ext => 
+                        url.pathname.endsWith(ext) || !url.pathname.includes('.')
+                    );
+                    
+                    if (!hasAllowedExtension) {
+                        console.warn('Extensión de archivo no permitida:', url.pathname);
+                        return null;
+                    }
+                    
+                    return url.href;
+                } catch (error) {
+                    console.error('URL inválida:', error);
+                    return null;
+                }
+            }
+
             panelCards.forEach(panelCard => {
                 // Optimización: usar passive listener donde sea posible
                 panelCard.addEventListener('click', (e) => {
                     e.preventDefault();
                     
-                    const panelUrl = panelCard.getAttribute('data-panel-url');
+                    const rawPanelUrl = panelCard.getAttribute('data-panel-url');
                     
-                    // Si no hay URL, no hacer nada
-                    if (!panelUrl || panelUrl === '#') return;
+                    // Sanitizar la URL antes de usarla
+                    const panelUrl = sanitizeUrl(rawPanelUrl);
+                    
+                    // Si la URL no es válida o segura, no hacer nada
+                    if (!panelUrl) {
+                        console.error('URL no válida o insegura:', rawPanelUrl);
+                        return;
+                    }
                     
                     // Obtener posición del card en la pantalla para la animación
                     const rect = panelCard.getBoundingClientRect();
