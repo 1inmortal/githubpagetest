@@ -8,7 +8,7 @@ export default defineConfig({
   base: process.env.NODE_ENV === 'production' ? '/githubpagetest/' : '/',
   server: {
     port: 3000,
-    open: '/pruebas/certificados/react.html',
+    open: true,
     fs: {
       strict: false
     }
@@ -27,8 +27,8 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.html'),
-        certificates: resolve(__dirname, 'pruebas/certificados/react.html')
+        main: resolve(__dirname, 'index.html')
+        // certificates build ya está pre-compilado en pruebas/certificados/certificates-app/dist/
       },
       output: {
         manualChunks: {

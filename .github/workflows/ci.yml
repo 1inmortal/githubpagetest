@@ -266,18 +266,26 @@ jobs:
 
     - name: Build para Pages
       run: |
-        # Compilar proyecto React con Vite
-        echo "🔨 Compilando proyecto React..."
+        # Compilar proyecto principal con Vite
+        echo "🔨 Compilando proyecto principal..."
         NODE_ENV=production npm run build
         
-        # Listar archivos generados por Vite
-        echo "📋 Archivos compilados por Vite:"
-        ls -la dist/
-        ls -la dist/pruebas/certificados/ 2>/dev/null || echo "⚠️ pruebas/certificados no está en dist"
-        ls -la dist/assets/ 2>/dev/null || echo "⚠️ assets/ no está en dist"
+        # Copiar el build pre-compilado de certificados
+        echo "📦 Copiando build de certificaciones..."
+        mkdir -p dist/pruebas/certificados/certificates-app
+        cp -r pruebas/certificados/certificates-app/dist dist/pruebas/certificados/certificates-app/
         
-        # NO copiar nada más - Vite ya generó todo lo necesario en dist/
-        echo "ℹ️ Vite ya copió public/ y compiló todos los archivos necesarios"
+        # Copiar CV
+        echo "📄 Copiando archivos de CV..."
+        mkdir -p dist/pruebas/certificados/cv
+        cp -r pruebas/certificados/cv/* dist/pruebas/certificados/cv/
+        
+        # Listar archivos generados
+        echo "📋 Archivos compilados:"
+        ls -la dist/
+        echo ""
+        echo "Certificados build:"
+        ls -la dist/pruebas/certificados/certificates-app/dist/ 2>/dev/null || echo "⚠️ Certificados no copiados"
         
         # Verificar que el directorio dist existe
         if [ ! -d "dist" ]; then
@@ -290,19 +298,19 @@ jobs:
         echo "Archivos en dist: $(find dist -type f | wc -l)"
         echo "Tamaño total: $(du -sh dist | cut -f1)"
         
-        echo "✅ Build de React completado exitosamente"
+        echo "✅ Build completado exitosamente"
 
     - name: Verificar contenido antes de upload
       run: |
         echo "🔍 Verificando contenido de dist/ antes de subir..."
-        echo "Archivos en dist/pruebas/certificados/:"
-        ls -lah dist/pruebas/certificados/ || echo "❌ No existe dist/pruebas/certificados/"
+        echo "Archivos principales:"
+        ls -lah dist/ | head -20
         echo ""
-        echo "Primeras 20 líneas de dist/pruebas/certificados/react.html:"
-        head -20 dist/pruebas/certificados/react.html || echo "❌ No existe react.html"
+        echo "Certificados app:"
+        ls -lah dist/pruebas/certificados/certificates-app/dist/ || echo "⚠️ No existe certificados app"
         echo ""
         echo "Archivos en dist/assets/:"
-        ls -lah dist/assets/ | head -15 || echo "❌ No existe dist/assets/"
+        ls -lah dist/assets/ | head -15 || echo "⚠️ No existe dist/assets/"
         
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
