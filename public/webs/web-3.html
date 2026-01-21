@@ -3357,13 +3357,21 @@
 
         // Typography animations
         function setupTypographyAnimations() {
-            // Animate hero title letters
+            // Animate hero title letters (usando creación segura de nodos para prevenir XSS)
             const heroTitle = document.querySelector('.hero-title');
             if (heroTitle) {
-                const text = heroTitle.textContent;
-                heroTitle.innerHTML = text.split('').map(char => 
-                    `<span style="display: inline-block;">${char === ' ' ? '&nbsp;' : char}</span>`
-                ).join('');
+                const text = heroTitle.textContent || '';
+                // Limpiar contenido existente de forma segura
+                heroTitle.textContent = '';
+                
+                // Crear elementos de forma segura sin innerHTML
+                for (const char of text) {
+                    const span = document.createElement('span');
+                    span.style.display = 'inline-block';
+                    // Usar textContent en lugar de innerHTML para prevenir XSS
+                    span.textContent = char === ' ' ? '\u00A0' : char; // \u00A0 es nbsp
+                    heroTitle.appendChild(span);
+                }
                 
                 const letters = heroTitle.querySelectorAll('span');
                 gsap.fromTo(letters, 

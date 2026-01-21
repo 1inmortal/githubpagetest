@@ -6634,66 +6634,107 @@
       !currentSkills.find(s => s.id === skillId)
     );
     
-    const gapHTML = generateGapAnalysisHTML(selectedRole, requiredSkills, currentSkills, missingSkills);
-    document.getElementById('skill-gap-analysis').innerHTML = gapHTML;
+    // Generar elemento de forma segura y reemplazar contenido
+    const gapElement = generateGapAnalysisElement(selectedRole, requiredSkills, currentSkills, missingSkills);
+    const gapContainer = document.getElementById('skill-gap-analysis');
+    gapContainer.textContent = ''; // Limpiar contenido existente
+    gapContainer.appendChild(gapElement);
     
     // Mostrar recomendaciones
     document.getElementById('next-skills-recommendations').style.display = 'block';
     updateRecommendationsList();
   }
 
-  // Generar HTML de análisis de brechas
-  function generateGapAnalysisHTML(role, required, current, missing) {
+  // Generar elemento DOM de análisis de brechas de forma segura (prevenir XSS)
+  function generateGapAnalysisElement(role, required, current, missing) {
     const currentSkillNames = current.map(s => s.name).join(', ');
     const missingSkillNames = missing.map(skillId => {
       const skill = nodes.find(n => n.id === skillId);
       return skill ? skill.name : skillId;
     }).join(', ');
     
-    return `
-      <div class="gap-analysis-content">
-        <h4>Análisis para: ${role}</h4>
-        <div class="gap-metrics">
-          <div class="gap-metric">
-            <span class="gap-label">Habilidades Actuales:</span>
-            <span class="gap-value">${currentSkillNames || 'Ninguna'}</span>
-          </div>
-          <div class="gap-metric">
-            <span class="gap-label">Habilidades Requeridas:</span>
-            <span class="gap-value">${required.join(', ')}</span>
-          </div>
-          <div class="gap-metric">
-            <span class="gap-label">Habilidades Faltantes:</span>
-            <span class="gap-value">${missingSkillNames || 'Todas cubiertas'}</span>
-          </div>
-          <div class="gap-metric">
-            <span class="gap-label">Cobertura:</span>
-            <span class="gap-value">${Math.round(((required.length - missing.length) / required.length) * 100)}%</span>
-          </div>
-        </div>
-      </div>
-    `;
+    // Crear elementos de forma segura sin innerHTML
+    const container = document.createElement('div');
+    container.className = 'gap-analysis-content';
+    
+    const title = document.createElement('h4');
+    title.textContent = `Análisis para: ${role}`;
+    container.appendChild(title);
+    
+    const metricsDiv = document.createElement('div');
+    metricsDiv.className = 'gap-metrics';
+    
+    // Función auxiliar para crear métricas
+    function createMetric(label, value) {
+      const metricDiv = document.createElement('div');
+      metricDiv.className = 'gap-metric';
+      
+      const labelSpan = document.createElement('span');
+      labelSpan.className = 'gap-label';
+      labelSpan.textContent = label;
+      
+      const valueSpan = document.createElement('span');
+      valueSpan.className = 'gap-value';
+      valueSpan.textContent = value;
+      
+      metricDiv.appendChild(labelSpan);
+      metricDiv.appendChild(valueSpan);
+      return metricDiv;
+    }
+    
+    metricsDiv.appendChild(createMetric('Habilidades Actuales:', currentSkillNames || 'Ninguna'));
+    metricsDiv.appendChild(createMetric('Habilidades Requeridas:', required.join(', ')));
+    metricsDiv.appendChild(createMetric('Habilidades Faltantes:', missingSkillNames || 'Todas cubiertas'));
+    metricsDiv.appendChild(createMetric('Cobertura:', `${Math.round(((required.length - missing.length) / required.length) * 100)}%`));
+    
+    container.appendChild(metricsDiv);
+    return container;
   }
 
-  // Actualizar lista de recomendaciones
+  // Actualizar lista de recomendaciones de forma segura (prevenir XSS)
   function updateRecommendationsList() {
     const currentSkills = nodes.filter(node => node.level >= 70);
     const recommendations = recommendationEngine.getNextSkill(currentSkills);
     
-    const recommendationsHTML = recommendations.map(rec => `
-      <div class="recommendation-item">
-        <div class="rec-info">
-          <span class="rec-tech">${rec.name}</span>
-          <span class="rec-category">${rec.category}</span>
-        </div>
-        <div class="rec-metrics">
-          <span class="rec-score">${rec.marketDemand.growth}</span>
-          <span class="rec-salary">${rec.marketDemand.salary}</span>
-        </div>
-      </div>
-    `).join('');
+    const listContainer = document.getElementById('recommendations-list');
+    listContainer.textContent = ''; // Limpiar contenido existente
     
-    document.getElementById('recommendations-list').innerHTML = recommendationsHTML;
+    recommendations.forEach(rec => {
+      const item = document.createElement('div');
+      item.className = 'recommendation-item';
+      
+      const infoDiv = document.createElement('div');
+      infoDiv.className = 'rec-info';
+      
+      const techSpan = document.createElement('span');
+      techSpan.className = 'rec-tech';
+      techSpan.textContent = rec.name;
+      
+      const categorySpan = document.createElement('span');
+      categorySpan.className = 'rec-category';
+      categorySpan.textContent = rec.category;
+      
+      infoDiv.appendChild(techSpan);
+      infoDiv.appendChild(categorySpan);
+      
+      const metricsDiv = document.createElement('div');
+      metricsDiv.className = 'rec-metrics';
+      
+      const scoreSpan = document.createElement('span');
+      scoreSpan.className = 'rec-score';
+      scoreSpan.textContent = rec.marketDemand.growth;
+      
+      const salarySpan = document.createElement('span');
+      salarySpan.className = 'rec-salary';
+      salarySpan.textContent = rec.marketDemand.salary;
+      
+      metricsDiv.appendChild(scoreSpan);
+      metricsDiv.appendChild(salarySpan);
+      
+      item.appendChild(infoDiv);
+      item.appendChild(metricsDiv);
+      listContainer.appendChild(item);
+    });
   }
 
   // Funciones de toggle para los paneles

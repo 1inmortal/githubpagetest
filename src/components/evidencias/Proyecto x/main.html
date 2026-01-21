@@ -1672,10 +1672,19 @@
                  itemsToRender = sampleData[filter] || [];
             }
 
-            dataListTitle.innerHTML = `<i class="${icon}"></i> ${displayTitle}`; // Actualizar título
+            // Actualizar título de forma segura (prevenir XSS)
+            dataListTitle.textContent = '';
+            const iconElement = document.createElement('i');
+            iconElement.className = icon;
+            dataListTitle.appendChild(iconElement);
+            dataListTitle.appendChild(document.createTextNode(' ' + displayTitle));
 
             if (itemsToRender.length === 0) {
-                 dataListContainer.innerHTML = `<p style="padding: 15px; color: var(--text-muted-color); text-align: center;">No entries found in data stream.</p>`;
+                 dataListContainer.textContent = '';
+                 const emptyMsg = document.createElement('p');
+                 emptyMsg.style.cssText = 'padding: 15px; color: var(--text-muted-color); text-align: center;';
+                 emptyMsg.textContent = 'No entries found in data stream.';
+                 dataListContainer.appendChild(emptyMsg);
                  return;
             }
 
@@ -1688,11 +1697,26 @@
                 div.classList.add('data-item');
                 div.setAttribute('data-id', item.id);
                 div.setAttribute('data-type', filter); // Guardar tipo para selección
-                div.innerHTML = `
-                    <div class="program-name">${item.title}</div>
-                    <div class="program-desc">${item.subtitle || ''}</div>
-                    ${item.newFlag ? '<div class="new-flag">New Data</div>' : ''}
-                `;
+                
+                // Crear elementos de forma segura sin innerHTML (prevenir XSS)
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'program-name';
+                nameDiv.textContent = item.title;
+                
+                const descDiv = document.createElement('div');
+                descDiv.className = 'program-desc';
+                descDiv.textContent = item.subtitle || '';
+                
+                div.appendChild(nameDiv);
+                div.appendChild(descDiv);
+                
+                if (item.newFlag) {
+                    const flagDiv = document.createElement('div');
+                    flagDiv.className = 'new-flag';
+                    flagDiv.textContent = 'New Data';
+                    div.appendChild(flagDiv);
+                }
+                
                 div.addEventListener('click', () => handleItemSelection(div, item, filter));
                 div.addEventListener('mouseenter', () => playSound(hoverSound));
                 dataListContainer.appendChild(div);
