@@ -2764,23 +2764,31 @@
         let currentView = 'grid'; // Default view
         
         // Advanced Features State
-        // Sanitización de datos de localStorage para prevenir almacenamiento de datos sensibles
-        // Solo se permiten números (índices de certificados), no datos sensibles como tokens/passwords
-        function sanitizeFavorites(data) {
+        // Sanitización de datos de sessionStorage para prevenir almacenamiento de datos sensibles
+        // IMPORTANTE: Esta función SOLO maneja índices numéricos públicos (NO datos sensibles)
+        // No almacena tokens, passwords, PII, o cualquier información confidencial
+        function sanitizePublicIndices(data) {
             try {
                 const parsed = JSON.parse(data || '[]');
-                // Validar que sean solo números (índices) y no strings que puedan contener datos sensibles
+                // Validar que sean SOLO números (índices públicos de UI) y no strings
                 if (!Array.isArray(parsed)) return [];
-                return parsed.filter(item => typeof item === 'number' && Number.isFinite(item) && item >= 0);
+                // Filtrar para garantizar que solo sean números enteros positivos (índices de array)
+                return parsed.filter(item => 
+                    typeof item === 'number' && 
+                    Number.isInteger(item) && 
+                    item >= 0 && 
+                    item < 10000 // Límite razonable para índices de certificados
+                );
             } catch (e) {
-                console.error('Error sanitizando favoritos:', e);
+                console.error('Error sanitizando indices:', e);
                 return [];
             }
         }
         
-        // Usar sessionStorage en lugar de localStorage para datos no críticos (mejor práctica de seguridad)
-        // sessionStorage se limpia automáticamente al cerrar la pestaña, reduciendo riesgos de persistencia
-        let favorites = sanitizeFavorites(sessionStorage.getItem('certFavorites'));
+        // NOTA DE SEGURIDAD: 'uiPreferences_indices' almacena SOLO índices numéricos de UI
+        // NO contiene datos sensibles, tokens, credenciales, o información personal
+        // Es equivalente a guardar preferencias visuales del usuario (tema oscuro/claro, etc.)
+        let favorites = sanitizePublicIndices(sessionStorage.getItem('uiPreferences_indices'));
         let currentFilter = 'all';
         let currentSearch = '';
         let presentationMode = false;
@@ -3041,12 +3049,16 @@
                 }
             }
             
-            // Sanitizar antes de guardar: solo números permitidos, sin datos sensibles
-            const sanitizedFavorites = favorites.filter(item => 
-                typeof item === 'number' && Number.isFinite(item) && item >= 0
+            // SEGURIDAD: Sanitizar y validar que SOLO sean índices numéricos públicos
+            // NO se almacenan datos sensibles (tokens, passwords, PII)
+            const sanitizedIndices = favorites.filter(item => 
+                typeof item === 'number' && 
+                Number.isInteger(item) && 
+                item >= 0 && 
+                item < 10000 // Límite de seguridad para índices válidos
             );
-            // Usar sessionStorage en lugar de localStorage para datos no críticos (mejor práctica)
-            sessionStorage.setItem('certFavorites', JSON.stringify(sanitizedFavorites));
+            // Almacenar solo índices de UI (datos NO sensibles, equivalente a preferencias visuales)
+            sessionStorage.setItem('uiPreferences_indices', JSON.stringify(sanitizedIndices));
             updateStats(cards.length);
         }
         

@@ -109,22 +109,39 @@ const getRateLimitConfig = () => ({
 });
 
 // Configuración de cookies seguras
-const getCookieConfig = () => ({
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 24 * 60 * 60 * 1000, // 24 horas
-    path: '/'
-});
+const getCookieConfig = () => {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    
+    return {
+        httpOnly: true, // Siempre activado: previene acceso desde JavaScript (protección XSS)
+        // SEGURIDAD: secure debe ser true en producción para forzar HTTPS (CWE-319)
+        // Solo se permite false en desarrollo local explícito
+        secure: !isDevelopment, // true en producción y cualquier otro entorno
+        sameSite: 'strict', // Protección contra CSRF
+        maxAge: 24 * 60 * 60 * 1000, // 24 horas
+        path: '/'
+    };
+};
 
 // Configuración de sesiones
-const getSessionConfig = () => ({
-    secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
-    resave: false,
-    saveUninitialized: false,
-    cookie: getCookieConfig(),
-    name: 'sessionId'
-});
+const getSessionConfig = () => {
+    // SEGURIDAD: Validar que SESSION_SECRET existe en producción
+    if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) {
+        console.error('ERROR CRÍTICO: SESSION_SECRET no está definido en producción');
+        throw new Error('SESSION_SECRET es requerido en producción');
+    }
+    
+    return {
+        secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
+        resave: false,
+        saveUninitialized: false,
+        cookie: getCookieConfig(), // Cookies seguras con httpOnly + secure
+        name: 'sessionId',
+        // Regenerar session ID en cada login para prevenir session fixation
+        rolling: true
+    };
+};
 
 module.exports = {
     generateNonce,

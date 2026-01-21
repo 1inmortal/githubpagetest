@@ -79,7 +79,8 @@ class ContentSanitizer {
         this.domPurify.setConfig({
             ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'span', 'div'],
             ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'id'],
-            ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp):|[^a-z]|[a-z+.-]+(?:[^a-z+.-:]|$))/i,
+            // Regex corregido: guion escapado para evitar interpretación como rango (CWE-20)
+            ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
             FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed', 'form', 'input'],
             FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur']
         });
@@ -90,7 +91,8 @@ class ContentSanitizer {
     }
 
     sanitizeURL(url) {
-        return this.domPurify.sanitize(url, { ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp):|[^a-z]|[a-z+.-]+(?:[^a-z+.-:]|$))/i });
+        // Regex corregido: guion escapado para evitar interpretación como rango (CWE-20)
+        return this.domPurify.sanitize(url, { ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i });
     }
 }
 
@@ -120,7 +122,8 @@ class SafeDOMUtils {
                     'href', 'target', 'rel', 'class', 'id', 'title', 'alt',
                     'width', 'height', 'style', 'data-*'
                 ],
-                ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp):|[^a-z]|[a-z+.-]+(?:[^a-z+.-:]|$))/i,
+                // Regex corregido: guion escapado para evitar interpretación como rango (CWE-20)
+                ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
                 FORBID_TAGS: [
                     'script', 'style', 'iframe', 'object', 'embed', 'form',
                     'input', 'textarea', 'select', 'button', 'label'
