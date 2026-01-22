@@ -184,7 +184,7 @@ function GeneratedApp() {
                 <a href="#" className="btn" data-cursor="hover">WhatsApp</a>
               </div>
             </div>
-            <div className="map-container" data-cursor="hover">
+            <div className="map-container" data-cursor="hover" style={{ position: 'relative' }}>
               <iframe 
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1065.499766935871!2d-98.35684153852233!3d26.069532910377227!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x866505aa03926f91%3A0x398bede07f56a8fc!2zQW50b2ppdG9zIOKAnExhcyBGbG9yZXPigJ0!5e0!3m2!1ses-419!2smx!4v1768966058355!5m2!1ses-419!2smx" 
                 width="100%" 
@@ -193,7 +193,34 @@ function GeneratedApp() {
                 allowFullScreen="" 
                 loading="lazy" 
                 referrerPolicy="no-referrer-when-downgrade"
+                title="Ubicación de Las Flores en Google Maps"
               ></iframe>
+              {/* Enlace de respaldo siempre visible en caso de que el mapa no cargue */}
+              <div style={{
+                position: 'absolute',
+                bottom: '10px',
+                right: '10px',
+                zIndex: 10,
+                background: 'rgba(0,0,0,0.7)',
+                padding: '0.5rem 1rem',
+                borderRadius: '4px'
+              }}>
+                <a 
+                  href="https://www.google.com/maps/place/Antojitos+%22Las+Flores%22/@26.0695329,-98.3568415,17z/data=!3m1!4b1!4m6!3m5!1s0x866505aa03926f91:0x398bede07f56a8fc!8m2!3d26.0695329!4d-98.3542666!16s%2Fg%2F11c5v5v5v5?entry=ttu"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ 
+                    color: '#fff', 
+                    textDecoration: 'none',
+                    fontSize: '0.9rem',
+                    fontWeight: 500
+                  }}
+                  onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
+                  onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
+                >
+                  Abrir en Google Maps ↗
+                </a>
+              </div>
             </div>
           </div>
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '20px' }}>
