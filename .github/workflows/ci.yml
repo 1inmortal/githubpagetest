@@ -343,28 +343,30 @@ jobs:
         
         # Copiar el build pre-compilado de certificados
         echo "📦 Copiando build de certificaciones..."
-        mkdir -p dist/pruebas/certificados/certificates-app
+        
+        # Crear la estructura manteniendo /dist/ en la ruta final
+        mkdir -p dist/pruebas/certificados/certificates-app/dist
         
         # Eliminar contenido anterior si existe
-        rm -rf dist/pruebas/certificados/certificates-app/index.html
-        rm -rf dist/pruebas/certificados/certificates-app/assets
+        rm -rf dist/pruebas/certificados/certificates-app/dist/index.html
+        rm -rf dist/pruebas/certificados/certificates-app/dist/assets
         
-        # Copiar TODO el contenido de dist/ (usando . para incluir archivos ocultos y carpetas)
+        # Copiar TODO el contenido de dist/ manteniendo la estructura con /dist/
         echo "Copiando archivos desde: pruebas/certificados/certificates-app/dist/"
         if [ -d "pruebas/certificados/certificates-app/dist" ]; then
-          # Copiar index.html explícitamente
+          # Copiar index.html
           if [ -f "pruebas/certificados/certificates-app/dist/index.html" ]; then
-            cp pruebas/certificados/certificates-app/dist/index.html dist/pruebas/certificados/certificates-app/
-            echo "✅ index.html copiado"
+            cp pruebas/certificados/certificates-app/dist/index.html dist/pruebas/certificados/certificates-app/dist/
+            echo "✅ index.html copiado a certificates-app/dist/"
           else
             echo "❌ Error: index.html no existe en el build"
             exit 1
           fi
           
-          # Copiar carpeta assets explícitamente
+          # Copiar carpeta assets
           if [ -d "pruebas/certificados/certificates-app/dist/assets" ]; then
-            cp -r pruebas/certificados/certificates-app/dist/assets dist/pruebas/certificados/certificates-app/
-            echo "✅ Carpeta assets copiada"
+            cp -r pruebas/certificados/certificates-app/dist/assets dist/pruebas/certificados/certificates-app/dist/
+            echo "✅ Carpeta assets copiada a certificates-app/dist/"
           else
             echo "❌ Error: Carpeta assets no existe en el build"
             echo "Contenido de dist:"
@@ -378,20 +380,20 @@ jobs:
         
         # Verificar que los archivos se copiaron correctamente
         echo "🔍 Verificando archivos copiados..."
-        if [ -f "dist/pruebas/certificados/certificates-app/index.html" ]; then
-          echo "✅ index.html copiado correctamente"
+        if [ -f "dist/pruebas/certificados/certificates-app/dist/index.html" ]; then
+          echo "✅ index.html copiado correctamente a certificates-app/dist/"
         else
           echo "❌ Error: index.html no se copió"
           exit 1
         fi
-        if [ -d "dist/pruebas/certificados/certificates-app/assets" ]; then
-          echo "✅ Carpeta assets copiada correctamente"
+        if [ -d "dist/pruebas/certificados/certificates-app/dist/assets" ]; then
+          echo "✅ Carpeta assets copiada correctamente a certificates-app/dist/"
           echo "Archivos en assets:"
-          ls -la dist/pruebas/certificados/certificates-app/assets/
+          ls -la dist/pruebas/certificados/certificates-app/dist/assets/
         else
           echo "❌ Error: Carpeta assets no se copió"
           echo "Contenido del directorio destino:"
-          ls -la dist/pruebas/certificados/certificates-app/
+          ls -la dist/pruebas/certificados/certificates-app/dist/
           exit 1
         fi
         
