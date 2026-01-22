@@ -270,10 +270,38 @@ jobs:
         echo "🔨 Compilando proyecto principal..."
         NODE_ENV=production npm run build
         
+        # Compilar certificates-app si no existe el build
+        echo "🔨 Compilando certificates-app..."
+        cd pruebas/certificados/certificates-app
+        if [ ! -d "dist" ] || [ -z "$(ls -A dist 2>/dev/null)" ]; then
+          echo "📦 Build de certificados no existe, compilando..."
+          npm ci
+          npm run build
+        else
+          echo "✅ Build de certificados ya existe"
+        fi
+        cd ../../..
+        
         # Copiar el build pre-compilado de certificados
         echo "📦 Copiando build de certificaciones..."
         mkdir -p dist/pruebas/certificados/certificates-app
         cp -r pruebas/certificados/certificates-app/dist/* dist/pruebas/certificados/certificates-app/
+        
+        # Verificar que los archivos se copiaron correctamente
+        echo "🔍 Verificando archivos copiados..."
+        if [ -f "dist/pruebas/certificados/certificates-app/index.html" ]; then
+          echo "✅ index.html copiado correctamente"
+        else
+          echo "❌ Error: index.html no se copió"
+          exit 1
+        fi
+        if [ -d "dist/pruebas/certificados/certificates-app/assets" ]; then
+          echo "✅ Carpeta assets copiada correctamente"
+          ls -la dist/pruebas/certificados/certificates-app/assets/
+        else
+          echo "❌ Error: Carpeta assets no se copió"
+          exit 1
+        fi
         
         # Copiar CV
         echo "📄 Copiando archivos de CV..."
