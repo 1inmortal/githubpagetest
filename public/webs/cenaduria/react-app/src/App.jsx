@@ -5,17 +5,37 @@ function GeneratedApp() {
   useEffect(() => {
     console.log('🚀 App montada, esperando librerías CDN...');
     
-    // Esperar a que las librerías CDN se carguen
+    // Función para verificar si las librerías están disponibles
+    const checkLibsAvailable = () => {
+      // GSAP puede estar en window.gsap o window.GSAP
+      const gsapAvailable = typeof window.gsap !== 'undefined' || typeof window.GSAP !== 'undefined';
+      // ScrollTrigger puede estar en window.ScrollTrigger o como plugin de GSAP
+      const scrollTriggerAvailable = typeof window.ScrollTrigger !== 'undefined' || 
+                                     (gsapAvailable && window.gsap?.plugins?.scrollTrigger);
+      // Lenis puede estar en window.Lenis
+      const lenisAvailable = typeof window.Lenis !== 'undefined';
+      
+      return { gsapAvailable, scrollTriggerAvailable, lenisAvailable };
+    };
+    
+    // Esperar a que las librerías CDN se carguen o continuar después de un tiempo razonable
+    let checkCount = 0;
+    const maxChecks = 150; // 15 segundos máximo (150 * 100ms)
+    
     const checkLibs = setInterval(() => {
-      if (typeof window.gsap !== 'undefined' && 
-          typeof window.ScrollTrigger !== 'undefined' && 
-          typeof window.Lenis !== 'undefined') {
+      checkCount++;
+      const libs = checkLibsAvailable();
+      
+      // Continuar si todas las librerías están disponibles o después de 3 segundos
+      if ((libs.gsapAvailable && libs.scrollTriggerAvailable && libs.lenisAvailable) || checkCount >= 30) {
         clearInterval(checkLibs);
-        console.log('✅ Librerías CDN cargadas:', {
-          gsap: typeof window.gsap,
-          ScrollTrigger: typeof window.ScrollTrigger,
-          Lenis: typeof window.Lenis
-        });
+        
+        if (checkCount >= 30 && (!libs.gsapAvailable || !libs.scrollTriggerAvailable || !libs.lenisAvailable)) {
+          console.warn('⚠️ Algunas librerías CDN no se cargaron completamente:', libs);
+          console.log('Continuando de todas formas...');
+        } else {
+          console.log('✅ Librerías CDN cargadas:', libs);
+        }
         
         // Esperar a que React termine de renderizar el DOM completamente
         setTimeout(() => {
@@ -39,11 +59,16 @@ function GeneratedApp() {
             };
             document.body.appendChild(script);
           } else {
-            console.error('❌ Elementos del DOM no encontrados:', {
+            console.warn('⚠️ Algunos elementos del DOM no encontrados, continuando:', {
               menuGrid: !!menuGrid,
               hero: !!hero,
               loader: !!loader
             });
+            // Intentar cargar el script de todas formas
+            const script = document.createElement('script');
+            script.src = './app-script.js';
+            script.async = false;
+            document.body.appendChild(script);
           }
         }, 500); // Delay de 500ms para asegurar que React termine de renderizar
       }
@@ -52,13 +77,10 @@ function GeneratedApp() {
     // Timeout de seguridad
     const timeout = setTimeout(() => {
       clearInterval(checkLibs);
-      console.error('⚠️ Timeout: Las librerías CDN no se cargaron a tiempo');
-      console.log('Estado actual:', {
-        gsap: typeof window.gsap,
-        ScrollTrigger: typeof window.ScrollTrigger,
-        Lenis: typeof window.Lenis
-      });
-    }, 10000);
+      const libs = checkLibsAvailable();
+      console.warn('⚠️ Timeout alcanzado. Estado de librerías:', libs);
+      console.log('Continuando de todas formas...');
+    }, 15000);
     
     return () => {
       clearInterval(checkLibs);
