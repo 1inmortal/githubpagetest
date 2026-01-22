@@ -270,24 +270,43 @@ jobs:
         echo "🔨 Compilando proyecto principal..."
         NODE_ENV=production npm run build
         
-        # Compilar certificates-app si no existe el build
+        # Compilar certificates-app (siempre hacer build limpio)
         echo "🔨 Compilando certificates-app..."
         cd pruebas/certificados/certificates-app
-        if [ ! -d "dist" ] || [ -z "$(ls -A dist 2>/dev/null)" ]; then
-          echo "📦 Build de certificados no existe, compilando..."
-          npm ci
-          npm run build
-        else
-          echo "✅ Build de certificados ya existe"
+        
+        # Instalar dependencias
+        echo "📦 Instalando dependencias..."
+        npm ci
+        
+        # Limpiar build anterior si existe
+        echo "🧹 Limpiando build anterior..."
+        rm -rf dist
+        
+        # Ejecutar build
+        echo "🔨 Ejecutando build..."
+        npm run build
+        
+        # Verificar que el build se completó correctamente
+        echo "🔍 Verificando build completado..."
+        if [ ! -f "dist/index.html" ]; then
+          echo "❌ Error: index.html no se generó en el build"
+          exit 1
         fi
         
-        # Debug: Ver estructura del build antes de copiar
-        echo "🔍 Debug - Estructura del build de certificados:"
-        echo "Contenido de dist/:"
-        ls -la dist/ || echo "⚠️ No se puede listar dist/"
+        if [ ! -d "dist/assets" ]; then
+          echo "❌ Error: Carpeta assets no se generó en el build"
+          echo "Contenido de dist:"
+          ls -la dist/
+          exit 1
+        fi
+        
+        # Debug: Ver estructura del build
+        echo "✅ Build completado correctamente"
+        echo "📂 Contenido de dist/:"
+        ls -la dist/
         echo ""
-        echo "Contenido de dist/assets/ (si existe):"
-        ls -la dist/assets/ 2>/dev/null || echo "⚠️ Carpeta assets no existe en dist/"
+        echo "📂 Contenido de dist/assets/:"
+        ls -la dist/assets/
         echo ""
         
         cd ../../..
