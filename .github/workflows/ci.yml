@@ -270,22 +270,34 @@ jobs:
         echo "🔨 Compilando proyecto principal..."
         NODE_ENV=production npm run build || echo "⚠️ Build de Vite completado con advertencias"
         
-        # Verificar que el index.html principal se generó
-        echo "🔍 Verificando build del proyecto principal..."
+        # Asegurar que el index.html principal existe (siempre copiar desde la raíz)
+        echo "🔍 Asegurando que dist/index.html existe..."
         if [ ! -f "dist/index.html" ]; then
           echo "⚠️ dist/index.html no se generó en el build de Vite"
-          echo "📋 Copiando index.html original como fallback..."
-          if [ -f "index.html" ]; then
-            cp index.html dist/index.html
-            echo "✅ index.html copiado desde la raíz"
-          else
-            echo "❌ Error: index.html no existe ni en dist/ ni en la raíz"
-            echo "Contenido de dist/:"
-            ls -la dist/ || echo "⚠️ Directorio dist no existe"
-            exit 1
-          fi
+          echo "📋 Copiando index.html original..."
         else
-          echo "✅ dist/index.html generado correctamente por Vite"
+          echo "✅ dist/index.html existe, pero verificando si necesita actualización..."
+        fi
+        
+        # Siempre copiar el index.html desde la raíz para asegurar que esté actualizado
+        if [ -f "index.html" ]; then
+          cp index.html dist/index.html
+          echo "✅ index.html copiado/actualizado desde la raíz"
+        else
+          echo "❌ Error: index.html no existe en la raíz"
+          echo "Contenido del directorio actual:"
+          ls -la | head -20
+          exit 1
+        fi
+        
+        # Verificar que se copió correctamente
+        if [ ! -f "dist/index.html" ]; then
+          echo "❌ Error: dist/index.html no existe después de copiar"
+          echo "Contenido de dist/:"
+          ls -la dist/ || echo "⚠️ Directorio dist no existe"
+          exit 1
+        else
+          echo "✅ Verificación: dist/index.html existe y está listo"
         fi
         
         # Compilar certificates-app (siempre hacer build limpio)
