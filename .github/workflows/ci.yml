@@ -270,6 +270,17 @@ jobs:
         echo "🔨 Compilando proyecto principal..."
         NODE_ENV=production npm run build
         
+        # Verificar que el index.html principal se generó
+        echo "🔍 Verificando build del proyecto principal..."
+        if [ ! -f "dist/index.html" ]; then
+          echo "❌ Error: dist/index.html no se generó"
+          echo "Contenido de dist/:"
+          ls -la dist/ || echo "⚠️ Directorio dist no existe"
+          exit 1
+        else
+          echo "✅ dist/index.html generado correctamente"
+        fi
+        
         # Compilar certificates-app (siempre hacer build limpio)
         echo "🔨 Compilando certificates-app..."
         cd pruebas/certificados/certificates-app
@@ -406,17 +417,32 @@ jobs:
     - name: Verificar contenido antes de upload
       run: |
         echo "🔍 Verificando contenido de dist/ antes de subir..."
-        echo "Archivos principales:"
+        
+        # Verificar que el index.html principal existe
+        if [ ! -f "dist/index.html" ]; then
+          echo "❌ Error CRÍTICO: dist/index.html no existe"
+          echo "Sin este archivo, GitHub Pages no puede servir la página principal"
+          echo "Contenido de dist/:"
+          ls -lah dist/ | head -20
+          exit 1
+        else
+          echo "✅ dist/index.html existe"
+        fi
+        
+        echo ""
+        echo "📂 Estructura de dist/:"
         ls -lah dist/ | head -20
         echo ""
-        echo "Certificados app:"
-        ls -lah dist/pruebas/certificados/certificates-app/ || echo "⚠️ No existe certificados app"
+        echo "📂 Certificados app:"
+        ls -lah dist/pruebas/certificados/certificates-app/ 2>/dev/null || echo "⚠️ No existe certificados app"
         echo ""
-        echo "Assets de certificados:"
-        ls -lah dist/pruebas/certificados/certificates-app/assets/ || echo "⚠️ No existen assets de certificados"
+        echo "📂 Assets de certificados:"
+        ls -lah dist/pruebas/certificados/certificates-app/assets/ 2>/dev/null || echo "⚠️ No existen assets de certificados"
         echo ""
-        echo "Archivos en dist/assets/:"
-        ls -lah dist/assets/ | head -15 || echo "⚠️ No existe dist/assets/"
+        echo "📂 Archivos en dist/assets/ (proyecto principal):"
+        ls -lah dist/assets/ 2>/dev/null | head -15 || echo "⚠️ No existe dist/assets/"
+        echo ""
+        echo "✅ Verificación completa - listo para subir"
         
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
