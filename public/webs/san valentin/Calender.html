@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>El Amor en Vacaciones — Día de la Amistad</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+  <style>
+    :root{
+      --bg1:#070A12;
+      --bg2:#0B1020;
+      --ink:#EAF0FF;
+      --muted:#B7C6FF;
+      --pink:#FF4B8B;
+      --rose:#FF4B5C;
+      --aqua:#3EF0B5;
+      --gold:#FFC857;
+      --glass: rgba(255,255,255,0.06);
+      --stroke: rgba(255,255,255,0.10);
+      --shadow: 0 18px 50px rgba(0,0,0,.55);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      overflow:hidden;
+      font-family: var(--sans);
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 800px at 20% 15%, rgba(255,75,139,.22), transparent 55%),
+        radial-gradient(1000px 700px at 80% 20%, rgba(62,240,181,.14), transparent 55%),
+        radial-gradient(900px 700px at 50% 90%, rgba(255,200,87,.10), transparent 60%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      animation: gradientBG 14s ease-in-out infinite;
+    }
+    @keyframes gradientBG{
+      0%{ filter: hue-rotate(0deg); }
+      50%{ filter: hue-rotate(10deg); }
+      100%{ filter: hue-rotate(0deg); }
+    }
+
+    /* Canvas particles */
+    canvas#fx{
+      position:fixed;
+      inset:0;
+      width:100%;
+      height:100%;
+      z-index:0;
+    }
+
+    /* Subtle vignette + grain */
+    .overlay{
+      position:fixed; inset:0; z-index:1;
+      background:
+        radial-gradient(1200px 900px at 50% 40%, transparent 40%, rgba(0,0,0,.55) 90%),
+        linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.35));
+      pointer-events:none;
+    }
+    .overlay::after{
+      content:"";
+      position:absolute; inset:-20%;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E");
+      opacity:.08;
+      transform: rotate(10deg);
+      mix-blend-mode: overlay;
+    }
+
+    /* Center stage */
+    .stage{
+      position:relative;
+      z-index:2;
+      height:100%;
+      display:grid;
+      place-items:center;
+      padding: 24px;
+      perspective: 900px;
+    }
+
+    .card{
+      width:min(860px, 92vw);
+      border-radius: 26px;
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
+      border:1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      padding: 30px 26px 22px 26px;
+      position: relative;
+      transform-style: preserve-3d;
+    }
+
+    /* animated border glint (edge only) */
+    .card::before{
+      content:"";
+      position:absolute; inset:0;
+      border-radius: inherit;
+      padding: 1.5px;
+      background: linear-gradient(90deg, rgba(255,75,139,.0), rgba(255,75,139,.55), rgba(62,240,181,.45), rgba(255,200,87,.55), rgba(255,75,139,.0));
+      background-size: 240% 100%;
+      -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+              mask-composite: exclude;
+      animation: glint 5.5s linear infinite;
+      pointer-events:none;
+      opacity:.8;
+    }
+    @keyframes glint{
+      0%{ background-position: 0% 50%; }
+      100%{ background-position: 240% 50%; }
+    }
+
+    .topline{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .badge{
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(234,240,255,.85);
+      user-select:none;
+      white-space:nowrap;
+    }
+
+    .title{
+      margin:0;
+      font-size: 14px;
+      letter-spacing: .3px;
+      color: rgba(234,240,255,.80);
+      font-family: var(--mono);
+    }
+
+    .lines{
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+      padding: 10px 4px 0 4px;
+    }
+
+    .line{
+      font-size: clamp(22px, 3.4vw, 32px);
+      line-height: 1.16;
+      margin: 0;
+      opacity: 0;
+      transform: translateY(18px);
+      letter-spacing: .2px;
+      text-shadow: 0 10px 24px rgba(0,0,0,.35);
+    }
+    .line .soft{ color: rgba(234,240,255,.88); }
+    .line .accent{ color: var(--pink); text-shadow: 0 0 24px rgba(255,75,139,.25); }
+    .line .aqua{ color: var(--aqua); text-shadow: 0 0 24px rgba(62,240,181,.18); }
+    .line .gold{ color: var(--gold); text-shadow: 0 0 24px rgba(255,200,87,.20); }
+
+    /* Split letters wrapper */
+    .char{
+      display:inline-block;
+      will-change: transform, opacity, filter;
+    }
+
+    /* Icons layer */
+    .props{
+      position:absolute;
+      inset: 0;
+      pointer-events:none;
+      z-index:3;
+    }
+
+    /* Sign */
+    .sign{
+      position:absolute;
+      right: 8%;
+      top: 54%;
+      width: 190px;
+      opacity: 0;
+      transform: translate3d(30px, 0, 40px) rotate(6deg);
+      filter: drop-shadow(0 12px 18px rgba(0,0,0,.45));
+    }
+    .sign .board{
+      padding: 14px 14px 12px 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.16);
+      backdrop-filter: blur(10px);
+      font-family: var(--mono);
+      color: rgba(234,240,255,.92);
+      text-align:center;
+      letter-spacing:.2px;
+    }
+    .sign .board b{ color: var(--gold); }
+    .sign .rope{
+      height: 16px;
+      width: 120px;
+      border-top: 2px solid rgba(234,240,255,.35);
+      margin: 0 auto -8px auto;
+      border-radius: 999px;
+    }
+
+    /* Button */
+    .actions{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 14px;
+      margin-top: 18px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,.10);
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap: 10px;
+      border: none;
+      cursor:pointer;
+      padding: 12px 18px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(255,75,92,.95), rgba(255,75,139,.85));
+      color: white;
+      font-size: 15px;
+      font-weight: 700;
+      box-shadow: 0 14px 28px rgba(255,75,92,.18);
+      transition: transform .12s ease, filter .12s ease;
+      will-change: transform;
+      user-select:none;
+    }
+    .btn:hover{ transform: translateY(-1px) scale(1.02); filter: brightness(1.05); }
+    .btn:active{ transform: translateY(0px) scale(.99); }
+
+    .note{
+      color: rgba(234,240,255,.72);
+      font-size: 12px;
+      font-family: var(--mono);
+      line-height: 1.35;
+    }
+
+    /* Toast */
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%) translateY(30px);
+      opacity: 0;
+      z-index: 5;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(14,22,48,.55);
+      border: 1px solid rgba(255,255,255,.12);
+      backdrop-filter: blur(10px);
+      font-family: var(--mono);
+      color: rgba(234,240,255,.92);
+      box-shadow: 0 14px 34px rgba(0,0,0,.45);
+      pointer-events:none;
+      white-space:nowrap;
+    }
+
+    /* ----- Responsive: tablet y móvil ----- */
+    @media (max-width: 768px){
+      body{ overflow: auto; }
+      .stage{
+        min-height: 100%;
+        padding: 16px;
+        align-items: center;
+        justify-items: center;
+        padding-top: max(16px, env(safe-area-inset-top));
+      }
+      .card{
+        width: min(100%, 92vw);
+        padding: 24px 18px 20px 18px;
+        border-radius: 22px;
+      }
+      .topline{
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+      .title{ font-size: 12px; }
+      .line{ font-size: clamp(18px, 4.2vw, 26px); }
+      .lines{ gap: 10px; padding: 8px 2px 0 2px; }
+      /* Decorativos más pequeños y reposicionados */
+      .sign{
+        width: 150px;
+        right: 5%;
+        top: 50%;
+      }
+      .sign .board{ padding: 10px; font-size: 12px; }
+      .sign .rope{ width: 90px; height: 12px; }
+      .actions{
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 16px;
+      }
+      .btn{
+        padding: 14px 20px;
+        font-size: 14px;
+        min-height: 44px;
+      }
+      .note{ font-size: 11px; }
+      .toast{
+        bottom: max(18px, env(safe-area-inset-bottom));
+        left: 12px;
+        right: 12px;
+        transform: translateX(0) translateY(30px);
+        margin-left: 0;
+        text-align: center;
+        white-space: normal;
+      }
+    }
+
+    @media (max-width: 480px){
+      .stage{ padding: 12px; }
+      .card{
+        padding: 20px 14px 18px 14px;
+        border-radius: 20px;
+      }
+      .badge{ font-size: 11px; padding: 5px 8px; }
+      .title{ font-size: 11px; }
+      .line{ font-size: clamp(17px, 4.5vw, 22px); }
+      .lines{ gap: 8px; }
+      /* En móvil muy pequeño, decorativos más discretos */
+      .sign{
+        width: 120px;
+        right: 4%;
+        top: 40%;
+      }
+      .sign .board{ padding: 8px; font-size: 11px; }
+      .sign .rope{ width: 70px; }
+      .actions{ flex-direction: column; align-items: stretch; }
+      .btn{ width: 100%; justify-content: center; }
+      .note{ text-align: center; }
+    }
+
+    /* ----- Pantallas grandes ----- */
+    @media (min-width: 1200px){
+      .stage{ padding: 32px; }
+      .card{
+        width: min(900px, 85vw);
+        padding: 34px 30px 24px 30px;
+      }
+      .line{ font-size: 32px; }
+    }
+
+    /* Reduce motion */
+    @media (prefers-reduced-motion: reduce){
+      body{ animation: none; }
+      .card::before{ animation: none; }
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="fx" aria-hidden="true"></canvas>
+  <div class="overlay" aria-hidden="true"></div>
+
+  <div class="stage">
+    <div class="card" id="card">
+      <div class="topline">
+        <div class="badge">💫 El Amor en Vacaciones</div>
+        <div class="title">Att Armando — Día de la Amistad</div>
+      </div>
+
+      <div class="lines" aria-live="polite">
+        <p class="line split" id="l1">💖 <span class="soft">Feliz Día de la Amistad…</span></p>
+        <p class="line split" id="l2">✈️ <span class="accent">El amor</span> pidió vacaciones</p>
+        <p class="line split" id="l3">🧘 Renunció al <span class="aqua">estrés</span></p>
+        <p class="line split" id="l4">📩 Dejó un aviso de <span class="gold">“vuelvo pronto”</span></p>
+      </div>
+
+      <div class="props" aria-hidden="true">
+        <div class="sign" id="sign">
+          <div class="rope"></div>
+          <div class="board">Aviso: <b>vuelvo pronto</b><br><span style="opacity:.75">— con más amor</span></div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="btn">
+          👉 Enviar buena vibra
+        </button>
+        <div class="note">Tip: mueve el mouse o toca la pantalla.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">✨ Vibra positiva enviada ✨</div>
+
+<script>
+  // ---- Notificación cuando alguien pulsa el botón (opcional) ----
+  // Pon aquí la URL de un formulario que envíe un aviso (ej: Formspree).
+  // Ejemplo Formspree: crea un formulario en https://formspree.io y pega la URL tipo https://formspree.io/f/xxxxx
+  const NOTIFY_URL = "https://formspree.io/f/xlgwbezz";
+
+  function notifyButtonClick(){
+    if (!NOTIFY_URL) return;
+    const senderWrap = document.getElementById("sender-wrap");
+    const senderName = document.getElementById("sender-name");
+    const de = (senderWrap && senderWrap.style.display !== "none" && senderName) ? senderName.textContent : "Alguien";
+    const fd = new FormData();
+    fd.append("_subject", "✨ Buena vibra recibida");
+    fd.append("message", "Alguien ha pulsado \"Enviar buena vibra\" en tu tarjeta.");
+    fd.append("enviado_para", de);
+    fd.append("fecha", new Date().toLocaleString("es"));
+    fetch(NOTIFY_URL, { method: "POST", body: fd }).catch(function(){});
+  }
+
+  // ---- Split letters (manual) ----
+  // Anime.js splitText existe en docs recientes, pero acá lo hacemos sin depender de módulos. [web:125]
+  function splitLetters(el){
+    const text = el.innerHTML;
+    // preserve emojis/tags: split only text nodes by wrapping characters
+    // Simple approach: use textContent for the line, keep inner spans by splitting per element.
+    // We'll split only elements with class .split by iterating child nodes.
+    const nodes = Array.from(el.childNodes);
+    el.innerHTML = "";
+    nodes.forEach(n=>{
+      if(n.nodeType === Node.TEXT_NODE){
+        const frag = document.createDocumentFragment();
+        Array.from(n.textContent).forEach(ch=>{
+          const span = document.createElement("span");
+          span.className = "char";
+          span.textContent = ch === " " ? "\u00A0" : ch;
+          frag.appendChild(span);
+        });
+        el.appendChild(frag);
+      } else if(n.nodeType === Node.ELEMENT_NODE){
+        const wrapper = n.cloneNode(false);
+        const t = n.textContent;
+        wrapper.textContent = "";
+        Array.from(t).forEach(ch=>{
+          const span = document.createElement("span");
+          span.className = "char";
+          span.textContent = ch === " " ? "\u00A0" : ch;
+          wrapper.appendChild(span);
+        });
+        el.appendChild(wrapper);
+      }
+    });
+  }
+
+  document.querySelectorAll(".split").forEach(splitLetters);
+
+  // ---- Canvas particles ----
+  const canvas = document.getElementById("fx");
+  const ctx = canvas.getContext("2d", { alpha: true });
+
+  let W, H, DPR;
+  function resize(){
+    DPR = Math.min(2, window.devicePixelRatio || 1);
+    W = Math.floor(window.innerWidth);
+    H = Math.floor(window.innerHeight);
+    canvas.width = Math.floor(W * DPR);
+    canvas.height = Math.floor(H * DPR);
+    canvas.style.width = W + "px";
+    canvas.style.height = H + "px";
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  window.addEventListener("resize", resize);
+  resize();
+
+  const mouse = { x: W/2, y: H/2, tx: W/2, ty: H/2, down:false };
+  function setPointer(e){
+    const p = e.touches ? e.touches[0] : e;
+    mouse.tx = p.clientX;
+    mouse.ty = p.clientY;
+  }
+  window.addEventListener("mousemove", setPointer, { passive:true });
+  window.addEventListener("touchstart", (e)=>{ mouse.down=true; setPointer(e); }, { passive:true });
+  window.addEventListener("touchmove", setPointer, { passive:true });
+  window.addEventListener("touchend", ()=> mouse.down=false, { passive:true });
+
+  const particles = [];
+  const N = Math.round((Math.min(W,H) / 8)); // adaptive
+  for(let i=0;i<N;i++){
+    particles.push({
+      x: Math.random()*W,
+      y: Math.random()*H,
+      r: 1 + Math.random()*2.4,
+      a: 0.18 + Math.random()*0.35,
+      vx: (Math.random()*0.6 - 0.3),
+      vy: (Math.random()*0.6 - 0.3),
+      drift: 0.4 + Math.random()*1.2,
+      hue: 320 + Math.random()*60
+    });
+  }
+
+  function tick(){
+    // smooth pointer
+    mouse.x += (mouse.tx - mouse.x) * 0.06;
+    mouse.y += (mouse.ty - mouse.y) * 0.06;
+
+    ctx.clearRect(0,0,W,H);
+
+    // soft glow field
+    const g = ctx.createRadialGradient(mouse.x, mouse.y, 40, mouse.x, mouse.y, 280);
+    g.addColorStop(0, "rgba(255,75,139,.10)");
+    g.addColorStop(1, "rgba(255,75,139,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,W,H);
+
+    for(const p of particles){
+      // gentle drifting + slight attraction
+      const dx = (mouse.x - p.x) / 220;
+      const dy = (mouse.y - p.y) / 220;
+      p.vx += dx * 0.002;
+      p.vy += dy * 0.002;
+
+      p.x += p.vx * p.drift;
+      p.y += p.vy * p.drift;
+
+      // wrap edges for "vacaciones" drift
+      if(p.x < -20) p.x = W + 20;
+      if(p.x > W + 20) p.x = -20;
+      if(p.y < -20) p.y = H + 20;
+      if(p.y > H + 20) p.y = -20;
+
+      ctx.beginPath();
+      ctx.fillStyle = `hsla(${p.hue}, 90%, 70%, ${p.a})`;
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    requestAnimationFrame(tick);
+  }
+  tick();
+
+  // ---- Parallax tilt: PC = mouse; móvil = giroscopio (opcional) con fallback a touch ----
+  const card = document.getElementById("card");
+  const isMobile = window.innerWidth < 768 || ("ontouchstart" in window);
+
+  const gyro = {
+    beta: 0,
+    gamma: 0,
+    smoothBeta: 0,
+    smoothGamma: 0,
+    available: false
+  };
+
+  function enableGyro(){
+    if (!isMobile || gyro.available) return;
+    if (typeof DeviceOrientationEvent === "undefined") return;
+
+    const requestPerm = typeof DeviceOrientationEvent.requestPermission === "function";
+    if (requestPerm) {
+      DeviceOrientationEvent.requestPermission()
+        .then(function(perm){
+          if (perm !== "granted") return;
+          addOrientationListener();
+        })
+        .catch(function(){ /* usuario denegó o error */ });
+      return;
+    }
+    addOrientationListener();
+  }
+
+  function addOrientationListener(){
+    window.addEventListener("deviceorientation", function(e){
+      if (e.beta != null) gyro.beta = e.beta;
+      if (e.gamma != null) gyro.gamma = e.gamma;
+      gyro.available = true;
+    }, { passive: true });
+  }
+
+  // En iOS hace falta un gesto del usuario para pedir permiso de orientación
+  if (isMobile) {
+    const once = function(){
+      enableGyro();
+      document.removeEventListener("touchstart", once);
+      document.removeEventListener("click", once);
+    };
+    document.addEventListener("touchstart", once, { once: true, passive: true });
+    document.addEventListener("click", once, { once: true });
+  }
+
+  function parallax(){
+    const isNarrow = window.innerWidth < 768;
+    let rx, ry;
+
+    if (isMobile && gyro.available) {
+      gyro.smoothBeta += (gyro.beta - gyro.smoothBeta) * 0.06;
+      gyro.smoothGamma += (gyro.gamma - gyro.smoothGamma) * 0.06;
+      // beta: inclinación adelante/atrás; gamma: izquierda/derecha. Mapeo suave para efecto cinemático
+      rx = ((90 - gyro.smoothBeta) * 0.25);
+      ry = (gyro.smoothGamma * 0.35);
+      rx = Math.max(-12, Math.min(12, rx));
+      ry = Math.max(-14, Math.min(14, ry));
+    } else {
+      const rect = card.getBoundingClientRect();
+      const cx = rect.left + rect.width/2;
+      const cy = rect.top + rect.height/2;
+      const dx = (mouse.x - cx) / rect.width;
+      const dy = (mouse.y - cy) / rect.height;
+      const factorX = isNarrow ? 2 : 7;
+      const factorY = isNarrow ? 3 : 10;
+      rx = -dy * factorX;
+      ry = dx * factorY;
+    }
+
+    card.style.transform = `rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) translateZ(0)`;
+    requestAnimationFrame(parallax);
+  }
+  parallax();
+
+  // ---- Storytelling timeline ----
+  const tl = anime.timeline({
+    easing: "easeOutExpo",
+    duration: 1000,
+    autoplay: true
+  });
+
+  // Helper: animate split letters
+  function showLine(id, opts={}){
+    const el = document.querySelector(id);
+    const chars = el.querySelectorAll(".char");
+    return {
+      targets: el,
+      opacity: [0,1],
+      translateY: [18,0],
+      duration: 700,
+      easing: "easeOutExpo",
+      begin: () => {
+        anime.set(el, { opacity: 1 });
+        anime.set(chars, { opacity: 0, translateY: 14, filter: "blur(6px)" });
+        anime({
+          targets: chars,
+          opacity: [0,1],
+          translateY: [14,0],
+          filter: ["blur(6px)","blur(0px)"],
+          delay: anime.stagger(18),
+          duration: 720,
+          easing: "easeOutCubic"
+        });
+      },
+      ...opts
+    };
+  }
+
+  tl
+    .add(showLine("#l1"))
+    .add(showLine("#l2", {
+      begin: () => {
+        const el = document.querySelector("#l2");
+        const chars = el.querySelectorAll(".char");
+        anime.set(el, { opacity: 1 });
+        anime.set(chars, { opacity: 0, translateX: -12, rotate: -6, filter:"blur(6px)" });
+        anime({
+          targets: chars,
+          opacity: [0,1],
+          translateX: [-12,0],
+          rotate: [-6,0],
+          filter: ["blur(6px)","blur(0px)"],
+          delay: anime.stagger(16),
+          duration: 720,
+          easing: "easeOutExpo"
+        });
+      }
+    }))
+    .add(showLine("#l3", {
+      begin: () => {
+        const el = document.querySelector("#l3");
+        const chars = el.querySelectorAll(".char");
+        anime.set(el, { opacity: 1 });
+        anime.set(chars, { opacity: 0, scale: 0.85, filter:"blur(10px)" });
+        anime({
+          targets: chars,
+          opacity: [0,1],
+          scale: [0.85, 1],
+          filter: ["blur(10px)","blur(0px)"],
+          delay: anime.stagger(18),
+          duration: 720,
+          easing: "easeOutExpo"
+        });
+      }
+    }))
+    // dissolve the word "estrés" into tiny hearts (simple particle spans)
+    .add({
+      duration: 520,
+      begin: () => dissolveWord("l3", "estrés")
+    }, "+=120")
+    .add(showLine("#l4", {
+      begin: () => {
+        const el = document.querySelector("#l4");
+        const chars = el.querySelectorAll(".char");
+        anime.set(el, { opacity: 1 });
+        anime.set(chars, { opacity: 0, translateY: 16, rotate: -10, filter:"blur(8px)" });
+        anime({
+          targets: chars,
+          opacity: [0,1],
+          translateY: [16,0],
+          rotate: [-10,0],
+          filter: ["blur(8px)","blur(0px)"],
+          delay: anime.stagger(16),
+          duration: 760,
+          easing: "easeOutExpo"
+        });
+      }
+    }))
+    // sign swing
+    .add({
+      targets: "#sign",
+      opacity: [0,1],
+      translateX: [30, 0],
+      rotate: [6, 0],
+      duration: 900,
+      easing: "easeOutElastic(1, .55)",
+      begin: () => {
+        anime({
+          targets: "#sign",
+          rotate: [
+            { value: 6, duration: 0 },
+            { value: -5, duration: 650, easing: "easeInOutSine" },
+            { value: 3, duration: 650, easing: "easeInOutSine" },
+            { value: 0, duration: 650, easing: "easeInOutSine" }
+          ]
+        });
+      }
+    }, "-=520");
+
+  // ---- Dissolve helper ----
+  function dissolveWord(lineId, word){
+    const line = document.getElementById(lineId);
+    if(!line) return;
+
+    // find an element that contains the word
+    const text = line.textContent;
+    if(!text.includes(word)) return;
+
+    // Create floating heart particles from the location of the word span (best-effort)
+    // We'll target the "aqua" span if exists (your estrés word is inside it).
+    const targetSpan = line.querySelector(".aqua") || line;
+    const rect = targetSpan.getBoundingClientRect();
+
+    // Visual dissolve: breve blur y desvanecido, luego volver a leer claro
+    anime({
+      targets: targetSpan,
+      opacity: [1, 0.4],
+      filter: ["blur(0px)", "blur(6px)"],
+      duration: 420,
+      easing: "easeOutQuad",
+      complete: () => {
+        // Restaurar la palabra para que se lea bien
+        anime({
+          targets: targetSpan,
+          opacity: 1,
+          filter: "blur(0px)",
+          duration: 600,
+          delay: 400,
+          easing: "easeOutQuad"
+        });
+      }
+    });
+
+    const count = 16;
+    for(let i=0;i<count;i++){
+      const s = document.createElement("div");
+      s.textContent = "💗";
+      s.style.position = "fixed";
+      s.style.left = (rect.left + rect.width*0.35 + Math.random()*rect.width*0.3) + "px";
+      s.style.top  = (rect.top + rect.height*0.2 + Math.random()*rect.height*0.6) + "px";
+      s.style.zIndex = 6;
+      s.style.fontSize = (12 + Math.random()*18) + "px";
+      s.style.opacity = "0";
+      s.style.filter = "drop-shadow(0 10px 18px rgba(0,0,0,.35))";
+      document.body.appendChild(s);
+
+      anime({
+        targets: s,
+        opacity: [0, 1, 0],
+        translateX: [0, (Math.random()*120 - 60)],
+        translateY: [0, (-70 - Math.random()*90)],
+        rotate: [0, (Math.random()*80 - 40)],
+        scale: [0.9, 1.2, 0.8],
+        duration: 900 + Math.random()*500,
+        easing: "easeOutCubic",
+        complete: () => s.remove()
+      });
+    }
+  }
+
+  // ---- Button interaction ----
+  const toast = document.getElementById("toast");
+  const btn = document.getElementById("btn");
+
+  function showToast(msg){
+    toast.textContent = msg;
+    anime.remove(toast);
+    anime({
+      targets: toast,
+      translateY: [30, 0],
+      opacity: [0,1],
+      duration: 420,
+      easing: "easeOutExpo"
+    });
+    setTimeout(()=>{
+      anime({
+        targets: toast,
+        translateY: [0, 20],
+        opacity: [1,0],
+        duration: 500,
+        easing: "easeInQuad"
+      });
+    }, 1200);
+  }
+
+  btn.addEventListener("click", ()=>{
+    anime({
+      targets: "#card",
+      scale: [1, 1.03, 1],
+      duration: 760,
+      easing: "easeOutElastic(1, .55)"
+    });
+    burstConfetti(btn);
+    const senderEl = document.getElementById("sender-name");
+    const wrap = document.getElementById("sender-wrap");
+    const quien = (wrap && wrap.style.display !== "none" && senderEl) ? senderEl.textContent : null;
+    showToast(quien ? "✨ Vibra de " + quien + " recibida ✨" : "✨ Vibra positiva enviada ✨");
+    notifyButtonClick();
+  });
+
+  function burstConfetti(anchor){
+    const rect = anchor.getBoundingClientRect();
+    const x = rect.left + rect.width/2;
+    const y = rect.top + rect.height/2;
+
+    const items = 26;
+    for(let i=0;i<items;i++){
+      const el = document.createElement("div");
+      el.textContent = Math.random() < 0.55 ? "✨" : (Math.random()<0.5 ? "💛" : "💖");
+      el.style.position = "fixed";
+      el.style.left = x + "px";
+      el.style.top = y + "px";
+      el.style.zIndex = 7;
+      el.style.opacity = "0";
+      el.style.fontSize = (12 + Math.random()*18) + "px";
+      document.body.appendChild(el);
+
+      const ang = (Math.PI*2) * (i/items) + (Math.random()*0.4);
+      const dist = 60 + Math.random()*110;
+      const dx = Math.cos(ang) * dist;
+      const dy = Math.sin(ang) * dist - (40 + Math.random()*60);
+
+      anime({
+        targets: el,
+        opacity: [0, 1, 0],
+        translateX: [0, dx],
+        translateY: [0, dy],
+        rotate: [0, (Math.random()*260 - 130)],
+        scale: [0.9, 1.15, 0.8],
+        duration: 900 + Math.random()*450,
+        easing: "easeOutCubic",
+        complete: () => el.remove()
+      });
+    }
+  }
+</script>
+</body>
+</html>
