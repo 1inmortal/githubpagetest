@@ -268,6 +268,7 @@
     /* ----- Responsive: tablet y móvil ----- */
     @media (max-width: 768px){
       body{ overflow: auto; }
+      .tip-note{ display: none; }
       .stage{
         min-height: 100%;
         padding: 16px;
@@ -320,6 +321,13 @@
     }
 
     @media (max-width: 480px){
+      .actions{
+        position: sticky;
+        bottom: 0;
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
+        background: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.18));
+        border-top: 1px solid rgba(255,255,255,.10);
+      }
       .stage{ padding: 12px; }
       .card{
         padding: 20px 14px 18px 14px;
@@ -389,7 +397,7 @@
         <button class="btn" id="btn">
           👉 Enviar buena vibra
         </button>
-        <div class="note">Tip: mueve el mouse o toca la pantalla.</div>
+        <div class="note tip-note">Tip: mueve el mouse o toca la pantalla.</div>
       </div>
     </div>
   </div>
@@ -480,9 +488,11 @@
   window.addEventListener("touchmove", setPointer, { passive:true });
   window.addEventListener("touchend", ()=> mouse.down=false, { passive:true });
 
+  const faceEmojis = ["😊","🥰","😍","🤗","😘","😻","💕","💖","🌸","✨","💫","🫶"];
   const particles = [];
   const N = Math.round((Math.min(W,H) / 8)); // adaptive
   for(let i=0;i<N;i++){
+    const useEmoji = Math.random() < 0.35; // ~35% partículas son caritas
     particles.push({
       x: Math.random()*W,
       y: Math.random()*H,
@@ -491,7 +501,8 @@
       vx: (Math.random()*0.6 - 0.3),
       vy: (Math.random()*0.6 - 0.3),
       drift: 0.4 + Math.random()*1.2,
-      hue: 320 + Math.random()*60
+      hue: 320 + Math.random()*60,
+      emoji: useEmoji ? faceEmojis[Math.floor(Math.random() * faceEmojis.length)] : null
     });
   }
 
@@ -525,10 +536,19 @@
       if(p.y < -20) p.y = H + 20;
       if(p.y > H + 20) p.y = -20;
 
-      ctx.beginPath();
-      ctx.fillStyle = `hsla(${p.hue}, 90%, 70%, ${p.a})`;
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-      ctx.fill();
+      if(p.emoji){
+        ctx.font = `${8 + p.r * 2.2}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.globalAlpha = p.a;
+        ctx.fillText(p.emoji, p.x, p.y);
+        ctx.globalAlpha = 1;
+      } else {
+        ctx.beginPath();
+        ctx.fillStyle = `hsla(${p.hue}, 90%, 70%, ${p.a})`;
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+        ctx.fill();
+      }
     }
 
     requestAnimationFrame(tick);
