@@ -104,7 +104,10 @@
         linear-gradient(#000 0 0) content-box,
         linear-gradient(#000 0 0);
       -webkit-mask-composite: xor;
-              mask-composite: exclude;
+      mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      mask-composite: exclude;
       animation: glint 5.5s linear infinite;
       pointer-events:none;
       opacity:.8;
@@ -365,12 +368,30 @@
       body{ animation: none; }
       .card::before{ animation: none; }
     }
+    .tap-to-start{
+      position: fixed; inset: 0; z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(6,9,18,.92);
+      -webkit-tap-highlight-color: transparent;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+    .tap-to-start.hidden{ opacity: 0; visibility: hidden; pointer-events: none; }
+    .tap-to-start button{
+      font-family: var(--mono); font-size: 15px; color: var(--muted);
+      padding: 14px 24px; border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.08);
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
+    .tap-to-start button:active{ opacity: .9; }
   </style>
 </head>
 
 <body>
-  <audio id="bgMusic" autoplay loop preload="auto" aria-label="Música de fondo">
-    <source src="./Alan Walker, Sabrina Carpenter &amp; Farruko  - On My Way.mp3" type="audio/mpeg">
+  <div class="tap-to-start" id="tapToStart" aria-live="polite">
+    <button type="button" id="tapToStartBtn">🎵 Toca para iniciar</button>
+  </div>
+  <audio id="bgMusic" loop preload="auto" aria-label="Música de fondo">
+    <source src="./Alan%20Walker,%20Sabrina%20Carpenter%20%26%20Farruko%20%20-%20On%20My%20Way.mp3" type="audio/mpeg">
   </audio>
   <canvas id="fx" aria-hidden="true"></canvas>
   <div class="overlay" aria-hidden="true"></div>
@@ -408,15 +429,30 @@
   <div class="toast" id="toast">✨ Vibra positiva enviada ✨</div>
 
 <script>
-  // ---- Música de fondo: volumen 50%, reproducir al cargar; si el navegador bloquea autoplay, iniciar en el primer toque/clic ----
+  // ---- Música: solo tras "Toca para iniciar" (móvil y GitHub Pages) ----
   (function(){
     var bgMusic = document.getElementById("bgMusic");
-    if (!bgMusic) return;
+    var tapOverlay = document.getElementById("tapToStart");
+    var tapBtn = document.getElementById("tapToStartBtn");
+    if (!bgMusic || !tapOverlay || !tapBtn) return;
     bgMusic.volume = 0.1;
-    function tryPlay(){ if (bgMusic.paused) bgMusic.play().catch(function(){}); }
-    var once = function(){ tryPlay(); document.removeEventListener("click", once); document.removeEventListener("touchstart", once); };
-    document.addEventListener("click", once, { once: true, passive: true });
-    document.addEventListener("touchstart", once, { once: true, passive: true });
+    var base = window.location.href.replace(/[#?].*$/, "").replace(/\/[^/]*$/, "/");
+    var s = bgMusic.querySelector("source");
+    if (s) s.src = base + "Alan%20Walker,%20Sabrina%20Carpenter%20%26%20Farruko%20%20-%20On%20My%20Way.mp3";
+
+    function playMusic(){ var p = bgMusic.play(); if (p && typeof p.catch === "function") p.catch(function(){}); }
+    function onUserTap(){
+      tapOverlay.classList.add("hidden");
+      playMusic();
+      tapBtn.removeEventListener("click", onUserTap);
+      tapBtn.removeEventListener("touchend", onUserTap);
+      tapOverlay.removeEventListener("click", onUserTap);
+      tapOverlay.removeEventListener("touchend", onUserTap);
+    }
+    tapBtn.addEventListener("click", onUserTap);
+    tapBtn.addEventListener("touchend", onUserTap);
+    tapOverlay.addEventListener("click", onUserTap);
+    tapOverlay.addEventListener("touchend", onUserTap);
   })();
 
   // ---- Notificación cuando alguien pulsa el botón (opcional) ----
