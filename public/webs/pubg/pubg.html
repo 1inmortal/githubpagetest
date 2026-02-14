@@ -457,6 +457,15 @@
   <audio id="bgMusic" loop preload="auto" aria-label="Música de fondo">
     <source src="./pubg.mp3" type="audio/mpeg">
   </audio>
+  <script>
+    (function setAudioSrc(){
+      var a = document.getElementById("bgMusic");
+      var s = a && a.querySelector("source");
+      if (!s) return;
+      var base = window.location.href.replace(/[#?].*$/, "").replace(/\/[^/]*$/, "/");
+      s.src = base + "pubg.mp3";
+    })();
+  </script>
   <canvas id="fx" aria-hidden="true"></canvas>
   <div class="vignette" aria-hidden="true"></div>
   <div class="holo" aria-hidden="true"></div>
@@ -516,7 +525,7 @@
   <div class="toast" id="toast">✨ Buena vibra enviada ✨</div>
 
   <script>
-    // ---------- Botón de inicio: siempre visible; al hacer clic inicia música y (en móvil) la tarjeta ----------
+    // ---------- Botón de inicio: siempre visible; al hacer clic inicia música (gesto de usuario obligatorio en producción) ----------
     (function(){
       var bgMusic = document.getElementById("bgMusic");
       var tapOverlay = document.getElementById("tapToStart");
@@ -524,12 +533,16 @@
       if (!tapOverlay || !tapBtn) return;
       if (bgMusic) bgMusic.volume = 0.3;
 
-      var isMobileMusic = window.matchMedia("(max-width: 768px)").matches || ("ontouchstart" in window);
       var started = false;
 
-      function playMusic(){ if (bgMusic) bgMusic.play().catch(function(){}); }
+      function playMusic(){
+        if (!bgMusic) return;
+        bgMusic.load();
+        var p = bgMusic.play();
+        if (p && typeof p.catch === "function") p.catch(function(){});
+      }
 
-      function onUserTap(){
+      function onUserTap(e){
         if (started) return;
         started = true;
         playMusic();
@@ -541,10 +554,10 @@
         tapOverlay.removeEventListener("touchend", onUserTap);
       }
 
-      tapBtn.addEventListener("click", onUserTap, { passive: true });
-      tapBtn.addEventListener("touchend", onUserTap, { passive: true });
-      tapOverlay.addEventListener("click", onUserTap, { passive: true });
-      tapOverlay.addEventListener("touchend", onUserTap, { passive: true });
+      tapBtn.addEventListener("click", onUserTap);
+      tapBtn.addEventListener("touchend", onUserTap);
+      tapOverlay.addEventListener("click", onUserTap);
+      tapOverlay.addEventListener("touchend", onUserTap);
     })();
 
     // ---------- Split por palabras: evita cortes "pa rte", "junt os" en móvil ----------
